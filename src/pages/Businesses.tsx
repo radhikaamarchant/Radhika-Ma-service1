@@ -7,6 +7,16 @@ import BusinessDetail from '../components/BusinessDetail';
 import { INDIAN_BANKS } from '../utils/indianBanks';
 import { downloadElementAsPDF } from '../utils/pdfGenerator';
 import { getBlueTickBusinessIds } from '../utils/blueTick';
+import { useLiveMarketTrend } from '../utils/marketSimulator';
+
+function MarketTrendCell({ businessId, isBlueTick }: { businessId: string, isBlueTick: boolean }) {
+  const trend = useLiveMarketTrend(businessId, isBlueTick);
+  return (
+    <span className={`font-bold ${trend >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+      {trend > 0 ? '+' : ''}{trend.toFixed(2)}%
+    </span>
+  );
+}
 
 export default function Businesses() {
   const { state, dispatch } = useAppContext();
@@ -27,6 +37,8 @@ export default function Businesses() {
     businessId: '',
     name: '',
     ownerName: '',
+    authorityType: 'Business Authorities' as any,
+    rmasSubsidy: '4',
     fundingRequired: '',
     interestRate: '',
     bankName: INDIAN_BANKS[0],
@@ -59,6 +71,8 @@ export default function Businesses() {
         ...formData,
         businessId: ownerRecord.businessId,
         ownerName: ownerRecord.ownerName,
+        authorityType: ownerRecord.authorityType || ('Business Authorities' as any),
+        rmasSubsidy: ownerRecord.rmasSubsidy?.toString() || '4',
         bankName: ownerRecord.bankDetails?.bankName || INDIAN_BANKS[0],
         accountNumber: ownerRecord.bankDetails?.accountNumber || '',
         ifscCode: ownerRecord.bankDetails?.ifscCode || '',
@@ -122,6 +136,8 @@ export default function Businesses() {
       businessId: formData.businessId,
       name: formData.name,
       ownerName: formData.ownerName,
+      authorityType: formData.authorityType,
+      rmasSubsidy: (formData.authorityType === 'Government Authorities' || formData.authorityType === 'Trust Authorities') ? (Number(formData.rmasSubsidy) || 4) : 0,
       registrationDate: new Date().toISOString().split('T')[0],
       fundingRequired: parseFloat(formData.fundingRequired),
       interestRate: parseFloat(formData.interestRate),
@@ -192,6 +208,7 @@ export default function Businesses() {
                         <th className="p-4 font-semibold text-gray-900">Bank Details</th>
                         <th className="p-4 font-semibold text-gray-900">Funding Needed</th>
                         <th className="p-4 font-semibold text-gray-900">Interest</th>
+                        <th className="p-4 font-semibold text-gray-900 text-center">Live Trend</th>
                         <th className="p-4 font-semibold text-gray-900 text-center">Actions</th>
                       </tr>
                     </thead>
@@ -214,6 +231,9 @@ export default function Businesses() {
                           </td>
                           <td className="p-4 font-semibold text-black">{formatINR(business.fundingRequired)}</td>
                           <td className="p-4 text-green-600 font-bold">{business.interestRate}%</td>
+                          <td className="p-4 text-center">
+                            <MarketTrendCell businessId={business.id} isBlueTick={isBlueTick(business.id)} />
+                          </td>
                           <td className="p-4 text-center space-x-2 whitespace-nowrap">
                             <button 
                               onClick={() => setSelectedBusinessId(business.id)}
@@ -272,15 +292,21 @@ export default function Businesses() {
                           <p className="text-xs text-gray-500 mb-1">Interest</p>
                           <p className="font-bold text-sm text-green-600">{business.interestRate}%</p>
                         </div>
-                        <div className="col-span-2 pt-2 border-t border-gray-200">
-                          <p className="text-xs text-gray-500 mb-1">Bank Details</p>
-                          {business.bankDetails ? (
-                            <div className="text-xs">
-                              <span className="font-semibold text-gray-800">{business.bankDetails.bankName}</span> - A/C: {business.bankDetails.accountNumber}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-gray-400">Not Provided</span>
-                          )}
+                        <div className="col-span-2 pt-2 border-t border-gray-200 flex justify-between items-center">
+                          <div>
+                            <p className="text-xs text-gray-500 mb-1">Bank Details</p>
+                            {business.bankDetails ? (
+                              <div className="text-xs">
+                                <span className="font-semibold text-gray-800">{business.bankDetails.bankName}</span> - A/C: {business.bankDetails.accountNumber}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400">Not Provided</span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500 mb-1">Live Trend</p>
+                            <MarketTrendCell businessId={business.id} isBlueTick={isBlueTick(business.id)} />
+                          </div>
                         </div>
                       </div>
 
@@ -440,6 +466,36 @@ export default function Businesses() {
                       onChange={e => setFormData({...formData, ownerName: e.target.value})} 
                       placeholder="e.g. John Doe" 
                     />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">Authority Type</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg p-3 font-medium focus:ring-2 focus:ring-black outline-none bg-white"
+                    value={formData.authorityType}
+                    onChange={(e) => setFormData({...formData, authorityType: e.target.value as any})}
+                    required
+                  >
+                    <option value="Business Authorities">Business Authorities</option>
+                    <option value="Government Authorities">Government Authorities</option>
+                    <option value="Trust Authorities">Trust Authorities</option>
+                  </select>
+                </div>
+
+                {(formData.authorityType === 'Government Authorities' || formData.authorityType === 'Trust Authorities') && (
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">RMAS Subsidy Rate (%)</label>
+                    <input 
+                      required 
+                      type="number" 
+                      step="0.1"
+                      className="w-full border border-gray-300 rounded-lg p-3 font-medium focus:ring-2 focus:ring-black outline-none" 
+                      value={formData.rmasSubsidy} 
+                      onChange={e => setFormData({...formData, rmasSubsidy: e.target.value})} 
+                      placeholder="e.g. 4" 
+                    />
+                    <p className="text-xs text-gray-500 mt-1">RMAS will pay this percentage towards the interest when an investor withdraws.</p>
                   </div>
                 )}
 
@@ -663,6 +719,12 @@ function PdfContent({ business, isBlueTick }: { business: Business, isBlueTick: 
           </div>
           <p className="font-semibold text-black mt-1">Owner: {business.ownerName}</p>
           <p className="font-mono text-sm text-gray-600 mt-0.5">ID: #{business.businessId}</p>
+          {business.authorityType && (
+            <p className="text-sm font-semibold text-gray-600 mt-1">
+              {business.authorityType}
+              {business.rmasSubsidy ? ` (RMAS Subsidy: ${business.rmasSubsidy}%)` : ''}
+            </p>
+          )}
           <p className="text-sm text-gray-600 mt-0.5">Registered: {new Date(business.registrationDate).toLocaleDateString('en-IN')}</p>
           <div className="mt-2 text-sm">
             <span className="font-semibold mr-2">Funding required:</span>{formatINR(business.fundingRequired)}

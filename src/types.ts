@@ -1,8 +1,12 @@
+export type AuthorityType = 'Government Authorities' | 'Trust Authorities' | 'Business Authorities';
+
 export interface Business {
   id: string;
   businessId: string;
   name: string;
   ownerName: string;
+  authorityType?: AuthorityType;
+  rmasSubsidy?: number;
   registrationDate: string;
   fundingRequired: number;
   interestRate: number; // dynamically set by admin

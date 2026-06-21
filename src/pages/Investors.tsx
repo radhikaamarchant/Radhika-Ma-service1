@@ -6,6 +6,7 @@ import { Investor, Investment, Business } from '../types';
 import { INDIAN_BANKS } from '../utils/indianBanks';
 import { downloadElementAsPDF } from '../utils/pdfGenerator';
 import { getBlueTickBusinessIds } from '../utils/blueTick';
+import { getBaseMarketTrend, useLiveMarketTrend } from '../utils/marketSimulator';
 
 type ViewMode = 'list' | 'add-step-1' | 'add-step-2' | 'withdraw-list' | 'withdraw-calc' | 'withdraw-bank' | 'banking-record';
 
@@ -20,7 +21,8 @@ export default function Investors() {
   const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
   const [selectedInvestments, setSelectedInvestments] = useState<Investment[]>([]);
   const [withdrawFormData, setWithdrawFormData] = useState({
-    extraInterest: '0',
+    committedMonths: '12',
+    completedMonths: '12',
     rmasCommission: '',
     happyIncomeTax: '',
   });
@@ -116,35 +118,96 @@ export default function Investors() {
   const handleCreditInvestorClick = (investments: Investment[]) => {
     setSelectedInvestments(investments);
     setWithdrawFormData({
-      extraInterest: '0',
+      committedMonths: investments.length > 0 ? investments[0].timePeriodMonths.toString() : '12',
+      completedMonths: investments.length > 0 ? investments[0].timePeriodMonths.toString() : '12',
       rmasCommission: '',
       happyIncomeTax: '',
     });
     setViewMode('withdraw-calc');
   };
 
+  const businessId = selectedInvestments.length > 0 ? selectedInvestments[0].businessId : '';
+  const isBlueTick = blueTickBusinessIds.has(businessId);
+  const marketTrend = useLiveMarketTrend(businessId, isBlueTick);
+
   const calculateProfit = () => {
-    if (selectedInvestments.length === 0) return { baseProfit: 0, totalProfit: 0 };
-    let baseProfit = 0;
-    let totalAmount = 0;
+    if (selectedInvestments.length === 0) return { baseProfit: 0, totalProfit: 0, marketProfit: 0, rmasMarketCover: 0, marketTrend: 0, isPremature: false };
+    
+    let totalPrincipal = 0;
+    let totalGuaranteedProfit = 0;
+    
+    const committed = Number(withdrawFormData.committedMonths) || 12;
+    const completed = Number(withdrawFormData.completedMonths) || 12;
+    
     selectedInvestments.forEach(inv => {
-      baseProfit += inv.amount * (inv.interestRate / 100);
-      totalAmount += inv.amount;
+      totalPrincipal += inv.amount;
+      const guaranteedInterestRate = inv.interestRate / 100;
+      totalGuaranteedProfit += inv.amount * guaranteedInterestRate * (completed / 12);
     });
-    const extraProfit = totalAmount * (Number(withdrawFormData.extraInterest) / 100 || 0);
+
+    // The live market trend provides an annual percentage.
+    // Calculate the absolute profit/loss proportional to the completed months.
+    const marketProfit = totalPrincipal * (marketTrend / 100) * (completed / 12);
+
+    let investorActualProfit = 0;
+    let rmasMarketCover = 0;
+
+    if (completed < committed) {
+      investorActualProfit = marketProfit;
+    } else {
+      if (marketProfit > totalGuaranteedProfit) {
+        investorActualProfit = marketProfit;
+      } else {
+        investorActualProfit = totalGuaranteedProfit;
+        rmasMarketCover = totalGuaranteedProfit - marketProfit; 
+      }
+    }
+
     return {
-      baseProfit,
-      totalProfit: baseProfit + extraProfit
+      baseProfit: totalGuaranteedProfit,
+      totalProfit: investorActualProfit,
+      marketProfit,
+      rmasMarketCover,
+      marketTrend,
+      isPremature: completed < committed
     };
   };
 
   const calculateFinalPayout = () => {
     if (selectedInvestments.length === 0) return 0;
     const { totalProfit } = calculateProfit();
-    const grossAmount = selectedInvestments.reduce((sum, inv) => sum + inv.amount, 0) + totalProfit;
+    const totalPrincipal = selectedInvestments.reduce((sum, inv) => sum + inv.amount, 0);
+    const grossAmount = totalPrincipal + totalProfit;
     const rmasFee = Number(withdrawFormData.rmasCommission) || 0;
     const happyTax = Number(withdrawFormData.happyIncomeTax) || 0;
-    return grossAmount - rmasFee - happyTax;
+    return Math.max(0, grossAmount - rmasFee - happyTax);
+  };
+
+  const calculateBusinessBurden = () => {
+    if (selectedInvestments.length === 0) return { businessPays: 0, rmasSubsidyPays: 0, rmasMarketCover: 0, totalRmasContribution: 0 };
+    const business = state.businesses.find(b => b.id === selectedInvestments[0].businessId);
+    
+    const { rmasMarketCover } = calculateProfit();
+    let rmasSubsidyPays = 0;
+    
+    const completed = Number(withdrawFormData.completedMonths) || 12;
+
+    if (business && business.rmasSubsidy && business.rmasSubsidy > 0) {
+      selectedInvestments.forEach(inv => {
+        rmasSubsidyPays += inv.amount * (business.rmasSubsidy! / 100) * (completed / 12);
+      });
+    }
+
+    const finalPayout = calculateFinalPayout();
+    let businessPays = finalPayout - rmasMarketCover - rmasSubsidyPays;
+    if (businessPays < 0) businessPays = 0;
+
+    return {
+      businessPays,
+      rmasSubsidyPays,
+      rmasMarketCover,
+      totalRmasContribution: rmasMarketCover + rmasSubsidyPays
+    };
   };
 
   const goToBanking = (e: React.FormEvent) => {
@@ -589,32 +652,45 @@ export default function Investors() {
                    <span className="text-sm font-semibold text-blue-900">Original Investment Amount ({selectedInvestments.length} Qty):</span>
                    <span className="text-lg font-black text-blue-900">{formatINR(selectedInvestments.reduce((s, i) => s + i.amount, 0))}</span>
                  </div>
-                 <div className="flex justify-between items-center">
-                   <span className="text-sm font-semibold text-blue-900">Base Interest Rate ({selectedInvestments[0].interestRate}%):</span>
-                   <span className="text-lg font-bold text-green-700">+{formatINR(calculateProfit().baseProfit)}</span>
+                 <div className="flex justify-between items-center mb-2">
+                   <span className="text-sm font-semibold text-blue-900">Current Market Trend:</span>
+                   <span className={`text-lg font-bold ${calculateProfit().marketTrend >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                     {calculateProfit().marketTrend > 0 ? '+' : ''}{calculateProfit().marketTrend.toFixed(2)}%
+                   </span>
+                 </div>
+                 <div className="flex justify-between items-center pt-2 border-t border-blue-200">
+                   <span className="text-sm font-semibold text-blue-900">Projected Return (Before deductions):</span>
+                   <span className={`text-lg font-bold ${calculateProfit().totalProfit < 0 ? 'text-red-600' : 'text-green-700'}`}>
+                     {calculateProfit().totalProfit < 0 ? '-' : '+'}{formatINR(Math.abs(calculateProfit().totalProfit))}
+                   </span>
                  </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-900">Time Period Warning / Extension</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-900">Term Validation</label>
                 <div className="p-3 bg-amber-50 text-amber-800 text-sm rounded border border-amber-200 mb-3">
-                  Check if time period is extended. You can add extra interest if delayed.
+                  Enter the committed months and the actual completed months. The live market algorithm will automatically calculate the profit or loss.
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="flex-1">
-                    <label className="block text-xs font-semibold mb-1 text-gray-600">Extra Interest (%) (Optional)</label>
+                    <label className="block text-xs font-semibold mb-1 text-gray-600">Committed Term (Months)</label>
                     <input 
+                      required
+                      readOnly
                       type="number" 
-                      className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-black outline-none font-bold" 
-                      value={withdrawFormData.extraInterest} 
-                      onChange={e => setWithdrawFormData({...withdrawFormData, extraInterest: e.target.value})} 
+                      className="w-full border border-gray-200 bg-gray-100 text-gray-600 rounded-lg p-2.5 outline-none font-bold cursor-not-allowed" 
+                      value={withdrawFormData.committedMonths} 
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-semibold mb-1 text-gray-600">Extra Profit Value</label>
-                    <div className="font-bold text-green-600 text-lg py-2">
-                      +{formatINR(calculateProfit().totalProfit - calculateProfit().baseProfit)}
-                    </div>
+                    <label className="block text-xs font-semibold mb-1 text-gray-600">Completed Term (Months)</label>
+                    <input 
+                      required
+                      type="number" 
+                      className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-black outline-none font-bold" 
+                      value={withdrawFormData.completedMonths} 
+                      onChange={e => setWithdrawFormData({...withdrawFormData, completedMonths: e.target.value})} 
+                    />
                   </div>
                 </div>
               </div>
@@ -648,11 +724,13 @@ export default function Investors() {
 
               <div className="bg-gray-900 p-6 rounded-xl text-white">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-400 font-semibold">Total Profit (Base + Extra)</span>
-                  <span className="font-bold text-green-400">+{formatINR(calculateProfit().totalProfit)}</span>
+                  <span className="text-gray-400 font-semibold">Total Profit/Loss</span>
+                  <span className={`font-bold ${calculateProfit().totalProfit < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                    {calculateProfit().totalProfit < 0 ? '-' : '+'}{formatINR(Math.abs(calculateProfit().totalProfit))}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center mb-2 border-b border-gray-700 pb-2">
-                  <span className="text-white font-bold uppercase tracking-widest text-xs">Gross Payable (Capital + Profit)</span>
+                  <span className="text-white font-bold uppercase tracking-widest text-xs">Gross Payable (Capital + PnL)</span>
                   <span className="font-bold text-white">{formatINR(selectedInvestments.reduce((sum, inv) => sum + inv.amount, 0) + calculateProfit().totalProfit)}</span>
                 </div>
                 <div className="flex justify-between items-center mb-2 pt-2">
@@ -705,6 +783,24 @@ export default function Investors() {
                     No bank details found for this business.
                   </div>
                 )}
+                
+                {calculateBusinessBurden().totalRmasContribution > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs font-bold text-blue-800 uppercase mb-1">RMAS Fund Contributions Applied</p>
+                    {calculateBusinessBurden().rmasSubsidyPays > 0 && (
+                      <p className="text-sm text-blue-900 mb-1 flex justify-between">
+                        <span>Government Subsidy:</span>
+                        <span className="font-bold">{formatINR(calculateBusinessBurden().rmasSubsidyPays)}</span>
+                      </p>
+                    )}
+                    {calculateBusinessBurden().rmasMarketCover > 0 && (
+                      <p className="text-sm text-blue-900 flex justify-between">
+                        <span>Market Deficit Cover:</span>
+                        <span className="font-bold">{formatINR(calculateBusinessBurden().rmasMarketCover)}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Credit Side (Investor) */}
@@ -731,7 +827,18 @@ export default function Investors() {
                 <p className="text-3xl font-black text-black mt-1">{formatINR(calculateFinalPayout())}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-gray-500">Includes all deductions</p>
+                {calculateBusinessBurden().totalRmasContribution > 0 ? (
+                  <>
+                    <p className="text-sm font-semibold text-gray-600">
+                      Business Pays: <span className="font-bold">{formatINR(calculateBusinessBurden().businessPays)}</span>
+                    </p>
+                    <p className="text-sm font-semibold text-gray-600">
+                      RMAS Fund Pays: <span className="font-bold">{formatINR(calculateBusinessBurden().totalRmasContribution)}</span>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm font-semibold text-gray-500">Includes all deductions</p>
+                )}
                 <p className="text-sm font-semibold text-gray-500">Generating Profit Slip on Success</p>
               </div>
             </div>
@@ -1023,6 +1130,12 @@ function ProfitSlipContent({ investment, investor, business, isBlueTick }: { inv
           </div>
           <p className="text-sm text-gray-600 mt-1 uppercase">Owner: {business.ownerName}</p>
           <p className="text-sm font-mono mt-1 text-gray-600">Bus. ID: #{business.businessId}</p>
+          {business.authorityType && business.authorityType !== 'Business Authorities' && (
+            <div className="mt-2 text-[10px] font-bold px-2 py-1 bg-blue-50 text-blue-800 rounded w-max border border-blue-200 uppercase tracking-wider">
+              {business.authorityType}
+              {business.rmasSubsidy ? ` - RMAS Assisted: ${business.rmasSubsidy}% Interest` : ''}
+            </div>
+          )}
         </div>
       </div>
 
@@ -1039,14 +1152,24 @@ function ProfitSlipContent({ investment, investor, business, isBlueTick }: { inv
               <td className="p-4 py-3 font-semibold">Original Invested Capital</td>
               <td className="p-4 py-3 text-right font-mono font-semibold">{formatINR(investment.amount)}</td>
             </tr>
-            <tr className="bg-green-50 border-b border-gray-300">
-              <td className="p-4 py-3 font-semibold text-green-800">Total Profit & Interest ({investment.interestRate}%)</td>
-              <td className="p-4 py-3 text-right font-mono font-bold text-green-800">+{formatINR((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount)}</td>
+            <tr className={`border-b border-gray-300 ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'bg-red-50' : 'bg-green-50'}`}>
+              <td className={`p-4 py-3 font-semibold ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
+                {((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'Total Market Loss' : 'Total Profit & Interest'}
+              </td>
+              <td className={`p-4 py-3 text-right font-mono font-bold ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
+                {((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? '-' : '+'}{formatINR(Math.abs((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount))}
+              </td>
             </tr>
             <tr className="bg-gray-100 border-b-2 border-black">
               <td className="p-4 py-3 text-black font-bold uppercase tracking-wider text-xs">Gross Payble Amount</td>
               <td className="p-4 py-3 text-right font-mono text-black font-bold">{formatINR((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0))}</td>
             </tr>
+            {business.authorityType && business.rmasSubsidy && business.rmasSubsidy > 0 ? (
+              <tr className="bg-blue-50 border-b-2 border-black">
+                <td className="p-4 py-3 text-blue-900 font-bold text-xs uppercase tracking-wider italic">Of above Gross, RMAS Fund Contribution ({business.rmasSubsidy}%)</td>
+                <td className="p-4 py-3 text-right font-mono text-blue-900 font-bold">{formatINR(investment.amount * ((business.rmasSubsidy || 0) / 100))}</td>
+              </tr>
+            ) : null}
             <tr>
               <td className="p-4 py-3 text-gray-700 font-semibold">Less: RMAS Service Commission</td>
               <td className="p-4 py-3 text-right font-mono font-bold text-gray-700">-{formatINR(payout?.rmasCommission || 0)}</td>

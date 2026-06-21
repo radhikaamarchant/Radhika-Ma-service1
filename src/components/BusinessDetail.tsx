@@ -165,6 +165,12 @@ export default function BusinessDetail({ businessId, onBack }: Props) {
               <div>
                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Owner Name</label>
                  <p className="text-lg font-medium text-gray-900">{business.ownerName}</p>
+                 {business.authorityType && (
+                   <p className="text-sm font-semibold text-gray-500 mt-1">
+                     {business.authorityType}
+                     {business.rmasSubsidy ? ` (${business.rmasSubsidy}% RMAS Subsidy)` : ''}
+                   </p>
+                 )}
               </div>
             </div>
 
