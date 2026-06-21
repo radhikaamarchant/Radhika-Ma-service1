@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { Plus, ReceiptIndianRupee, Search, X, CheckCircle, Wallet } from 'lucide-react';
-import { Investment } from '../types';
+import { Plus, ReceiptIndianRupee, Search, X, CheckCircle, Wallet, BadgeCheck, ChevronDown } from 'lucide-react';
+import { Investment, Business, Investor } from '../types';
+import { getBlueTickBusinessIds } from '../utils/blueTick';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function Investments() {
   const { state, dispatch } = useAppContext();
+  const blueTickBusinessIds = getBlueTickBusinessIds(state.businesses, state.investments);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
+
+  const [showBusinessSelect, setShowBusinessSelect] = useState(false);
+  const [showInvestorSelect, setShowInvestorSelect] = useState(false);
+  const [businessSearch, setBusinessSearch] = useState('');
+  const [investorSearch, setInvestorSearch] = useState('');
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [successData, setSuccessData] = useState<{businessName: string, investorName: string, amount: number} | null>(null);
 
   const [formData, setFormData] = useState({
     businessId: '',
@@ -45,10 +55,15 @@ export default function Investments() {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBusiness) return;
+    if (!selectedBusiness || !formData.investorId) {
+      alert("Please select both a business and an investor.");
+      return;
+    }
 
     const amount = getRawAmount(formData.amount);
     if (amount <= 0) return;
+
+    const selectedInvestor = state.investors.find(i => i.id === formData.investorId);
 
     const comms = calculateCommissions();
     const startDate = new Date();
@@ -75,18 +90,32 @@ export default function Investments() {
         dispatch({ type: 'UPDATE_BUSINESS_STATUS', payload: { id: formData.businessId, status: 'funded' } });
     }
 
+    setSuccessData({
+      businessName: selectedBusiness.name,
+      investorName: selectedInvestor ? selectedInvestor.name : 'Unknown Investor',
+      amount: amount
+    });
+    setShowSuccessAnimation(true);
     setShowAddForm(false);
-    setFormData({ businessId: '', investorId: '', amount: '', timePeriodMonths: '12', adminCommissionInvestorPct: '2', adminCommissionBusinessPct: '2' });
+    
+    setTimeout(() => {
+      setShowSuccessAnimation(false);
+      setSuccessData(null);
+      setFormData({ businessId: '', investorId: '', amount: '', timePeriodMonths: '12', adminCommissionInvestorPct: '2', adminCommissionBusinessPct: '2' });
+    }, 3000);
   };
+
+  const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0;
 
   const filteredInvestments = state.investments.filter(inv => {
     const business = state.businesses.find(b => b.id === inv.businessId);
     const investor = state.investors.find(i => i.id === inv.investorId);
     const match = searchTerm.toLowerCase();
     return business?.name.toLowerCase().includes(match) || investor?.name.toLowerCase().includes(match);
-  });
+  }).sort((a, b) => getTime(b.id) - getTime(a.id));
 
-  const activeBusinesses = state.businesses;
+  const activeBusinesses = state.businesses.slice().sort((a, b) => getTime(b.id) - getTime(a.id));
+  const sortedInvestors = state.investors.slice().sort((a, b) => getTime(b.id) - getTime(a.id));
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -124,29 +153,125 @@ export default function Investments() {
           </h3>
           <form onSubmit={handleAddSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-semibold mb-1">Select Business</label>
-                <select required className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-black outline-none bg-white" 
-                  value={formData.businessId} onChange={e => {
-                    const reqFund = state.businesses.find(b=>b.id===e.target.value)?.fundingRequired;
-                    const reqFundFormatted = reqFund ? reqFund.toLocaleString('en-IN') : '';
-                    setFormData({...formData, businessId: e.target.value, amount: reqFundFormatted});
-                  }}>
-                  <option value="">-- Select Business --</option>
-                  {activeBusinesses.map(b => (
-                    <option key={b.id} value={b.id}>{b.name} (Requires {formatINR(b.fundingRequired)})</option>
-                  ))}
-                </select>
+                <div 
+                  className="w-full border border-gray-300 rounded-lg p-2.5 bg-white cursor-pointer flex justify-between items-center"
+                  onClick={() => {
+                    setShowBusinessSelect(!showBusinessSelect);
+                    setShowInvestorSelect(false);
+                    setBusinessSearch('');
+                  }}
+                >
+                  <span className="truncate">
+                    {selectedBusiness ? (
+                      <span className="flex items-center space-x-2">
+                        <span className="font-semibold">{selectedBusiness.name}</span>
+                        <span className="text-gray-500 text-xs">(Requires {formatINR(selectedBusiness.fundingRequired)})</span>
+                        {blueTickBusinessIds.has(selectedBusiness.id) && <BadgeCheck size={16} className="text-white fill-blue-500 flex-shrink-0" title="RMAS Verified" />}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">-- Select Business --</span>
+                    )}
+                  </span>
+                  <ChevronDown size={16} className="text-gray-400" />
+                </div>
+                {showBusinessSelect && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-gray-100 bg-gray-50">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                        <input 
+                          type="text" 
+                          autoFocus
+                          placeholder="Search business..." 
+                          className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
+                          value={businessSearch}
+                          onChange={(e) => setBusinessSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto flex-1">
+                      {activeBusinesses.filter(b => b.name.toLowerCase().includes(businessSearch.toLowerCase()) || b.businessId.toLowerCase().includes(businessSearch.toLowerCase())).map(b => (
+                        <div 
+                          key={b.id} 
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex flex-col border-b border-gray-100 last:border-0 transition-colors"
+                          onClick={() => {
+                            const reqFundFormatted = b.fundingRequired ? b.fundingRequired.toLocaleString('en-IN') : '';
+                            setFormData({...formData, businessId: b.id, amount: reqFundFormatted});
+                            setShowBusinessSelect(false);
+                          }}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <span className="font-semibold text-gray-900">{b.name}</span>
+                            {blueTickBusinessIds.has(b.id) && <BadgeCheck size={16} className="text-white fill-blue-500" title="RMAS Verified" />}
+                          </div>
+                          <span className="text-xs text-gray-500 mt-0.5">Requires {formatINR(b.fundingRequired)} • ID: #{b.businessId}</span>
+                        </div>
+                      ))}
+                      {activeBusinesses.filter(b => b.name.toLowerCase().includes(businessSearch.toLowerCase()) || b.businessId.toLowerCase().includes(businessSearch.toLowerCase())).length === 0 && (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">No business found.</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-semibold mb-1">Select Investor</label>
-                <select required className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-black outline-none bg-white" 
-                  value={formData.investorId} onChange={e => setFormData({...formData, investorId: e.target.value})}>
-                  <option value="">-- Select Investor --</option>
-                  {state.investors.map(i => (
-                    <option key={i.id} value={i.id}>{i.name}</option>
-                  ))}
-                </select>
+                <div 
+                  className="w-full border border-gray-300 rounded-lg p-2.5 bg-white cursor-pointer flex justify-between items-center"
+                  onClick={() => {
+                    setShowInvestorSelect(!showInvestorSelect);
+                    setShowBusinessSelect(false);
+                    setInvestorSearch('');
+                  }}
+                >
+                  <span className="truncate">
+                    {formData.investorId ? (
+                      <span className="font-semibold text-gray-900">{state.investors.find(i => i.id === formData.investorId)?.name}</span>
+                    ) : (
+                      <span className="text-gray-500">-- Select Investor --</span>
+                    )}
+                  </span>
+                  <ChevronDown size={16} className="text-gray-400" />
+                </div>
+                {showInvestorSelect && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-gray-100 bg-gray-50">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                        <input 
+                          type="text" 
+                          autoFocus
+                          placeholder="Search investor..." 
+                          className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
+                          value={investorSearch}
+                          onChange={(e) => setInvestorSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto flex-1">
+                      {sortedInvestors.filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase())).map(i => (
+                        <div 
+                          key={i.id} 
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex flex-col border-b border-gray-100 last:border-0 transition-colors"
+                          onClick={() => {
+                            setFormData({...formData, investorId: i.id});
+                            setShowInvestorSelect(false);
+                          }}
+                        >
+                          <span className="font-semibold text-gray-900">{i.name}</span>
+                          <span className="text-xs text-gray-500 mt-0.5">ID: #{i.investorId}</span>
+                        </div>
+                      ))}
+                      {sortedInvestors.filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase())).length === 0 && (
+                        <div className="px-4 py-3 text-sm text-gray-500 text-center">No investor found.</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-1">Investment Amount (₹) (INR Format)</label>
@@ -394,6 +519,75 @@ export default function Investments() {
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {showSuccessAnimation && successData && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: -20 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
+            >
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
+                className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6"
+              >
+                <CheckCircle size={48} className="text-green-600" />
+              </motion.div>
+              
+              <motion.h2 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-2xl font-black text-gray-900 mb-2"
+              >
+                Funding Approved!
+              </motion.h2>
+              
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-gray-500 font-medium mb-8"
+              >
+                RMAS system has successfully recorded the investment.
+              </motion.p>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="w-full bg-gray-50 rounded-2xl p-5 space-y-4 border border-gray-100"
+              >
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Amount</p>
+                  <p className="text-3xl font-black text-green-600 tracking-tight">{formatINR(successData.amount)}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 border-t border-gray-200 pt-4 text-left">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Investor</p>
+                    <p className="font-bold text-gray-900 leading-tight">{successData.investorName}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Business</p>
+                    <p className="font-bold text-gray-900 leading-tight truncate">{successData.businessName}</p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

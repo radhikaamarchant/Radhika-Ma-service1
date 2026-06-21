@@ -53,4 +53,4 @@ export interface Investment {
   };
 }
 
-export type View = 'dashboard' | 'businesses' | 'investors' | 'investments' | 'banking' | 'pnl';
+export type View = 'dashboard' | 'data-analysis' | 'businesses' | 'investors' | 'investments' | 'banking' | 'pnl';

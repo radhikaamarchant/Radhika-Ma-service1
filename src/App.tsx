@@ -8,6 +8,7 @@ import { AppProvider } from './utils/AppContext';
 import { View } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
+import DataAnalysis from './pages/DataAnalysis';
 import Businesses from './pages/Businesses';
 import Investors from './pages/Investors';
 import Investments from './pages/Investments';
@@ -41,6 +42,7 @@ function MainLayout() {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard': return <Dashboard />;
+      case 'data-analysis': return <DataAnalysis />;
       case 'businesses': return <Businesses />;
       case 'investors': return <Investors />;
       case 'investments': return <Investments />;
@@ -51,11 +53,11 @@ function MainLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-black flex flex-col md:flex-row">
+    <div className="h-screen bg-gray-50 flex flex-col md:flex-row overflow-hidden">
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
+      <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200 shrink-0">
         <div>
-           <h1 className="text-xl font-bold tracking-tight text-black flex items-center flex-wrap">
+           <h1 className="text-xl tracking-tight text-black flex items-center flex-wrap">
              RADHIKA MA<span className="text-blue-600 ml-2">SERVICE</span>
            </h1>
         </div>
@@ -70,8 +72,8 @@ function MainLayout() {
       )}
 
       {/* Sidebar Container */}
-      <div className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out`}>
-         <div className="h-full bg-white flex flex-col w-64">
+      <div className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out shrink-0 w-64 border-r border-gray-200`}>
+         <div className="h-full bg-white flex flex-col">
            {isSidebarOpen && (
              <button onClick={() => setIsSidebarOpen(false)} className="md:hidden absolute top-4 right-4 p-2 text-gray-500 hover:text-black z-50">
                <X size={20} />
@@ -82,7 +84,7 @@ function MainLayout() {
       </div>
       
       {/* Main Content */}
-      <main className="flex-1 w-full min-w-0 overflow-x-hidden min-h-screen flex flex-col">
+      <main className="flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden flex flex-col items-start bg-gray-50">
         <div className="p-4 md:p-8 w-full max-w-full">
            {renderView()}
         </div>

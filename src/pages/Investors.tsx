@@ -1,14 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { Plus, Search, Users, Banknote, Building, FileText, Download, X, ArrowLeft, CreditCard, Wallet, CheckCircle } from 'lucide-react';
+import { Plus, Search, Users, Banknote, Building, FileText, Download, X, ArrowLeft, CreditCard, Wallet, CheckCircle, BadgeCheck } from 'lucide-react';
 import { Investor, Investment, Business } from '../types';
 import { INDIAN_BANKS } from '../utils/indianBanks';
+import { downloadElementAsPDF } from '../utils/pdfGenerator';
+import { getBlueTickBusinessIds } from '../utils/blueTick';
 
 type ViewMode = 'list' | 'add-step-1' | 'add-step-2' | 'withdraw-list' | 'withdraw-calc' | 'withdraw-bank' | 'banking-record';
 
 export default function Investors() {
   const { state, dispatch } = useAppContext();
+  const blueTickBusinessIds = getBlueTickBusinessIds(state.businesses, state.investments);
   
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,15 +41,17 @@ export default function Investors() {
     rmasServiceCharge: '',
   });
 
+  const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0;
+
   const filteredInvestors = state.investors.filter(i => 
     i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     i.investorId.includes(searchTerm)
   ).map(i => {
     const totalAmountInvested = state.investments
-      .filter(inv => inv.investorId === i.id)
+      .filter(inv => inv.investorId === i.id && inv.status !== 'completed')
       .reduce((sum, inv) => sum + inv.amount, 0);
     return { ...i, totalInvested: totalAmountInvested };
-  });
+  }).sort((a, b) => getTime(b.id) - getTime(a.id));
 
   const generateInvestorId = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -190,8 +195,12 @@ export default function Investors() {
     setSelectedInvestments([]);
   };
 
-  const handlePrintPdf = () => {
-    window.print();
+  const handlePrintProfitSlip = () => {
+    downloadElementAsPDF('profit-slip-content', `Profit_Slip_${pdfProfitSlip?.investor.name || 'Investor'}`);
+  };
+
+  const handlePrintInvestorPDF = () => {
+    downloadElementAsPDF('investor-pdf-content', `Terms_${pdfInvestor?.name || 'Investor'}`);
   };
 
   return (
@@ -575,8 +584,12 @@ export default function Investors() {
                   <span className="text-gray-400 font-semibold">Total Profit (Base + Extra)</span>
                   <span className="font-bold text-green-400">+{formatINR(calculateProfit().totalProfit)}</span>
                 </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-400 font-semibold">Deductions (Comm + Tax)</span>
+                <div className="flex justify-between items-center mb-2 border-b border-gray-700 pb-2">
+                  <span className="text-white font-bold uppercase tracking-widest text-xs">Gross Payable (Capital + Profit)</span>
+                  <span className="font-bold text-white">{formatINR(selectedInvestments.reduce((sum, inv) => sum + inv.amount, 0) + calculateProfit().totalProfit)}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2 pt-2">
+                  <span className="text-gray-400 font-semibold">Total Deductions (Comm + Tax)</span>
                   <span className="font-bold text-red-400">-{formatINR((Number(withdrawFormData.rmasCommission) || 0) + (Number(withdrawFormData.happyIncomeTax) || 0))}</span>
                 </div>
                 <div className="border-t border-gray-700 my-4"></div>
@@ -682,7 +695,7 @@ export default function Investors() {
             </div>
 
             <div className="space-y-4">
-              {state.investments.filter(i => i.investorId === selectedInvestor.id && i.status === 'completed').map((inv) => {
+              {state.investments.filter(i => i.investorId === selectedInvestor.id && i.status === 'completed').sort((a,b) => getTime(b.id) - getTime(a.id)).map((inv) => {
                 const business = state.businesses.find(b => b.id === inv.businessId);
                 const payout = inv.payoutDetails;
                 return (
@@ -737,7 +750,7 @@ export default function Investors() {
       {/* --- Profit Slip Modal --- */}
       {pdfProfitSlip && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 p-4 print:hidden">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
             <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex justify-between items-center z-10">
               <h3 className="font-bold text-lg text-black flex items-center space-x-2">
                 <CheckCircle className="text-green-500" />
@@ -745,7 +758,7 @@ export default function Investors() {
               </h3>
               <div className="flex items-center space-x-3">
                 <button 
-                  onClick={handlePrintPdf}
+                  onClick={handlePrintProfitSlip}
                   className="bg-black hover:bg-gray-800 text-white px-4 py-2 flex items-center space-x-2 rounded-lg font-semibold transition"
                 >
                   <Download size={16} />
@@ -761,7 +774,7 @@ export default function Investors() {
             </div>
             
             <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="bg-white shadow-sm border border-gray-200 mx-auto max-w-[800px] p-6 md:p-12 text-gray-900 border-l-[16px] border-l-black relative overflow-hidden">
+              <div id="profit-slip-content" className="bg-white shadow-sm border border-gray-200 mx-auto max-w-[800px] p-6 md:p-12 text-gray-900 border-l-[16px] border-l-black relative overflow-hidden">
                 <ProfitSlipContent 
                   investment={pdfProfitSlip.investment} 
                   investor={pdfProfitSlip.investor} 
@@ -787,12 +800,12 @@ export default function Investors() {
       {/* --- PDF Modal Preview (Only visible when pdfInvestor is set, hidden during print) --- */}
       {pdfInvestor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4 print:hidden">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
             <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex justify-between items-center z-10">
               <h3 className="font-bold text-lg text-black">Preview PDF Document</h3>
               <div className="flex items-center space-x-3">
                 <button 
-                  onClick={handlePrintPdf}
+                  onClick={handlePrintInvestorPDF}
                   className="bg-black hover:bg-gray-800 text-white px-4 py-2 flex items-center space-x-2 rounded-lg font-semibold transition"
                 >
                   <Download size={16} />
@@ -809,7 +822,7 @@ export default function Investors() {
             
             {/* Provide a visual boundary for the user before printing */}
             <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="bg-white shadow-sm border border-gray-200 mx-auto max-w-3xl p-6 md:p-12 aspect-auto md:aspect-[1/1.414] text-gray-900">
+              <div id="investor-pdf-content" className="bg-white shadow-sm border border-gray-200 mx-auto max-w-3xl p-6 md:p-12 aspect-auto text-gray-900">
                 {/* We just show a preview here, the actual printable content is below */}
                 <PdfContent investor={pdfInvestor} />
               </div>
@@ -915,7 +928,7 @@ function PdfContent({ investor }: { investor: Investor }) {
 }
 
 // Component for the Profit Slip
-function ProfitSlipContent({ investment, investor, business }: { investment: Investment, investor: Investor, business: Business }) {
+function ProfitSlipContent({ investment, investor, business, isBlueTick }: { investment: Investment, investor: Investor, business: Business, isBlueTick?: boolean }) {
   const payout = investment.payoutDetails;
 
   return (
@@ -937,7 +950,10 @@ function ProfitSlipContent({ investment, investor, business }: { investment: Inv
         </div>
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Business Source</p>
-          <p className="font-bold text-xl uppercase">{business.name}</p>
+          <div className="flex items-center space-x-2">
+            <p className="font-bold text-xl uppercase">{business.name}</p>
+            {isBlueTick && <BadgeCheck size={20} className="text-blue-500 fill-white" />}
+          </div>
           <p className="text-sm text-gray-600 mt-1 uppercase">Owner: {business.ownerName}</p>
           <p className="text-sm font-mono mt-1 text-gray-600">Bus. ID: #{business.businessId}</p>
         </div>
@@ -953,20 +969,24 @@ function ProfitSlipContent({ investment, investor, business }: { investment: Inv
           </thead>
           <tbody className="divide-y divide-gray-200 text-base">
             <tr>
-              <td className="p-4 py-3">Original Invested Capital</td>
-              <td className="p-4 py-3 text-right font-mono font-medium">{formatINR(investment.amount)}</td>
+              <td className="p-4 py-3 font-semibold">Original Invested Capital</td>
+              <td className="p-4 py-3 text-right font-mono font-semibold">{formatINR(investment.amount)}</td>
             </tr>
-            <tr className="bg-green-50">
+            <tr className="bg-green-50 border-b border-gray-300">
               <td className="p-4 py-3 font-semibold text-green-800">Total Profit & Interest ({investment.interestRate}%)</td>
               <td className="p-4 py-3 text-right font-mono font-bold text-green-800">+{formatINR((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount)}</td>
             </tr>
-            <tr>
-              <td className="p-4 py-3 text-gray-600">RMAS Service Commission Deducted</td>
-              <td className="p-4 py-3 text-right font-mono text-gray-600">-{formatINR(payout?.rmasCommission || 0)}</td>
+            <tr className="bg-gray-100 border-b-2 border-black">
+              <td className="p-4 py-3 text-black font-bold uppercase tracking-wider text-xs">Gross Payble Amount</td>
+              <td className="p-4 py-3 text-right font-mono text-black font-bold">{formatINR((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0))}</td>
             </tr>
             <tr>
-              <td className="p-4 py-3 text-red-600 font-semibold">Happy Muslim Income Tax Deducted</td>
-              <td className="p-4 py-3 text-right font-mono text-red-600 font-semibold">-{formatINR(payout?.happyIncomeTax || 0)}</td>
+              <td className="p-4 py-3 text-gray-700 font-semibold">Less: RMAS Service Commission</td>
+              <td className="p-4 py-3 text-right font-mono font-bold text-gray-700">-{formatINR(payout?.rmasCommission || 0)}</td>
+            </tr>
+            <tr className="border-b-[3px] border-black">
+              <td className="p-4 py-3 text-red-700 font-semibold">Less: Happy Muslim Income Tax</td>
+              <td className="p-4 py-3 text-right font-mono text-red-700 font-bold">-{formatINR(payout?.happyIncomeTax || 0)}</td>
             </tr>
           </tbody>
           <tfoot className="bg-black text-white">

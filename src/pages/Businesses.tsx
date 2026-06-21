@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { Plus, Search, Building2, Banknote, Building, FileText, Download, X } from 'lucide-react';
+import { Plus, Search, Building2, Banknote, Building, FileText, Download, X, BadgeCheck, ChevronDown } from 'lucide-react';
 import { Business } from '../types';
 import BusinessDetail from '../components/BusinessDetail';
 import { INDIAN_BANKS } from '../utils/indianBanks';
+import { downloadElementAsPDF } from '../utils/pdfGenerator';
+import { getBlueTickBusinessIds } from '../utils/blueTick';
 
 export default function Businesses() {
   const { state, dispatch } = useAppContext();
   
   const [viewMode, setViewMode] = useState<'list' | 'add-step-1' | 'add-step-2'>('list');
+  const [ownerMode, setOwnerMode] = useState<'new' | 'existing'>('new');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
+  const [showOwnerSelect, setShowOwnerSelect] = useState(false);
+  const [ownerSearch, setOwnerSearch] = useState('');
 
   // PDF Modal State
   const [pdfBusiness, setPdfBusiness] = useState<Business | null>(null);
@@ -33,11 +38,34 @@ export default function Businesses() {
     taxPercentage: '18',
   });
 
+  const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0;
+
   const filteredBusinesses = state.businesses.filter(b => 
     b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.businessId?.includes(searchTerm)
-  );
+  ).sort((a, b) => getTime(b.id) - getTime(a.id));
+
+  const blueTickBusinessIds = getBlueTickBusinessIds(state.businesses, state.investments);
+  const isBlueTick = (bizId: string) => blueTickBusinessIds.has(bizId);
+
+  const uniqueOwners = Array.from(new Set(state.businesses.map(b => b.businessId))).map(id => state.businesses.find(b => b.businessId === id)!);
+
+  const handleExistingOwnerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOwnerId = e.target.value;
+    const ownerRecord = state.businesses.find(b => b.businessId === selectedOwnerId);
+    if (ownerRecord) {
+      setFormData({
+        ...formData,
+        businessId: ownerRecord.businessId,
+        ownerName: ownerRecord.ownerName,
+        bankName: ownerRecord.bankDetails?.bankName || INDIAN_BANKS[0],
+        accountNumber: ownerRecord.bankDetails?.accountNumber || '',
+        ifscCode: ownerRecord.bankDetails?.ifscCode || '',
+        accountHolderName: ownerRecord.bankDetails?.accountHolderName || '',
+      });
+    }
+  };
 
   const calculateFees = () => {
     const funding = parseFloat(formData.fundingRequired) || 0;
@@ -55,6 +83,7 @@ export default function Businesses() {
   };
 
   const startAddBusiness = () => {
+    setOwnerMode('new');
     setFormData({
       ...formData,
       businessId: generateBusinessId(),
@@ -73,6 +102,10 @@ export default function Businesses() {
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
+    if (ownerMode === 'existing' && !formData.businessId) {
+      alert("Please select an existing owner.");
+      return;
+    }
     if (!formData.name.trim() || !formData.ownerName.trim()) return;
     setFormData({
       ...formData,
@@ -109,7 +142,7 @@ export default function Businesses() {
   };
 
   const handlePrintPdf = () => {
-    window.print();
+    downloadElementAsPDF('business-pdf-content', `Business_Terms_${pdfBusiness?.name || 'Document'}`);
   };
 
   if (selectedBusinessId) {
@@ -164,7 +197,10 @@ export default function Businesses() {
                     {filteredBusinesses.map(business => (
                       <tr key={business.id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="p-4 font-mono text-gray-600 font-medium">#{business.businessId}</td>
-                        <td className="p-4 font-bold text-black">{business.name}</td>
+                        <td className="p-4 font-bold text-black flex items-center space-x-1.5 h-full">
+                          <span>{business.name}</span>
+                          {isBlueTick(business.id) && <BadgeCheck size={16} className="text-white fill-blue-500 flex-shrink-0" title="RMAS Verified - High Profit" />}
+                        </td>
                         <td className="p-4 text-gray-600">{business.ownerName}</td>
                         <td className="p-4 text-xs text-gray-500">
                           {business.bankDetails ? (
@@ -220,10 +256,89 @@ export default function Businesses() {
               <Building2 size={22} className="text-gray-800" />
               <span>Step 1: Business Profile</span>
             </h3>
+
+            <div className="flex bg-gray-100 p-1 rounded-lg mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setOwnerMode('new');
+                  setFormData({ ...formData, businessId: generateBusinessId(), ownerName: '', bankName: INDIAN_BANKS[0], accountNumber: '', ifscCode: '', accountHolderName: '' });
+                }}
+                className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${ownerMode === 'new' ? 'bg-white shadow text-black' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                New Business Owner
+              </button>
+              <button
+                type="button"
+                onClick={() => setOwnerMode('existing')}
+                className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${ownerMode === 'existing' ? 'bg-white shadow text-black' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Already Registered Owner
+              </button>
+            </div>
+
             <form onSubmit={handleNextStep} className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
+                {ownerMode === 'existing' && (
+                  <div className="relative z-20">
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">Select Existing Owner</label>
+                    <div 
+                      className="w-full border border-gray-300 rounded-lg p-3 bg-white cursor-pointer flex justify-between items-center"
+                      onClick={() => {
+                        setShowOwnerSelect(!showOwnerSelect);
+                        setOwnerSearch('');
+                      }}
+                    >
+                      <span className="truncate">
+                        {formData.businessId ? (
+                          <span className="font-semibold text-gray-900">{formData.ownerName} <span className="font-normal text-gray-500 ml-1">(ID: #{formData.businessId})</span></span>
+                        ) : (
+                          <span className="text-gray-500">Select an owner...</span>
+                        )}
+                      </span>
+                      <ChevronDown size={16} className="text-gray-400" />
+                    </div>
+                    {showOwnerSelect && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-hidden flex flex-col">
+                        <div className="p-2 border-b border-gray-100 bg-gray-50">
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                            <input 
+                              type="text" 
+                              autoFocus
+                              placeholder="Search owner..." 
+                              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
+                              value={ownerSearch}
+                              onChange={(e) => setOwnerSearch(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        </div>
+                        <div className="overflow-y-auto flex-1">
+                          {uniqueOwners.filter(b => b.ownerName.toLowerCase().includes(ownerSearch.toLowerCase()) || b.businessId.toLowerCase().includes(ownerSearch.toLowerCase())).map(b => (
+                            <div 
+                              key={`opt_${b.id}`} 
+                              className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex flex-col border-b border-gray-100 last:border-0 transition-colors"
+                              onClick={() => {
+                                handleExistingOwnerChange({ target: { value: b.businessId } } as any);
+                                setShowOwnerSelect(false);
+                              }}
+                            >
+                              <span className="font-semibold text-gray-900">{b.ownerName}</span>
+                              <span className="text-xs text-gray-500 mt-0.5">ID: #{b.businessId}</span>
+                            </div>
+                          ))}
+                          {uniqueOwners.filter(b => b.ownerName.toLowerCase().includes(ownerSearch.toLowerCase()) || b.businessId.toLowerCase().includes(ownerSearch.toLowerCase())).length === 0 && (
+                            <div className="px-4 py-3 text-sm text-gray-500 text-center">No owner found.</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">Business ID Number (Auto-Generated)</label>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">Owner ID Number {ownerMode === 'new' ? '(Auto-Generated)' : '(Linked)'}</label>
                   <input 
                     type="text" 
                     readOnly 
@@ -245,17 +360,19 @@ export default function Businesses() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-700">Owner Name</label>
-                  <input 
-                    required 
-                    type="text" 
-                    className="w-full border border-gray-300 rounded-lg p-3 font-medium focus:ring-2 focus:ring-black outline-none" 
-                    value={formData.ownerName} 
-                    onChange={e => setFormData({...formData, ownerName: e.target.value})} 
-                    placeholder="e.g. John Doe" 
-                  />
-                </div>
+                {ownerMode === 'new' && (
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">Owner Name</label>
+                    <input 
+                      required 
+                      type="text" 
+                      className="w-full border border-gray-300 rounded-lg p-3 font-medium focus:ring-2 focus:ring-black outline-none" 
+                      value={formData.ownerName} 
+                      onChange={e => setFormData({...formData, ownerName: e.target.value})} 
+                      placeholder="e.g. John Doe" 
+                    />
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   <div>
@@ -339,9 +456,10 @@ export default function Businesses() {
                     <Building size={16} /> <span>Bank Name</span>
                   </label>
                   <select 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black outline-none bg-white font-medium shadow-sm"
+                    className={`w-full border border-gray-300 rounded-lg p-3 outline-none font-medium shadow-sm ${ownerMode === 'existing' ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-black bg-white'}`}
                     value={formData.bankName}
                     onChange={(e) => setFormData({...formData, bankName: e.target.value})}
+                    disabled={ownerMode === 'existing'}
                   >
                     {INDIAN_BANKS.map(bank => (
                       <option key={bank} value={bank}>{bank}</option>
@@ -354,10 +472,11 @@ export default function Businesses() {
                   <input 
                     required 
                     type="text" 
-                    className="w-full border border-gray-300 rounded-lg p-3 font-mono focus:ring-2 focus:ring-black outline-none shadow-sm" 
+                    className={`w-full border border-gray-300 rounded-lg p-3 font-mono outline-none shadow-sm ${ownerMode === 'existing' ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-black'}`}
                     value={formData.accountNumber} 
                     onChange={e => setFormData({...formData, accountNumber: e.target.value.replace(/\D/g, '')})} 
                     placeholder="e.g. 30291039482" 
+                    readOnly={ownerMode === 'existing'}
                   />
                 </div>
 
@@ -366,10 +485,11 @@ export default function Businesses() {
                   <input 
                     required 
                     type="text" 
-                    className="w-full border border-gray-300 rounded-lg p-3 font-mono uppercase focus:ring-2 focus:ring-black outline-none shadow-sm" 
+                    className={`w-full border border-gray-300 rounded-lg p-3 font-mono uppercase outline-none shadow-sm ${ownerMode === 'existing' ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-black'}`}
                     value={formData.ifscCode} 
                     onChange={e => setFormData({...formData, ifscCode: e.target.value.toUpperCase()})} 
                     placeholder="e.g. SBIN0001234" 
+                    readOnly={ownerMode === 'existing'}
                   />
                 </div>
 
@@ -378,11 +498,16 @@ export default function Businesses() {
                   <input 
                     required 
                     type="text" 
-                    className="w-full border border-gray-300 bg-white rounded-lg p-3 font-bold text-black uppercase focus:ring-2 focus:ring-black outline-none shadow-sm" 
+                    className={`w-full border border-gray-300 rounded-lg p-3 font-bold uppercase outline-none shadow-sm ${ownerMode === 'existing' ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-black focus:ring-2 focus:ring-black'}`}
                     value={formData.accountHolderName} 
                     onChange={e => setFormData({...formData, accountHolderName: e.target.value.toUpperCase()})} 
+                    readOnly={ownerMode === 'existing'}
                   />
-                  <p className="text-xs text-gray-500 mt-2">Auto-filled from Step 1. You can edit if bank account name differs.</p>
+                  {ownerMode === 'existing' ? (
+                    <p className="text-xs text-amber-600 mt-2 font-medium">Bank details are locked because this owner is already registered.</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-2">Auto-filled from Step 1. You can edit if bank account name differs.</p>
+                  )}
                 </div>
               </div>
 
@@ -432,8 +557,8 @@ export default function Businesses() {
             
             {/* Provide a visual boundary for the user before printing */}
             <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="bg-white shadow-sm border border-gray-200 mx-auto max-w-3xl p-6 md:p-12 text-gray-900">
-                <PdfContent business={pdfBusiness} />
+              <div id="business-pdf-content" className="bg-white shadow-sm border border-gray-200 mx-auto max-w-3xl p-6 md:p-12 text-gray-900">
+                <PdfContent business={pdfBusiness} isBlueTick={isBlueTick(pdfBusiness.id)} />
               </div>
             </div>
           </div>
@@ -443,7 +568,7 @@ export default function Businesses() {
       {/* --- ACTUAL PRINTABLE CONTENT --- */}
       {pdfBusiness && (
         <div className="hidden print:block font-sans text-black">
-           <PdfContent business={pdfBusiness} />
+           <PdfContent business={pdfBusiness} isBlueTick={isBlueTick(pdfBusiness.id)} />
         </div>
       )}
 
@@ -452,7 +577,7 @@ export default function Businesses() {
 }
 
 // Sub-component for the PDF Content to ensure it's rendered identically in Preview and Print
-function PdfContent({ business }: { business: Business }) {
+function PdfContent({ business, isBlueTick }: { business: Business, isBlueTick: boolean }) {
   return (
     <div className="space-y-6 leading-relaxed">
       <div className="text-center space-y-2 border-b-2 border-black pb-4 mb-6">
@@ -463,7 +588,10 @@ function PdfContent({ business }: { business: Business }) {
       <div className="grid grid-cols-1 md:grid-cols-2">
         <div>
           <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Business Profile</p>
-          <p className="font-bold text-lg mt-1 text-black">{business.name}</p>
+          <div className="flex items-center space-x-2 mt-1">
+            <p className="font-bold text-lg text-black">{business.name}</p>
+            {isBlueTick && <BadgeCheck size={20} className="text-blue-500 fill-white" title="RMAS Verified" />}
+          </div>
           <p className="font-semibold text-black mt-1">Owner: {business.ownerName}</p>
           <p className="font-mono text-sm text-gray-600 mt-0.5">ID: #{business.businessId}</p>
           <p className="text-sm text-gray-600 mt-0.5">Registered: {new Date(business.registrationDate).toLocaleDateString('en-IN')}</p>

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { ArrowLeft, Building2, Save, X, Edit2, Shield, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Building2, Save, X, Edit2, Shield, AlertCircle, BadgeCheck } from 'lucide-react';
 import { Business } from '../types';
+import { getBlueTickBusinessIds } from '../utils/blueTick';
 
 interface Props {
   businessId: string;
@@ -14,6 +15,10 @@ export default function BusinessDetail({ businessId, onBack }: Props) {
   const business = state.businesses.find(b => b.id === businessId);
   const [isEditing, setIsEditing] = useState(false);
   
+  const blueTickBusinessIds = getBlueTickBusinessIds(state.businesses, state.investments);
+  const isBlueTick = blueTickBusinessIds.has(businessId);
+
+  
   const [formData, setFormData] = useState({
     fundingRequired: business?.fundingRequired.toString() || '0',
     interestRate: business?.interestRate.toString() || '0',
@@ -22,8 +27,12 @@ export default function BusinessDetail({ businessId, onBack }: Props) {
 
   if (!business) return null;
 
-  const businessInvestments = state.investments.filter(inv => inv.businessId === businessId);
-  const totalFunded = businessInvestments.reduce((sum, inv) => sum + inv.amount, 0);
+  const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0;
+  const businessInvestments = state.investments
+    .filter(inv => inv.businessId === businessId)
+    .sort((a, b) => getTime(b.id) - getTime(a.id));
+  const activeBusinessInvestments = businessInvestments.filter(i => i.status !== 'completed');
+  const totalFunded = activeBusinessInvestments.reduce((sum, inv) => sum + inv.amount, 0);
 
   const handleSave = () => {
     dispatch({
@@ -57,7 +66,10 @@ export default function BusinessDetail({ businessId, onBack }: Props) {
           <ArrowLeft size={20} className="text-black" />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-black tracking-tight">{business.name}</h2>
+          <h2 className="text-2xl font-bold text-black tracking-tight flex items-center space-x-2">
+            <span>{business.name}</span>
+            {isBlueTick && <BadgeCheck size={24} className="text-blue-500 fill-white" title="RMAS Verified - High Profit" />}
+          </h2>
           <p className="text-sm text-gray-500 mt-1">Detailed View & Configuration</p>
         </div>
       </div>
