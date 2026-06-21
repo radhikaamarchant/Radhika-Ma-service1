@@ -218,8 +218,8 @@ export default function MyPnL() {
           </div>
         </div>
 
-        <div id="pnl-statement-table" className="bg-white border border-gray-200 shadow-sm rounded overflow-x-auto p-4">
-           <div className="hidden print:block mb-8">
+        <div id="pnl-statement-table" className="bg-white border border-gray-200 shadow-sm rounded overflow-hidden">
+           <div className="hidden print:block p-4 mb-8">
               <h2 className="text-2xl font-black text-black tracking-tight border-b-2 border-black pb-2 mb-4">RMAS P&L Statement</h2>
               <p className="text-sm text-gray-600 mb-2">Generated on: {new Date().toLocaleDateString('en-IN')} {new Date().toLocaleTimeString('en-IN')}</p>
               {(fromDate || toDate) && (
@@ -227,50 +227,88 @@ export default function MyPnL() {
               )}
            </div>
            
-           <table className="w-full text-left text-sm min-w-[800px]">
-              <thead className="bg-gray-50 border-b border-gray-200 uppercase text-[10px] tracking-wider text-gray-500">
-                <tr>
-                  <th className="py-4 px-6 w-32">Date</th>
-                  <th className="py-4 px-6 text-center w-32">Type</th>
-                  <th className="py-4 px-6">Description</th>
-                  <th className="py-4 px-6">Source Party</th>
-                  <th className="py-4 px-6 text-right">Credit Amount</th>
-                  <th data-html2canvas-ignore="true" className="py-4 px-6 text-center print:hidden">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                {filteredStatement.length === 0 ? (
+           <div className="hidden md:block overflow-x-auto">
+             <table className="w-full text-left text-sm min-w-[800px]">
+                <thead className="bg-gray-50 border-b border-gray-200 uppercase text-[10px] tracking-wider text-gray-500">
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-gray-500 uppercase tracking-widest text-xs">No Records Found for the selected dates.</td>
+                    <th className="py-4 px-6 w-32">Date</th>
+                    <th className="py-4 px-6 text-center w-32">Type</th>
+                    <th className="py-4 px-6">Description</th>
+                    <th className="py-4 px-6">Source Party</th>
+                    <th className="py-4 px-6 text-right">Credit Amount</th>
+                    <th data-html2canvas-ignore="true" className="py-4 px-6 text-center print:hidden">Action</th>
                   </tr>
-                ) : (
-                  filteredStatement.map((row) => (
-                    <tr key={row.id} className="hover:bg-gray-50 transition-colors group">
-                      <td className="py-4 px-6 text-gray-600 whitespace-nowrap">{new Date(row.date).toLocaleDateString('en-IN')}</td>
-                      <td className="py-4 px-6 text-center">
-                        <span className={`px-2 py-1 text-[10px] uppercase tracking-widest rounded ${row.type === 'commission' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-                          {row.type}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-black font-medium">{row.title}</td>
-                      <td className="py-4 px-6 text-gray-600">{row.source}</td>
-                      <td className="py-4 px-6 text-right text-black font-semibold">
-                        {formatINR(row.amount)}
-                      </td>
-                      <td data-html2canvas-ignore="true" className="py-4 px-6 text-center print:hidden">
-                        <button 
-                          onClick={() => setSelectedBill(row)}
-                          className="px-3 py-1 bg-white border border-gray-300 text-xs rounded hover:bg-gray-100 transition-colors text-black inline-flex items-center space-x-1"
-                        >
-                          <FileText size={14} />
-                          <span>View Bill</span>
-                        </button>
-                      </td>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  {filteredStatement.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-gray-500 uppercase tracking-widest text-xs">No Records Found for the selected dates.</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-           </table>
+                  ) : (
+                    filteredStatement.map((row) => (
+                      <tr key={`pnl_desk_${row.id}`} className="hover:bg-gray-50 transition-colors group">
+                        <td className="py-4 px-6 text-gray-600 whitespace-nowrap">{new Date(row.date).toLocaleDateString('en-IN')}</td>
+                        <td className="py-4 px-6 text-center">
+                          <span className={`px-2 py-1 text-[10px] uppercase tracking-widest rounded ${row.type === 'commission' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                            {row.type}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-black font-medium">{row.title}</td>
+                        <td className="py-4 px-6 text-gray-600">{row.source}</td>
+                        <td className="py-4 px-6 text-right text-black font-semibold">
+                          {formatINR(row.amount)}
+                        </td>
+                        <td data-html2canvas-ignore="true" className="py-4 px-6 text-center print:hidden">
+                          <button 
+                            onClick={() => setSelectedBill(row)}
+                            className="px-3 py-1 bg-white border border-gray-300 text-xs rounded hover:bg-gray-100 transition-colors text-black inline-flex items-center space-x-1"
+                          >
+                            <FileText size={14} />
+                            <span>View Bill</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+             </table>
+           </div>
+
+           {/* Mobile View */}
+           <div className="block md:hidden divide-y divide-gray-100">
+             {filteredStatement.length === 0 ? (
+                <div className="py-12 text-center text-gray-500 uppercase tracking-widest text-xs">No Records Found.</div>
+             ) : (
+               filteredStatement.map((row) => (
+                 <div key={`pnl_mob_${row.id}`} className="p-4 bg-white">
+                   <div className="flex justify-between items-start mb-2">
+                     <span className="font-bold text-black">{row.title}</span>
+                     <span className={`px-2 py-1 text-[10px] uppercase tracking-widest rounded ${row.type === 'commission' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                       {row.type}
+                     </span>
+                   </div>
+                   
+                   <div className="text-xs text-gray-500 mb-3 flex items-center justify-between">
+                     <span>{new Date(row.date).toLocaleDateString('en-IN')}</span>
+                     <span className="font-medium text-gray-600">From: {row.source}</span>
+                   </div>
+                   
+                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                     <div className="font-bold text-black text-lg">
+                       {formatINR(row.amount)}
+                     </div>
+                     <button 
+                       onClick={() => setSelectedBill(row)}
+                       className="px-3 py-1.5 bg-gray-50 border border-gray-200 text-xs font-semibold rounded hover:bg-gray-100 transition-colors text-black inline-flex items-center space-x-1"
+                     >
+                       <FileText size={14} />
+                       <span>View Bill</span>
+                     </button>
+                   </div>
+                 </div>
+               ))
+             )}
+           </div>
         </div>
 
         {selectedBill && (

@@ -235,70 +235,137 @@ export default function Investors() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm min-w-[800px]">
-                  <thead>
-                    <tr className="border-b border-gray-200 bg-white">
-                      <th className="p-4 font-semibold text-gray-900">ID Number</th>
-                      <th className="p-4 font-semibold text-gray-900">Name</th>
-                      <th className="p-4 font-semibold text-gray-900">Bank Details</th>
-                      <th className="p-4 font-semibold text-gray-900 text-right">Total Invested</th>
-                      <th className="p-4 font-semibold text-gray-900 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredInvestors.map(investor => (
-                      <tr key={investor.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="p-4 font-mono text-gray-600 font-medium">#{investor.investorId}</td>
-                        <td className="p-4 font-bold text-black">{investor.name}</td>
-                        <td className="p-4 text-xs text-gray-500">
+              <div className="overflow-hidden">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm min-w-[800px]">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-white">
+                        <th className="p-4 font-semibold text-gray-900">ID Number</th>
+                        <th className="p-4 font-semibold text-gray-900">Name</th>
+                        <th className="p-4 font-semibold text-gray-900">Bank Details</th>
+                        <th className="p-4 font-semibold text-gray-900 text-right">Total Invested</th>
+                        <th className="p-4 font-semibold text-gray-900 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredInvestors.map(investor => (
+                        <tr key={`desk_${investor.id}`} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="p-4 font-mono text-gray-600 font-medium">#{investor.investorId}</td>
+                          <td className="p-4 font-bold text-black">{investor.name}</td>
+                          <td className="p-4 text-xs text-gray-500">
+                            {investor.bankDetails ? (
+                              <div>
+                                <div className="font-semibold text-gray-800">{investor.bankDetails.bankName}</div>
+                                <div>A/C: {investor.bankDetails.accountNumber}</div>
+                              </div>
+                            ) : 'Not Provided'}
+                          </td>
+                          <td className="p-4 font-bold text-black text-right">{formatINR(investor.totalInvested)}</td>
+                          <td className="p-4 text-center space-x-2">
+                            <button 
+                              onClick={() => handleBankingRecordClick(investor)}
+                              className="text-gray-500 hover:text-black font-semibold text-xs px-3 py-1.5 border border-gray-200 rounded-lg"
+                            >
+                              Banking Record
+                            </button>
+                            <button 
+                              onClick={() => handleWithdrawClick(investor)}
+                              className="bg-blue-600 text-white hover:bg-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg"
+                            >
+                              Withdraw
+                            </button>
+                            <button 
+                              onClick={() => setPdfInvestor(investor)}
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg inline-flex items-center space-x-1"
+                            >
+                              <FileText size={14} />
+                              <span>PDF</span>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                dispatch({ type: 'DELETE_INVESTOR', payload: investor.id });
+                              }}
+                              className="text-red-500 hover:text-red-700 font-semibold text-xs px-3 py-1.5 border border-red-200 hover:bg-red-50 rounded-lg transition-colors inline-block"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {filteredInvestors.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-gray-500 font-medium">No investors found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="block md:hidden divide-y divide-gray-100">
+                  {filteredInvestors.map(investor => (
+                    <div key={`mob_${investor.id}`} className="p-4 bg-white hover:bg-gray-50">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-bold text-black text-lg">{investor.name}</span>
+                        <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">#{investor.investorId}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-3 mb-4 bg-gray-50 p-3 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs text-gray-500">Total Invested</p>
+                          <p className="font-bold text-sm text-black">{formatINR(investor.totalInvested)}</p>
+                        </div>
+                        <div className="border-t border-gray-200 pt-2">
+                          <p className="text-xs text-gray-500 mb-1">Bank Details</p>
                           {investor.bankDetails ? (
-                            <div>
-                              <div className="font-semibold text-gray-800">{investor.bankDetails.bankName}</div>
-                              <div>A/C: {investor.bankDetails.accountNumber}</div>
+                            <div className="text-xs flex justify-between">
+                              <span className="font-semibold text-gray-800">{investor.bankDetails.bankName}</span> 
+                              <span className="text-gray-600 ml-2">A/C: {investor.bankDetails.accountNumber}</span>
                             </div>
-                          ) : 'Not Provided'}
-                        </td>
-                        <td className="p-4 font-bold text-black text-right">{formatINR(investor.totalInvested)}</td>
-                        <td className="p-4 text-center space-x-2">
-                          <button 
-                            onClick={() => handleBankingRecordClick(investor)}
-                            className="text-gray-500 hover:text-black font-semibold text-xs px-3 py-1.5 border border-gray-200 rounded-lg"
-                          >
-                            Banking Record
-                          </button>
-                          <button 
-                            onClick={() => handleWithdrawClick(investor)}
-                            className="bg-blue-600 text-white hover:bg-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg"
-                          >
-                            Withdraw
-                          </button>
-                          <button 
-                            onClick={() => setPdfInvestor(investor)}
-                            className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg inline-flex items-center space-x-1"
-                          >
-                            <FileText size={14} />
-                            <span>PDF</span>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              dispatch({ type: 'DELETE_INVESTOR', payload: investor.id });
-                            }}
-                            className="text-red-500 hover:text-red-700 font-semibold text-xs px-3 py-1.5 border border-red-200 hover:bg-red-50 rounded-lg transition-colors inline-block"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredInvestors.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-gray-500 font-medium">No investors found.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                          ) : (
+                            <span className="text-xs text-gray-400">Not Provided</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button 
+                          onClick={() => handleBankingRecordClick(investor)}
+                          className="flex-1 text-gray-700 font-semibold text-xs px-3 py-2 border border-gray-200 rounded-lg text-center whitespace-nowrap min-w-[120px]"
+                        >
+                          Banking Record
+                        </button>
+                        <button 
+                          onClick={() => handleWithdrawClick(investor)}
+                          className="flex-1 bg-blue-600 text-white hover:bg-blue-700 font-semibold text-xs px-3 py-2 rounded-lg text-center whitespace-nowrap min-w-[80px]"
+                        >
+                          Withdraw
+                        </button>
+                        <button 
+                          onClick={() => setPdfInvestor(investor)}
+                          className="bg-blue-50 text-blue-600 font-semibold text-xs px-3 py-2 rounded-lg text-center flex justify-center items-center space-x-1 whitespace-nowrap"
+                        >
+                          <FileText size={14} />
+                          <span>PDF</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            dispatch({ type: 'DELETE_INVESTOR', payload: investor.id });
+                          }}
+                          className="text-red-500 font-semibold text-xs px-3 py-2 border border-red-100 bg-red-50 rounded-lg text-center whitespace-nowrap"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {filteredInvestors.length === 0 && (
+                    <div className="p-8 text-center text-gray-500 font-medium">No investors found.</div>
+                  )}
+                </div>
               </div>
             </div>
           </>

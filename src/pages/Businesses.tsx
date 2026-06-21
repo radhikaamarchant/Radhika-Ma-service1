@@ -180,71 +180,140 @@ export default function Businesses() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm min-w-[1000px]">
-                  <thead>
-                    <tr className="border-b border-gray-200 bg-white">
-                      <th className="p-4 font-semibold text-gray-900">ID Number</th>
-                      <th className="p-4 font-semibold text-gray-900">Business Name</th>
-                      <th className="p-4 font-semibold text-gray-900">Owner</th>
-                      <th className="p-4 font-semibold text-gray-900">Bank Details</th>
-                      <th className="p-4 font-semibold text-gray-900">Funding Needed</th>
-                      <th className="p-4 font-semibold text-gray-900">Interest</th>
-                      <th className="p-4 font-semibold text-gray-900 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredBusinesses.map(business => (
-                      <tr key={business.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="p-4 font-mono text-gray-600 font-medium">#{business.businessId}</td>
-                        <td className="p-4 font-bold text-black flex items-center space-x-1.5 h-full">
-                          <span>{business.name}</span>
-                          {isBlueTick(business.id) && <BadgeCheck size={16} className="text-white fill-blue-500 flex-shrink-0" title="RMAS Verified - High Profit" />}
-                        </td>
-                        <td className="p-4 text-gray-600">{business.ownerName}</td>
-                        <td className="p-4 text-xs text-gray-500">
+              <div className="overflow-hidden">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm min-w-[1000px]">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-white">
+                        <th className="p-4 font-semibold text-gray-900">ID Number</th>
+                        <th className="p-4 font-semibold text-gray-900">Business Name</th>
+                        <th className="p-4 font-semibold text-gray-900">Owner</th>
+                        <th className="p-4 font-semibold text-gray-900">Bank Details</th>
+                        <th className="p-4 font-semibold text-gray-900">Funding Needed</th>
+                        <th className="p-4 font-semibold text-gray-900">Interest</th>
+                        <th className="p-4 font-semibold text-gray-900 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredBusinesses.map(business => (
+                        <tr key={`desk_${business.id}`} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="p-4 font-mono text-gray-600 font-medium">#{business.businessId}</td>
+                          <td className="p-4 font-bold text-black flex items-center space-x-1.5 h-full">
+                            <span>{business.name}</span>
+                            {isBlueTick(business.id) && <BadgeCheck size={16} className="text-white fill-blue-500 flex-shrink-0" title="RMAS Verified - High Profit" />}
+                          </td>
+                          <td className="p-4 text-gray-600">{business.ownerName}</td>
+                          <td className="p-4 text-xs text-gray-500">
+                            {business.bankDetails ? (
+                              <div>
+                                <div className="font-semibold text-gray-800">{business.bankDetails.bankName}</div>
+                                <div>A/C: {business.bankDetails.accountNumber}</div>
+                              </div>
+                            ) : 'Not Provided'}
+                          </td>
+                          <td className="p-4 font-semibold text-black">{formatINR(business.fundingRequired)}</td>
+                          <td className="p-4 text-green-600 font-bold">{business.interestRate}%</td>
+                          <td className="p-4 text-center space-x-2 whitespace-nowrap">
+                            <button 
+                              onClick={() => setSelectedBusinessId(business.id)}
+                              className="text-gray-500 hover:text-black font-semibold text-xs px-3 py-1.5 border border-gray-200 rounded-lg transition-colors"
+                            >
+                              View
+                            </button>
+                            <button 
+                              onClick={() => setPdfBusiness(business)}
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg inline-flex items-center space-x-1"
+                            >
+                              <FileText size={14} />
+                              <span>PDF</span>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                dispatch({ type: 'DELETE_BUSINESS', payload: business.id });
+                              }}
+                              className="text-red-500 hover:text-red-700 font-semibold text-xs px-3 py-1.5 border border-red-200 hover:bg-red-50 rounded-lg transition-colors inline-block"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {filteredBusinesses.length === 0 && (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-gray-500 font-medium">No businesses found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="block md:hidden divide-y divide-gray-100">
+                  {filteredBusinesses.map(business => (
+                    <div key={`mob_${business.id}`} className="p-4 bg-white hover:bg-gray-50">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-bold text-black text-lg">{business.name}</span>
+                          {isBlueTick(business.id) && <BadgeCheck size={18} className="text-white fill-blue-500 flex-shrink-0" />}
+                        </div>
+                        <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">#{business.businessId}</span>
+                      </div>
+                      
+                      <p className="text-sm text-gray-600 mb-4">{business.ownerName}</p>
+                      
+                      <div className="grid grid-cols-2 gap-3 mb-4 bg-gray-50 p-3 rounded-lg">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Funding Needed</p>
+                          <p className="font-bold text-sm">{formatINR(business.fundingRequired)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Interest</p>
+                          <p className="font-bold text-sm text-green-600">{business.interestRate}%</p>
+                        </div>
+                        <div className="col-span-2 pt-2 border-t border-gray-200">
+                          <p className="text-xs text-gray-500 mb-1">Bank Details</p>
                           {business.bankDetails ? (
-                            <div>
-                              <div className="font-semibold text-gray-800">{business.bankDetails.bankName}</div>
-                              <div>A/C: {business.bankDetails.accountNumber}</div>
+                            <div className="text-xs">
+                              <span className="font-semibold text-gray-800">{business.bankDetails.bankName}</span> - A/C: {business.bankDetails.accountNumber}
                             </div>
-                          ) : 'Not Provided'}
-                        </td>
-                        <td className="p-4 font-semibold text-black">{formatINR(business.fundingRequired)}</td>
-                        <td className="p-4 text-green-600 font-bold">{business.interestRate}%</td>
-                        <td className="p-4 text-center space-x-2 whitespace-nowrap">
-                          <button 
-                            onClick={() => setSelectedBusinessId(business.id)}
-                            className="text-gray-500 hover:text-black font-semibold text-xs px-3 py-1.5 border border-gray-200 rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                          <button 
-                            onClick={() => setPdfBusiness(business)}
-                            className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg inline-flex items-center space-x-1"
-                          >
-                            <FileText size={14} />
-                            <span>PDF</span>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              dispatch({ type: 'DELETE_BUSINESS', payload: business.id });
-                            }}
-                            className="text-red-500 hover:text-red-700 font-semibold text-xs px-3 py-1.5 border border-red-200 hover:bg-red-50 rounded-lg transition-colors inline-block"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredBusinesses.length === 0 && (
-                      <tr>
-                        <td colSpan={7} className="p-8 text-center text-gray-500 font-medium">No businesses found.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                          ) : (
+                            <span className="text-xs text-gray-400">Not Provided</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => setSelectedBusinessId(business.id)}
+                          className="flex-1 text-gray-700 font-semibold text-xs px-3 py-2 border border-gray-200 rounded-lg text-center"
+                        >
+                          View
+                        </button>
+                        <button 
+                          onClick={() => setPdfBusiness(business)}
+                          className="flex-1 bg-blue-50 text-blue-600 font-semibold text-xs px-3 py-2 rounded-lg text-center flex justify-center items-center space-x-1"
+                        >
+                          <FileText size={14} />
+                          <span>PDF</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            dispatch({ type: 'DELETE_BUSINESS', payload: business.id });
+                          }}
+                          className="flex-1 text-red-500 font-semibold text-xs px-3 py-2 border border-red-100 bg-red-50 rounded-lg text-center"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {filteredBusinesses.length === 0 && (
+                    <div className="p-8 text-center text-gray-500 font-medium">No businesses found.</div>
+                  )}
+                </div>
               </div>
             </div>
           </>

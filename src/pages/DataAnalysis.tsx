@@ -355,76 +355,147 @@ export default function DataAnalysis() {
           </div>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100 text-[10px] uppercase tracking-wider text-gray-500">
-                <th className="p-4 font-bold">Business</th>
-                <th className="p-4 font-bold">Base Interest</th>
-                <th className="p-4 font-bold text-right">Total Invested</th>
-                <th className="p-4 font-bold text-right">Total Payouts</th>
-                <th className="p-4 font-bold text-center">Active Investors</th>
-                <th className="p-4 font-bold text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {yieldSortedBusinesses.map(b => (
-                <tr 
-                  key={`all_${b.id}`} 
-                  onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)}
-                  className="hover:bg-blue-50 transition-colors cursor-pointer group"
-                >
-                  <td className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[10px] ${blueTickBusinessIds.has(b.id) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {b.name.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center space-x-1.5">
-                          <p className="font-bold text-sm text-black group-hover:text-blue-700 truncate">{b.name}</p>
-                          {blueTickBusinessIds.has(b.id) && <BadgeCheck size={14} className="text-blue-500 flex-shrink-0" title="RMAS Verified" />}
+        <div className="overflow-hidden">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100 text-[10px] uppercase tracking-wider text-gray-500">
+                  <th className="p-4 font-bold">Business</th>
+                  <th className="p-4 font-bold">Base Interest</th>
+                  <th className="p-4 font-bold text-right">Total Invested</th>
+                  <th className="p-4 font-bold text-right">Total Payouts</th>
+                  <th className="p-4 font-bold text-center">Active Investors</th>
+                  <th className="p-4 font-bold text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {yieldSortedBusinesses.map(b => (
+                  <tr 
+                    key={`all_desk_${b.id}`} 
+                    onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)}
+                    className="hover:bg-blue-50 transition-colors cursor-pointer group"
+                  >
+                    <td className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[10px] ${blueTickBusinessIds.has(b.id) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {b.name.charAt(0)}
                         </div>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">{b.ownerName}</p>
+                        <div className="min-w-0">
+                          <div className="flex items-center space-x-1.5">
+                            <p className="font-bold text-sm text-black group-hover:text-blue-700 truncate">{b.name}</p>
+                            {blueTickBusinessIds.has(b.id) && <BadgeCheck size={14} className="text-blue-500 flex-shrink-0" title="RMAS Verified" />}
+                          </div>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">{b.ownerName}</p>
+                        </div>
                       </div>
+                    </td>
+                    <td className="p-4">
+                      <span className={`inline-block px-2 py-1 text-[10px] font-bold rounded ${b.interestRate <= 10 ? 'bg-blue-50 text-blue-700' : b.interestRate <= 20 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>
+                        {b.interestRate}%
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <p className="font-bold text-sm text-gray-900">{formatINR(b.totalInv)}</p>
+                    </td>
+                    <td className="p-4 text-right">
+                      <p className={`font-bold text-sm ${b.totalRet > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                        {b.totalRet > 0 ? formatINR(b.totalRet) : '-'}
+                      </p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex justify-center items-center space-x-1">
+                        <Users size={14} className="text-gray-400" />
+                        <span className="font-bold text-black text-sm">{b.investorCount}</span>
+                      </div>
+                      {b.profitedInvestorsCount > 0 && (
+                        <p className="text-[9px] text-green-600 mt-0.5 font-bold">{b.profitedInvestorsCount} Profited</p>
+                      )}
+                    </td>
+                    <td className="p-4 text-center">
+                      {b.totalInv === 0 ? (
+                        <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-[9px] font-bold uppercase rounded tracking-wide">Untapped</span>
+                      ) : b.totalRet > 0 ? (
+                        <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-[9px] font-bold uppercase rounded tracking-wide flex items-center justify-center space-x-1 w-max mx-auto"><BadgeCheck size={10} /> <span>Verified</span></span>
+                      ) : (
+                        <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-[9px] font-bold uppercase rounded tracking-wide">Active</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {yieldSortedBusinesses.map(b => (
+              <div 
+                key={`all_mob_${b.id}`}
+                onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)}
+                className="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-sm ${blueTickBusinessIds.has(b.id) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+                      {b.name.charAt(0)}
                     </div>
-                  </td>
-                  <td className="p-4">
+                    <div>
+                      <div className="flex items-center space-x-1.5">
+                        <p className="font-bold text-sm text-black">{b.name}</p>
+                        {blueTickBusinessIds.has(b.id) && <BadgeCheck size={14} className="text-blue-500" />}
+                      </div>
+                      <p className="text-[11px] text-gray-500 uppercase tracking-wider">{b.ownerName}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
                     <span className={`inline-block px-2 py-1 text-[10px] font-bold rounded ${b.interestRate <= 10 ? 'bg-blue-50 text-blue-700' : b.interestRate <= 20 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>
-                      {b.interestRate}%
+                      {b.interestRate}% Int.
                     </span>
-                  </td>
-                  <td className="p-4 text-right">
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-y-3 gap-x-4 bg-gray-50 rounded-xl p-3">
+                  <div>
+                    <p className="text-[10px] text-gray-500 font-medium uppercase mb-0.5">Total Invested</p>
                     <p className="font-bold text-sm text-gray-900">{formatINR(b.totalInv)}</p>
-                  </td>
-                  <td className="p-4 text-right">
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-500 font-medium uppercase mb-0.5">Total Payouts</p>
                     <p className={`font-bold text-sm ${b.totalRet > 0 ? 'text-green-600' : 'text-gray-400'}`}>
                       {b.totalRet > 0 ? formatINR(b.totalRet) : '-'}
                     </p>
-                  </td>
-                  <td className="p-4 text-center">
-                    <div className="flex justify-center items-center space-x-1">
-                      <Users size={14} className="text-gray-400" />
-                      <span className="font-bold text-black text-sm">{b.investorCount}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between col-span-2 pt-2 border-t border-gray-200/60">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 text-gray-600">
+                        <Users size={12} />
+                        <span className="font-bold text-xs">{b.investorCount} Active</span>
+                      </div>
+                      {b.profitedInvestorsCount > 0 && (
+                        <span className="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded">
+                          {b.profitedInvestorsCount} Profited
+                        </span>
+                      )}
                     </div>
-                    {b.profitedInvestorsCount > 0 && (
-                      <p className="text-[9px] text-green-600 mt-0.5 font-bold">{b.profitedInvestorsCount} Profited</p>
-                    )}
-                  </td>
-                  <td className="p-4 text-center">
-                    {b.totalInv === 0 ? (
-                      <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-[9px] font-bold uppercase rounded tracking-wide">Untapped</span>
-                    ) : b.totalRet > 0 ? (
-                      <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-[9px] font-bold uppercase rounded tracking-wide flex items-center justify-center space-x-1 w-max mx-auto"><BadgeCheck size={10} /> <span>Verified</span></span>
-                    ) : (
-                      <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-[9px] font-bold uppercase rounded tracking-wide">Active</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div>
+                      {b.totalInv === 0 ? (
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Untapped</span>
+                      ) : b.totalRet > 0 ? (
+                        <span className="text-[10px] text-green-600 font-bold uppercase tracking-wider flex items-center"><BadgeCheck size={12} className="mr-1" /> Verified</span>
+                      ) : (
+                        <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Active</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {yieldSortedBusinesses.length === 0 && (
-            <div className="p-8 text-center text-gray-500 text-sm">No businesses found.</div>
+            <div className="p-8 text-center text-gray-500 text-sm border-t border-gray-100">No businesses found.</div>
           )}
         </div>
       </div>
