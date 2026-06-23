@@ -290,14 +290,13 @@ export default function Investors() {
  <>
  <div className="flex justify-between items-end">
  <div>
- <h2 className="text-xs md:text-base font-medium text-kite-text tracking-tight">Investors</h2>
- <p className="text-sm text-kite-text-light mt-1">Manage network of funders and investors.</p>
+ <h2 className="text-xl md:text-base font-medium text-kite-text tracking-tight uppercase">My Investors</h2>
  </div>
  <button onClick={startAddInvestor}
- className="bg-kite-blue hover:bg-kite-blue text-white px-4 py-2 rounded-sm font-medium flex items-center space-x-2 transition-colors"
+ className="bg-kite-blue hover:opacity-90 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-sm font-medium flex items-center space-x-1 md:space-x-2 transition-colors text-xs md:text-sm"
  >
  <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
- <span>New Investors</span>
+ <span>New Investor</span>
  </button>
  </div>
 

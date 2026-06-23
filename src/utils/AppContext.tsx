@@ -56,33 +56,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
  const dispatch = async (action: Action) => {
  try {
+ const cleanObj = (obj: any): any => {
+   if (obj === null || typeof obj !== 'object') {
+     if (typeof obj === 'number' && Number.isNaN(obj)) return 0;
+     return obj;
+   }
+   if (Array.isArray(obj)) return obj.map(cleanObj);
+   return Object.fromEntries(
+     Object.entries(obj)
+       .filter(([_, v]) => v !== undefined)
+       .map(([k, v]) => [k, cleanObj(v)])
+   );
+ };
+
  switch (action.type) {
  case 'ADD_BUSINESS':
- await setDoc(doc(db, 'businesses', action.payload.id), action.payload);
+ await setDoc(doc(db, 'businesses', action.payload.id), cleanObj(action.payload));
  break;
  case 'UPDATE_BUSINESS_STATUS':
  await updateDoc(doc(db, 'businesses', action.payload.id), { status: action.payload.status });
  break;
  case 'UPDATE_BUSINESS':
- await setDoc(doc(db, 'businesses', action.payload.id), action.payload);
+ await setDoc(doc(db, 'businesses', action.payload.id), cleanObj(action.payload));
  break;
  case 'DELETE_BUSINESS':
  await deleteDoc(doc(db, 'businesses', action.payload));
  break;
  case 'ADD_INVESTOR':
- await setDoc(doc(db, 'investors', action.payload.id), action.payload);
+ await setDoc(doc(db, 'investors', action.payload.id), cleanObj(action.payload));
  break;
  case 'UPDATE_INVESTOR':
- await updateDoc(doc(db, 'investors', action.payload.id), { ...action.payload });
+ await updateDoc(doc(db, 'investors', action.payload.id), cleanObj(action.payload));
  break;
  case 'DELETE_INVESTOR':
  await deleteDoc(doc(db, 'investors', action.payload));
  break;
  case 'ADD_INVESTMENT':
- await setDoc(doc(db, 'investments', action.payload.id), action.payload);
+ await setDoc(doc(db, 'investments', action.payload.id), cleanObj(action.payload));
  break;
  case 'UPDATE_INVESTMENT':
- await setDoc(doc(db, 'investments', action.payload.id), action.payload);
+ await setDoc(doc(db, 'investments', action.payload.id), cleanObj(action.payload));
  break;
  case 'DELETE_INVESTMENT':
  await deleteDoc(doc(db, 'investments', action.payload));

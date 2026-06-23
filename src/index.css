@@ -53,6 +53,18 @@
   --white-color: #1e222d; /* White becomes surface color */
 }
 
+/* Maintain true white color for colored elements in dark mode */
+:root.dark :where([class*="bg-kite-blue"], [class*="bg-blue-"], [class*="bg-kite-red"], [class*="bg-kite-green"], [class*="bg-green-"], [class*="bg-red-"]) {
+  --white-color: #ffffff;
+}
+
+:root.dark .text-blue-800 {
+  color: #93c5fd !important;
+}
+:root.dark .text-blue-900 {
+  color: #bfdbfe !important;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--body-bg);

@@ -75,77 +75,79 @@ export default function InvestorDetail({ investorId, onBack }: InvestorDetailPro
 
   return (
     <div className="space-y-6 animate-fade-in transition-all">
-      <div className="flex items-center space-x-4 mb-4 md:mb-8">
+      <div className="flex items-center space-x-4 mb-4 md:mb-8 border-b border-kite-border pb-4 md:pb-0 md:border-0">
         <button onClick={onBack}
           className="p-2 hover:bg-kite-border rounded-full transition-colors"
         >
           <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
         </button>
         <div className="flex-1">
-          <p className="text-sm text-kite-text-light mt-1">Detailed View & Configuration</p>
+          <p className="text-[13px] md:text-sm text-kite-text-light font-medium uppercase tracking-wider">My RMAS INC A/C</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border border-kite-border rounded-sm p-4 md:p-6 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
-              {!isEditing ? (
-                <div className="flex items-center space-x-2">
-                  <button onClick={() => setViewMode(viewMode === 'bank' ? 'details' : 'bank')}
-                    className={"flex items-center space-x-1 text-sm font-medium border px-3 py-1.5 rounded-sm transition-colors " + (viewMode === 'bank' ? 'bg-kite-blue/10 text-kite-blue border-kite-blue/30' : 'text-kite-text-light hover:text-kite-text border-kite-border bg-white hover:bg-kite-bg')}
-                  >
-                    <Wallet className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                    <span>{viewMode === 'bank' ? 'Back to Details' : 'Bank Balance'}</span>
-                  </button>
-                  <button onClick={() => setIsEditing(true)}
-                    className="flex items-center space-x-1 text-sm font-medium text-kite-text-light hover:text-kite-text border border-kite-border px-3 py-1.5 rounded-sm bg-white hover:bg-kite-bg transition-colors"
-                  >
-                    <Edit2 className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                    <span>Edit Details</span>
-                  </button>
+          <div className="bg-white border border-kite-border rounded-sm p-4 md:p-6 shadow-sm overflow-hidden flex flex-col">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div className="flex items-start space-x-4 w-full md:w-auto">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-kite-bg rounded-full flex items-center justify-center shrink-0 border border-kite-border">
+                  <User className="w-6 h-6 md:w-8 md:h-8 text-kite-text-light" />
                 </div>
-              ) : (
-                <div className="flex items-center space-x-2 bg-white rounded-sm">
-                  <button onClick={handleSave} className="flex items-center space-x-1 text-sm font-medium text-kite-green hover:text-green-700 bg-kite-green/10 px-3 py-1.5 rounded-sm transition-colors border border-transparent">
-                    <Save className="w-3 h-3" />
-                    <span>Save</span>
-                  </button>
-                  <button onClick={() => setIsEditing(false)} className="flex items-center space-x-1 text-sm font-medium text-kite-red hover:text-red-700 bg-kite-red/10 px-3 py-1.5 rounded-sm transition-colors border border-transparent">
-                    <X className="w-3 h-3" />
-                    <span>Cancel</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-kite-bg rounded-full flex items-center justify-center shrink-0 border border-kite-border">
-                <User className="w-6 h-6 md:w-8 md:h-8 text-kite-text-light" />
-              </div>
-              <div className="flex-1 min-w-0 pr-32 md:pr-48">
-                {isEditing ? (
-                  <div className="space-y-4 pt-1">
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-kite-text-light font-medium mb-1">Investor Name</label>
-                      <input 
-                        type="text" 
-                        value={editedName}
-                        onChange={e => setEditedName(e.target.value)}
-                        className="w-full text-xl md:text-2xl font-medium text-kite-text border-b border-kite-border focus:border-kite-blue outline-none py-1 bg-transparent"
-                        placeholder="Investor Name"
-                      />
+                <div className="flex-1 min-w-0">
+                  {isEditing ? (
+                    <div className="space-y-4 pt-1">
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-kite-text-light font-medium mb-1">Investor Name</label>
+                        <input 
+                          type="text" 
+                          value={editedName}
+                          onChange={e => setEditedName(e.target.value)}
+                          className="w-full text-xl md:text-2xl font-medium text-kite-text border-b border-kite-border focus:border-kite-blue outline-none py-1 bg-transparent"
+                          placeholder="Investor Name"
+                        />
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <h2 className="text-xl md:text-3xl font-medium text-kite-text break-words">
+                        {investor.name}
+                      </h2>
+                      <div className="flex items-center mt-2 text-kite-text-light text-sm flex-wrap gap-y-2">
+                         <span className="font-mono bg-kite-bg px-2 py-0.5 rounded border border-kite-border/50 text-xs mr-4">#{investor.investorId}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t border-kite-border md:border-0">
+                {!isEditing ? (
+                  <div className="flex items-center space-x-2 w-full justify-between md:justify-end">
+                    <button onClick={() => setViewMode(viewMode === 'bank' ? 'details' : 'bank')}
+                      className={"flex-1 md:flex-none justify-center flex items-center space-x-1 sm:space-x-1.5 text-[11px] sm:text-xs md:text-sm font-medium border px-2 sm:px-3 py-1.5 md:py-2 rounded-sm transition-colors " + (viewMode === 'bank' ? 'bg-kite-blue/10 text-kite-blue border-kite-blue/30' : 'text-kite-text-light hover:text-kite-text border-kite-border bg-white hover:bg-kite-bg')}
+                    >
+                      <Wallet className="w-3 md:w-3.5 h-3 md:h-3.5 flex-shrink-0" />
+                      <span>{viewMode === 'bank' ? 'Back to Details' : 'Bank Balance'}</span>
+                    </button>
+                    <button onClick={() => setIsEditing(true)}
+                      className="flex-1 md:flex-none justify-center flex items-center space-x-1 sm:space-x-1.5 text-[11px] sm:text-xs md:text-sm font-medium text-kite-text-light hover:text-kite-text border border-kite-border px-2 sm:px-3 py-1.5 md:py-2 rounded-sm bg-white hover:bg-kite-bg transition-colors"
+                    >
+                      <Edit2 className="w-3 md:w-3.5 h-3 md:h-3.5 flex-shrink-0" />
+                      <span>Edit Details</span>
+                    </button>
                   </div>
                 ) : (
-                  <>
-                    <h2 className="text-xl md:text-3xl font-medium text-kite-text break-words">
-                      {investor.name}
-                    </h2>
-                    <div className="flex items-center mt-2 text-kite-text-light text-sm flex-wrap gap-y-2">
-                       <span className="font-mono bg-kite-bg px-2 py-0.5 rounded border border-kite-border/50 text-xs mr-4">#{investor.investorId}</span>
-                    </div>
-                  </>
+                  <div className="flex items-center space-x-2 bg-white rounded-sm w-full md:w-auto justify-end">
+                    <button onClick={handleSave} className="flex-1 md:flex-none justify-center flex items-center space-x-1 text-sm font-medium text-kite-green hover:text-green-700 bg-kite-green/10 px-3 py-1.5 rounded-sm transition-colors border border-transparent">
+                      <Save className="w-3 h-3" />
+                      <span>Save</span>
+                    </button>
+                    <button onClick={() => setIsEditing(false)} className="flex-1 md:flex-none justify-center flex items-center space-x-1 text-sm font-medium text-kite-red hover:text-red-700 bg-kite-red/10 px-3 py-1.5 rounded-sm transition-colors border border-transparent">
+                      <X className="w-3 h-3" />
+                      <span>Cancel</span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

@@ -15,7 +15,8 @@ export default function Investments() {
  const blueTickBusinessIds = getBlueTickBusinessIds(state.businesses, state.investments);
  const [showAddForm, setShowAddForm] = useState(false);
  const [searchTerm, setSearchTerm] = useState('');
- const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
+ const [selectedInvestment, setSelectedInvestment] = useState<any | null>(null);
+ const [selectedInvestmentIds, setSelectedInvestmentIds] = useState<string[]>([]);
  const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [withdrawStep, setWithdrawStep] = useState(0);
   const [withdrawFormData, setWithdrawFormData] = useState({
@@ -132,6 +133,18 @@ export default function Investments() {
  const match = searchTerm.toLowerCase();
  return business?.name.toLowerCase().includes(match) || investor?.name.toLowerCase().includes(match);
  }).sort((a, b) => getTime(b.id) - getTime(a.id));
+
+ const groupedInvestments = Object.values(filteredInvestments.reduce((acc, inv) => {
+    const key = `${inv.businessId}_${inv.investorId}_${inv.status}`;
+    if (!acc[key]) {
+      acc[key] = { ...inv, key: key, groupedIds: [inv.id], isGrouped: true, groupedInvestmentsList: [inv] };
+    } else {
+      acc[key].amount += inv.amount;
+      acc[key].groupedIds.push(inv.id);
+      acc[key].groupedInvestmentsList.push(inv);
+    }
+    return acc;
+  }, {} as Record<string, any>));
 
  const activeBusinesses = state.businesses.slice().sort((a, b) => getTime(b.id) - getTime(a.id));
  const sortedInvestors = state.investors.slice().sort((a, b) => getTime(b.id) - getTime(a.id));
@@ -400,7 +413,7 @@ export default function Investments() {
           </tr>
         </thead>
         <tbody className="divide-y divide-kite-border/50">
-          {filteredInvestments.map(inv => {
+          {groupedInvestments.map((inv: any) => {
             const business = state.businesses.find(b => b.id === inv.businessId);
             const investor = state.investors.find(i => i.id === inv.investorId);
             
@@ -417,7 +430,11 @@ export default function Investments() {
             const isProfit = holdingProfit >= 0;
             
             return (
-              <tr key={inv.id} className="hover:bg-kite-bg/50 transition-colors cursor-pointer" onClick={() => setSelectedInvestment(inv)}>
+              <tr key={inv.key} className="hover:bg-kite-bg/50 transition-colors cursor-pointer" onClick={() => {
+                setSelectedInvestment(inv);
+                setSelectedInvestmentIds(inv.groupedInvestmentsList.map((i: any) => i.id));
+                setWithdrawStep(0);
+              }}>
                 <td className="py-3 px-3 md:px-4 overflow-hidden">
                   <p className="font-medium text-kite-text flex items-center pr-2 gap-1 text-xs md:text-sm">
                     <span className="truncate">{business?.name}</span>
@@ -434,10 +451,10 @@ export default function Investments() {
                 <td className="py-3 px-4 text-right hidden md:table-cell">
                   <p className="font-medium text-kite-text" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{formatINR(curValue)}</p>
                 </td>
-                <td className={"py-3 px-3 md:px-4 text-right font-medium " + (isProfit ? 'text-kite-green' : 'text-kite-red')}>
+                <td className={"py-3 px-3 md:px-4 text-right font-medium " + (isCompleted ? 'text-kite-blue' : isProfit ? 'text-kite-green' : 'text-kite-red')}>
                   <div className="flex flex-col items-end">
-                    <p className="text-xs md:text-sm" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{isProfit ? '+' : ''}{formatINR(holdingProfit)}</p>
-                    <p className="text-[9px] md:text-[10px] opacity-80">{isProfit ? '+' : ''}{pnlPercentage.toFixed(2)}%</p>
+                    <p className="text-xs md:text-sm" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{isProfit && !isCompleted ? '+' : ''}{formatINR(holdingProfit)}</p>
+                    <p className="text-[9px] md:text-[10px] opacity-80">{isProfit && !isCompleted ? '+' : ''}{pnlPercentage.toFixed(2)}%</p>
                   </div>
                 </td>
                 <td className={"py-3 px-4 text-right font-medium hidden md:table-cell " + (overallTrend >= 0 ? 'text-kite-green' : 'text-kite-red')}>
@@ -451,7 +468,7 @@ export default function Investments() {
               </tr>
             );
           })}
-          {filteredInvestments.length === 0 && (
+          {groupedInvestments.length === 0 && (
             <tr>
               <td colSpan={7} className="py-8 text-center text-kite-text-light text-sm">
                 No investments found.
@@ -487,13 +504,17 @@ export default function Investments() {
             const overallTrend = trend + liveTrend;
             
             const isCompleted = selectedInvestment.status === 'completed';
+            
+            const activeGroupedInvestments = selectedInvestment.groupedInvestmentsList.filter((i: any) => selectedInvestmentIds.includes(i.id));
+            const totalAmount = activeGroupedInvestments.reduce((sum: number, i: any) => sum + i.amount, 0);
+
     const calculateLiveProfit = () => {
       const guaranteedInterestRate = selectedInvestment.interestRate / 100;
       const completed = Number(withdrawFormData.completedMonths) || 12;
       const committed = selectedInvestment.timePeriodMonths || 12;
       
-      const totalGuaranteedProfit = selectedInvestment.amount * guaranteedInterestRate * (completed / 12);
-      const marketProfit = selectedInvestment.amount * (overallTrend / 100) * (completed / 12);
+      const totalGuaranteedProfit = totalAmount * guaranteedInterestRate * (completed / 12);
+      const marketProfit = totalAmount * (overallTrend / 100) * (completed / 12);
       
       let investorActualProfit = 0;
       let rmasMarketCover = 0;
@@ -517,34 +538,43 @@ export default function Investments() {
       const profitDetails = calculateLiveProfit();
       const rmasFee = Number(withdrawFormData.rmasCommission) || 0;
       const happyTax = Number(withdrawFormData.happyIncomeTax) || 0;
-      const totalCredited = Math.max(0, selectedInvestment.amount + profitDetails.totalProfit - rmasFee - happyTax);
+      const totalCredited = Math.max(0, totalAmount + profitDetails.totalProfit - rmasFee - happyTax);
       
       let rmasSubsidyPays = 0;
       if (business && business.rmasSubsidy && business.rmasSubsidy > 0) {
-         rmasSubsidyPays = selectedInvestment.amount * (business.rmasSubsidy / 100) * ((Number(withdrawFormData.completedMonths) || 12) / 12);
+         rmasSubsidyPays = totalAmount * (business.rmasSubsidy / 100) * ((Number(withdrawFormData.completedMonths) || 12) / 12);
       }
       
-      dispatch({
-        type: 'SETTLE_INVESTMENT_PAYOUT',
-        payload: {
-          investmentId: selectedInvestment.id,
-          payoutDetails: {
-            rmasCommission: rmasFee,
-            happyIncomeTax: happyTax,
-            totalCredited: totalCredited,
-            payoutDate: new Date().toISOString().split('T')[0],
-            rmasMarketCover: profitDetails.rmasMarketCover,
-            rmasSubsidyPays: rmasSubsidyPays
+      const numSelected = activeGroupedInvestments.length;
+      if (numSelected === 0) return;
+
+      activeGroupedInvestments.forEach((invToUpdate: any) => {
+        // Apportion deductions by amount
+        const ratio = invToUpdate.amount / totalAmount;
+        dispatch({
+          type: 'UPDATE_INVESTMENT',
+          payload: {
+            ...invToUpdate,
+            status: 'completed',
+            payoutDetails: {
+              rmasCommission: rmasFee * ratio,
+              happyIncomeTax: happyTax * ratio,
+              totalCredited: totalCredited * ratio,
+              payoutDate: new Date().toISOString().split('T')[0],
+              rmasMarketCover: profitDetails.rmasMarketCover * ratio,
+              rmasSubsidyPays: rmasSubsidyPays * ratio
+            }
           }
-        }
+        });
       });
+
       setSelectedInvestment(null);
       setWithdrawStep(0);
     };
-            const expectedFixedProfit = (selectedInvestment.amount * selectedInvestment.interestRate / 100);
-            const holdingProfit = isCompleted ? expectedFixedProfit : (selectedInvestment.amount * overallTrend / 100);
+            const expectedFixedProfit = activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.amount * i.interestRate / 100), 0);
+            const holdingProfit = isCompleted ? expectedFixedProfit : (totalAmount * overallTrend / 100);
             
-            const curValue = selectedInvestment.amount + holdingProfit;
+            const curValue = totalAmount + holdingProfit;
             const isProfit = holdingProfit >= 0;
             
             return (
@@ -565,7 +595,7 @@ export default function Investments() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-4 border-b border-kite-border/50">
                   <div>
                     <p className="text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Capital Invested</p>
-                    <p className="text-base font-medium text-kite-text" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{formatINR(selectedInvestment.amount)}</p>
+                    <p className="text-base font-medium text-kite-text" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{formatINR(totalAmount)}</p>
                   </div>
                   <div>
                     <p className="text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Current Value</p>
@@ -586,13 +616,57 @@ export default function Investments() {
                 <div className="grid grid-cols-2 gap-4 pb-4 border-b border-kite-border/50">
                   <div>
                     <p className="text-xs font-medium text-kite-text-light mb-1">Start Date</p>
-                    <p className="text-sm font-mono text-kite-text">{new Date(selectedInvestment.startDate).toLocaleDateString('en-IN')}</p>
+                    <p className="text-sm font-mono text-kite-text">
+                      {activeGroupedInvestments.length > 1 ? 'Multiple Dates' : new Date(selectedInvestment.startDate).toLocaleDateString('en-IN')}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs font-medium text-kite-text-light mb-1">Expected Maturity</p>
-                    <p className="text-sm font-mono text-kite-text">{new Date(selectedInvestment.endDate).toLocaleDateString('en-IN')}</p>
+                    <p className="text-sm font-mono text-kite-text">
+                      {activeGroupedInvestments.length > 1 ? 'Multiple Dates' : new Date(selectedInvestment.endDate).toLocaleDateString('en-IN')}
+                    </p>
                   </div>
                 </div>
+
+                {selectedInvestment.groupedInvestmentsList.length > 1 && withdrawStep === 0 && (
+                  <div className="pt-4 mb-4 bg-gray-50 p-3 rounded border border-gray-200">
+                    <p className="text-xs font-medium text-kite-text-light mb-3">
+                      {selectedInvestment.status === 'active' ? 'SELECT QUANTITIES TO BOOK PROFIT' : 'SELECT QUANTITIES TO VIEW'}
+                    </p>
+                    <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
+                      <label className="flex items-center space-x-2 text-sm cursor-pointer border-b border-gray-100 pb-2">
+                        <input type="checkbox" 
+                          checked={selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedInvestmentIds(selectedInvestment.groupedInvestmentsList.map((i: any) => i.id));
+                            } else {
+                              setSelectedInvestmentIds([]);
+                            }
+                          }}
+                          className="rounded text-kite-blue focus:ring-kite-blue cursor-pointer bg-white" />
+                        <span className="font-medium text-kite-text flex-1">
+                          {selectedInvestment.status === 'active' ? 'Withdraw All Quantities' : 'View All Quantities'}
+                        </span>
+                      </label>
+                      {selectedInvestment.groupedInvestmentsList.map((invUnit: any) => (
+                        <label key={invUnit.id} className="flex items-center justify-between space-x-2 text-sm cursor-pointer px-1">
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" 
+                              checked={selectedInvestmentIds.includes(invUnit.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) setSelectedInvestmentIds([...selectedInvestmentIds, invUnit.id]);
+                                else setSelectedInvestmentIds(selectedInvestmentIds.filter(id => id !== invUnit.id));
+                              }}
+                              className="rounded text-kite-blue focus:ring-kite-blue cursor-pointer" />
+                            <span className="text-kite-text-light truncate max-w-[120px]">#{invUnit.id}</span>
+                          </div>
+                          <span className="font-medium text-kite-text">{formatINR(invUnit.amount)}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {selectedInvestment.status === 'active' && withdrawStep === 0 && (
                   <div className="pt-4 border-t border-kite-border/50">
@@ -600,7 +674,8 @@ export default function Investments() {
                         setWithdrawFormData({ ...withdrawFormData, completedMonths: String(selectedInvestment.timePeriodMonths) });
                         setWithdrawStep(1);
                       }} 
-                      className="w-full md:w-auto px-6 py-2 bg-kite-blue text-white rounded-sm font-medium tracking-wide shadow-sm hover:opacity-90 transition-opacity">
+                      disabled={selectedInvestmentIds.length === 0}
+                      className="w-full md:w-auto px-6 py-2 bg-kite-blue text-white rounded-sm font-medium tracking-wide shadow-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
                       PROFIT BOOK
                     </button>
                   </div>
@@ -635,7 +710,7 @@ export default function Investments() {
                   </div>
                 )}
                 
-                {selectedInvestment.status === 'completed' && selectedInvestment.payoutDetails && (
+                {selectedInvestment.status === 'completed' && activeGroupedInvestments.some((i: any) => i.payoutDetails) && (
                   <div className="p-4 bg-kite-green/5 border border-kite-green/20 rounded-sm">
                     <h4 className="font-medium text-kite-green flex items-center space-x-2 mb-4">
                       <CheckCircle className="w-4 h-4" />
@@ -644,19 +719,21 @@ export default function Investments() {
                     <div className="space-y-2 text-sm text-green-900">
                       <div className="flex justify-between">
                         <span>Total Profit + Capital Credited</span>
-                        <span className="font-medium">{formatINR(selectedInvestment.payoutDetails.totalCredited)}</span>
+                        <span className="font-medium">{formatINR(activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.payoutDetails?.totalCredited || 0), 0))}</span>
                       </div>
                       <div className="flex justify-between text-[11px]">
                         <span>RMAS Commission Deducted</span>
-                        <span className="text-kite-red">-{formatINR(selectedInvestment.payoutDetails.rmasCommission)}</span>
+                        <span className="text-kite-red">-{formatINR(activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.payoutDetails?.rmasCommission || 0), 0))}</span>
                       </div>
                       <div className="flex justify-between text-[11px]">
-                        <span>Happy Muslim Tax Deducted</span>
-                        <span className="text-kite-red">-{formatINR(selectedInvestment.payoutDetails.happyIncomeTax)}</span>
+                        <span>Income Tax Deducted</span>
+                        <span className="text-kite-red">-{formatINR(activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.payoutDetails?.happyIncomeTax || 0), 0))}</span>
                       </div>
                       <div className="flex justify-between pt-2 border-t border-kite-green/20 mt-2">
                         <span>Payout Date</span>
-                        <span className="font-mono">{new Date(selectedInvestment.payoutDetails.payoutDate).toLocaleDateString('en-IN')}</span>
+                        <span className="font-mono">
+                          {activeGroupedInvestments.length > 1 ? 'Multiple Dates' : new Date(activeGroupedInvestments[0]?.payoutDetails?.payoutDate || selectedInvestment.payoutDetails.payoutDate).toLocaleDateString('en-IN')}
+                        </span>
                       </div>
                     </div>
                   </div>

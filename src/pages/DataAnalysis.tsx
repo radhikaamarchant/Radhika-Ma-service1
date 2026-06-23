@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
+import { useMarketSimulation } from '../utils/MarketSimulationContext';
 import { formatINR } from '../utils/mockData';
-import { Lightbulb, Target, Trophy, Clock, PieChart as PieChartIcon, BadgeCheck, X, TrendingUp, Users, Info } from 'lucide-react';
+import { Lightbulb, Target, Trophy, Clock, PieChart as PieChartIcon, BadgeCheck, X, TrendingUp, Users, Info, Star } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Business } from '../types';
 
@@ -10,13 +11,21 @@ import { MarketTrendCell } from '../components/MarketTrendCell';
 
 export default function DataAnalysis() {
  const { state } = useAppContext();
+ const { marketState } = useMarketSimulation();
  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
  const [searchTerm, setSearchTerm] = useState('');
  const [sortBy, setSortBy] = useState<'investment' | 'interest'>('interest');
 
  const businessesWithStats = state.businesses.map(b => {
+ const overallTrend = marketState.trends[b.id] ?? b.interestRate;
  const bizInvs = state.investments.filter(i => i.businessId === b.id);
  const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0);
+ const liveTotalValue = bizInvs.reduce((sum, inv) => {
+   if (inv.status === 'active') {
+     return sum + inv.amount + (inv.amount * overallTrend / 100);
+   }
+   return sum + inv.amount;
+ }, 0);
  const investorSet = new Set(bizInvs.map(i => i.investorId));
  const investorCount = investorSet.size;
  const profitedInvestorsSet = new Set(bizInvs.filter(i => i.status === 'completed').map(i => i.investorId));
@@ -29,18 +38,21 @@ export default function DataAnalysis() {
  }, 0);
  const avgReturnPct = completedInvs.length > 0 ? completedInvs.reduce((sum, i) => sum + i.interestRate, 0) / completedInvs.length : b.interestRate;
 
- return { ...b, totalInv, totalRet, investorCount, profitedInvestorsCount, activeInvsCount: bizInvs.length - completedInvs.length, completedInvsCount: completedInvs.length, avgReturnPct };
+ return { ...b, totalInv, liveTotalValue, overallTrend, totalRet, investorCount, profitedInvestorsCount, activeInvsCount: bizInvs.length - completedInvs.length, completedInvsCount: completedInvs.length, avgReturnPct };
  });
 
- const topInvested = [...businessesWithStats].filter(b => b.totalInv > 0).sort((a, b) => b.totalInv - a.totalInv).slice(0, 10);
+ const topInvested = [...businessesWithStats].filter(b => b.totalInv > 0).sort((a, b) => b.liveTotalValue - a.liveTotalValue).slice(0, 10);
  const topBacked = [...businessesWithStats].filter(b => b.investorCount > 0).sort((a, b) => b.investorCount - a.investorCount).slice(0, 10);
  const topEarners = [...businessesWithStats].filter(b => b.totalRet > 0).sort((a, b) => b.totalRet - a.totalRet).slice(0, 10);
  const untappedBusinesses = businessesWithStats.filter(b => b.totalInv === 0);
- const newlyListed = [...businessesWithStats].filter(b => b.totalInv < b.fundingRequired * 0.5).reverse().slice(0, 8); const overviewBusinesses = [...businessesWithStats]
+ const newlyListed = [...businessesWithStats].filter(b => b.totalInv < b.fundingRequired * 0.5).reverse().slice(0, 8); 
+ const bestMarket = businessesWithStats.filter(b => b.overallTrend >= b.interestRate + 10).sort((a, b) => b.overallTrend - a.overallTrend);
+ 
+ const overviewBusinesses = [...businessesWithStats]
  .filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()) || b.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) || b.businessId.toLowerCase().includes(searchTerm.toLowerCase()))
  .sort((a, b) => {
  if (sortBy === 'investment') {
- return b.totalInv - a.totalInv;
+ return b.liveTotalValue - a.liveTotalValue;
  }
  return a.interestRate - b.interestRate;
  });
@@ -207,84 +219,169 @@ export default function DataAnalysis() {
  );
  };
 
+  const renderLiveAmount = (b: any, defaultClass: string = '') => {
+    if (b.totalInv === 0) return <span className={defaultClass}>{formatINR(b.totalInv)}</span>;
+    const isUp = b.overallTrend >= b.interestRate;
+    const colorClass = isUp ? 'text-kite-green' : 'text-kite-red';
+    return <span className={`${colorClass} ${defaultClass}`}>{formatINR(b.liveTotalValue)}</span>;
+  };
+
  return (
  <div className="max-w-6xl mx-auto space-y-6">
  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4">
  <div>
  <h2 className="text-xs md:text-base font-medium text-kite-text tracking-tight">Data Analysis & Advisory</h2>
- <p className="text-xs text-kite-text-light mt-1">Deep insights into cross-business performance. Use this to guide investors.</p>
  </div>
  </div>
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4">
- {/* Most Popular */}
- <div className="bg-white border border-kite-border rounded-sm flex flex-col">
- <div className="p-2 md:p-4 border-b border-kite-border">
- <h3 className="font-medium text-kite-text flex items-center space-x-2">
- <Target  className="w-3.5 h-3.5 md:w-4 md:h-4 text-white fill-blue-500" />
- <span>Most Popular (Top Invested)</span>
- </h3>
- <p className="text-[11px] text-kite-text-light mt-1">Businesses with the highest capital invested.</p>
- </div>
- <div className="divide-y divide-kite-border flex-1">
- {topInvested.length > 0 ? topInvested.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
- <div className="min-w-0 pr-2">
- <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
- <span>{b.name}</span>
- {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500" />}
- {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text" />}
- </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">{b.investorCount} Investors</p>
- </div>
- <div className="text-right flex-shrink-0">
- <p className="text-sm font-medium text-kite-blue">{formatINR(b.totalInv)}</p>
- </div>
- </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data available</div>}
- </div>
- </div>
-
+ <div className="flex flex-col lg:flex-row lg:overflow-x-auto gap-4 lg:pb-4 snap-x items-start">
  {/* Most Backed */}
- <div className="bg-white border border-kite-border rounded-sm flex flex-col">
- <div className="p-2 md:p-4 border-b border-kite-border">
+ <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
+ <div className="p-2 md:p-3 border-b border-kite-border">
  <h3 className="font-medium text-kite-text flex items-center space-x-2">
  <Users  className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-500" />
- <span>Most Backed (By Investors)</span>
+ <span>Top Backed</span>
  </h3>
- <p className="text-[11px] text-kite-text-light mt-1">Businesses trusted by the highest number of unique people.</p>
+ <p className="text-[10px] text-kite-text-light mt-0.5">Highest unique investors.</p>
  </div>
- <div className="divide-y divide-kite-border flex-1">
+ <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
  {topBacked.length > 0 ? topBacked.map(b => (
  <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
  <div className="min-w-0 pr-2">
  <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
  <span>{b.name}</span>
- {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500" />}
- {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text" />}
  </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">{formatINR(b.totalInv)} Invested</p>
+ <p className="text-[10px] text-kite-text-light mt-0.5">{renderLiveAmount(b)} Invested</p>
  </div>
  <div className="text-right flex-shrink-0">
  <p className="text-sm font-medium text-kite-blue">{b.investorCount}</p>
  <p className="text-[9px] text-blue-600 uppercase">Investors</p>
  </div>
  </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data available</div>}
+ )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
+ </div>
+ </div>
+
+ {/* Top Invested */}
+ <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
+ <div className="p-2 md:p-3 border-b border-kite-border">
+ <h3 className="font-medium text-kite-text flex items-center space-x-2">
+ <Target  className="w-3.5 h-3.5 md:w-4 md:h-4 text-white fill-blue-500" />
+ <span>Top Invested</span>
+ </h3>
+ <p className="text-[10px] text-kite-text-light mt-0.5">Highest capital invested.</p>
+ </div>
+ <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
+ {topInvested.length > 0 ? topInvested.map(b => (
+ <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
+ <div className="min-w-0 pr-2">
+ <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
+ <span>{b.name}</span>
+ </h4>
+ <p className="text-[10px] text-kite-text-light mt-0.5">{b.investorCount} Investors</p>
+ </div>
+ <div className="text-right flex-shrink-0">
+ <p className="text-sm font-medium">{renderLiveAmount(b)}</p>
+ <p className="text-[9px] text-kite-text-light uppercase">Capital</p>
+ </div>
+ </div>
+ )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
  </div>
  </div>
 
  {/* Top Earners */}
- <div className="bg-white border border-kite-border rounded-sm flex flex-col">
- <div className="p-2 md:p-4 border-b border-kite-border">
+ <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
+ <div className="p-2 md:p-3 border-b border-kite-border">
  <h3 className="font-medium text-kite-text flex items-center space-x-2">
  <Trophy  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-green" />
- <span>Top Earners (Most Profitable)</span>
+ <span>Top Earners</span>
  </h3>
- <p className="text-[11px] text-kite-text-light mt-1">Highest payouts successfully delivered back to investors.</p>
+ <p className="text-[10px] text-kite-text-light mt-0.5">Highest payouts delivered.</p>
  </div>
- <div className="divide-y divide-kite-border flex-1">
+ <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
  {topEarners.length > 0 ? topEarners.map(b => (
+ <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-green/10 cursor-pointer transition-colors flex justify-between items-center group">
+ <div className="min-w-0 pr-2">
+ <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-green truncate flex items-center space-x-1">
+ <span>{b.name}</span>
+ </h4>
+ <p className="text-[10px] text-kite-text-light mt-0.5">{b.profitedInvestorsCount} Profited</p>
+ </div>
+ <div className="text-right flex-shrink-0">
+ <p className="text-sm font-medium text-kite-green">{formatINR(b.totalRet)}</p>
+ <p className="text-[9px] text-kite-green uppercase">Payouts</p>
+ </div>
+ </div>
+ )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
+ </div>
+ </div>
+
+ {/* Newly Listed */}
+ <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
+ <div className="p-2 md:p-3 border-b border-kite-border">
+ <h3 className="font-medium text-kite-text flex items-center space-x-2">
+ <Clock  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />
+ <span>Newly Listed</span>
+ </h3>
+ <p className="text-[10px] text-kite-text-light mt-0.5">Latest additions.</p>
+ </div>
+ <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
+ {newlyListed.length > 0 ? newlyListed.map(b => (
+ <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
+ <div className="min-w-0 pr-2">
+ <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
+ <span>{b.name}</span>
+ </h4>
+ <p className="text-[10px] text-kite-text-light mt-0.5 truncate">{b.ownerName}</p>
+ </div>
+ <div className="text-right flex-shrink-0">
+ <p className="text-sm font-medium text-kite-text">{b.interestRate}%</p>
+ <p className="text-[9px] text-kite-text-light uppercase">Return</p>
+ </div>
+ </div>
+ )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
+ </div>
+ </div>
+
+ {/* Untapped */}
+ <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
+ <div className="p-2 md:p-3 border-b border-kite-border">
+ <h3 className="font-medium text-kite-text flex items-center space-x-2">
+ <PieChartIcon  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />
+ <span>Untapped</span>
+ </h3>
+ <p className="text-[10px] text-kite-text-light mt-0.5">Fresh opportunities.</p>
+ </div>
+ <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
+ {untappedBusinesses.length > 0 ? untappedBusinesses.map(b => (
+ <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
+ <div className="min-w-0 pr-2">
+ <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
+ <span>{b.name}</span>
+ </h4>
+ <p className="text-[10px] text-kite-text-light mt-0.5">{b.interestRate}% Base</p>
+ </div>
+ <div className="text-right flex-shrink-0">
+ <p className="text-sm font-medium text-kite-text">0</p>
+ <p className="text-[9px] text-kite-text-light uppercase">Investors</p>
+ </div>
+ </div>
+ )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">None</div>}
+ </div>
+ </div>
+ </div>
+
+ {/* Best Market */}
+ <div className="bg-white border border-kite-border rounded-sm overflow-hidden w-full">
+ <div className="p-2 md:p-4 border-b border-kite-border">
+ <h3 className="font-medium text-kite-text flex items-center space-x-2">
+ <TrendingUp  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-green" />
+ <span>Best Market</span>
+ </h3>
+ <p className="text-[11px] text-kite-text-light mt-1">Live trend &ge; 10% above base interest.</p>
+ </div>
+ <div className="divide-y divide-kite-border">
+ {bestMarket.length > 0 ? bestMarket.map(b => (
  <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-green/10 cursor-pointer transition-colors flex justify-between items-center group">
  <div className="min-w-0 pr-2">
  <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-green truncate flex items-center space-x-1">
@@ -292,63 +389,14 @@ export default function DataAnalysis() {
  {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500" />}
  {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text" />}
  </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">{b.profitedInvestorsCount} Profited Investors</p>
+ <p className="text-[10px] text-kite-text-light mt-0.5">Base: {b.interestRate}%</p>
  </div>
  <div className="text-right flex-shrink-0">
- <p className="text-sm font-medium text-kite-green">{formatINR(b.totalRet)}</p>
- <p className="text-[9px] text-kite-green uppercase">Total Payouts</p>
+ <p className="text-sm font-bold text-kite-green">{b.overallTrend.toFixed(1)}%</p>
+ <p className="text-[9px] text-kite-green uppercase">Live Trend</p>
  </div>
  </div>
  )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data available</div>}
- </div>
- </div>
-
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
- {/* Untapped Potential */}
- <div className="w-full bg-white border border-kite-border rounded-sm p-1.5 md:p-3 md:p-5">
- <h3 className="font-medium text-kite-text flex items-center space-x-2 mb-1">
- <PieChartIcon  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />
- <span>Untapped Potential (0 Investments)</span>
- </h3>
- <p className="text-[11px] text-kite-text-light mb-4">Complete fresh opportunities. Recommend these to early-bird investors.</p>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:p-3 max-h-60 overflow-y-auto pr-2">
- {untappedBusinesses.length > 0 ? untappedBusinesses.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 border border-kite-border hover:border-kite-border rounded-sm cursor-pointer transition-colors hover:bg-white">
- <p className="font-medium text-sm text-kite-text truncate mb-1">{b.name}</p>
- <p className="text-xs font-medium text-kite-text">{b.interestRate}% Return</p>
- </div>
- )) : <div className="col-span-2 text-center text-sm text-kite-text-light py-4">No untapped businesses left. Great!</div>}
- </div>
- </div>
-
- {/* Newly Listed Section */}
- <div className="w-full bg-white border border-kite-border rounded-sm p-1.5 md:p-3 md:p-5">
- <h3 className="font-medium text-kite-text flex items-center space-x-2 mb-1">
- <Clock  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />
- <span>Newly Listed (Latest Additions)</span>
- </h3>
- <p className="text-[11px] text-kite-text-light mb-4">The most recently added businesses on the platform.</p>
- <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
- {newlyListed.length > 0 ? newlyListed.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="flex justify-between items-center p-1.5 md:p-3 border border-kite-border rounded-sm hover:bg-kite-bg cursor-pointer transition-colors group">
- <div className="min-w-0 pr-3">
- <p className="font-medium text-sm text-kite-text truncate group-hover:text-kite-blue flex items-center space-x-1">
- <span>{b.name}</span>
- {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500" />}
- {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text" />}
- </p>
- <p className="text-[10px] text-kite-text-light mt-0.5 truncate">{b.ownerName}</p>
- </div>
- <div className="text-right flex-shrink-0">
- <span className="inline-block px-2 py-1 bg-kite-green/10 text-kite-green text-[10px] font-medium uppercase rounded">
- {b.interestRate}% Return
- </span>
- </div>
- </div>
- )) : <div className="text-center text-sm text-kite-text-light py-4">No recent listings.</div>}
- </div>
  </div>
  </div>
 
@@ -417,7 +465,7 @@ export default function DataAnalysis() {
  </span>
  </td>
  <td className="p-2 md:p-2 md:p-4 text-right">
- <p className="font-medium text-sm text-kite-text">{formatINR(b.totalInv)}</p>
+ <p className="font-medium text-sm text-kite-text">{renderLiveAmount(b)}</p>
  </td>
  <td className="p-2 md:p-2 md:p-4 text-right">
  <p className={`font-medium text-sm ${b.totalRet > 0 ? 'text-kite-green' : 'text-kite-text-light'}`}>
@@ -483,7 +531,7 @@ export default function DataAnalysis() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-4 bg-kite-bg border border-kite-border rounded-sm p-3">
  <div>
  <p className="text-[10px] text-kite-text-light font-medium uppercase mb-0.5">Total Invested</p>
- <p className="font-medium text-sm text-kite-text">{formatINR(b.totalInv)}</p>
+ <p className="font-medium text-sm text-kite-text">{renderLiveAmount(b)}</p>
  </div>
  <div className="text-right">
  <p className="text-[10px] text-kite-text-light font-medium uppercase mb-0.5">Total Payouts</p>
