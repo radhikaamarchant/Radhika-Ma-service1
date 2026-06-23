@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AppProvider } from './utils/AppContext';
 import { View } from './types';
 import Sidebar from './components/Sidebar';
@@ -87,6 +87,27 @@ function MainLayout() {
  
  const { state, dispatch } = useAppContext();
 
+ // Scroll preservation for main tabs
+ const scrollPositions = useRef<{ [key: string]: number }>({});
+ const mainRef = useRef<HTMLElement | null>(null);
+
+ const handleNavigate = (newView: View) => {
+   if (!mainRef.current) mainRef.current = document.querySelector('main');
+   if (mainRef.current) {
+     scrollPositions.current[currentView] = mainRef.current.scrollTop;
+   }
+   setCurrentView(newView);
+ };
+
+ useEffect(() => {
+   if (!mainRef.current) mainRef.current = document.querySelector('main');
+   if (mainRef.current) {
+     setTimeout(() => {
+       if (mainRef.current) mainRef.current.scrollTop = scrollPositions.current[currentView] || 0;
+     }, 10);
+   }
+ }, [currentView]);
+
  // One-time migration to assign authority types to the 8 specific companies and give them subsidies
  useEffect(() => {
  if (!state.loading) {
@@ -150,7 +171,7 @@ function MainLayout() {
  <div className="h-screen bg-kite-bg text-kite-text flex flex-col md:flex-row overflow-hidden pb-14 md:pb-0 font-sans">
  {/* Desktop Sidebar */}
  <div className="hidden md:flex flex-col bg-white shrink-0 w-[260px] border-r border-kite-border z-[100]">
-   <Sidebar currentView={currentView} onNavigate={setCurrentView} />
+   <Sidebar currentView={currentView} onNavigate={handleNavigate} />
  </div>
 
  {/* Mobile Header - Kite Style */}
@@ -177,7 +198,7 @@ function MainLayout() {
  
  {/* Mobile Bottom Navigation */}
  <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-kite-border flex justify-between items-center z-[100] pb-safe-[0_-2px_10px_rgba(0,0,0,0.02)]">
-   <MobileBottomNav currentView={currentView} onNavigate={setCurrentView} />
+   <MobileBottomNav currentView={currentView} onNavigate={handleNavigate} />
  </div>
 
  </div>

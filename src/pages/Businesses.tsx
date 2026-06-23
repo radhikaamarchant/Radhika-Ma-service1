@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
 import { Plus, Search, Building2, Banknote, Building, X, BadgeCheck, ChevronDown, Clock, ArrowLeft } from 'lucide-react';
@@ -20,6 +20,31 @@ export default function Businesses() {
  const [showInterestCalculation, setShowInterestCalculation] = useState(false);
  const [showOwnerSelect, setShowOwnerSelect] = useState(false);
  const [ownerSearch, setOwnerSearch] = useState('');
+
+ // Scroll preservation
+ const scrollPosRef = useRef<number>(0);
+ const mainRef = useRef<HTMLElement | null>(null);
+
+ useEffect(() => {
+   mainRef.current = document.querySelector('main');
+ }, []);
+
+ useEffect(() => {
+   // Use selectedBusinessId to check if detail view is active
+   const isList = viewMode === 'list' && !selectedBusinessId;
+   if (isList) {
+     if (mainRef.current) {
+       setTimeout(() => {
+         if (mainRef.current) mainRef.current.scrollTop = scrollPosRef.current;
+       }, 10);
+     }
+   } else {
+     if (mainRef.current) {
+       scrollPosRef.current = mainRef.current.scrollTop;
+       mainRef.current.scrollTop = 0;
+     }
+   }
+ }, [viewMode, selectedBusinessId]);
 
  
 

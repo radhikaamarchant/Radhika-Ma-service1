@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
 import { Plus, Search, Users, Banknote, Building, FileText, Download, X, ArrowLeft, CreditCard, Wallet, CheckCircle, BadgeCheck, Clock } from 'lucide-react';
@@ -8,6 +8,7 @@ import { downloadElementAsPDF } from '../utils/pdfGenerator';
 import { getVerificationStats } from '../utils/blueTick';
 import { getBaseMarketTrend } from '../utils/marketSimulator';
 import { useMarketSimulation } from '../utils/MarketSimulationContext';
+import { calculateLiveProfit } from '../utils/profitCalculator';
 import { SwipeButton } from '../components/SwipeButton';
 import InvestorDetail from '../components/InvestorDetail';
 
@@ -19,6 +20,30 @@ export default function Investors() {
  const statsMap = getVerificationStats(state.businesses, state.investments);
  const [viewMode, setViewMode] = useState<ViewMode>('list');
  const [searchTerm, setSearchTerm] = useState('');
+ 
+ // Scroll preservation
+ const scrollPosRef = useRef<number>(0);
+ const mainRef = useRef<HTMLElement | null>(null);
+
+ useEffect(() => {
+   mainRef.current = document.querySelector('main');
+ }, []);
+
+ useEffect(() => {
+   if (viewMode === 'list') {
+     if (mainRef.current) {
+       setTimeout(() => {
+         if (mainRef.current) mainRef.current.scrollTop = scrollPosRef.current;
+       }, 10);
+     }
+   } else {
+     if (mainRef.current) {
+       scrollPosRef.current = mainRef.current.scrollTop;
+       mainRef.current.scrollTop = 0;
+     }
+   }
+ }, [viewMode]);
+
  // Withdraw State
  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
  const [selectedInvestments, setSelectedInvestments] = useState<Investment[]>([]);
@@ -149,40 +174,18 @@ export default function Investors() {
 
  const calculateProfit = () => {
  if (selectedInvestments.length === 0) return { baseProfit: 0, totalProfit: 0, marketProfit: 0, rmasMarketCover: 0, marketTrend: 0, isPremature: false };
- let totalPrincipal = 0;
- let totalGuaranteedProfit = 0;
- const committed = Number(withdrawFormData.committedMonths) || 12;
- const completed = Number(withdrawFormData.completedMonths) || 12;
- selectedInvestments.forEach(inv => {
- totalPrincipal = inv.amount;
- const guaranteedInterestRate = inv.interestRate / 100;
- totalGuaranteedProfit = inv.amount * guaranteedInterestRate * (completed / 12);
- });
-
- // The live market trend provides an annual percentage.
- // Calculate the absolute profit/loss proportional to the completed months.
- const marketProfit = totalPrincipal * (marketTrend / 100) * (completed / 12);
-
- let investorActualProfit = 0;
- let rmasMarketCover = 0;
-
- if (completed < committed) {
- investorActualProfit = marketProfit;
- } else {
- if (marketProfit > totalGuaranteedProfit) {
- investorActualProfit = marketProfit;
- } else {
- investorActualProfit = totalGuaranteedProfit;
- rmasMarketCover = totalGuaranteedProfit - marketProfit; }
- }
-
+ const { liveProfit, liveTrendPercentage } = calculateLiveProfit(
+ selectedInvestments, 
+ businessId, 
+ marketState.trends
+ );
  return {
- baseProfit: totalGuaranteedProfit,
- totalProfit: investorActualProfit,
- marketProfit,
- rmasMarketCover,
- marketTrend,
- isPremature: completed < committed
+ baseProfit: 0,
+ totalProfit: liveProfit,
+ marketProfit: liveProfit,
+ rmasMarketCover: 0,
+ marketTrend: liveTrendPercentage,
+ isPremature: false
  };
  };
 
@@ -199,7 +202,6 @@ export default function Investors() {
  const calculateBusinessBurden = () => {
  if (selectedInvestments.length === 0) return { businessPays: 0, rmasSubsidyPays: 0, rmasMarketCover: 0, totalRmasContribution: 0 };
  const business = state.businesses.find(b => b.id === selectedInvestments[0].businessId);
- const { rmasMarketCover } = calculateProfit();
  let rmasSubsidyPays = 0;
  const completed = Number(withdrawFormData.completedMonths) || 12;
 
@@ -210,14 +212,14 @@ export default function Investors() {
  }
 
  const finalPayout = calculateFinalPayout();
- let businessPays = finalPayout - rmasMarketCover - rmasSubsidyPays;
+ let businessPays = finalPayout - rmasSubsidyPays;
  if (businessPays < 0) businessPays = 0;
 
  return {
  businessPays,
  rmasSubsidyPays,
- rmasMarketCover,
- totalRmasContribution: rmasMarketCover + rmasSubsidyPays
+ rmasMarketCover: 0,
+ totalRmasContribution: rmasSubsidyPays
  };
  };
 
@@ -507,18 +509,21 @@ export default function Investors() {
   let totalInvested = 0;
   let totalLiveProfit = 0;
 
-  const holdings = Object.entries(grouped).map(([bizId, activeInvs]) => {
+  const holdings = Object.entries(grouped).map(([bizId, activeInvsRaw]) => {
+    const activeInvs = activeInvsRaw as Investment[];
     const business = state.businesses.find(b => b.id === bizId);
-    const amount = activeInvs.reduce((sum, inv) => sum + inv.amount, 0);
-    const trend = business ? getBaseMarketTrend(business, state.investments) : 0;
-    const liveTrend = marketState.trends[bizId] || 0;
-    const overallTrend = trend + liveTrend;
-    const liveProfit = amount * (overallTrend / 100);
     
-    totalInvested += amount;
+    // Unify logic using profitCalculator
+    const { 
+      investedAmount, 
+      liveTrendPercentage, 
+      liveProfit 
+    } = calculateLiveProfit(activeInvs, bizId, marketState.trends);
+    
+    totalInvested += investedAmount;
     totalLiveProfit += liveProfit;
 
-    return { bizId, business, activeInvs, amount, liveProfit, overallTrend };
+    return { bizId, business, activeInvs, amount: investedAmount, liveProfit, overallTrend: liveTrendPercentage };
   });
 
   const curValue = totalInvested + totalLiveProfit;

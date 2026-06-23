@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
 import { Plus, ReceiptIndianRupee, Search, X, CheckCircle, Wallet, BadgeCheck, ChevronDown, ArrowLeft } from 'lucide-react';
@@ -6,6 +6,7 @@ import { Investment, Business, Investor } from '../types';
 import { getBlueTickBusinessIds } from '../utils/blueTick';
 import { getBaseMarketTrend } from '../utils/marketSimulator';
 import { useMarketSimulation } from '../utils/MarketSimulationContext';
+import { calculateLiveProfit as globalCalculateLiveProfit } from '../utils/profitCalculator';
 import { motion, AnimatePresence } from 'motion/react';
 import { SwipeButton } from '../components/SwipeButton';
 
@@ -19,6 +20,31 @@ export default function Investments() {
  const [selectedInvestmentIds, setSelectedInvestmentIds] = useState<string[]>([]);
  const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [withdrawStep, setWithdrawStep] = useState(0);
+
+ // Scroll preservation
+ const scrollPosRef = useRef<number>(0);
+ const mainRef = useRef<HTMLElement | null>(null);
+
+ useEffect(() => {
+   mainRef.current = document.querySelector('main');
+ }, []);
+
+ useEffect(() => {
+   const isList = !showAddForm && !selectedInvestment;
+   if (isList) {
+     if (mainRef.current) {
+       setTimeout(() => {
+         if (mainRef.current) mainRef.current.scrollTop = scrollPosRef.current;
+       }, 10);
+     }
+   } else {
+     if (mainRef.current) {
+       scrollPosRef.current = mainRef.current.scrollTop;
+       mainRef.current.scrollTop = 0;
+     }
+   }
+ }, [showAddForm, selectedInvestment]);
+
   const [withdrawFormData, setWithdrawFormData] = useState({
     completedMonths: '12',
     rmasCommission: '',
@@ -418,9 +444,7 @@ export default function Investments() {
             const business = state.businesses.find(b => b.id === inv.businessId);
             const investor = state.investors.find(i => i.id === inv.investorId);
             
-            const trend = business ? getBaseMarketTrend(business, state.investments) : 0;
-            const liveTrend = marketState.trends[inv.businessId] || 0;
-            const overallTrend = trend + liveTrend;
+            const overallTrend = marketState.trends[inv.businessId] || 0;
             
             const isCompleted = inv.status === 'completed';
             const actualProfit = isCompleted && inv.payoutDetails 
@@ -504,9 +528,7 @@ export default function Investments() {
           {(() => {
             const business = state.businesses.find(b => b.id === selectedInvestment.businessId);
             const investor = state.investors.find(i => i.id === selectedInvestment.investorId);
-            const trend = business ? getBaseMarketTrend(business, state.investments) : 0;
-            const liveTrend = marketState.trends[selectedInvestment.businessId] || 0;
-            const overallTrend = trend + liveTrend;
+            const overallTrend = marketState.trends[selectedInvestment.businessId] || 0;
             
             const isCompleted = selectedInvestment.status === 'completed';
             
@@ -514,29 +536,14 @@ export default function Investments() {
             const totalAmount = activeGroupedInvestments.reduce((sum: number, i: any) => sum + i.amount, 0);
 
     const calculateLiveProfit = () => {
-      const guaranteedInterestRate = selectedInvestment.interestRate / 100;
-      const completed = Number(withdrawFormData.completedMonths) || 12;
-      const committed = selectedInvestment.timePeriodMonths || 12;
-      
-      const totalGuaranteedProfit = totalAmount * guaranteedInterestRate * (completed / 12);
-      const marketProfit = totalAmount * (overallTrend / 100) * (completed / 12);
-      
-      let investorActualProfit = 0;
-      let rmasMarketCover = 0;
-      
-      // If early withdrawal, only get market profit
-      if (completed < committed) {
-        investorActualProfit = marketProfit;
-      } else {
-        if (marketProfit > totalGuaranteedProfit) {
-          investorActualProfit = marketProfit;
-        } else {
-          investorActualProfit = totalGuaranteedProfit;
-          rmasMarketCover = totalGuaranteedProfit - marketProfit;
-        }
-      }
-      
-      return { totalProfit: investorActualProfit, rmasMarketCover };
+      // Global calculation matching DataAnalysis and Holdings
+      const { liveProfit } = globalCalculateLiveProfit(
+        activeGroupedInvestments, 
+        selectedInvestment.businessId, 
+        marketState.trends
+      );
+
+      return { totalProfit: liveProfit, rmasMarketCover: 0 };
     };
 
     const handleConfirmWithdraw = () => {
