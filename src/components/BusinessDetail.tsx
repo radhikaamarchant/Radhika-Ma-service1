@@ -158,32 +158,36 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
         >
           <ArrowLeft  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
         </button>
-        <div className="flex-1">
-          <p className="text-sm text-kite-text-light mt-1">Detailed View & Configuration</p>
+        <div className="flex-1 flex items-center justify-between">
+          <p className="hidden md:block text-sm text-kite-text-light mt-1">Detailed View & Configuration</p>
+          <h3 className={"flex md:hidden font-medium items-center space-x-1.5 " + (business.name.length > 20 ? 'text-[11px]' : 'text-sm') + " text-kite-text"}>
+            <span className="truncate max-w-[200px]">{business.name}</span>
+            {isBlueTick && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 shrink-0" />}
+          </h3>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4">
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="w-full bg-white border border-kite-border rounded-sm p-2 md:p-4">
-            <div className="flex justify-between items-center border-b border-kite-border pb-4 mb-4">
-              <h3 className={"font-medium flex items-center space-x-2 " + (business.name.length > 20 ? 'text-[11px] md:text-sm' : 'text-xs md:text-base') + " text-kite-text"}>
-                <span className="truncate max-w-[200px] sm:max-w-xs">{business.name}</span>
-                {isBlueTick && <BadgeCheck  className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500 shrink-0" title="RMAS Verified" />}
+          <div className="w-full bg-white border border-kite-border rounded-sm p-4">
+            <div className="flex justify-center md:justify-between items-center border-b border-kite-border pb-4 mb-4">
+              <h3 className={"hidden md:flex font-medium items-center space-x-2 text-base text-kite-text"}>
+                <span className="truncate max-w-xs">{business.name}</span>
+                {isBlueTick && <BadgeCheck  className="w-5 h-5 text-white fill-blue-500 shrink-0" title="RMAS Verified" />}
               </h3>
               {!isEditing ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3 md:space-x-2 w-full md:w-auto justify-center">
                   <button onClick={() => setViewMode(viewMode === 'bank' ? 'details' : 'bank')}
-                    className={"flex items-center space-x-1 text-sm font-medium border px-3 py-1.5 rounded-sm transition-colors " + (viewMode === 'bank' ? 'bg-kite-blue/10 text-kite-blue border-kite-blue/30' : 'text-kite-text-light hover:text-kite-text border-kite-border bg-white hover:bg-kite-bg')}
+                    className={"flex-1 md:flex-none justify-center flex items-center space-x-1 text-sm font-medium border px-4 md:px-3 py-2 md:py-1.5 rounded-sm transition-colors " + (viewMode === 'bank' ? 'bg-kite-blue/10 text-kite-blue border-kite-blue/30' : 'text-kite-text-light hover:text-kite-text border-kite-border bg-white hover:bg-kite-bg')}
                   >
-                    <Wallet className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                    <span>{viewMode === 'bank' ? 'Back to Details' : 'Bank Balance'}</span>
+                    <Wallet className="w-3.5 h-3.5" />
+                    <span>{viewMode === 'bank' ? 'Details' : 'Bank Balance'}</span>
                   </button>
                   <button onClick={() => setIsEditing(true)}
-                    className="flex items-center space-x-1 text-sm font-medium text-kite-text-light hover:text-kite-text border border-kite-border px-3 py-1.5 rounded-sm bg-white hover:bg-kite-bg transition-colors"
+                    className="flex-1 md:flex-none justify-center flex items-center space-x-1 text-sm font-medium text-kite-text-light hover:text-kite-text border border-kite-border px-4 md:px-3 py-2 md:py-1.5 rounded-sm bg-white hover:bg-kite-bg transition-colors"
                   >
-                    <Edit2 className="w-3 md:w-3.5 h-3 md:h-3.5" />
+                    <Edit2 className="w-3.5 h-3.5" />
                     <span>Your Profile</span>
                   </button>
                 </div>
@@ -274,48 +278,59 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
             ) : (
               <>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-              <div>
-                <label className="block text-xs font-medium text-kite-text-light uppercase tracking-wider mb-2">Funding Required (₹)</label>
-                {isEditing ? (
-                  <input type="number" className="w-full border border-kite-border rounded-sm p-2.5 font-medium text-kite-text focus:ring-2 focus:ring-black outline-none" value={formData.fundingRequired} onChange={e => setFormData({...formData, fundingRequired: e.target.value})} />
-                ) : (
-                  <p className="text-xs md:text-base font-medium text-kite-text">{formatINR(business.fundingRequired)}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+              <div className="flex justify-between items-end md:items-start md:flex-col md:justify-start">
+                <div>
+                  <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Funding Required (₹)</label>
+                  {isEditing ? (
+                    <input type="number" className="w-full border border-kite-border rounded-sm p-2.5 font-medium text-kite-text focus:ring-2 focus:ring-black outline-none" value={formData.fundingRequired} onChange={e => setFormData({...formData, fundingRequired: e.target.value})} />
+                  ) : (
+                    <p className="text-sm md:text-base font-medium text-kite-text">{formatINR(business.fundingRequired)}</p>
+                  )}
+                </div>
+                <div className="md:hidden">
+                   {isEditing ? (
+                      <input type="number" step="0.1" className="w-16 border border-kite-border rounded-sm p-1 font-medium text-kite-text text-sm focus:ring-2 focus:ring-black outline-none" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
+                   ) : (
+                      <p className="text-sm font-medium text-kite-green">{business.interestRate}%</p>
+                   )}
+                </div>
               </div>
 
-              <div>
+              <div className="hidden md:block">
                 <label className="block text-xs font-medium text-kite-text-light uppercase tracking-wider mb-2">Interest Rate (%)</label>
                 {isEditing ? (
                   <input type="number" step="0.1" className="w-full border border-kite-border rounded-sm p-2.5 font-medium text-kite-text focus:ring-2 focus:ring-black outline-none" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
                 ) : (
-                  <p className="text-xs md:text-base font-medium text-kite-green">{business.interestRate}%</p>
+                  <p className="text-base font-medium text-kite-green">{business.interestRate}%</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-kite-text-light uppercase tracking-wider mb-2">Business Status</label>
+              <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex justify-between items-center md:items-start md:flex-col md:justify-start">
+                <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-0 md:mb-2">Status</label>
                 {isEditing ? (
-                  <select className="w-full border border-kite-border rounded-sm p-2.5 font-medium text-kite-text focus:ring-2 focus:ring-black outline-none bg-white" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
+                  <select className="w-auto md:w-full border border-kite-border rounded-sm p-1 md:p-2.5 text-xs md:text-sm font-medium text-kite-text focus:ring-2 focus:ring-black outline-none bg-white" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
                     <option value="pending">Pending</option>
                     <option value="listed">Listed</option>
                     <option value="funded">Funded</option>
                   </select>
                 ) : (
-                  <span className={`inline-flex items-center px-3 py-1 rounded-sm text-sm font-medium ${business.status === 'listed' ? 'bg-kite-green/20 text-green-800' : business.status === 'funded' ? 'bg-black text-white' : 'bg-gray-200 text-kite-text'}`}>
-                    {business.status.toUpperCase()}
+                  <span className={`inline-flex items-center px-3 py-1 rounded-sm text-xs md:text-sm font-medium capitalize ${business.status === 'listed' ? 'bg-kite-green/10 text-green-800' : business.status === 'funded' ? 'bg-black text-white' : 'bg-gray-100 text-kite-text'}`}>
+                    {business.status}
                   </span>
                 )}
               </div>
-              <div>
-                <label className="block text-xs font-medium text-kite-text-light uppercase tracking-wider mb-2">Owner Name</label>
-                <p className="text-xs md:text-base font-medium text-kite-text">{business.ownerName}</p>
-                {business.authorityType && (
-                  <p className="text-sm font-medium text-kite-text-light mt-1">
-                    {business.authorityType}
-                    {business.rmasSubsidy ? ` (${business.rmasSubsidy}% RMAS Subsidy)` : ''}
-                  </p>
-                )}
+              <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex flex-col items-start md:justify-start">
+                <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Owner</label>
+                <div className="flex md:flex-col items-baseline justify-between w-full">
+                  <p className="text-sm md:text-base font-medium text-kite-text truncate">{business.ownerName}</p>
+                  {business.authorityType && (
+                    <p className="hidden md:block text-sm font-medium text-kite-text-light mt-1">
+                      {business.authorityType}
+                      {business.rmasSubsidy ? ` (${business.rmasSubsidy}% Subsidy)` : ''}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -461,10 +476,10 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                 <thead className="bg-kite-bg border-b border-kite-border text-[10px] uppercase tracking-wider text-kite-text-light">
                   <tr>
                     <th className="p-2 md:p-4 font-medium">Investor</th>
-                    <th className="p-2 md:p-4 font-medium">Principal</th>
-                    <th className="p-2 md:p-4 font-medium">Interest</th>
-                    <th className="p-2 md:p-4 font-medium">Period</th>
-                    <th className="p-2 md:p-4 font-medium">Status</th>
+                    <th className="p-2 md:p-4 font-medium text-right md:text-left">Invested</th>
+                    <th className="hidden md:table-cell p-2 md:p-4 font-medium">Interest</th>
+                    <th className="p-2 md:p-4 font-medium text-right md:text-left">Period</th>
+                    <th className="p-2 md:p-4 font-medium text-center md:text-left">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -472,13 +487,16 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                   const investor = state.investors.find(i => i.id === inv.investorId);
                   return (
                     <tr key={inv.id} className="border-b border-kite-border hover:bg-kite-bg">
-                      <td className="p-2 md:p-2 md:p-4 font-medium text-kite-text">{investor?.name}</td>
-                      <td className="p-2 md:p-2 md:p-4 font-medium text-kite-text">{formatINR(inv.amount)}</td>
-                      <td className="p-2 md:p-2 md:p-4 font-medium text-kite-green">{inv.interestRate}%</td>
-                      <td className="p-2 md:p-2 md:p-4 text-kite-text-light font-medium">{inv.timePeriodMonths} Months</td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded-sm text-xs font-medium bg-kite-green/20 text-kite-green">
+                      <td className="p-2 md:p-4 font-medium text-kite-text truncate max-w-[120px] text-xs md:text-sm">{investor?.name}</td>
+                      <td className="p-2 md:p-4 font-medium text-kite-text text-right md:text-left text-xs md:text-sm">{formatINR(inv.amount)}</td>
+                      <td className="hidden md:table-cell p-2 md:p-4 font-medium text-kite-green">{inv.interestRate}%</td>
+                      <td className="p-2 md:p-4 text-kite-text-light font-medium text-right md:text-left text-xs md:text-sm">{inv.timePeriodMonths}M</td>
+                      <td className="p-2 md:p-4 text-center md:text-left">
+                        <span className="hidden md:inline-flex items-center px-2 py-1 rounded-sm text-xs font-medium bg-kite-green/20 text-kite-text">
                           {inv.status.toUpperCase()}
+                        </span>
+                        <span className="md:hidden inline-flex items-center justify-center">
+                           <span className={`w-2.5 h-2.5 rounded-full ${inv.status.toLowerCase() === 'active' ? 'bg-kite-green' : 'bg-kite-blue'}`}></span>
                         </span>
                       </td>
                     </tr>
@@ -486,7 +504,7 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                 })}
                 {businessInvestments.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-2 md:p-4 text-center text-kite-text-light font-medium">No investors have funded this business yet.</td>
+                    <td colSpan={5} className="p-4 text-center text-kite-text-light font-medium">No investors have funded this business yet.</td>
                   </tr>
                 )}
                 </tbody>

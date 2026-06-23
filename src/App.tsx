@@ -203,7 +203,6 @@ export default function App() {
  return (
  <AppProvider>
  <MarketSimulationProvider>
- <GlobalMarketAlerts />
  <MainLayout />
  </MarketSimulationProvider>
  </AppProvider>

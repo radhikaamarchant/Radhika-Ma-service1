@@ -173,11 +173,11 @@ export default function Businesses() {
  <>
  <div className="flex justify-between items-end">
  <div>
- <h2 className="text-xs md:text-base font-medium text-kite-text tracking-tight">Businesses</h2>
- <p className="text-sm text-kite-text-light mt-1">Manage registered businesses needing funding.</p>
+ <h2 className="text-xl md:text-base font-medium text-kite-text tracking-tight">Company Registered</h2>
+ <p className="hidden md:block text-sm text-kite-text-light mt-1">Manage registered businesses needing funding.</p>
  </div>
  <button onClick={startAddBusiness}
- className="bg-kite-blue hover:bg-kite-blue text-white px-4 py-2 rounded-sm font-medium flex items-center space-x-2 transition-colors"
+ className="bg-kite-blue hover:opacity-90 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-sm font-medium flex items-center space-x-1 md:space-x-2 transition-colors text-xs md:text-sm"
  >
  <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
  <span>Register Business</span>
@@ -198,31 +198,31 @@ export default function Businesses() {
  <table className="w-full text-left text-sm min-w-[1000px]">
  <thead>
  <tr className="border-b border-kite-border bg-white">
- <th className="p-2 md:p-2 md:p-4 font-medium text-kite-text">ID Number</th>
- <th className="p-2 md:p-2 md:p-4 font-medium text-kite-text">Business Name</th>
- <th className="p-2 md:p-2 md:p-4 font-medium text-kite-text">Owner</th>
- <th className="p-2 md:p-2 md:p-4 font-medium text-kite-text">Funding Needed</th>
- <th className="p-2 md:p-2 md:p-4 font-medium text-kite-text">Interest</th>
- <th className="p-2 md:p-2 md:p-4 font-medium text-kite-text text-center">Live Trend</th>
- <th className="p-2 md:p-2 md:p-4 font-medium text-kite-text text-center">Actions</th>
+ <th className="p-2 md:p-4 font-medium text-kite-text">ID Number</th>
+ <th className="p-2 md:p-4 font-medium text-kite-text">Business Name</th>
+ <th className="p-2 md:p-4 font-medium text-kite-text">Owner</th>
+ <th className="p-2 md:p-4 font-medium text-kite-text">Funding Needed</th>
+ <th className="p-2 md:p-4 font-medium text-kite-text">Interest</th>
+ <th className="p-2 md:p-4 font-medium text-kite-text text-center">Live Trend</th>
+ <th className="p-2 md:p-4 font-medium text-kite-text text-center">Actions</th>
  </tr>
  </thead>
  <tbody>
  {filteredBusinesses.map(business => (
  <tr key={`desk_${business.id}`} className="border-b border-kite-border hover:bg-kite-bg">
- <td className="p-2 md:p-2 md:p-4 font-mono text-kite-text-light font-medium">#{business.businessId}</td>
- <td className="p-2 md:p-2 md:p-4 font-medium text-kite-text flex items-center space-x-1.5 h-full">
+ <td className="p-2 md:p-4 font-mono text-kite-text-light font-medium">#{business.businessId}</td>
+ <td className="p-2 md:p-4 font-medium text-kite-text flex items-center space-x-1.5 h-full">
  <span>{business.name}</span>
- {isBlueTick(business.id) && <BadgeCheck  className="w-3 md:w-4 h-3 md:h-4 text-white fill-blue-500 flex-shrink-0" title="RMAS Verified - High Profit" />}
- {isPreVerified(business.id) && <Clock  className="w-3 md:w-4 h-3 md:h-4 text-black flex-shrink-0" title="Pre-Verified" />}
+ {isBlueTick(business.id) && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" title="RMAS Verified - High Profit" />}
+ {isPreVerified(business.id) && <Clock  className="w-4 h-4 text-black flex-shrink-0" title="Pre-Verified" />}
  </td>
- <td className="p-2 md:p-2 md:p-4 text-kite-text font-medium">{business.ownerName}</td>
- <td className="p-2 md:p-2 md:p-4 font-medium text-kite-text">{formatINR(business.fundingRequired)}</td>
- <td className="p-2 md:p-2 md:p-4 text-kite-green font-medium">{business.interestRate}%</td>
- <td className="p-2 md:p-2 md:p-4 text-center">
+ <td className="p-2 md:p-4 text-kite-text font-medium">{business.ownerName}</td>
+ <td className="p-2 md:p-4 font-medium text-kite-text">{formatINR(business.fundingRequired)}</td>
+ <td className="p-2 md:p-4 text-kite-green font-medium">{business.interestRate}%</td>
+ <td className="p-2 md:p-4 text-center">
  <MarketTrendCell businessId={business.id} showIcon={true} />
  </td>
- <td className="p-2 md:p-2 md:p-4 text-center space-x-2 whitespace-nowrap">
+ <td className="p-2 md:p-4 text-center space-x-2 whitespace-nowrap">
  <button onClick={() => setSelectedBusinessId(business.id)}
  className="text-kite-text-light hover:text-kite-text font-medium text-xs px-3 py-1.5 border border-kite-border rounded-sm transition-colors w-full"
  >
@@ -233,7 +233,7 @@ export default function Businesses() {
  ))}
  {filteredBusinesses.length === 0 && (
  <tr>
- <td colSpan={7} className="p-2 md:p-4 text-center text-kite-text-light font-medium">No businesses found.</td>
+ <td colSpan={7} className="p-4 text-center text-kite-text-light font-medium">No businesses found.</td>
  </tr>
  )}
  </tbody>
@@ -243,45 +243,32 @@ export default function Businesses() {
  {/* Mobile Cards View */}
  <div className="block md:hidden divide-y divide-gray-100">
  {filteredBusinesses.map(business => (
- <div key={`mob_${business.id}`} className="p-2 md:p-4 bg-white hover:bg-kite-bg">
- <div className="flex justify-between items-start mb-2">
- <div className="flex items-center space-x-1.5">
- <span className="font-medium text-kite-text text-xs md:text-base">{business.name}</span>
- {isBlueTick(business.id) && <BadgeCheck  className="w-3.5 h-3.5 md:w-4 md:h-4 text-white fill-blue-500 flex-shrink-0" />}
- {isPreVerified(business.id) && <Clock  className="w-3.5 h-3.5 md:w-4 md:h-4 text-black flex-shrink-0" />}
+ <div key={`mob_${business.id}`} className="p-3 bg-white hover:bg-kite-bg">
+ <div className="flex justify-between items-start mb-1">
+   <div className="flex flex-col">
+     <div className="flex items-center space-x-1.5">
+       <span className="font-medium text-kite-text text-sm truncate max-w-[200px]">{business.name}</span>
+       {isBlueTick(business.id) && <BadgeCheck  className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />}
+       {isPreVerified(business.id) && <Clock  className="w-3.5 h-3.5 text-black flex-shrink-0" />}
+     </div>
+     <p className="text-xs text-kite-text-light font-medium tracking-wide mt-0.5">{business.ownerName}</p>
+   </div>
  </div>
- <span className="font-mono text-xs text-kite-text-light bg-kite-bg px-2 py-1 rounded">#{business.businessId}</span>
- </div>
- <p className="text-sm text-kite-text font-medium mb-4">{business.ownerName}</p>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:p-3 mb-4 bg-kite-bg p-1.5 md:p-3 rounded-sm">
- <div>
- <p className="text-xs text-kite-text-light mb-1">Funding Needed</p>
- <p className="font-medium text-sm">{formatINR(business.fundingRequired)}</p>
- </div>
- <div>
- <p className="text-xs text-kite-text-light mb-1">Interest</p>
- <p className="font-medium text-sm text-kite-green">{business.interestRate}%</p>
- </div>
- <div className="col-span-2 pt-2 border-t border-kite-border flex justify-between items-center">
- <div className="flex-1"></div>
- <div className="text-right flex-shrink-0">
- <p className="text-xs text-kite-text-light mb-1">Live Trend</p>
- <MarketTrendCell businessId={business.id} showIcon={true} />
- </div>
- </div>
- </div>
-
- <div className="flex space-x-2">
- <button onClick={() => setSelectedBusinessId(business.id)}
- className="flex-1 text-kite-text font-medium text-xs px-3 py-2 border border-kite-border rounded-sm text-center"
- >
- View
- </button>
+ <div className="flex justify-between items-center mt-3 pt-3 border-t border-kite-border/50">
+   <div className="flex flex-col">
+     <p className="text-[10px] uppercase tracking-wider text-kite-text-light mb-1">Live Trend</p>
+     <MarketTrendCell businessId={business.id} showIcon={true} />
+   </div>
+   <button onClick={() => setSelectedBusinessId(business.id)}
+     className="bg-kite-blue hover:opacity-90 text-white font-medium text-xs px-5 py-1.5 rounded-sm"
+   >
+     View
+   </button>
  </div>
  </div>
  ))}
  {filteredBusinesses.length === 0 && (
- <div className="p-2 md:p-4 text-center text-kite-text-light font-medium">No businesses found.</div>
+ <div className="p-4 text-center text-kite-text-light font-medium">No businesses found.</div>
  )}
  </div>
  </div>

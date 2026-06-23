@@ -138,9 +138,9 @@ export default function Investments() {
 
  return (
  <div className="max-w-6xl mx-auto space-y-6">
- <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4">
+ <div className={`flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4 ${showAddForm ? 'hidden md:flex' : 'flex'}`}>
  <div className="flex-1">
- <h2 className="text-xs md:text-base font-medium text-kite-text tracking-tight">Funding & Investments</h2>
+ <h2 className="text-xl md:text-base font-medium text-kite-text tracking-tight">Funding & Investments</h2>
  <p className="text-sm text-kite-text-light mt-1">Connect investors with businesses and collect commissions.</p>
  </div>
  <div className="flex-1 w-full flex justify-end gap-2 md:gap-4">
@@ -154,31 +154,32 @@ export default function Investments() {
  />
  </div>
  <button onClick={() => setShowAddForm(!showAddForm)}
-    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-sm font-medium flex items-center space-x-2 transition-colors whitespace-nowrap shadow-sm"
+    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-sm font-medium flex items-center space-x-1 md:space-x-2 transition-colors whitespace-nowrap shadow-sm text-xs md:text-sm"
   >
  <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
- <span>New Funding Link</span>
+ <span className="hidden md:inline">New Funding Link</span>
+ <span className="md:hidden">Add Invest</span>
  </button>
  </div>
  </div>
 
    {showAddForm && (
-    <div className="w-full max-w-2xl mx-auto bg-white border border-gray-100 rounded shadow-sm p-6 md:p-10 animate-fade-in mt-4 md:mb-8 relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
+    <div className="w-full max-w-2xl mx-auto bg-white md:border md:border-gray-100 md:rounded md:shadow-sm p-4 md:p-10 animate-fade-in mt-2 md:mt-4 md:mb-8 relative overflow-hidden h-[calc(100vh-60px)] md:h-auto z-50 fixed inset-0 md:static md:z-0 flex flex-col pt-12 md:pt-10">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100 hidden md:block">
         <div className="h-full bg-blue-500 w-full transition-all duration-300"></div>
       </div>
-      <div className="text-center mb-8">
-        <button type="button" onClick={() => setShowAddForm(false)} className="text-blue-500 mb-4 inline-block hover:bg-blue-50 p-1.5 rounded transition-colors absolute top-6 left-6">
-          <X className="w-5 h-5" />
+      <div className="text-center mb-6 md:mb-8 shrink-0">
+        <button type="button" onClick={() => setShowAddForm(false)} className="text-blue-500 mb-2 md:mb-4 inline-block hover:bg-blue-50 p-1.5 rounded transition-colors absolute top-4 left-4 md:top-6 md:left-6">
+          <X className="w-5 h-5 md:w-6 md:h-6" />
         </button>
-        <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Book new investment</h3>
-        <p className="text-sm text-gray-500 mt-2">Fund a business and collect commission</p>
+        <h3 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">Book new investment</h3>
+        <p className="text-xs md:text-sm text-gray-500 mt-1 md:mt-2">Fund a business and collect commission</p>
       </div>
-      <form onSubmit={handleAddSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleAddSubmit} className="space-y-4 md:space-y-6 flex-1 overflow-y-auto pb-20 md:pb-0 hide-scrollbar px-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
  <div className="relative group">
-  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Select Business</label>
- <div className="w-full border-b-2 border-gray-200 p-3 bg-transparent text-lg font-medium focus:border-blue-500 outline-none transition-colors cursor-pointer flex justify-between items-center"
+  <label className="block text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 md:mb-2 group-focus-within:text-blue-500 transition-colors"><span className="md:hidden">choose Business</span><span className="hidden md:inline">Select Business</span></label>
+ <div className="w-full border-b-2 border-gray-200 p-2 md:p-3 bg-transparent text-base md:text-lg font-medium focus:border-blue-500 outline-none transition-colors cursor-pointer flex justify-between items-center"
  onClick={() => {
  setShowBusinessSelect(!showBusinessSelect);
  setShowInvestorSelect(false);
@@ -234,9 +235,9 @@ export default function Investments() {
  </div>
  )}
  </div>
- <div className="relative group">
-  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Select Investor</label>
- <div className="w-full border-b-2 border-gray-200 p-3 bg-transparent text-lg font-medium focus:border-blue-500 outline-none transition-colors cursor-pointer flex justify-between items-center"
+ <div className="relative group mt-2 md:mt-0">
+  <label className="block text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 md:mb-2 group-focus-within:text-blue-500 transition-colors"><span className="md:hidden">choose Investor</span><span className="hidden md:inline">Select Investor</span></label>
+ <div className="w-full border-b-2 border-gray-200 p-2 md:p-3 bg-transparent text-base md:text-lg font-medium focus:border-blue-500 outline-none transition-colors cursor-pointer flex justify-between items-center"
  onClick={() => {
  setShowInvestorSelect(!showInvestorSelect);
  setShowBusinessSelect(false);
@@ -290,15 +291,15 @@ export default function Investments() {
  )}
  </div>
  <div className="group">
-  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Investment Amount (₹) (INR Format)</label>
+  <label className="block text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 md:mb-2 group-focus-within:text-blue-500 transition-colors"><span className="md:hidden">invest amount ₹</span><span className="hidden md:inline">Investment Amount (₹) (INR Format)</span></label>
  <div className="relative">
- <span className="absolute left-3 top-1/2 -translate-y-1/2 font-medium text-kite-text-light">₹</span>
- <input required type="text" className="w-full border-b-2 border-gray-200 pl-8 pr-3 py-3 text-lg font-medium focus:border-blue-500 outline-none transition-colors" value={formData.amount} onChange={handleAmountChange} placeholder="e.g. 5,00,000" />
+ <span className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 font-medium text-kite-text-light">₹</span>
+ <input required type="text" className="w-full border-b-2 border-gray-200 pl-6 md:pl-8 pr-2 md:pr-3 py-2 md:py-3 text-base md:text-lg font-medium focus:border-blue-500 outline-none transition-colors" value={formData.amount} onChange={handleAmountChange} placeholder="e.g. 5,00,000" />
  </div>
  </div>
  <div className="group">
-  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Time Period (Months)</label>
- <input required type="number" min="1" className="w-full border-b-2 border-gray-200 p-3 text-lg font-medium focus:border-blue-500 outline-none transition-colors" value={formData.timePeriodMonths} onChange={e => setFormData({...formData, timePeriodMonths: e.target.value})} />
+  <label className="block text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 md:mb-2 group-focus-within:text-blue-500 transition-colors">Time Period (Months)</label>
+ <input required type="number" min="1" className="w-full border-b-2 border-gray-200 p-2 md:p-3 text-base md:text-lg font-medium focus:border-blue-500 outline-none transition-colors" value={formData.timePeriodMonths} onChange={e => setFormData({...formData, timePeriodMonths: e.target.value})} />
  </div>
  </div>
 
@@ -333,35 +334,41 @@ export default function Investments() {
  )}
 
  <div className="border-t border-kite-border pt-4 mt-3 md:mt-6">
- <h4 className="text-sm font-medium mb-3 text-kite-red">Admin Commission Processing</h4>
- <p className="text-xs text-kite-text-light mb-4">Set percentage to collect commission from both parties at the time of funding.</p>
+ <h4 className="text-sm font-medium mb-1 md:mb-3 text-kite-red"><span className="md:hidden">RMAS NT Security Charge</span><span className="hidden md:inline">Admin Commission Processing</span></h4>
+ <p className="hidden md:block text-xs text-kite-text-light mb-4">Set percentage to collect commission from both parties at the time of funding.</p>
  <div className="grid grid-cols-1 md:grid-cols-2">
  <div className="flex gap-2 md:gap-4">
  <div className="flex-1 group">
-  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">From Business (%)</label>
- <input type="number" step="0.1" className="w-full border-b-2 border-gray-200 p-3 font-medium focus:border-blue-500 outline-none transition-colors" value={formData.adminCommissionBusinessPct} onChange={e => setFormData({...formData, adminCommissionBusinessPct: e.target.value})} />
+  <label className="block text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 md:mb-2 group-focus-within:text-blue-500 transition-colors"><span className="md:hidden">Business NTSC %</span><span className="hidden md:inline">From Business (%)</span></label>
+ <input type="number" step="0.1" className="w-full border-b-2 border-gray-200 p-2 md:p-3 font-medium focus:border-blue-500 outline-none transition-colors" value={formData.adminCommissionBusinessPct} onChange={e => setFormData({...formData, adminCommissionBusinessPct: e.target.value})} />
  </div>
  <div className="flex-1 flex flex-col justify-end pb-2">
  <span className="text-sm font-medium text-kite-red">{formatINR(calculateCommissions().fromBusiness)}</span>
  </div>
  </div>
- <div className="flex gap-2 md:p-4 border-l border-kite-border pl-4">
+ <div className="flex gap-2 mt-4 pt-4 md:mt-0 md:pt-0 md:p-4 border-t md:border-t-0 md:border-l border-kite-border pl-0 md:pl-4">
  <div className="flex-1 group">
-  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">From Investor (%)</label>
- <input type="number" step="0.1" className="w-full border-b-2 border-gray-200 p-3 font-medium focus:border-blue-500 outline-none transition-colors" value={formData.adminCommissionInvestorPct} onChange={e => setFormData({...formData, adminCommissionInvestorPct: e.target.value})} />
+  <label className="block text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 md:mb-2 group-focus-within:text-blue-500 transition-colors"><span className="md:hidden">Investor NTSC %</span><span className="hidden md:inline">From Investor (%)</span></label>
+ <input type="number" step="0.1" className="w-full border-b-2 border-gray-200 p-2 md:p-3 font-medium focus:border-blue-500 outline-none transition-colors" value={formData.adminCommissionInvestorPct} onChange={e => setFormData({...formData, adminCommissionInvestorPct: e.target.value})} />
  </div>
  <div className="flex-1 flex flex-col justify-end pb-2">
  <span className="text-sm font-medium text-kite-red">{formatINR(calculateCommissions().fromInvestor)}</span>
  </div>
  </div>
  </div>
- <div className="text-right mt-2">
- <p className="text-sm font-medium text-kite-red">Total Admin Profit: {formatINR(calculateCommissions().fromBusiness + calculateCommissions().fromInvestor)}</p>
+ <div className="text-right mt-3 md:mt-2">
+ <p className="text-base md:text-sm font-medium">
+    <span className="hidden md:inline text-kite-red">Total Admin Profit: {formatINR(calculateCommissions().fromBusiness + calculateCommissions().fromInvestor)}</span>
+    <span className="md:hidden text-kite-text-light text-xs font-bold uppercase tracking-wider flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-100">
+        Total
+        <span className="text-kite-green text-lg">{formatINR(calculateCommissions().fromBusiness + calculateCommissions().fromInvestor)}</span>
+    </span>
+ </p>
  </div>
  </div>
 
  
-  <div className="pt-6">
+  <div className="pt-4 md:pt-6 mt-2 pb-6 md:pb-0">
     <button type="submit" disabled={isBooking} className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-70 text-white py-4 rounded text-sm md:text-base font-semibold tracking-wide transition-all shadow-md hover:shadow-lg relative overflow-hidden group">
       <span className={"relative z-10 flex items-center justify-center " + (isBooking ? 'opacity-0' : 'opacity-100')}>Book Investment</span>
       {isBooking && (
@@ -378,18 +385,18 @@ export default function Investments() {
  )}
 
  
-    <div className="bg-white border border-kite-border rounded-sm overflow-hidden">
+    <div className={`bg-white border border-kite-border rounded-sm overflow-hidden ${showAddForm ? 'hidden md:block' : 'block'}`}>
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm whitespace-nowrap">
+      <table className="w-full text-left text-sm whitespace-nowrap md:whitespace-normal table-fixed md:table-auto">
         <thead className="bg-kite-bg">
           <tr className="text-xs text-kite-text-light border-b border-kite-border/50">
-            <th className="py-2 px-4 font-normal">Instrument</th>
-            <th className="py-2 px-4 font-normal">Investor</th>
-            <th className="py-2 px-4 font-normal text-right">Capital</th>
-            <th className="py-2 px-4 font-normal text-right">Cur. val</th>
-            <th className="py-2 px-4 font-normal text-right">P&L</th>
-            <th className="py-2 px-4 font-normal text-right">Mkt Trend</th>
-            <th className="py-2 px-4 font-normal text-center">Status</th>
+            <th className="py-2 px-3 md:px-4 font-normal w-2/3 md:w-auto">Instrument</th>
+            <th className="py-2 px-4 font-normal hidden md:table-cell">Investor</th>
+            <th className="py-2 px-4 font-normal text-right hidden md:table-cell">Capital</th>
+            <th className="py-2 px-4 font-normal text-right hidden md:table-cell">Cur. val</th>
+            <th className="py-2 px-3 md:px-4 font-normal text-right w-1/3 md:w-auto">P&L</th>
+            <th className="py-2 px-4 font-normal text-right hidden md:table-cell">Mkt Trend</th>
+            <th className="py-2 px-4 font-normal text-center hidden md:table-cell">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-kite-border/50">
@@ -404,8 +411,6 @@ export default function Investments() {
             const isCompleted = inv.status === 'completed';
             const expectedFixedProfit = (inv.amount * inv.interestRate / 100);
             
-            // In a real holding context, we might fluctuate, but here let's just show fixed profit if completed,
-            // and dynamic holding profit if active based on trend to simulate equity.
             const holdingProfit = isCompleted ? expectedFixedProfit : (inv.amount * overallTrend / 100);
             const curValue = inv.amount + holdingProfit;
             const pnlPercentage = isCompleted ? inv.interestRate : overallTrend;
@@ -413,28 +418,32 @@ export default function Investments() {
             
             return (
               <tr key={inv.id} className="hover:bg-kite-bg/50 transition-colors cursor-pointer" onClick={() => setSelectedInvestment(inv)}>
-                <td className="py-3 px-4">
-                  <p className="font-medium text-kite-text">{business?.name}</p>
+                <td className="py-3 px-3 md:px-4 overflow-hidden">
+                  <p className="font-medium text-kite-text flex items-center pr-2 gap-1 text-xs md:text-sm">
+                    <span className="truncate">{business?.name}</span>
+                    {business && blueTickBusinessIds.has(business.id) && <BadgeCheck  className="w-3 h-3 md:w-3.5 md:h-3.5 text-white fill-blue-500 flex-shrink-0" title="RMAS Verified" />}
+                  </p>
+                  <p className="md:hidden text-[10px] text-kite-text-light truncate mt-0.5">{investor?.name}</p>
                 </td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-4 hidden md:table-cell">
                   <p className="text-xs text-kite-text-light">{investor?.name}</p>
                 </td>
-                <td className="py-3 px-4 text-right">
+                <td className="py-3 px-4 text-right hidden md:table-cell">
                   <p className="font-normal text-kite-text" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{formatINR(inv.amount)}</p>
                 </td>
-                <td className="py-3 px-4 text-right">
+                <td className="py-3 px-4 text-right hidden md:table-cell">
                   <p className="font-medium text-kite-text" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{formatINR(curValue)}</p>
                 </td>
-                <td className={"py-3 px-4 text-right font-medium " + (isProfit ? 'text-kite-green' : 'text-kite-red')}>
+                <td className={"py-3 px-3 md:px-4 text-right font-medium " + (isProfit ? 'text-kite-green' : 'text-kite-red')}>
                   <div className="flex flex-col items-end">
-                    <p style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{isProfit ? '+' : ''}{formatINR(holdingProfit)}</p>
-                    <p className="text-[10px] opacity-80">{isProfit ? '+' : ''}{pnlPercentage.toFixed(2)}%</p>
+                    <p className="text-xs md:text-sm" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>{isProfit ? '+' : ''}{formatINR(holdingProfit)}</p>
+                    <p className="text-[9px] md:text-[10px] opacity-80">{isProfit ? '+' : ''}{pnlPercentage.toFixed(2)}%</p>
                   </div>
                 </td>
-                <td className={"py-3 px-4 text-right font-medium " + (overallTrend >= 0 ? 'text-kite-green' : 'text-kite-red')}>
+                <td className={"py-3 px-4 text-right font-medium hidden md:table-cell " + (overallTrend >= 0 ? 'text-kite-green' : 'text-kite-red')}>
                   {overallTrend >= 0 ? '+' : ''}{overallTrend.toFixed(2)}%
                 </td>
-                <td className="py-3 px-4 text-center">
+                <td className="py-3 px-4 text-center hidden md:table-cell">
                   <span className={"inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] uppercase font-medium " + (isCompleted ? 'bg-kite-blue/10 text-kite-blue' : 'bg-kite-green/10 text-kite-green')}>
                     {inv.status}
                   </span>

@@ -7,13 +7,13 @@ interface MobileBottomNavProps {
 }
 
 export default function MobileBottomNav({ currentView, onNavigate }: MobileBottomNavProps) {
-  // 5 exact names as per user requirement to restore original naming
+  // Mobile only requested buttons
   const navItems = [
-    { id: 'dashboard' as View, label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'data-analysis' as View, label: 'Analysis', icon: PieChart },
     { id: 'businesses' as View, label: 'Businesses', icon: Building2 },
-    { id: 'investments' as View, label: 'Invest', icon: ReceiptIndianRupee },
-    { id: 'pnl' as View, label: 'My P&L', icon: PieChart },
-    ];
+    { id: 'investors' as View, label: 'Investors', icon: Users },
+    { id: 'investments' as View, label: 'Investments', icon: ReceiptIndianRupee },
+  ];
 
   return (
     <>
