@@ -57,7 +57,7 @@ export default function Investors() {
  .filter(inv => inv.investorId === i.id && inv.status !== 'completed')
  .reduce((sum, inv) => sum + inv.amount, 0);
  return { ...i, totalInvested: totalAmountInvested };
- }).sort((a, b) => getTime(b.id) - getTime(a.id));
+ }).sort((a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime());
 
  const generateInvestorId = () => {
  return Math.floor(100000 + Math.random() * 900000).toString();
@@ -402,7 +402,10 @@ export default function Investors() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
             <div className="h-full bg-blue-500 w-1/2 transition-all duration-300"></div>
           </div>
-          <div className="text-center mb-8">
+          <button type="button" onClick={() => setViewMode('list')} className="absolute top-4 left-4 p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors z-10 md:hidden">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="text-center mb-8 mt-2 md:mt-0">
             <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Open a new account</h3>
             <p className="text-sm text-gray-500 mt-2">Step 1 • Basic Profile</p>
           </div>
@@ -493,96 +496,154 @@ export default function Investors() {
           </form>
         </div>
       )}
- {viewMode === 'withdraw-list' && selectedInvestor && (
- <div className="w-full bg-white border border-kite-border rounded-sm p-4 max-w-6xl mx-auto">
- <div className="flex items-center mb-3 sm:mb-3 md:mb-6">
- <button onClick={() => setViewMode('list')} className="mr-4 p-2 rounded-full hover:bg-kite-bg text-kite-text-light transition-colors">
- <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
- </button>
- <div>
- <h3 className="text-xs md:text-base font-medium text-kite-text flex items-center space-x-2">
- <span>Withdrawal Mode: {selectedInvestor.name}</span>
- </h3>
- <p className="text-xs text-kite-text-light">Select an investment to withdraw and credit the investor.</p>
- </div>
- </div>
+ {viewMode === 'withdraw-list' && selectedInvestor && (() => {
+  const investorInvs = state.investments.filter(i => i.investorId === selectedInvestor.id && i.status === 'active');
+  const grouped = investorInvs.reduce((acc, inv) => {
+    if (!acc[inv.businessId]) acc[inv.businessId] = [];
+    acc[inv.businessId].push(inv);
+    return acc;
+  }, {} as Record<string, Investment[]>);
 
- <div className="space-y-4">
- {Object.entries(
- state.investments.filter(i => i.investorId === selectedInvestor.id).reduce((acc, inv) => {
- if (!acc[inv.businessId]) acc[inv.businessId] = [];
- acc[inv.businessId].push(inv);
- return acc;
- }, {} as Record<string, Investment[]>)
- ).map(([bizId, groupInvs]: [string, Investment[]]) => {
- const business = state.businesses.find(b => b.id === bizId);
- const activeInvs = groupInvs.filter(i => i.status === 'active');
- const completedInvs = groupInvs.filter(i => i.status === 'completed');
- const currentQty = withdrawQtyMap[bizId] ?? (activeInvs.length > 0 ? 1 : 0);
- const totalAmount = groupInvs.reduce((sum, inv) => sum + inv.amount, 0);
+  let totalInvested = 0;
+  let totalLiveProfit = 0;
 
- return (
- <div key={bizId} className="border-b border-kite-border last:border-0 p-3 sm:p-4 flex flex-col md:flex-row md:items-center justify-between bg-white hover:bg-kite-bg transition-colors">
- <div className="mb-3 md:mb-0 flex justify-between items-center w-full md:w-auto">
- <div>
- <h4 className="font-medium text-sm md:text-base text-kite-text">{business?.name || 'Unknown Business'}</h4>
- <div className="hidden md:block">
- <p className="text-sm text-kite-text-light mt-1">Owner: {business?.ownerName} | Bus. ID: {business?.businessId}</p>
- <p className="text-xs font-mono text-kite-text-light mt-0.5">{activeInvs.length} Active | {completedInvs.length} Withdrawn</p>
- </div>
- </div>
- </div>
- <div className="flex flex-col md:items-end justify-center w-full md:w-auto mt-2 md:mt-0">
- <div className="hidden md:block text-right mb-2">
- <p className="font-medium text-base text-kite-text">{formatINR(totalAmount)}</p>
- <p className="text-sm font-medium text-kite-green">{activeInvs[0]?.interestRate || completedInvs[0]?.interestRate || 0}% Interest</p>
- </div>
- {activeInvs.length > 0 ? (
- <div className="flex items-center justify-between md:justify-end space-x-3 w-full md:w-auto pt-2 md:pt-0 border-t border-kite-border md:border-0">
- <div className="flex items-center space-x-2">
- <label className="text-[10px] sm:text-xs font-medium text-kite-text-light uppercase tracking-wider">Qty</label>
- <select value={currentQty}
- onChange={e => setWithdrawQtyMap({...withdrawQtyMap, [bizId]: Number(e.target.value)})}
- className="border border-kite-border rounded-sm p-1 text-xs sm:text-sm font-medium bg-kite-bg focus:ring-1 focus:ring-blue-500 outline-none"
- >
- {Array.from({length: activeInvs.length}, (_, i) => i + 1).map(n => (
- <option key={n} value={n}>{n}</option>
- ))}
- </select>
- </div>
- <button onClick={() => handleCreditInvestorClick(activeInvs.slice(0, currentQty))}
- className="bg-kite-blue hover:bg-kite-blue text-white font-medium px-4 py-2 rounded-sm text-xs sm:text-sm uppercase tracking-wide transition-colors"
- >
- Profit Book
- </button>
- </div>
- ) : (
- <div className="inline-flex items-center text-kite-text-light font-medium px-2 py-1 text-xs uppercase tracking-wider justify-end w-full md:w-auto pt-2 md:pt-0 border-t border-kite-border md:border-0">
- <CheckCircle className="w-4 h-4 mr-1" /> Booked
- </div>
- )}
- </div>
- </div>
- );
- })}
- {state.investments.filter(i => i.investorId === selectedInvestor.id).length === 0 && (
- <div className="text-center py-8 text-kite-text-light">No investments found for this investor.</div>
- )}
- </div>
- </div>
- )}
+  const holdings = Object.entries(grouped).map(([bizId, activeInvs]) => {
+    const business = state.businesses.find(b => b.id === bizId);
+    const amount = activeInvs.reduce((sum, inv) => sum + inv.amount, 0);
+    const trend = business ? getBaseMarketTrend(business, state.investments) : 0;
+    const liveTrend = marketState.trends[bizId] || 0;
+    const overallTrend = trend + liveTrend;
+    const liveProfit = amount * (overallTrend / 100);
+    
+    totalInvested += amount;
+    totalLiveProfit += liveProfit;
 
- {viewMode === 'withdraw-calc' && selectedInvestments.length > 0 && selectedInvestor && (
+    return { bizId, business, activeInvs, amount, liveProfit, overallTrend };
+  });
+
+  const curValue = totalInvested + totalLiveProfit;
+  const isProfit = totalLiveProfit >= 0;
+
+  return (
+ <div className="w-full bg-white border border-kite-border rounded-sm max-w-6xl mx-auto flex flex-col print:hidden">
+    <div className="flex items-center p-3 border-b border-kite-border sticky top-0 bg-white z-10">
+      <button onClick={() => setViewMode('list')} className="mr-3 p-1.5 rounded-full hover:bg-kite-bg text-kite-text transition-colors">
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+      <h3 className="text-lg font-medium text-kite-text tracking-wide">Holdings ({holdings.length})</h3>
+    </div>
+    
+    <div className="grid grid-cols-2 p-4 gap-4 border-b border-kite-border bg-kite-bg/30">
+      <div>
+        <p className="text-xs text-kite-text-light mb-1">Invested</p>
+        <p className="font-medium text-kite-text text-lg">{formatINR(totalInvested)}</p>
+      </div>
+      <div className="text-right">
+        <p className="text-xs text-kite-text-light mb-1">Current</p>
+        <p className="font-medium text-kite-text text-lg">{formatINR(curValue)}</p>
+      </div>
+      <div className="col-span-2 pt-3 border-t border-kite-border/50">
+        <div className="flex justify-between items-end">
+          <p className="text-xs text-kite-text-light font-medium tracking-wide">Total P&L</p>
+          <div className="text-right">
+            <p className={`font-medium text-xl ${isProfit ? 'text-kite-green' : 'text-kite-red'}`}>
+              {isProfit ? '+' : ''}{formatINR(totalLiveProfit)}
+            </p>
+            <p className={`text-xs mt-0.5 ${isProfit ? 'text-kite-green' : 'text-kite-red'}`}>
+              {isProfit ? '+' : ''}{(totalInvested > 0 ? (totalLiveProfit / totalInvested) * 100 : 0).toFixed(2)}%
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="flex flex-col pb-10 md:pb-0">
+      <div className="hidden md:grid grid-cols-5 gap-4 p-3 border-b border-kite-border bg-white text-[11px] font-medium text-kite-text-light uppercase tracking-wider">
+        <div className="col-span-2">Instrument</div>
+        <div className="text-right">Qty</div>
+        <div className="text-right">Invested</div>
+        <div className="text-right">P&L</div>
+      </div>
+      
+      {holdings.length === 0 ? (
+        <div className="p-8 text-center text-kite-text-light text-sm">No active holdings found.</div>
+      ) : (
+        holdings.map((h) => (
+          <div key={h.bizId} onClick={() => handleCreditInvestorClick(h.activeInvs)} className="grid grid-cols-1 md:grid-cols-5 gap-1 md:gap-4 p-3 border-b border-kite-border bg-white hover:bg-kite-bg cursor-pointer transition-colors group">
+            <div className="md:col-span-2 flex justify-between md:block items-center mb-1 md:mb-0">
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] text-kite-text-light md:hidden">{h.activeInvs.length} Qty.</span>
+                <span className="font-medium text-kite-text text-sm group-hover:text-kite-blue transition-colors">{h.business?.name || 'Unknown'}</span>
+              </div>
+              <div className="text-right md:hidden">
+                <span className={`text-sm font-medium block ${h.liveProfit >= 0 ? 'text-kite-green' : 'text-kite-red'}`}>
+                  {h.liveProfit >= 0 ? '+' : ''}{formatINR(h.liveProfit)}
+                </span>
+              </div>
+            </div>
+            
+            <div className="hidden md:block text-right text-sm text-kite-text">{h.activeInvs.length}</div>
+            
+            <div className="flex justify-between md:block items-center mt-0.5 md:mt-0">
+              <span className="text-[11px] text-kite-text-light md:hidden">Invested <span className="font-medium">{formatINR(h.amount)}</span></span>
+              <span className="text-sm text-kite-text md:text-right hidden md:block">{formatINR(h.amount)}</span>
+              <div className="text-right md:hidden">
+                <span className="text-[11px] text-kite-text-light">LTP </span>
+                <span className={`text-[11px] font-medium ${h.overallTrend >= 0 ? 'text-kite-green' : 'text-kite-red'}`}>
+                  {h.overallTrend >= 0 ? '+' : ''}{h.overallTrend.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+            
+            <div className="hidden md:block text-right">
+              <span className={`text-sm font-medium block ${h.liveProfit >= 0 ? 'text-kite-green' : 'text-kite-red'}`}>
+                {h.liveProfit >= 0 ? '+' : ''}{formatINR(h.liveProfit)}
+              </span>
+              <p className={`text-[10px] mt-0.5 ${h.liveProfit >= 0 ? 'text-kite-green' : 'text-kite-red'}`}>
+                {h.overallTrend >= 0 ? '+' : ''}{h.overallTrend.toFixed(2)}%
+              </p>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+  );
+ })()}
+
+ {viewMode === 'withdraw-calc' && selectedInvestments.length > 0 && selectedInvestor && (() => {
+  const businessId = selectedInvestments[0].businessId;
+  const allActiveInvs = state.investments.filter(i => i.investorId === selectedInvestor.id && i.businessId === businessId && i.status === 'active');
+  const maxQty = allActiveInvs.length;
+
+  return (
  <div className="w-full max-w-lg mx-auto bg-white border border-kite-border rounded-sm p-4">
  <div className="border-b border-kite-border pb-3 mb-4">
+ <div className="flex items-center space-x-2 mb-2">
+   <button onClick={() => setViewMode('withdraw-list')} className="md:hidden p-1 text-kite-text-light hover:bg-kite-bg rounded-sm transition-colors">
+     <ArrowLeft className="w-4 h-4" />
+   </button>
+ </div>
  <div className="flex justify-between items-start">
  <div>
  <h3 className="text-kite-blue font-medium text-sm md:text-base tracking-wide flex items-center gap-1">
  <CreditCard className="w-4 h-4" /> PROFIT BOOK
  </h3>
- <p className="text-kite-text-light text-xs mt-1">{selectedInvestor.name} • {state.businesses.find(b => b.id === selectedInvestments[0].businessId)?.name} • {selectedInvestments.length} Qty</p>
+ <p className="text-kite-text-light text-xs mt-1">{selectedInvestor.name} • {state.businesses.find(b => b.id === businessId)?.name}</p>
  </div>
- <div className="text-right">
+ <div className="text-right flex flex-col items-end">
+   <div className="flex items-center space-x-2 mb-2">
+     <label className="text-[10px] text-kite-text-light uppercase tracking-wider font-medium">Qty</label>
+     <select 
+       value={selectedInvestments.length} 
+       onChange={(e) => setSelectedInvestments(allActiveInvs.slice(0, Number(e.target.value)))}
+       className="border border-kite-border rounded-sm py-0.5 px-1 text-xs font-medium bg-kite-bg focus:outline-none"
+     >
+       {Array.from({length: maxQty}, (_, i) => i + 1).map(n => (
+         <option key={n} value={n}>{n}</option>
+       ))}
+     </select>
+   </div>
  <span className="text-[10px] text-kite-text-light block uppercase tracking-wider">Inv Amt</span>
  <span className="font-semibold text-sm text-kite-text">{formatINR(selectedInvestments.reduce((s, i) => s + i.amount, 0))}</span>
  </div>
@@ -645,10 +706,14 @@ export default function Investors() {
  </div>
  </form>
  </div>
- )}
+  );
+ })()}
 
  {viewMode === 'withdraw-bank' && selectedInvestments.length > 0 && selectedInvestor && (
- <div className="w-full max-w-lg mx-auto bg-white border border-kite-border rounded-sm p-4">
+ <div className="w-full max-w-lg mx-auto bg-white border border-kite-border rounded-sm p-4 relative">
+   <button onClick={() => setViewMode('withdraw-calc')} className="absolute top-4 left-4 md:hidden p-1 text-kite-text-light hover:bg-kite-bg rounded-sm transition-colors">
+     <ArrowLeft className="w-4 h-4" />
+   </button>
  <div className="text-center mb-6">
  <h3 className="text-kite-blue font-medium text-sm md:text-base tracking-wide flex items-center justify-center gap-2">
  <CreditCard className="w-4 h-4" /> SETTLEMENT

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { Plus, Search, Building2, Banknote, Building, X, BadgeCheck, ChevronDown, Clock } from 'lucide-react';
+import { Plus, Search, Building2, Banknote, Building, X, BadgeCheck, ChevronDown, Clock, ArrowLeft } from 'lucide-react';
 import { Business } from '../types';
 import BusinessDetail from '../components/BusinessDetail';
 import { INDIAN_BANKS } from '../utils/indianBanks';
@@ -278,10 +278,15 @@ export default function Businesses() {
 
  {viewMode === 'add-step-1' && (
  <div className="w-full max-w-2xl mx-auto bg-white border border-kite-border rounded-sm p-2 md:p-4 md:p-2 md:p-4">
- <h3 className="text-xs md:text-base font-medium text-kite-text mb-3 md:mb-6 flex items-center space-x-2">
- <Building2  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
- <span>Step 1: Business Profile</span>
- </h3>
+ <div className="flex items-center space-x-2 mb-3 md:mb-6">
+   <button type="button" onClick={() => setViewMode('list')} className="md:hidden p-1 text-kite-text-light hover:bg-kite-bg rounded-sm transition-colors">
+     <ArrowLeft className="w-4 h-4" />
+   </button>
+   <h3 className="text-xs md:text-base font-medium text-kite-text flex items-center space-x-2">
+     <Building2  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
+     <span>Step 1: Business Profile</span>
+   </h3>
+ </div>
 
  <div className="flex bg-kite-bg p-1 rounded-sm mb-3 md:mb-6">
  <button
@@ -452,10 +457,15 @@ export default function Businesses() {
 
  {viewMode === 'add-step-2' && (
  <div className="w-full max-w-3xl mx-auto bg-white border border-kite-border rounded-sm p-2 md:p-4 md:p-2 md:p-4">
- <h3 className="text-xs md:text-base font-medium text-kite-text mb-3 md:mb-6 flex items-center space-x-2">
- <Banknote  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
- <span>Step 2: BANKING PROCESS</span>
- </h3>
+ <div className="flex items-center space-x-2 mb-3 md:mb-6">
+   <button type="button" onClick={() => setViewMode('add-step-1')} className="md:hidden p-1 text-kite-text-light hover:bg-kite-bg rounded-sm transition-colors">
+     <ArrowLeft className="w-4 h-4" />
+   </button>
+   <h3 className="text-xs md:text-base font-medium text-kite-text flex items-center space-x-2">
+     <Banknote  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
+     <span>Step 2: BANKING PROCESS</span>
+   </h3>
+ </div>
  <form onSubmit={handleVerifiedSave} className="space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-2">
  <div className="md:col-span-2">

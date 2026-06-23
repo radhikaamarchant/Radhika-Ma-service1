@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { Plus, ReceiptIndianRupee, Search, X, CheckCircle, Wallet, BadgeCheck, ChevronDown } from 'lucide-react';
+import { Plus, ReceiptIndianRupee, Search, X, CheckCircle, Wallet, BadgeCheck, ChevronDown, ArrowLeft } from 'lucide-react';
 import { Investment, Business, Investor } from '../types';
 import { getBlueTickBusinessIds } from '../utils/blueTick';
 import { getBaseMarketTrend } from '../utils/marketSimulator';
@@ -183,7 +183,8 @@ export default function Investments() {
       </div>
       <div className="text-center mb-6 md:mb-8 shrink-0">
         <button type="button" onClick={() => setShowAddForm(false)} className="text-blue-500 mb-2 md:mb-4 inline-block hover:bg-blue-50 p-1.5 rounded transition-colors absolute top-4 left-4 md:top-6 md:left-6">
-          <X className="w-5 h-5 md:w-6 md:h-6" />
+          <ArrowLeft className="w-5 h-5 md:hidden" />
+          <X className="hidden md:block w-6 h-6" />
         </button>
         <h3 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">Book new investment</h3>
         <p className="text-xs md:text-sm text-gray-500 mt-1 md:mt-2">Fund a business and collect commission</p>
@@ -422,11 +423,14 @@ export default function Investments() {
             const overallTrend = trend + liveTrend;
             
             const isCompleted = inv.status === 'completed';
+            const actualProfit = isCompleted && inv.payoutDetails 
+              ? (inv.payoutDetails.totalCredited + (inv.payoutDetails.rmasCommission || 0) + (inv.payoutDetails.happyIncomeTax || 0) - inv.amount) 
+              : 0;
             const expectedFixedProfit = (inv.amount * inv.interestRate / 100);
             
-            const holdingProfit = isCompleted ? expectedFixedProfit : (inv.amount * overallTrend / 100);
+            const holdingProfit = isCompleted ? actualProfit : (inv.amount * overallTrend / 100);
             const curValue = inv.amount + holdingProfit;
-            const pnlPercentage = isCompleted ? inv.interestRate : overallTrend;
+            const pnlPercentage = isCompleted ? (holdingProfit / inv.amount) * 100 : overallTrend;
             const isProfit = holdingProfit >= 0;
             
             return (
@@ -492,7 +496,8 @@ export default function Investments() {
           <button onClick={() => setSelectedInvestment(null)}
             className="p-2 hover:bg-kite-bg rounded-full text-kite-text-light transition-colors"
           >
-            <X className="w-4 h-4 md:w-6 md:h-6" />
+            <ArrowLeft className="w-5 h-5 md:hidden" />
+            <X className="hidden md:block w-4 h-4 md:w-6 md:h-6" />
           </button>
         </div>
         <div className="p-4 md:p-6 space-y-6">
@@ -572,7 +577,13 @@ export default function Investments() {
       setWithdrawStep(0);
     };
             const expectedFixedProfit = activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.amount * i.interestRate / 100), 0);
-            const holdingProfit = isCompleted ? expectedFixedProfit : (totalAmount * overallTrend / 100);
+            const actualDetailProfit = activeGroupedInvestments.reduce((sum: number, i: any) => {
+              if (i.payoutDetails) {
+                return sum + (i.payoutDetails.totalCredited + (i.payoutDetails.rmasCommission || 0) + (i.payoutDetails.happyIncomeTax || 0) - i.amount);
+              }
+              return sum;
+            }, 0);
+            const holdingProfit = isCompleted ? actualDetailProfit : (totalAmount * overallTrend / 100);
             
             const curValue = totalAmount + holdingProfit;
             const isProfit = holdingProfit >= 0;
@@ -718,8 +729,10 @@ export default function Investments() {
                     </h4>
                     <div className="space-y-2 text-sm text-green-900">
                       <div className="flex justify-between">
-                        <span>Total Profit + Capital Credited</span>
-                        <span className="font-medium">{formatINR(activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.payoutDetails?.totalCredited || 0), 0))}</span>
+                        <span>Gross Payout (Capital + Profit)</span>
+                        <span className="font-medium">
+                          {formatINR(activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.payoutDetails?.totalCredited || 0) + (i.payoutDetails?.rmasCommission || 0) + (i.payoutDetails?.happyIncomeTax || 0), 0))}
+                        </span>
                       </div>
                       <div className="flex justify-between text-[11px]">
                         <span>RMAS Commission Deducted</span>
@@ -729,7 +742,11 @@ export default function Investments() {
                         <span>Income Tax Deducted</span>
                         <span className="text-kite-red">-{formatINR(activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.payoutDetails?.happyIncomeTax || 0), 0))}</span>
                       </div>
-                      <div className="flex justify-between pt-2 border-t border-kite-green/20 mt-2">
+                      <div className="flex justify-between pt-2 border-t border-kite-green/20 mt-2 font-medium">
+                        <span>Net Amount Credited</span>
+                        <span>{formatINR(activeGroupedInvestments.reduce((sum: number, i: any) => sum + (i.payoutDetails?.totalCredited || 0), 0))}</span>
+                      </div>
+                      <div className="flex justify-between text-[11px] mt-1 text-kite-text-light">
                         <span>Payout Date</span>
                         <span className="font-mono">
                           {activeGroupedInvestments.length > 1 ? 'Multiple Dates' : new Date(activeGroupedInvestments[0]?.payoutDetails?.payoutDate || selectedInvestment.payoutDetails.payoutDate).toLocaleDateString('en-IN')}

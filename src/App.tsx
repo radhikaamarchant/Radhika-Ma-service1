@@ -166,7 +166,12 @@ function MainLayout() {
  {/* Main Content */}
  <main className="flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden flex flex-col items-center bg-kite-bg text-kite-text relative">
    <div className="w-full max-w-full">
-     {renderView()}
+     <div style={{ display: currentView === 'dashboard' ? 'block' : 'none' }}><Dashboard /></div>
+     <div style={{ display: currentView === 'data-analysis' ? 'block' : 'none' }}><DataAnalysis /></div>
+     <div style={{ display: currentView === 'businesses' ? 'block' : 'none' }}><Businesses /></div>
+     <div style={{ display: currentView === 'investors' ? 'block' : 'none' }}><Investors /></div>
+     <div style={{ display: currentView === 'investments' ? 'block' : 'none' }}><Investments /></div>
+     <div style={{ display: currentView === 'pnl' ? 'block' : 'none' }}><MyPnL /></div>
    </div>
  </main>
  
