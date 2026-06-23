@@ -5,6 +5,9 @@ export interface Business {
   businessId: string;
   name: string;
   ownerName: string;
+  description?: string;
+  location?: string;
+  photoUrl?: string;
   authorityType?: AuthorityType;
   rmasSubsidy?: number;
   registrationDate: string;
@@ -54,6 +57,8 @@ export interface Investment {
     happyIncomeTax: number;
     totalCredited: number;
     payoutDate: string;
+    rmasMarketCover?: number;
+    rmasSubsidyPays?: number;
   };
 }
 

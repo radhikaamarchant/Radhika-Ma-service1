@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import { Business, Investment } from '../types';
 
-// Live continuous sine-wave based market trend that changes every second
-export function getBaseMarketTrend(businessId: string, isBlueTick: boolean = false): number {
-  const hashString = businessId;
+export function getBaseMarketTrend(business: Business | undefined, investments: Investment[], isBlueTick: boolean = false): number {
+  if (!business) return 0;
+
+  const hashString = business.id;
   let hash = 0;
   for (let i = 0; i < hashString.length; i++) {
     hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
-    hash |= 0;
+    hash |= 0; 
   }
   
   const now = Date.now();
@@ -19,39 +21,67 @@ export function getBaseMarketTrend(businessId: string, isBlueTick: boolean = fal
   const wave2 = Math.cos((now + offset * 2) / (cycleMs * 1.5) * Math.PI * 2);
   
   // Combine waves, range is roughly -2 to +2
-  const combinedWave = wave1 + wave2; // -2 to +2
+  const combinedWave = wave1 + wave2;
 
-  // For blue tick businesses, they generally perform better. 
-  // Map combinedWave to a range. 
-  // Normal range: -30 to +45
-  // Blue tick range: +5 to +60
+  // 1. The baseline is the interest rate chosen by the company
+  const baseRate = business.interestRate || 0;
+
+  // 2. We analyze investment data to dynamically boost or penalize.
+  const safeInvestments = investments || [];
+  const activeInvs = safeInvestments.filter(i => i.businessId === business.id && i.status === 'active');
+  const activeAmount = activeInvs.reduce((sum, i) => sum + i.amount, 0);
+
+  const closedInvs = safeInvestments.filter(i => i.businessId === business.id && i.status === 'completed');
+  const withdrawnAmount = closedInvs.reduce((sum, i) => {
+    const p = i.payoutDetails;
+    return sum + (p ? p.totalCredited : i.amount); // total credited includes profit
+  }, 0);
+
+  // If investors keep adding, it increases.
+  const maxFundingNeeded = business.fundingRequired > 0 ? business.fundingRequired : 500000;
+  const fundingRatio = activeAmount / maxFundingNeeded;
   
-  if (isBlueTick) {
-    // Normalizing -2..2 to 5..60
-    // +2 = 60, -2 = 5
-    // center is 32.5, amplitude is 27.5
-    return 32.5 + (combinedWave / 2) * 27.5;
-  } else {
-    // Normalizing -2..2 to -30..45
-    // +2 = 45, -2 = -30
-    // center is 7.5, amplitude is 37.5
-    return 7.5 + (combinedWave / 2) * 37.5;
-  }
+  // Bonus: e.g., 100% funded gives +10%. No cap means if they fund 200%, they get +20%.
+  const investorBonus = fundingRatio * 10;
+  
+  // If someone takes profit, it goes down.
+  // But we want it to recover naturally so it doesn't just stay down.
+  const totalAmountEverInvested = activeAmount + closedInvs.reduce((s, i) => s + i.amount, 0);
+  const withdrawalRatio = totalAmountEverInvested > 0 ? (withdrawnAmount / totalAmountEverInvested) : 0;
+  
+  // Penalty scaled based on how much was withdrawn.
+  const withdrawalPenalty = withdrawalRatio * 15;
+
+  // 3. Blue tick business gives a boost
+  const blueTickBonus = isBlueTick ? 5 : 0;
+  const amplitude = isBlueTick ? 12 : 25; // Blue ticks have tighter noise
+
+  // Market noise based on the wave
+  const marketNoise = (combinedWave / 2) * amplitude; // -12 to +12 or -25 to +25
+  
+  const calculatedTrend = baseRate + investorBonus - withdrawalPenalty + blueTickBonus + marketNoise;
+
+  return calculatedTrend;
 }
 
-export function useLiveMarketTrend(businessId: string, isBlueTick: boolean = false) {
-  const [liveTrend, setLiveTrend] = useState(() => getBaseMarketTrend(businessId, isBlueTick));
+export function useLiveMarketTrend(business: Business | undefined, investments: Investment[], isBlueTick: boolean = false) {
+  const [liveTrend, setLiveTrend] = useState(() => getBaseMarketTrend(business, investments, isBlueTick));
 
   useEffect(() => {
+    let mounted = true;
     const interval = setInterval(() => {
-      // Re-evaluate the sine wave every few seconds + add small random noise
-      const currentBase = getBaseMarketTrend(businessId, isBlueTick);
+      const currentBase = getBaseMarketTrend(business, investments, isBlueTick);
       const fluctuation = (Math.random() * 2) - 1; // +/- 1% noise
-      setLiveTrend(currentBase + fluctuation);
+      if (mounted) {
+        setLiveTrend(currentBase + fluctuation);
+      }
     }, 2000); // update every 2 seconds
     
-    return () => clearInterval(interval);
-  }, [businessId, isBlueTick]);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [business, investments, isBlueTick]);
 
   return liveTrend;
 }

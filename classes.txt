@@ -1,0 +1,345 @@
+263: <div className="max-w-6xl mx-auto space-y-3 sm:space-y-6 print:m-0 print:p-0">
+265: <div className="print:hidden space-y-3 sm:space-y-6">
+268: <div className="flex justify-between items-end">
+270: <h2 className="text-sm md:text-lg font-bold text-black tracking-tight">Investors</h2>
+271: <p className="text-sm text-gray-500 mt-1">Manage network of funders and investors.</p>
+274: className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 transition-colors"
+276: <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+281: <div className="w-full bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+282: <div className="p-2 sm:p-4 border-b border-gray-200 flex items-center bg-gray-50">
+283: <Search  className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 mr-2" />
+284: <input type="text" placeholder="Search investors by name or ID..." className="bg-transparent border-none outline-none w-full text-sm font-medium placeholder-gray-400"
+289: <div className="overflow-hidden">
+291: <div className="hidden md:block overflow-x-auto w-full max-w-full">
+292: <table className="w-full text-left text-sm min-w-[800px]">
+294: <tr className="border-b border-gray-200 bg-white">
+295: <th className="p-2 md:p-4 font-semibold text-gray-900">ID Number</th>
+296: <th className="p-2 md:p-4 font-semibold text-gray-900">Name</th>
+297: <th className="p-2 md:p-4 font-semibold text-gray-900">Bank Details</th>
+298: <th className="p-2 md:p-4 font-semibold text-gray-900 text-right">Total Invested</th>
+299: <th className="p-2 md:p-4 font-semibold text-gray-900 text-center">Actions</th>
+304: <tr key={`desk_${investor.id}`} className="border-b border-gray-200 hover:bg-gray-50">
+305: <td className="p-2 md:p-4 font-mono text-gray-600 font-medium">#{investor.investorId}</td>
+306: <td className="p-2 md:p-4 font-bold text-black">{investor.name}</td>
+307: <td className="p-2 md:p-4 text-xs text-gray-500">
+310: <div className="font-semibold text-gray-800">{investor.bankDetails.bankName}</div>
+315: <td className="p-2 md:p-4 font-bold text-black text-right">{formatINR(investor.totalInvested)}</td>
+316: <td className="p-2 md:p-4 text-center space-x-2">
+318: className="text-gray-500 hover:text-black font-semibold text-xs px-3 py-1.5 border border-gray-200 rounded-lg"
+323: className="bg-blue-600 text-white hover:bg-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg"
+328: className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-semibold text-xs px-3 py-1.5 rounded-lg inline-flex items-center space-x-1"
+330: <FileText className="w-3 md:w-3.5 h-3 md:h-3.5" />
+338: className="text-red-500 hover:text-red-700 font-semibold text-xs px-3 py-1.5 border border-red-200 hover:bg-red-50 rounded-lg transition-colors inline-block"
+347: <td colSpan={5} className="p-4 text-center text-gray-500 font-medium">No investors found.</td>
+355: <div className="block md:hidden divide-y divide-gray-100">
+357: <div key={`mob_${investor.id}`} className="p-4 bg-white hover:bg-gray-50">
+358: <div className="flex justify-between items-start mb-2">
+359: <span className="font-bold text-black text-lg">{investor.name}</span>
+360: <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">#{investor.investorId}</span>
+362: <div className="grid grid-cols-1 gap-3 mb-4 bg-gray-50 p-3 rounded-lg">
+363: <div className="flex justify-between items-center">
+364: <p className="text-xs text-gray-500">Total Invested</p>
+365: <p className="font-bold text-sm text-black">{formatINR(investor.totalInvested)}</p>
+367: <div className="border-t border-gray-200 pt-2">
+368: <p className="text-xs text-gray-500 mb-1">Bank Details</p>
+370: <div className="text-xs flex justify-between">
+371: <span className="font-semibold text-gray-800">{investor.bankDetails.bankName}</span> <span className="text-gray-600 ml-2">A/C: {investor.bankDetails.accountNumber}</span>
+374: <span className="text-xs text-gray-600">Not Provided</span>
+379: <div className="flex flex-wrap gap-2">
+381: className="flex-1 text-gray-700 font-semibold text-xs px-3 py-2 border border-gray-200 rounded-lg text-center whitespace-nowrap min-w-[120px]"
+386: className="flex-1 bg-blue-600 text-white hover:bg-blue-700 font-semibold text-xs px-3 py-2 rounded-lg text-center whitespace-nowrap min-w-[80px]"
+391: className="bg-blue-50 text-blue-600 font-semibold text-xs px-3 py-2 rounded-lg text-center flex justify-center items-center space-x-1 whitespace-nowrap"
+393: <FileText className="w-3 md:w-3.5 h-3 md:h-3.5" />
+401: className="text-red-500 font-semibold text-xs px-3 py-2 border border-red-100 bg-red-50 rounded-lg text-center whitespace-nowrap"
+409: <div className="p-4 text-center text-gray-500 font-medium">No investors found.</div>
+418: <div className="w-full max-w-2xl mx-auto bg-white border border-gray-200 rounded-xl p-3 sm:p-4 md:p-3 md:p-6 shadow-sm">
+419: <h3 className="text-sm md:text-lg font-bold text-black mb-3 sm:mb-3 md:mb-6 flex items-center space-x-2">
+420: <Users  className="w-4 h-4 md:w-5 md:h-5 text-gray-800" />
+423: <form onSubmit={handleNextStep} className="space-y-3 sm:space-y-6">
+425: <label className="block text-sm font-semibold mb-2 text-gray-700">Investor ID Number (Auto-Generated)</label>
+426: <input type="text" readOnly className="w-full border border-gray-300 bg-gray-50 text-gray-500 font-mono rounded-lg p-3 outline-none cursor-not-allowed" value={formData.investorId} />
+430: <label className="block text-sm font-semibold mb-2 text-gray-700">Investor Full Name</label>
+432: className="w-full border border-gray-300 rounded-lg p-3 text-lg font-medium focus:ring-2 focus:ring-black outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Enter full name..." />
+435: <div className="flex justify-between pt-6 border-t border-gray-200">
+436: <button type="button" onClick={() => setViewMode('list')} className="px-6 py-2.5 font-semibold text-gray-500 hover:text-black">Cancel</button>
+437: <button type="submit" className="bg-black hover:bg-gray-800 text-white px-8 py-2.5 rounded-lg font-bold transition-colors">Next Page →</button>
+444: <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 rounded-xl p-4 md:p-4 shadow-sm">
+445: <h3 className="text-sm md:text-lg font-bold text-black mb-3 sm:mb-3 md:mb-6 flex items-center space-x-2">
+446: <Banknote  className="w-4 h-4 md:w-5 md:h-5 text-gray-800" />
+449: <form onSubmit={handleVerifiedSave} className="space-y-3 sm:space-y-6">
+450: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+451: <div className="md:col-span-2">
+452: <label className="block text-sm font-semibold mb-2 text-gray-700 flex items-center space-x-1">
+453: <Building className="w-3 md:w-4 h-3 md:h-4" /> <span>Bank Name</span>
+455: <select className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black outline-none bg-white font-medium shadow-sm"
+466: <label className="block text-sm font-semibold mb-2 text-gray-700">Account Number</label>
+467: <input required type="text" className="w-full border border-gray-300 rounded-lg p-3 font-mono focus:ring-2 focus:ring-black outline-none shadow-sm" value={formData.accountNumber} onChange={e => setFormData({...formData, accountNumber: e.target.value.replace(/\D/g, '')})} placeholder="e.g. 30291039482" />
+471: <label className="block text-sm font-semibold mb-2 text-gray-700">IFSC Code</label>
+472: <input required type="text" className="w-full border border-gray-300 rounded-lg p-3 font-mono uppercase focus:ring-2 focus:ring-black outline-none shadow-sm" value={formData.ifscCode} onChange={e => setFormData({...formData, ifscCode: e.target.value.toUpperCase()})} placeholder="e.g. SBIN0001234" />
+475: <div className="md:col-span-2">
+476: <label className="block text-sm font-semibold mb-2 text-gray-700">Account Holder Name</label>
+477: <input required type="text" className="w-full border border-gray-300 bg-white rounded-lg p-3 font-bold text-black uppercase focus:ring-2 focus:ring-black outline-none shadow-sm" value={formData.accountHolderName} onChange={e => setFormData({...formData, accountHolderName: e.target.value.toUpperCase()})} />
+478: <p className="text-xs text-gray-500 mt-2">Auto-filled from Step 1. You can edit if bank account name differs.</p>
+483: <label className="block text-sm font-semibold mb-2 text-gray-700">RADHIKA MA SERVICE CHARGE (₹)</label>
+484: <input required type="number" className="w-full md:w-1/2 border border-blue-300 bg-blue-50/50 rounded-lg p-3 font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm" value={formData.rmasServiceCharge} onChange={e => setFormData({...formData, rmasServiceCharge: e.target.value})} placeholder="Enter amount..." />
+487: <div className="flex justify-between pt-6 border-t border-gray-200">
+488: <button type="button" onClick={() => setViewMode('add-step-1')} className="px-6 py-2.5 font-semibold text-gray-500 hover:text-black">← Back</button>
+489: <button type="submit" className="bg-green-600 hover:bg-green-700 text-black px-8 py-2.5 rounded-lg font-bold transition-colors shadow-sm">✓ Verified Investors</button>
+495: <div className="w-full bg-white border border-gray-200 rounded-xl p-4 shadow-sm max-w-4xl mx-auto">
+496: <div className="flex items-center mb-3 sm:mb-3 md:mb-6">
+497: <button onClick={() => setViewMode('list')} className="mr-4 p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+498: <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+501: <h3 className="text-sm md:text-lg font-bold text-black flex items-center space-x-2">
+504: <p className="text-xs text-gray-500">Select an investment to withdraw and credit the investor.</p>
+508: <div className="space-y-4">
+523: <div key={bizId} className="border border-gray-200 rounded-lg p-3 sm:p-4 md:p-3 md:p-5 flex flex-col md:flex-row md:items-center justify-between bg-gray-50">
+524: <div className="mb-4 md:mb-0">
+525: <div className="flex items-center space-x-2">
+526: <span className="bg-slate-200 text-slate-800 text-xs px-2 py-0.5 rounded font-bold">Total QTY: {groupInvs.length}</span>
+527: <h4 className="font-bold text-lg text-black">{business?.name || 'Unknown Business'}</h4>
+529: <p className="text-sm text-gray-600 mt-1">Owner: {business?.ownerName} | Bus. ID: {business?.businessId}</p>
+530: <p className="text-xs font-mono text-gray-500 mt-0.5">{activeInvs.length} Active | {completedInvs.length} Withdrawn</p>
+532: <div className="flex flex-col md:items-end justify-center">
+533: <p className="font-black text-sm md:text-lg text-black">{formatINR(totalAmount)}</p>
+534: <p className="text-sm font-semibold text-green-600 mb-3">{activeInvs[0]?.interestRate || completedInvs[0]?.interestRate || 0}% Interest</p>
+536: <div className="flex items-center space-x-3 mt-2">
+537: <div className="flex items-center space-x-2">
+538: <label className="text-xs font-bold text-gray-600 uppercase">Withdraw QTY:</label>
+541: className="border border-gray-300 rounded p-1 text-sm font-bold bg-white"
+549: className="bg-black hover:bg-gray-800 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors w-full sm:w-auto"
+555: <div className="inline-flex items-center bg-gray-200 text-gray-600 font-bold px-4 py-2 rounded-lg text-sm">
+556: <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" className="mr-2" /> ALL WITHDRAWN
+564: <div className="text-center py-8 text-gray-500">No investments found for this investor.</div>
+571: <div className="w-full max-w-2xl mx-auto bg-white border border-gray-200 rounded-xl p-3 sm:p-4 md:p-3 md:p-6 shadow-sm">
+572: <div className="flex items-center mb-3 sm:mb-3 md:mb-6 border-b border-gray-200 pb-4">
+573: <button onClick={() => setViewMode('withdraw-list')} className="mr-4 p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+574: <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+577: <h3 className="text-sm md:text-lg font-bold text-black flex items-center space-x-2">
+578: <Wallet className="w-5 h-5 sm:w-6 sm:h-6" className="text-blue-600" />
+581: <p className="text-sm text-gray-500 mt-1">{selectedInvestor.name} → {state.businesses.find(b => b.id === selectedInvestments[0].businessId)?.name}</p>
+585: <form onSubmit={goToBanking} className="space-y-3 sm:space-y-6">
+586: <div className="bg-blue-50 p-3 sm:p-4 rounded-xl border border-blue-100 text-sm">
+587: <div className="flex justify-between items-center mb-2">
+588: <span className="text-sm font-semibold text-blue-900">Original Investment Amount ({selectedInvestments.length} Qty):</span>
+589: <span className="text-lg font-black text-blue-900">{formatINR(selectedInvestments.reduce((s, i) => s + i.amount, 0))}</span>
+591: <div className="flex justify-between items-center mb-2">
+592: <span className="text-sm font-semibold text-blue-900">Current Market Trend:</span>
+593: <span className={`text-lg font-bold ${calculateProfit().marketTrend >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+597: <div className="flex justify-between items-center pt-2 border-t border-blue-200">
+598: <span className="text-sm font-semibold text-blue-900">Projected Return (Before deductions):</span>
+599: <span className={`text-lg font-bold ${calculateProfit().totalProfit < 0 ? 'text-red-600' : 'text-green-700'}`}>
+606: <label className="block text-sm font-semibold mb-2 text-gray-900">Term Validation</label>
+607: <div className="p-3 bg-amber-50 text-amber-800 text-sm rounded border border-amber-200 mb-3">
+610: <div className="flex items-center space-x-4">
+611: <div className="flex-1">
+612: <label className="block text-xs font-semibold mb-1 text-gray-600">Committed Term (Months)</label>
+615: type="number" className="w-full border border-gray-200 bg-gray-100 text-gray-600 rounded-lg p-2.5 outline-none font-bold cursor-not-allowed" value={withdrawFormData.committedMonths} />
+617: <div className="flex-1">
+618: <label className="block text-xs font-semibold mb-1 text-gray-600">Completed Term (Months)</label>
+620: type="number" className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-black outline-none font-bold" value={withdrawFormData.completedMonths} onChange={e => setWithdrawFormData({...withdrawFormData, completedMonths: e.target.value})} />
+625: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+627: <label className="block text-sm font-semibold mb-2 text-gray-900">RMAS Commission (₹)</label>
+628: <input required type="number" className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 font-bold focus:ring-2 focus:ring-black text-sm sm:text-base outline-none" value={withdrawFormData.rmasCommission} onChange={e => setWithdrawFormData({...withdrawFormData, rmasCommission: e.target.value})} placeholder="e.g. 5000" />
+629: <p className="text-xs text-gray-500 mt-1">Deducted from both parties</p>
+633: <label className="block text-sm font-semibold mb-2 text-red-600">Happy Muslim Income Tax (₹)</label>
+634: <input required type="number" className="w-full border border-red-300 bg-red-50 rounded-lg p-2 sm:p-3 font-bold focus:ring-2 focus:ring-red-500 text-sm sm:text-base outline-none" value={withdrawFormData.happyIncomeTax} onChange={e => setWithdrawFormData({...withdrawFormData, happyIncomeTax: e.target.value})} placeholder="e.g. 2000" />
+638: <div className="bg-slate-50 border border-slate-200 p-3 sm:p-4 rounded-xl text-slate-900 text-sm sm:text-xs sm:text-base">
+639: <div className="flex justify-between items-center mb-2">
+640: <span className="text-gray-600 font-semibold">Total Profit/Loss</span>
+641: <span className={`font-bold ${calculateProfit().totalProfit < 0 ? 'text-red-600' : 'text-green-600'}`}>
+645: <div className="flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
+646: <span className="text-slate-900 font-bold uppercase tracking-widest text-xs">Gross Payable (Capital + PnL)</span>
+647: <span className="font-bold text-slate-900">{formatINR(selectedInvestments.reduce((sum, inv) => sum + inv.amount, 0) + calculateProfit().totalProfit)}</span>
+649: <div className="flex justify-between items-center mb-2 pt-2">
+650: <span className="text-gray-600 font-semibold">Total Deductions (Comm + Tax)</span>
+651: <span className="font-bold text-red-600">-{formatINR((Number(withdrawFormData.rmasCommission) || 0) + (Number(withdrawFormData.happyIncomeTax) || 0))}</span>
+653: <div className="border-t border-gray-200 my-4"></div>
+654: <div className="flex justify-between items-end">
+655: <span className="text-lg font-bold text-slate-900">Total Final Credited</span>
+656: <span className="text-sm md:text-lg font-black text-slate-900">{formatINR(calculateFinalPayout())}</span>
+660: <div className="flex justify-end pt-2">
+661: <button type="submit" className="bg-black hover:bg-gray-800 text-white px-4 py-2 sm:px-8 sm:py-3 rounded-lg font-bold text-sm md:text-lg w-full sm:w-auto flex items-center space-x-2 transition-colors">
+663: <ArrowLeft  className="w-3.5 h-3.5 md:w-4 md:h-4 rotate-180" />
+671: <div className="w-full max-w-4xl mx-auto bg-white border border-gray-200 rounded-xl p-3 sm:p-4 md:p-3 md:p-6 shadow-sm">
+672: <h3 className="text-sm md:text-lg font-black text-black mb-4 sm:mb-3 sm:mb-3 md:mb-6 md:mb-4 md:mb-8 text-center flex items-center justify-center space-x-2">
+673: <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" />
+677: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+679: <div className="bg-red-50 p-3 sm:p-4 rounded-xl border border-red-200">
+680: <div className="flex items-center space-x-2 mb-4 text-red-800">
+681: <div className="w-8 h-8 rounded-full bg-red-200 flex items-center justify-center font-bold">DR</div>
+682: <h4 className="font-bold text-lg">DEBIT FROM (Business)</h4>
+685: <div className="w-full space-y-2 sm:space-y-3 bg-white p-3 sm:p-4 rounded-lg border border-red-100">
+686: <p className="font-bold text-gray-900">{state.businesses.find(b => b.id === selectedInvestments[0].businessId)?.bankDetails?.bankName}</p>
+687: <div className="font-mono text-sm">
+688: <p className="text-gray-600">A/C: <span className="text-black font-semibold">{state.businesses.find(b => b.id === selectedInvestments[0].businessId)?.bankDetails?.accountNumber}</span></p>
+689: <p className="text-gray-600">IFSC: <span className="text-black font-semibold">{state.businesses.find(b => b.id === selectedInvestments[0].businessId)?.bankDetails?.ifscCode}</span></p>
+691: <p className="text-xs font-bold text-gray-500">HOLDER: {state.businesses.find(b => b.id === selectedInvestments[0].businessId)?.bankDetails?.accountHolderName}</p>
+694: <div className="w-full bg-white p-4 rounded-lg border border-red-100 text-sm font-semibold text-red-600 text-center">
+699: <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+700: <p className="text-xs font-bold text-blue-800 uppercase mb-1">RMAS Fund Contributions Applied</p>
+702: <p className="text-sm text-blue-900 mb-1 flex justify-between">
+704: <span className="font-bold">{formatINR(calculateBusinessBurden().rmasSubsidyPays)}</span>
+708: <p className="text-sm text-blue-900 flex justify-between">
+710: <span className="font-bold">{formatINR(calculateBusinessBurden().rmasMarketCover)}</span>
+718: <div className="bg-green-50 p-3 sm:p-4 rounded-xl border border-green-200">
+719: <div className="flex items-center space-x-2 mb-4 text-green-800">
+720: <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center font-bold">CR</div>
+721: <h4 className="font-bold text-lg">CREDIT TO (Investor)</h4>
+724: <div className="w-full space-y-2 sm:space-y-3 bg-white p-3 sm:p-4 rounded-lg border border-green-100">
+725: <p className="font-bold text-gray-900">{selectedInvestor.bankDetails.bankName}</p>
+726: <div className="font-mono text-sm">
+727: <p className="text-gray-600">A/C: <span className="text-black font-semibold">{selectedInvestor.bankDetails.accountNumber}</span></p>
+728: <p className="text-gray-600">IFSC: <span className="text-black font-semibold">{selectedInvestor.bankDetails.ifscCode}</span></p>
+730: <p className="text-xs font-bold text-gray-500">HOLDER: {selectedInvestor.bankDetails.accountHolderName}</p>
+735: <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-2">
+737: <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">Amount to Transfer</p>
+738: <p className="text-sm md:text-lg font-black text-black mt-1">{formatINR(calculateFinalPayout())}</p>
+740: <div className="text-right">
+743: <p className="text-sm font-semibold text-gray-600">
+744: Business Pays: <span className="font-bold">{formatINR(calculateBusinessBurden().businessPays)}</span>
+746: <p className="text-sm font-semibold text-gray-600">
+747: RMAS Fund Pays: <span className="font-bold">{formatINR(calculateBusinessBurden().totalRmasContribution)}</span>
+751: <p className="text-sm font-semibold text-gray-500">Includes all deductions</p>
+753: <p className="text-sm font-semibold text-gray-500">Generating Profit Slip on Success</p>
+757: <div className="flex justify-end space-x-4">
+758: <button onClick={() => setViewMode('withdraw-calc')} className="px-6 py-3 font-bold text-gray-600 hover:text-black">Modify Amount</button>
+759: <button onClick={handlePay} className="bg-green-600 hover:bg-green-700 text-black w-full sm:w-auto px-6 py-2 sm:px-12 sm:py-3 rounded-xl font-black text-base md:text-lg shadow-lg flex items-center space-x-2 transition-all hover:scale-105 active:scale-95">
+760: <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" />
+768: <div className="w-full bg-white border border-gray-200 rounded-xl p-4 shadow-sm max-w-5xl mx-auto">
+769: <div className="flex items-center mb-3 sm:mb-3 md:mb-6">
+770: <button onClick={() => setViewMode('list')} className="mr-4 p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+771: <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+774: <h3 className="text-sm md:text-lg font-bold text-black flex items-center space-x-2">
+775: <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" className="text-gray-500" />
+778: <p className="text-xs text-gray-500">View all completed investments, paid profits, and generated slips for this investor.</p>
+782: <div className="space-y-4">
+787: <div key={inv.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 md:p-3 md:p-5 flex flex-col md:flex-row md:items-center justify-between bg-white shadow-sm hover:shadow-md transition-shadow">
+788: <div className="mb-4 md:mb-0">
+789: <div className="flex items-center space-x-2">
+790: <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" className="text-green-500" />
+791: <h4 className="font-bold text-lg text-black">{business?.name || 'Unknown Business'}</h4>
+793: <p className="text-sm text-gray-600 mt-1">Paid On: {payout?.payoutDate ? new Date(payout.payoutDate).toLocaleDateString('en-IN') : 'N/A'}</p>
+794: <p className="text-xs font-mono text-gray-500 mt-0.5">Inv. ID: #{inv.id}</p>
+796: <div className="flex items-center space-x-8">
+797: <div className="text-right">
+798: <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Invested</p>
+799: <p className="font-bold text-black">{formatINR(inv.amount)}</p>
+801: <div className="text-right">
+802: <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Returned</p>
+803: <p className="font-black text-green-700">{formatINR(payout?.totalCredited || 0)}</p>
+805: <div className="text-right">
+806: <p className="text-xs font-bold text-red-500 uppercase tracking-widest">Tax Paid</p>
+807: <p className="font-bold text-red-600">{formatINR(payout?.happyIncomeTax || 0)}</p>
+809: <div className="border-l border-gray-200 pl-8">
+811: className="bg-blue-50 hover:bg-blue-50 text-blue-700 font-bold px-4 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2"
+813: <FileText className="w-3 md:w-4 h-3 md:h-4" />
+822: <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
+823: <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" className="mx-auto mb-3 text-gray-600" />
+824: <p className="font-semibold text-gray-700">No completed banking records found.</p>
+825: <p className="text-sm mt-1">When an investment is withdrawn, the profit slip will appear here.</p>
+835: <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 p-4 print:hidden">
+836: <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+837: <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10">
+838: <h3 className="font-bold text-lg text-black flex items-center space-x-2">
+839: <CheckCircle className="text-green-500" />
+842: <div className="flex items-center space-x-3">
+844: className="bg-black hover:bg-gray-800 text-white px-4 py-2 flex items-center space-x-2 rounded-lg font-semibold transition"
+846: <Download className="w-3 md:w-4 h-3 md:h-4" />
+850: className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
+852: <X className="w-4 h-4 md:w-5 md:h-5" />
+856: <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+857: <div id="profit-slip-content" className="bg-white shadow-sm border border-gray-200 mx-auto max-w-[800px] p-3 sm:p-3 md:p-6 md:p-8 text-gray-900 border-l-4 md:border-l-[16px] border-l-black relative overflow-hidden">
+870: <div className="hidden print:block font-sans text-black">
+880: <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4 print:hidden">
+881: <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+882: <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10">
+883: <h3 className="font-bold text-lg text-black">Preview PDF Document</h3>
+884: <div className="flex items-center space-x-3">
+886: className="bg-black hover:bg-gray-800 text-white px-4 py-2 flex items-center space-x-2 rounded-lg font-semibold transition"
+888: <Download className="w-3 md:w-4 h-3 md:h-4" />
+892: className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
+894: <X className="w-4 h-4 md:w-5 md:h-5" />
+899: <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+900: <div id="investor-pdf-content" className="bg-white shadow-sm border border-gray-200 mx-auto max-w-3xl p-4 md:p-8 aspect-auto text-gray-900">
+912: <div className="hidden print:block font-sans text-black p-0 m-0">
+924: <div className="space-y-4 sm:space-y-8 leading-relaxed">
+925: <div className="text-center space-y-1 sm:space-y-2 border-b-2 border-black pb-3 sm:pb-3 sm:pb-6 mb-4 sm:mb-4 md:mb-8">
+926: <h1 className="text-base md:text-xl font-black tracking-widest text-black">RADHIKA MA SERVICE</h1>
+927: <h2 className="text-sm md:text-lg font-bold text-gray-700 mt-2">INVESTMENT SERVICE GUIDELINES RULES</h2>
+930: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+932: <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Investor Details</p>
+933: <p className="font-bold text-lg mt-1 text-black">{investor.name}</p>
+934: <p className="font-mono text-sm text-gray-600 mt-0.5">ID: #{investor.investorId}</p>
+935: <p className="text-sm text-gray-600 mt-0.5">Joined: {new Date(investor.joinDate).toLocaleDateString('en-IN')}</p>
+939: <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Banking Profile</p>
+940: <p className="font-bold text-black mt-1">{investor.bankDetails.bankName}</p>
+941: <p className="font-mono text-sm text-gray-600 mt-0.5">A/C: {investor.bankDetails.accountNumber}</p>
+942: <p className="font-mono text-sm text-gray-600 mt-0.5">IFSC: {investor.bankDetails.ifscCode}</p>
+943: <p className="text-xs font-semibold text-gray-600 mt-1">ACCOUNT HOLDER: {investor.bankDetails.accountHolderName}</p>
+948: <div className="space-y-2 sm:space-y-5 text-justify text-xs sm:text-xs sm:text-base">
+974: <div className="mt-4 sm:mt-4 sm:mt-4 md:mt-8 bg-gray-50 border border-black p-3 sm:p-4 rounded">
+975: <h4 className="font-bold text-lg text-black mb-4 pb-2 border-b border-gray-300">: ખાસ નોંધ :</h4>
+976: <p className="mb-4 text-justify">
+979: <ol className="list-decimal pl-6 space-y-4 text-justify">
+981: <span className="font-semibold text-black">જો કંપની આર્થિક રીતે તમારા સમયગાળા મુજબ તમે નક્કી કરેલ ઇન્વેસ્ટમેન્ટ જાહેર નથી કરી શકતું</span> તો શું તમે તે સમય પીરિયડ લંબાવા માંગો છો? જો માંગતા હોય તો અમે સમય ગાળો લંબાવી દઈશું અને તે કારણોસર તમને તે બસ્સીનેસ દરમિયાન અમુક ટકા ઇન્ટરેસ્ટ વધારી ને પણ આપીએ છીએ.
+984: <span className="font-semibold text-black">જો તમારા ટાઈમ પીરિયડ દરમિયાન જો તમે ઇન્વેસ્ટ કરેલ અમોઉન્ટ તમને તાત્કાલિક રૂપે જરૂર હોય</span> અને બસ્સીનેસ કંપની ને આર્થિક સ્થિત ઉપર ના આવી હોય તો અમારી ટીમ તમને તમે રોકેલ વળતર પાછું આપીસુ જે તમે ઇન્ટરેસ્ટ રેટ મુજબ નક્કી કરેલ હતું તે સાથે જે તમને RMAS કંપની પૂરું પાડશે જેથી તમને અમારી કંપની ઉપર કાયમ વિશ્વાસ રહે અને ફરીથી ઇન્વેસ્ટ કરવામાં અનુસૂચિત બનો.
+989: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+991: <div className="border-b border-gray-400 w-48 mx-auto mb-2 h-12"></div>
+992: <p className="font-bold">Authorized Signatory</p>
+993: <p className="text-sm font-semibold text-gray-500">RADHIKA MA SERVICE</p>
+996: <div className="border-b border-gray-400 w-48 mx-auto mb-2 h-12"></div>
+997: <p className="font-bold">Investor Signature</p>
+998: <p className="text-sm font-semibold text-gray-500">{investor.name}</p>
+1010: <div className="space-y-4 sm:space-y-8 leading-relaxed">
+1011: <div className="absolute top-10 right-10 opacity-10">
+1012: <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" />
+1014: <div className="border-b-4 border-black pb-3 sm:pb-6">
+1015: <h1 className="text-sm md:text-lg font-black uppercase tracking-tighter">Radhika Ma Service</h1>
+1016: <h2 className="text-sm md:text-lg font-bold tracking-widest text-gray-500 mt-1">OFFICIAL PROFIT SETTLEMENT SLIP</h2>
+1019: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+1021: <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Investor Information</p>
+1022: <p className="font-bold text-sm md:text-lg uppercase">{investor.name}</p>
+1023: <p className="text-sm font-mono mt-1 text-gray-600">ID: #{investor.investorId}</p>
+1024: <p className="text-sm font-semibold mt-2">Credited Bank: <span className="font-mono">{investor.bankDetails.bankName} (...{investor.bankDetails.accountNumber.slice(-4)})</span></p>
+1027: <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Business Source</p>
+1028: <div className="flex items-center space-x-2">
+1029: <p className="font-bold text-sm md:text-lg uppercase">{business.name}</p>
+1030: {isBlueTick && <BadgeCheck  className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500" />}
+1031: {isPreVerified && <Clock  className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />}
+1033: <p className="text-sm text-gray-600 mt-1 uppercase">Owner: {business.ownerName}</p>
+1034: <p className="text-sm font-mono mt-1 text-gray-600">Bus. ID: #{business.businessId}</p>
+1036: <div className="mt-2 text-[10px] font-bold px-2 py-1 bg-blue-50 text-blue-800 rounded w-max border border-blue-200 uppercase tracking-wider">
+1044: <div className="mt-4 md:mt-4 sm:mt-4 md:mt-8 border border-gray-300 rounded overflow-x-auto w-full max-w-full">
+1045: <table className="w-full text-left text-xs sm:text-sm">
+1046: <thead className="bg-gray-100 font-bold uppercase text-xs tracking-wider">
+1048: <th className="p-2 sm:p-4 border-b border-gray-300">Description</th>
+1049: <th className="p-2 sm:p-4 border-b border-gray-300 text-right">Amount</th>
+1052: <tbody className="divide-y divide-gray-200 text-xs sm:text-base">
+1054: <td className="p-2 sm:p-4 py-2 sm:py-3 font-semibold">Original Invested Capital</td>
+1055: <td className="p-2 sm:p-4 py-2 sm:py-3 text-right font-mono font-semibold">{formatINR(investment.amount)}</td>
+1057: <tr className={`border-b border-gray-300 ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'bg-red-50' : 'bg-green-50'}`}>
+1058: <td className={`p-2 sm:p-4 py-2 sm:py-3 font-semibold ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
+1061: <td className={`p-2 sm:p-4 py-2 sm:py-3 text-right font-mono font-bold ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
+1065: <tr className="bg-gray-100 border-b-2 border-black">
+1066: <td className="p-2 sm:p-4 py-2 sm:py-3 text-black font-bold uppercase tracking-wider text-xs">Gross Payble Amount</td>
+1067: <td className="p-2 sm:p-4 py-2 sm:py-3 text-right font-mono text-black font-bold">{formatINR((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0))}</td>
+1070: <tr className="bg-blue-50 border-b-2 border-black">
+1071: <td className="p-2 sm:p-4 py-2 sm:py-3 text-blue-900 font-bold text-xs uppercase tracking-wider italic">Of above Gross, RMAS Fund Contribution ({business.rmasSubsidy}%)</td>
+1072: <td className="p-2 sm:p-4 py-2 sm:py-3 text-right font-mono text-blue-900 font-bold">{formatINR(investment.amount * ((business.rmasSubsidy || 0) / 100))}</td>
+1076: <td className="p-2 sm:p-4 py-2 sm:py-3 text-gray-700 font-semibold">Less: RMAS Service Commission</td>
+1077: <td className="p-2 sm:p-4 py-2 sm:py-3 text-right font-mono font-bold text-gray-700">-{formatINR(payout?.rmasCommission || 0)}</td>
+1079: <tr className="border-b-[3px] border-black">
+1080: <td className="p-2 sm:p-4 py-2 sm:py-3 text-red-700 font-semibold">Less: Happy Muslim Income Tax</td>
+1081: <td className="p-2 sm:p-4 py-2 sm:py-3 text-right font-mono text-red-700 font-bold">-{formatINR(payout?.happyIncomeTax || 0)}</td>
+1084: <tfoot className="bg-black text-white">
+1086: <td className="p-1.5 md:p-3 md:p-5 font-bold uppercase tracking-wider text-xs sm:text-base">Net Amount Credited to Investor</td>
+1087: <td className="p-2 sm:p-3 md:p-5 text-right font-mono font-black text-sm md:text-lg">{formatINR(payout?.totalCredited || 0)}</td>
+1093: <div className="space-y-2 sm:space-y-4 text-justify text-xs sm:text-sm mt-4 sm:mt-4 sm:mt-4 md:mt-8 pb-2 sm:pb-4">
+1094: <p className="font-semibold">: Settlement Agreement :</p>
+1099: <div className="flex justify-between items-end pt-6 sm:pt-12 border-t border-gray-300 mt-3 md:mt-6 sm:mt-4 sm:mt-12">
+1100: <div className="text-center">
+1101: <p className="font-bold border-t border-black pt-2 w-48 mx-auto mt-16">Authorized Digital Sign</p>
+1102: <p className="text-xs uppercase text-gray-500 font-semibold mt-1">RMAS Accounts Team</p>
+1104: <div className="text-right">
+1105: <p className="text-xs text-gray-500">Transaction Date: {new Date().toLocaleDateString('en-IN')}</p>
+1106: <p className="text-xs text-gray-500 font-mono mt-1">Ref No: RT-{Math.random().toString().slice(2, 10)}</p>
