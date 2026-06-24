@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { ArrowLeft, Building2, Save, X, Edit2, Shield, AlertCircle, BadgeCheck, Clock, Wallet, ArrowDownRight, ArrowUpRight, FileText } from 'lucide-react';
+import { ArrowLeft, Building2, Save, X, Edit2, Shield, AlertCircle, BadgeCheck, Clock, Wallet, ArrowDownRight, ArrowUpRight, FileText, ImageIcon, Upload } from 'lucide-react';
+import Cropper from 'react-easy-crop';
 import { Business } from '../types';
 import { getVerificationStats } from '../utils/blueTick';
+import { getUnifiedBankBalance, getUnifiedTransactions } from '../utils/bankBalance';
 
 interface Props {
   businessId: string;
@@ -25,15 +27,18 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
     fundingRequired: business?.fundingRequired.toString() || '0',
     interestRate: business?.interestRate.toString() || '0',
     status: business?.status || 'listed',
-  });
-
-  const [isEnhancedEditing, setIsEnhancedEditing] = useState(false);
-  const [enhancedFormData, setEnhancedFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
     location: business?.location || '',
     photoUrl: business?.photoUrl || '',
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   if (!business) return null;
 
@@ -52,23 +57,13 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
         fundingRequired: parseFloat(formData.fundingRequired),
         interestRate: parseFloat(formData.interestRate),
         status: formData.status as Business['status'],
+        name: formData.name,
+        description: formData.description,
+        location: formData.location,
+        photoUrl: formData.photoUrl,
       }
     });
     setIsEditing(false);
-  };
-
-  const handleEnhancedSave = () => {
-    dispatch({
-      type: 'UPDATE_BUSINESS',
-      payload: {
-        ...business,
-        name: enhancedFormData.name,
-        description: enhancedFormData.description,
-        location: enhancedFormData.location,
-        photoUrl: enhancedFormData.photoUrl,
-      }
-    });
-    setIsEnhancedEditing(false);
   };
 
   const handleCancel = () => {
@@ -76,79 +71,69 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
       fundingRequired: business.fundingRequired.toString(),
       interestRate: business.interestRate.toString(),
       status: business.status,
-    });
-    setIsEditing(false);
-  };
-
-  const handleEnhancedCancel = () => {
-    setEnhancedFormData({
       name: business.name || '',
       description: business.description || '',
       location: business.location || '',
       photoUrl: business.photoUrl || '',
     });
-    setIsEnhancedEditing(false);
+    setIsEditing(false);
   };
 
-  const bankTransactions: { id: string, type: 'CREDIT' | 'DEBIT', amount: number, date: Date, title: string, description: string }[] = [];
-  let liveBalance = 0;
+  const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
 
-  businessInvestments.forEach(inv => {
-    const investor = state.investors.find(i => i.id === inv.investorId);
-    bankTransactions.push({
-      id: `credit-${inv.id}`,
-      type: 'CREDIT',
-      amount: inv.amount,
-      date: new Date(inv.startDate),
-      title: 'Investment Received',
-      description: `From ${investor?.name || 'Unknown'} (#${investor?.investorId || 'N/A'})`
-    });
-    liveBalance += inv.amount;
-
-    if (inv.status === 'completed' && inv.payoutDetails) {
-      const p = inv.payoutDetails;
-      
-      const rmasCover = p.rmasMarketCover || 0;
-      const rmasSubsidy = p.rmasSubsidyPays || 0;
-      
-      if (rmasSubsidy > 0) {
-        bankTransactions.push({
-          id: `credit-subsidy-${inv.id}`,
-          type: 'CREDIT',
-          amount: rmasSubsidy,
-          date: new Date(p.payoutDate),
-          title: 'RMAS Subsidy Credit',
-          description: 'Authority funding/aid from RMAS'
-        });
-        liveBalance += rmasSubsidy;
-      }
-      
-      if (rmasCover > 0) {
-        bankTransactions.push({
-          id: `credit-cover-${inv.id}`,
-          type: 'CREDIT',
-          amount: rmasCover,
-          date: new Date(p.payoutDate),
-          title: 'RMAS Loss Protection Credit',
-          description: 'Principal & interest shortfall cover by RMAS'
-        });
-        liveBalance += rmasCover;
-      }
-
-      const grossPayout = p.totalCredited + p.rmasCommission + p.happyIncomeTax;
-      bankTransactions.push({
-        id: `debit-${inv.id}`,
-        type: 'DEBIT',
-        amount: grossPayout,
-        date: new Date(p.payoutDate),
-        title: 'Settlement Paid',
-        description: `To ${investor?.name || 'Unknown'}`
-      });
-      liveBalance -= grossPayout;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => setImageSrc(reader.result?.toString() || null));
+      reader.readAsDataURL(e.target.files[0]);
     }
-  });
+  };
 
-  bankTransactions.sort((a, b) => b.date.getTime() - a.date.getTime());
+  const createCroppedImage = async () => {
+    if (!imageSrc || !croppedAreaPixels) return;
+
+    const image = new Image();
+    image.src = imageSrc;
+    await new Promise((resolve) => (image.onload = resolve));
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) return;
+
+    // @ts-ignore
+    canvas.width = croppedAreaPixels.width;
+    // @ts-ignore
+    canvas.height = croppedAreaPixels.height;
+
+    ctx.drawImage(
+      image,
+      // @ts-ignore
+      croppedAreaPixels.x,
+      // @ts-ignore
+      croppedAreaPixels.y,
+      // @ts-ignore
+      croppedAreaPixels.width,
+      // @ts-ignore
+      croppedAreaPixels.height,
+      0,
+      0,
+      // @ts-ignore
+      croppedAreaPixels.width,
+      // @ts-ignore
+      croppedAreaPixels.height
+    );
+
+    const base64Image = canvas.toDataURL('image/jpeg');
+    setFormData({ ...formData, photoUrl: base64Image });
+    setImageSrc(null);
+  };
+
+  const unifiedBalance = business ? getUnifiedBankBalance(business.ownerName, state.businesses, state.investors, state.investments) : 0;
+  
+  const bankTransactions = business ? getUnifiedTransactions(business.ownerName, state.businesses, state.investors, state.investments) : [];
 
   return (
     <div className="space-y-6 animate-fade-in transition-all">
@@ -163,6 +148,11 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
           <h3 className={"flex md:hidden font-medium items-center space-x-1.5 " + (business.name.length > 20 ? 'text-[11px]' : 'text-sm') + " text-kite-text"}>
             <span className="truncate max-w-[200px]">{business.name}</span>
             {isBlueTick && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 shrink-0" />}
+            {business.id === 'admin_business' && (
+              <span className="bg-blue-100 text-blue-800 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
+                Owned
+              </span>
+            )}
           </h3>
         </div>
       </div>
@@ -175,6 +165,12 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
               <h3 className={"hidden md:flex font-medium items-center space-x-2 text-base text-kite-text"}>
                 <span className="truncate max-w-xs">{business.name}</span>
                 {isBlueTick && <BadgeCheck  className="w-5 h-5 text-white fill-blue-500 shrink-0" title="RMAS Verified" />}
+                {business.id === 'admin_business' && (
+                  <span className="bg-blue-100 text-blue-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm tracking-wider flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Verified & Owned
+                  </span>
+                )}
               </h3>
               {!isEditing ? (
                 <div className="flex items-center space-x-3 md:space-x-2 w-full md:w-auto justify-center">
@@ -232,16 +228,32 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                   
                   <div className="flex flex-col justify-center items-start md:items-end p-4">
                     <p className="text-xs text-kite-text-light mb-1">Available balance</p>
-                    <p className={"text-2xl md:text-3xl font-medium tracking-tight " + (liveBalance >= 0 ? "text-kite-blue" : "text-kite-red")} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
-                      {liveBalance >= 0 ? '' : '-'}{formatINR(Math.abs(liveBalance))}
+                    <p className={"text-2xl md:text-3xl font-medium tracking-tight " + (unifiedBalance >= 0 ? "text-kite-blue" : "text-kite-red")} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
+                      {unifiedBalance >= 0 ? '' : '-'}{formatINR(Math.abs(unifiedBalance))}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-8">
-                  <h4 className="text-xl font-medium text-kite-text mb-4">
-                    Statement
-                  </h4>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-xl font-medium text-kite-text">Statement</h4>
+                    <select 
+                      className="border border-kite-border rounded-sm px-2 py-1 text-sm bg-white outline-none"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const rows = document.querySelectorAll('.tx-row');
+                        rows.forEach(row => {
+                          if (val === 'all') row.classList.remove('hidden');
+                          else if (row.getAttribute('data-category') === val) row.classList.remove('hidden');
+                          else row.classList.add('hidden');
+                        });
+                      }}
+                    >
+                      <option value="all">All Transactions</option>
+                      <option value="commission">Commission</option>
+                      <option value="sahay">Sahay</option>
+                    </select>
+                  </div>
                   {bankTransactions.length > 0 ? (
                     <div className="overflow-x-auto border border-kite-border/50 rounded-sm">
                       <table className="w-full text-left text-sm whitespace-nowrap">
@@ -254,10 +266,14 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                         </thead>
                         <tbody className="divide-y divide-kite-border/50 bg-white">
                           {bankTransactions.map(tx => (
-                            <tr key={tx.id} className="hover:bg-kite-bg/30 transition-colors">
+                            <tr key={tx.id} className="hover:bg-kite-bg/30 transition-colors tx-row" data-category={tx.category || 'other'}>
                               <td className="py-3 px-4 text-xs text-kite-text-light">{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                               <td className="py-3 px-4">
-                                <p className="text-sm text-kite-text">{tx.title}</p>
+                                <p className="text-sm text-kite-text flex items-center space-x-2">
+                                  <span>{tx.title}</span>
+                                  {tx.category === 'commission' && <span className="px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-700 text-[9px] uppercase tracking-wider">Commission</span>}
+                                  {tx.category === 'sahay' && <span className="px-1.5 py-0.5 rounded-sm bg-purple-100 text-purple-700 text-[9px] uppercase tracking-wider">Sahay</span>}
+                                </p>
                                 <p className="text-[11px] text-kite-text-light mt-0.5">{tx.description}</p>
                               </td>
                               <td className={"py-3 px-4 text-right text-sm " + (tx.type === 'CREDIT' ? 'text-kite-green' : 'text-kite-text')} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
@@ -275,72 +291,113 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                   )}
                 </div>
               </div>
+            ) : isEditing ? (
+              <div className="space-y-6">
+                <div className="flex flex-col items-center space-y-4 mb-6">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border border-kite-border bg-kite-bg flex flex-col items-center justify-center relative group">
+                    {formData.photoUrl ? (
+                      <img src={formData.photoUrl} alt={business.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-gray-400 flex flex-col items-center">
+                        <ImageIcon className="w-6 h-6 md:w-8 md:h-8 mb-2 opacity-50" />
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-center">No Photo</span>
+                      </div>
+                    )}
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer"
+                    >
+                      <Upload className="w-5 h-5 md:w-6 md:h-6 mb-1" />
+                      <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">Upload</span>
+                    </button>
+                  </div>
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Business Name</label>
+                    <input type="text" className="w-full border-b border-gray-200 p-2 text-base font-medium focus:border-kite-blue outline-none transition-colors" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Business Name" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Description</label>
+                    <textarea className="w-full border-b border-gray-200 p-2 text-sm focus:border-kite-blue outline-none transition-colors resize-none h-20" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="About the business..." />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Location</label>
+                    <input type="text" className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City, State" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Status</label>
+                    <select className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors bg-white" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
+                      <option value="pending">Pending</option>
+                      <option value="listed">Listed</option>
+                      <option value="funded">Funded</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Funding Required (₹)</label>
+                    <input type="number" className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors" value={formData.fundingRequired} onChange={e => setFormData({...formData, fundingRequired: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Interest Rate (%)</label>
+                    <input type="number" step="0.1" className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
+                  </div>
+                </div>
+
+                <div className="mt-8 border-t border-kite-border pt-4">
+                  <div className="p-3 bg-kite-red/5 border border-kite-red/20 rounded-sm flex items-start space-x-3 text-red-800 mb-6">
+                    <AlertCircle className="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5" />
+                    <p className="text-xs md:text-sm font-medium">Changing financial parameters only applies to future entries.</p>
+                  </div>
+                  
+                  <div className="flex justify-end pt-2">
+                    {onDelete && (
+                      <button onClick={() => { onDelete(); }} className="bg-white text-kite-red border border-kite-red/30 hover:bg-kite-red/5 font-medium text-xs md:text-sm px-4 py-2 rounded-sm transition-colors">
+                        Delete Business
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             ) : (
-              <>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-              <div className="flex justify-between items-end md:items-start md:flex-col md:justify-start">
-                <div>
-                  <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Funding Required (₹)</label>
-                  {isEditing ? (
-                    <input type="number" className="w-full border border-kite-border rounded-sm p-2.5 font-medium text-kite-text focus:ring-2 focus:ring-black outline-none" value={formData.fundingRequired} onChange={e => setFormData({...formData, fundingRequired: e.target.value})} />
-                  ) : (
-                    <p className="text-sm md:text-base font-medium text-kite-text">{formatINR(business.fundingRequired)}</p>
-                  )}
-                </div>
-                <div className="md:hidden">
-                   {isEditing ? (
-                      <input type="number" step="0.1" className="w-16 border border-kite-border rounded-sm p-1 font-medium text-kite-text text-sm focus:ring-2 focus:ring-black outline-none" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
-                   ) : (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  <div className="flex justify-between items-end md:items-start md:flex-col md:justify-start">
+                    <div>
+                      <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Funding Required (₹)</label>
+                      <p className="text-sm md:text-base font-medium text-kite-text">{formatINR(business.fundingRequired)}</p>
+                    </div>
+                    <div className="md:hidden">
                       <p className="text-sm font-medium text-kite-green">{business.interestRate}%</p>
-                   )}
-                </div>
-              </div>
+                    </div>
+                  </div>
 
-              <div className="hidden md:block">
-                <label className="block text-xs font-medium text-kite-text-light uppercase tracking-wider mb-2">Interest Rate (%)</label>
-                {isEditing ? (
-                  <input type="number" step="0.1" className="w-full border border-kite-border rounded-sm p-2.5 font-medium text-kite-text focus:ring-2 focus:ring-black outline-none" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
-                ) : (
-                  <p className="text-base font-medium text-kite-green">{business.interestRate}%</p>
-                )}
-              </div>
+                  <div className="hidden md:block">
+                    <label className="block text-xs font-medium text-kite-text-light uppercase tracking-wider mb-2">Interest Rate (%)</label>
+                    <p className="text-base font-medium text-kite-green">{business.interestRate}%</p>
+                  </div>
 
-              <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex justify-between items-center md:items-start md:flex-col md:justify-start">
-                <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-0 md:mb-2">Status</label>
-                {isEditing ? (
-                  <select className="w-auto md:w-full border border-kite-border rounded-sm p-1 md:p-2.5 text-xs md:text-sm font-medium text-kite-text focus:ring-2 focus:ring-black outline-none bg-white" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
-                    <option value="pending">Pending</option>
-                    <option value="listed">Listed</option>
-                    <option value="funded">Funded</option>
-                  </select>
-                ) : (
-                  <span className={`inline-flex items-center px-3 py-1 rounded-sm text-xs md:text-sm font-medium capitalize ${business.status === 'listed' ? 'bg-kite-green/10 text-green-800' : business.status === 'funded' ? 'bg-black text-white' : 'bg-gray-100 text-kite-text'}`}>
-                    {business.status}
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex flex-col items-start md:justify-start">
-                <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Owner</label>
-                <div className="flex md:flex-col items-baseline justify-between w-full">
-                  <p className="text-sm md:text-base font-medium text-kite-text truncate">{business.ownerName}</p>
-                  {business.authorityType && (
-                    <p className="hidden md:block text-sm font-medium text-kite-text-light mt-1">
-                      {business.authorityType}
-                      {business.rmasSubsidy ? ` (${business.rmasSubsidy}% Subsidy)` : ''}
-                    </p>
-                  )}
+                  <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex justify-between items-center md:items-start md:flex-col md:justify-start">
+                    <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-0 md:mb-2">Status</label>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-sm text-xs md:text-sm font-medium capitalize ${business.status === 'listed' ? 'bg-kite-green/10 text-green-800' : business.status === 'funded' ? 'bg-black text-white' : 'bg-gray-100 text-kite-text'}`}>
+                      {business.status}
+                    </span>
+                  </div>
+                  <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex flex-col items-start md:justify-start">
+                    <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Owner</label>
+                    <div className="flex md:flex-col items-baseline justify-between w-full">
+                      <p className="text-sm md:text-base font-medium text-kite-text truncate">{business.ownerName}</p>
+                      {business.authorityType && (
+                        <p className="hidden md:block text-sm font-medium text-kite-text-light mt-1">
+                          {business.authorityType}
+                          {business.rmasSubsidy ? ` (${business.rmasSubsidy}% Subsidy)` : ''}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {isEditing && (
-              <>
-                <div className="mt-3 md:mt-6 p-2 md:p-4 bg-kite-red/10 border border-kite-red/30 rounded-sm flex items-start space-x-3 text-red-800">
-                  <AlertCircle  className="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5" />
-                  <p className="text-sm font-medium">Changing parameters only applies to future entries.</p>
-                </div>
-                
                 <div className="mt-6 border-t border-kite-border pt-4">
                   <p className="text-sm font-medium text-kite-text-light uppercase tracking-wide mb-3">Banking Profile</p>
                   {business.bankDetails ? (
@@ -356,18 +413,8 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                     <p className="text-sm mt-2 text-kite-text-light font-medium">Not Provided</p>
                   )}
                 </div>
-                
-                <div className="mt-4 pt-4 border-t border-kite-border flex justify-end">
-                  {onDelete && (
-                    <button onClick={() => { onDelete(); }} className="bg-kite-red/10 text-kite-red border border-kite-red/30 hover:bg-kite-red/20 font-medium text-sm px-4 py-2 rounded-sm transition-colors">
-                      Delete Profile
-                    </button>
-                  )}
-                </div>
-              </>
+              </div>
             )}
-            </>
-           )}
           </div>
 
           {isPreVerified && vStats && (
@@ -387,80 +434,6 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                 <p className="text-xs text-black mt-2">
                   Reach 60% profit delivery to investors and 20 unique investors to unlock the permanent RMAS Blue Tick and Enhanced Profile Support.
                 </p>
-              </div>
-            </div>
-          )}
-
-          {isBlueTick && (
-            <div className="bg-kite-blue/10 border border-kite-blue/30 rounded-sm p-2 md:p-4 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-2 md:p-4 opacity-10 pointer-events-none">
-                <BadgeCheck  className="w-16 h-16 md:w-32 md:h-32 fill-blue-500 text-white" />
-              </div>
-              <div className="relative z-10">
-                <div className="flex justify-between items-center border-b border-kite-blue/30 pb-4 mb-4">
-                  <h3 className="text-xs md:text-base font-medium text-blue-900 flex items-center space-x-2">
-                    <BadgeCheck  className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500" />
-                    <span>Enhanced Support: Profile Editor</span>
-                  </h3>
-                  {!isEnhancedEditing ? (
-                    <button onClick={() => setIsEnhancedEditing(true)}
-                      className="flex items-center space-x-1 text-sm font-medium text-kite-blue hover:text-blue-900 border border-blue-300 px-3 py-1.5 rounded-sm bg-white hover:bg-kite-blue/10 transition-colors"
-                    >
-                      <Edit2 className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                      <span>Edit Profile</span>
-                    </button>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <button onClick={handleEnhancedCancel}
-                        className="flex items-center space-x-1 text-sm font-medium text-kite-blue hover:text-blue-800 transition-colors"
-                      >
-                        <X className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                        <span>Cancel</span>
-                      </button>
-                      <button onClick={handleEnhancedSave}
-                        className="flex items-center space-x-1 text-sm font-medium text-white bg-kite-blue hover:bg-kite-blue px-3 py-1.5 rounded-sm transition-colors"
-                      >
-                        <Save className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                        <span>Sync Changes</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-blue-800 uppercase tracking-wider mb-2">Display Name</label>
-                    {isEnhancedEditing ? (
-                      <input type="text" className="w-full border border-kite-blue/30 rounded-sm p-2.5 font-medium text-black focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={enhancedFormData.name} onChange={e => setEnhancedFormData({...enhancedFormData, name: e.target.value})} />
-                    ) : (
-                      <p className="text-xs md:text-base font-medium text-black">{business.name}</p>
-                    )}
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-blue-800 uppercase tracking-wider mb-2">Description</label>
-                    {isEnhancedEditing ? (
-                      <textarea className="w-full border border-kite-blue/30 rounded-sm p-2.5 font-medium text-kite-text focus:ring-2 focus:ring-blue-500 outline-none bg-white min-h-[80px]" value={enhancedFormData.description} onChange={e => setEnhancedFormData({...enhancedFormData, description: e.target.value})} placeholder="Verified business description..." />
-                    ) : (
-                      <p className="text-sm font-medium text-kite-text whitespace-pre-wrap">{business.description || 'No description provided.'}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-blue-800 uppercase tracking-wider mb-2">Location</label>
-                    {isEnhancedEditing ? (
-                      <input type="text" className="w-full border border-kite-blue/30 rounded-sm p-2.5 font-medium text-black focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={enhancedFormData.location} onChange={e => setEnhancedFormData({...enhancedFormData, location: e.target.value})} placeholder="City, State" />
-                    ) : (
-                      <p className="text-base font-medium text-black">{business.location || 'Not Specified'}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-blue-800 uppercase tracking-wider mb-2">Photo URL</label>
-                    {isEnhancedEditing ? (
-                      <input type="text" className="w-full border border-kite-blue/30 rounded-sm p-2.5 font-medium text-black focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={enhancedFormData.photoUrl} onChange={e => setEnhancedFormData({...enhancedFormData, photoUrl: e.target.value})} placeholder="https://..." />
-                    ) : (
-                      <p className="text-sm font-medium text-blue-600 break-all">{business.photoUrl || 'No Photo URL'}</p>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -539,6 +512,64 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
           </div>
         </div>
       </div>
+
+      {/* Image Cropper Modal */}
+      {imageSrc && (
+        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-white rounded-md w-full max-w-2xl overflow-hidden flex flex-col h-[80vh]">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h3 className="font-semibold text-lg">Crop & Adjust Profile Picture</h3>
+              <button onClick={() => setImageSrc(null)} className="p-1 hover:bg-gray-100 rounded-full text-gray-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 relative bg-gray-900">
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+              />
+            </div>
+            
+            <div className="p-6 bg-white border-t border-gray-100">
+              <div className="mb-6 flex items-center space-x-4">
+                <span className="text-sm font-medium text-gray-500">Zoom</span>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  aria-labelledby="Zoom"
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setImageSrc(null)}
+                  className="px-5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 border border-gray-200 rounded-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={createCroppedImage}
+                  className="px-5 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-sm shadow-sm"
+                >
+                  Save Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

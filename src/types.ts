@@ -62,4 +62,17 @@ export interface Investment {
   };
 }
 
-export type View = 'dashboard' | 'data-analysis' | 'businesses' | 'investors' | 'investments' | 'banking' | 'pnl';
+export type View = 'dashboard' | 'data-analysis' | 'businesses' | 'investors' | 'investments' | 'banking' | 'pnl' | 'admin';
+
+export interface CommissionSetting {
+  type: 'percentage' | 'amount';
+  value: number;
+}
+
+export interface GlobalSettings {
+  newBusinessRegistration: CommissionSetting;
+  newInvestorRegistration: CommissionSetting;
+  investmentCommission: CommissionSetting;
+  profitCommission: CommissionSetting;
+  tax: CommissionSetting;
+}

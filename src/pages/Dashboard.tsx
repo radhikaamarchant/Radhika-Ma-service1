@@ -7,9 +7,13 @@ import { Business } from '../types';
 
 import { getVerificationStats } from '../utils/blueTick';
 import { MarketTrendCell } from '../components/MarketTrendCell';
+import { getUnifiedBankBalance } from '../utils/bankBalance';
+import { calculateLiveProfit } from '../utils/profitCalculator';
+import { useMarketSimulation } from '../utils/MarketSimulationContext';
 
 export default function Dashboard() {
  const { state } = useAppContext();
+ const { marketState } = useMarketSimulation();
  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
  const [searchTerm, setSearchTerm] = useState('');
 
@@ -20,18 +24,7 @@ export default function Dashboard() {
  .filter(b => b.status === 'listed')
  .reduce((sum, b) => sum + b.fundingRequired, 0);
 
- const totalCommissions = state.businesses.reduce((sum, b) => sum + (b.registrationCommissionPaid || 0), 0) + 
-  state.investors.reduce((sum, i) => sum + (i.rmasServiceCharge || 0), 0) +
-  state.investments.reduce((sum, inv) => {
-    const upfront = (inv.adminCommissionInvestor || 0) + (inv.adminCommissionBusiness || 0);
-    let settlement = 0;
-    if (inv.status === 'completed' && inv.payoutDetails) {
-      settlement = (inv.payoutDetails.rmasCommission || 0) 
-                 - (inv.payoutDetails.rmasMarketCover || 0) 
-                 - (inv.payoutDetails.rmasSubsidyPays || 0);
-    }
-    return sum + upfront + settlement;
-  }, 0);
+  const totalCommissions = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments);
 
  const stats = [
  { label: 'RMAS Profit Balance', value: formatINR(totalCommissions), icon: TrendingUp, positive: true },
@@ -108,13 +101,14 @@ export default function Dashboard() {
  // Or we just display the raw profit derived from payout.
  // A simple way: Profit paid to investor is just the gross profit before deductions, since that's what the business paid!
  const grossPayout = payout.totalCredited + payout.rmasCommission + payout.happyIncomeTax;
- actualProfitPaid = (grossPayout - inv.amount);
+ actualProfitPaid += (grossPayout - inv.amount);
  } else {
  // fallback
- actualProfitPaid = inv.amount * ((inv.interestRate || business.interestRate) / 100);
+ actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 100);
  }
  } else {
- expectedProfitToPay = inv.amount * ((inv.interestRate || business.interestRate) / 100);
+ const { liveProfit } = calculateLiveProfit([inv], business.id, marketState.trends, state.settings);
+ expectedProfitToPay += liveProfit;
  }
  });
 

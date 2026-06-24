@@ -9,6 +9,8 @@ import { Business } from '../types';
 import { getVerificationStats } from '../utils/blueTick';
 import { MarketTrendCell } from '../components/MarketTrendCell';
 
+ import { calculateLiveProfit } from '../utils/profitCalculator';
+
 export default function DataAnalysis() {
  const { state } = useAppContext();
  const { marketState } = useMarketSimulation();
@@ -21,9 +23,10 @@ export default function DataAnalysis() {
  const bizInvs = state.investments.filter(i => i.businessId === b.id);
  const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0);
  const liveTotalValue = bizInvs.reduce((sum, inv) => {
-   if (inv.status === 'active') {
-     return sum + inv.amount + (inv.amount * overallTrend / 100);
-   }
+    if (inv.status === 'active') {
+      const { currentValue } = calculateLiveProfit([inv], b.id, marketState.trends, state.settings);
+      return sum + currentValue;
+    }
    return sum + inv.amount;
  }, 0);
  const investorSet = new Set(bizInvs.map(i => i.investorId));

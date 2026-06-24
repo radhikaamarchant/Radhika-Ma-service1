@@ -82,11 +82,25 @@ export default function Investments() {
 
  const calculateCommissions = () => {
  const amount = getRawAmount(formData.amount);
- const invPct = parseFloat(formData.adminCommissionInvestorPct) || 0;
- const busPct = parseFloat(formData.adminCommissionBusinessPct) || 0;
+ let invPct = parseFloat(formData.adminCommissionInvestorPct) || 0;
+ let busPct = parseFloat(formData.adminCommissionBusinessPct) || 0;
+ 
+ let fromInvestor = (amount * invPct) / 100;
+ let fromBusiness = (amount * busPct) / 100;
+
+ if (state.settings && state.settings.investmentCommission) {
+   if (state.settings.investmentCommission.type === 'percentage') {
+     fromInvestor = (amount * state.settings.investmentCommission.value) / 100;
+     fromBusiness = (amount * state.settings.investmentCommission.value) / 100;
+   } else {
+     fromInvestor = state.settings.investmentCommission.value;
+     fromBusiness = state.settings.investmentCommission.value;
+   }
+ }
+
  return {
- fromInvestor: (amount * invPct) / 100,
- fromBusiness: (amount * busPct) / 100,
+ fromInvestor,
+ fromBusiness,
  };
  };
 
@@ -153,7 +167,8 @@ export default function Investments() {
   
   const [isBooking, setIsBooking] = useState(false);
 
- const filteredInvestments = state.investments.filter(inv => {
+ const uniqueInvestments = Array.from(new Map<string, Investment>(state.investments.map(inv => [inv.id, inv])).values());
+ const filteredInvestments = uniqueInvestments.filter(inv => {
  const business = state.businesses.find(b => b.id === inv.businessId);
  const investor = state.investors.find(i => i.id === inv.investorId);
  const match = searchTerm.toLowerCase();
@@ -452,8 +467,16 @@ export default function Investments() {
               : 0;
             const expectedFixedProfit = (inv.amount * inv.interestRate / 100);
             
-            const holdingProfit = isCompleted ? actualProfit : (inv.amount * overallTrend / 100);
-            const curValue = inv.amount + holdingProfit;
+            let liveProf = 0;
+            let currentVal = inv.amount;
+            if (!isCompleted) {
+              const { liveProfit, currentValue } = globalCalculateLiveProfit([inv], inv.businessId, marketState.trends, state.settings);
+              liveProf = liveProfit;
+              currentVal = currentValue;
+            }
+
+            const holdingProfit = isCompleted ? actualProfit : liveProf;
+            const curValue = isCompleted ? (inv.amount + holdingProfit) : currentVal;
             const pnlPercentage = isCompleted ? (holdingProfit / inv.amount) * 100 : overallTrend;
             const isProfit = holdingProfit >= 0;
             
@@ -540,7 +563,8 @@ export default function Investments() {
       const { liveProfit } = globalCalculateLiveProfit(
         activeGroupedInvestments, 
         selectedInvestment.businessId, 
-        marketState.trends
+        marketState.trends,
+        state.settings
       );
 
       return { totalProfit: liveProfit, rmasMarketCover: 0 };
@@ -590,9 +614,17 @@ export default function Investments() {
               }
               return sum;
             }, 0);
-            const holdingProfit = isCompleted ? actualDetailProfit : (totalAmount * overallTrend / 100);
             
-            const curValue = totalAmount + holdingProfit;
+            let groupLiveProf = 0;
+            let groupCurrentVal = totalAmount;
+            if (!isCompleted) {
+               const { liveProfit, currentValue } = globalCalculateLiveProfit(activeGroupedInvestments, selectedInvestment.businessId, marketState.trends, state.settings);
+               groupLiveProf = liveProfit;
+               groupCurrentVal = currentValue;
+            }
+            
+            const holdingProfit = isCompleted ? actualDetailProfit : groupLiveProf;
+            const curValue = isCompleted ? (totalAmount + holdingProfit) : groupCurrentVal;
             const isProfit = holdingProfit >= 0;
             
             return (
@@ -689,7 +721,29 @@ export default function Investments() {
                 {selectedInvestment.status === 'active' && withdrawStep === 0 && (
                   <div className="pt-4 border-t border-kite-border/50">
                     <button onClick={() => {
-                        setWithdrawFormData({ ...withdrawFormData, completedMonths: String(selectedInvestment.timePeriodMonths) });
+                        let defaultComm = 0;
+                        let defaultTax = 0;
+                        const prof = globalCalculateLiveProfit(activeGroupedInvestments, selectedInvestment.businessId, marketState.trends, state.settings).liveProfit;
+                        
+                        if (state.settings) {
+                          if (state.settings.profitCommission) {
+                            defaultComm = state.settings.profitCommission.type === 'percentage' 
+                              ? (prof * state.settings.profitCommission.value / 100)
+                              : state.settings.profitCommission.value;
+                          }
+                          if (state.settings.tax) {
+                            defaultTax = state.settings.tax.type === 'percentage'
+                              ? (prof * state.settings.tax.value / 100)
+                              : state.settings.tax.value;
+                          }
+                        }
+
+                        setWithdrawFormData({ 
+                          ...withdrawFormData, 
+                          completedMonths: String(selectedInvestment.timePeriodMonths),
+                          rmasCommission: Math.max(0, defaultComm).toFixed(2),
+                          happyIncomeTax: Math.max(0, defaultTax).toFixed(2)
+                        });
                         setWithdrawStep(1);
                       }} 
                       disabled={selectedInvestmentIds.length === 0}

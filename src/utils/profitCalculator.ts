@@ -1,48 +1,36 @@
-import { Investment, Business } from '../types';
+import { Investment, GlobalSettings } from '../types';
+import { calculateFinancials } from './bankBalance';
 
 export function calculateLiveProfit(
   investments: Investment[],
   businessId: string,
-  marketTrends: Record<string, number>
+  marketTrends: Record<string, number>,
+  settings: GlobalSettings | null = null
 ) {
-  const activeInvestments = investments.filter(
-    (inv) => inv.businessId === businessId && inv.status === 'active'
-  );
-
-  const investedAmount = activeInvestments.reduce((sum, inv) => sum + inv.amount, 0);
-  const liveTrendPercentage = marketTrends[businessId] || 0;
-  
-  const liveProfit = investedAmount * (liveTrendPercentage / 100);
-  const currentValue = investedAmount + liveProfit;
+  const financials = calculateFinancials(investments, businessId, marketTrends, settings);
 
   return {
-    investedAmount,
-    liveTrendPercentage,
-    liveProfit,
-    currentValue,
-    activeInvestments
+    investedAmount: financials.capitalInvested,
+    liveTrendPercentage: marketTrends[businessId] || 0,
+    liveProfit: financials.profitBooked,
+    currentValue: financials.currentValue,
+    activeInvestments: financials.activeInvestments,
+    commissionTax: financials.commissionTax
   };
 }
 
 export function calculateHoldingProfit(
   allActiveInvestments: Investment[],
-  marketTrends: Record<string, number>
+  marketTrends: Record<string, number>,
+  settings: GlobalSettings | null = null
 ) {
-  let totalInvested = 0;
-  let totalLiveProfit = 0;
-
-  allActiveInvestments.forEach(inv => {
-     if(inv.status !== 'active') return;
-     const trend = marketTrends[inv.businessId] || 0;
-     const profit = inv.amount * (trend / 100);
-     totalInvested += inv.amount;
-     totalLiveProfit += profit;
-  });
+  const financials = calculateFinancials(allActiveInvestments, null, marketTrends, settings);
   
   return {
-     totalInvested,
-     totalLiveProfit,
-     totalCurrentValue: totalInvested + totalLiveProfit,
-     overallPercentage: totalInvested > 0 ? (totalLiveProfit / totalInvested) * 100 : 0
+     totalInvested: financials.capitalInvested,
+     totalLiveProfit: financials.profitBooked,
+     totalCurrentValue: financials.currentValue,
+     overallPercentage: financials.capitalInvested > 0 ? (financials.profitBooked / financials.capitalInvested) * 100 : 0
   };
 }
+

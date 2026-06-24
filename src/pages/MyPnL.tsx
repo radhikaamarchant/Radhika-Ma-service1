@@ -4,6 +4,7 @@ import { formatINR } from '../utils/mockData';
 import { List, ArrowLeft, Percent, Landmark, Download, Calendar, X, FileText } from 'lucide-react';
 
 import { downloadElementAsPDF } from '../utils/pdfGenerator';
+import { getUnifiedBankBalance } from '../utils/bankBalance';
 
 interface StatementEntry {
  id: string;
@@ -22,6 +23,7 @@ export default function MyPnL() {
  const [toDate, setToDate] = useState('');
  const [selectedBill, setSelectedBill] = useState<StatementEntry | null>(null);
 
+ const rmasAvailableBalance = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments);
  let totalCommission = 0;
  let totalTax = 0;
  const statement: StatementEntry[] = [];
@@ -413,7 +415,7 @@ export default function MyPnL() {
  <Percent  className="w-4 h-4 md:w-6 md:h-6 text-blue-200" />
  </div>
  <div>
- <p className="text-xs md:text-base tracking-tight text-kite-text mb-2">{formatINR(totalCommission)}</p>
+ <p className="text-xs md:text-base tracking-tight text-kite-text mb-2">{formatINR(rmasAvailableBalance)}</p>
  <p className="text-[10px] text-kite-text-light font-medium uppercase tracking-widest">Revenue from RMAS Admin Deductions</p>
  </div>
  </div>

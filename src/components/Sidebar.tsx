@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View } from '../types';
-import { Building2, Users, ReceiptIndianRupee, LayoutDashboard, CreditCard, PieChart, Sun, Moon, Laptop } from 'lucide-react';
+import { Building2, Users, ReceiptIndianRupee, LayoutDashboard, CreditCard, PieChart, Sun, Moon, Laptop, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../utils/ThemeContext';
 
@@ -11,6 +11,42 @@ interface SidebarProps {
 
 export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
   const { theme, setTheme } = useTheme();
+  
+  const [adminName, setAdminName] = useState('Radhika M');
+  const [adminPhoto, setAdminPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('adminProfile');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.name) setAdminName(parsed.name);
+        if (parsed.photoUrl) setAdminPhoto(parsed.photoUrl);
+      } catch(e) {}
+    }
+    
+    // Listen for changes
+    const handleStorage = () => {
+      const savedProfile = localStorage.getItem('adminProfile');
+      if (savedProfile) {
+        try {
+          const parsed = JSON.parse(savedProfile);
+          if (parsed.name) setAdminName(parsed.name);
+          if (parsed.photoUrl) setAdminPhoto(parsed.photoUrl);
+          else setAdminPhoto(null);
+        } catch(e) {}
+      }
+    };
+    
+    window.addEventListener('storage', handleStorage);
+    // Custom event for same-window updates
+    window.addEventListener('adminProfileUpdated', handleStorage);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('adminProfileUpdated', handleStorage);
+    };
+  }, []);
 
   const navItems = [
     { id: 'dashboard' as View, label: 'Dashboard', icon: LayoutDashboard },
@@ -76,13 +112,23 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
           </div>
         </div>
 
-        <div className="flex items-center space-x-3 hover:bg-kite-bg p-2 -mx-2 rounded-sm transition-colors cursor-pointer group">
-          <div className="w-8 h-8 rounded-full bg-gray-100 text-black flex items-center justify-center font-semibold text-xs border border-gray-200">
-            RM
+        <div 
+          onClick={() => onNavigate('admin')}
+          className={`flex items-center space-x-3 p-2 -mx-2 rounded-sm transition-colors cursor-pointer group ${currentView === 'admin' ? 'bg-kite-blue/5 border-r-2 border-kite-blue text-kite-blue' : 'hover:bg-kite-bg'}`}
+        >
+          <div className="w-8 h-8 rounded-full bg-gray-100 text-black flex items-center justify-center font-semibold text-xs border border-gray-200 uppercase overflow-hidden">
+            {adminPhoto ? (
+              <img src={adminPhoto} alt="Admin" className="w-full h-full object-cover" />
+            ) : (
+              adminName.substring(0, 2)
+            )}
           </div>
-          <div className="min-w-0">
-            <p className="text-[13px] font-medium text-kite-text group-hover:text-black truncate">Radhika M</p>
-            <p className="text-[10px] text-kite-text-light truncate">Admin</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1">
+              <p className={`text-[13px] font-medium truncate ${currentView === 'admin' ? 'text-kite-blue' : 'text-kite-text group-hover:text-black'}`}>{adminName}</p>
+              <BadgeCheck className={`w-3.5 h-3.5 flex-shrink-0 ${currentView === 'admin' ? 'text-kite-blue' : 'text-blue-500'}`} />
+            </div>
+            <p className={`text-[10px] truncate ${currentView === 'admin' ? 'text-kite-blue/70' : 'text-kite-text-light'}`}>Admin</p>
           </div>
         </div>
       </div>

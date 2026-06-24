@@ -14,6 +14,7 @@ import Businesses from './pages/Businesses';
 import Investors from './pages/Investors';
 import Investments from './pages/Investments';
 import MyPnL from './pages/MyPnL';
+import AdminPage from './pages/AdminPage';
 import { Menu, X, WifiOff, Sun, Moon, Laptop } from 'lucide-react';
 import { useTheme } from './utils/ThemeContext';
 
@@ -163,6 +164,7 @@ function MainLayout() {
  case 'investors': return <Investors />;
  case 'investments': return <Investments />;
  case 'pnl': return <MyPnL />;
+ case 'admin': return <AdminPage />;
  default: return <Dashboard />;
  }
  };
@@ -193,6 +195,7 @@ function MainLayout() {
      <div style={{ display: currentView === 'investors' ? 'block' : 'none' }}><Investors /></div>
      <div style={{ display: currentView === 'investments' ? 'block' : 'none' }}><Investments /></div>
      <div style={{ display: currentView === 'pnl' ? 'block' : 'none' }}><MyPnL /></div>
+     <div style={{ display: currentView === 'admin' ? 'block' : 'none' }}><AdminPage /></div>
    </div>
  </main>
  

@@ -9,6 +9,7 @@ import { getVerificationStats } from '../utils/blueTick';
 import { getBaseMarketTrend } from '../utils/marketSimulator';
 import { useMarketSimulation } from '../utils/MarketSimulationContext';
 import { calculateLiveProfit } from '../utils/profitCalculator';
+import { getUnifiedBankBalance } from '../utils/bankBalance';
 import { SwipeButton } from '../components/SwipeButton';
 import InvestorDetail from '../components/InvestorDetail';
 
@@ -62,6 +63,10 @@ export default function Investors() {
   const [showVerifySuccess, setShowVerifySuccess] = useState(false);
  const [pdfProfitSlip, setPdfProfitSlip] = useState<{investment: Investment, investor: Investor, business: Business} | null>(null);
 
+ const [ownerMode, setOwnerMode] = useState<'new' | 'existing'>('new');
+ const [ownerSearch, setOwnerSearch] = useState('');
+ const [showOwnerSelect, setShowOwnerSelect] = useState(false);
+
  const [formData, setFormData] = useState({
  investorId: '',
  name: '',
@@ -75,12 +80,18 @@ export default function Investors() {
    
  const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0;
 
- const filteredInvestors = state.investors.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+ const uniqueInvestors = Array.from(new Map<string, Investor>(state.investors.map(i => [i.id, i])).values());
+ const filteredInvestors = uniqueInvestors.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
  i.investorId.includes(searchTerm)
  ).map(i => {
- const totalAmountInvested = state.investments
+ let totalAmountInvested = state.investments
  .filter(inv => inv.investorId === i.id && inv.status !== 'completed')
  .reduce((sum, inv) => sum + inv.amount, 0);
+ 
+ if (i.id === 'admin_investor') {
+   totalAmountInvested = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments);
+ }
+ 
  return { ...i, totalInvested: totalAmountInvested };
  }).sort((a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime());
 
@@ -90,6 +101,13 @@ export default function Investors() {
 
  
  const startAddInvestor = () => {
+ let defaultServiceCharge = '';
+ if (state.settings && state.settings.newInvestorRegistration) {
+   if (state.settings.newInvestorRegistration.type === 'amount') {
+     defaultServiceCharge = String(state.settings.newInvestorRegistration.value);
+   }
+ }
+
  setFormData({
  ...formData,
  investorId: generateInvestorId(),
@@ -98,7 +116,7 @@ export default function Investors() {
  accountNumber: '',
  ifscCode: '',
  accountHolderName: '',
- rmasServiceCharge: '',
+ rmasServiceCharge: defaultServiceCharge,
  });
  setViewMode('add-step-1');
  };
@@ -108,7 +126,7 @@ export default function Investors() {
  if (!formData.name.trim()) return;
  setFormData({
  ...formData,
- accountHolderName: formData.name.toUpperCase() // auto fill all caps
+ accountHolderName: formData.accountHolderName || formData.name.toUpperCase() // auto fill all caps
  });
  setViewMode('add-step-2');
  };
@@ -177,7 +195,8 @@ export default function Investors() {
  const { liveProfit, liveTrendPercentage } = calculateLiveProfit(
  selectedInvestments, 
  businessId, 
- marketState.trends
+ marketState.trends,
+ state.settings
  );
  return {
  baseProfit: 0,
@@ -326,9 +345,14 @@ export default function Investors() {
  {filteredInvestors.map(investor => {
  const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
  return (
- <tr key={`desk_${investor.id}`} className="border-b border-kite-border hover:bg-kite-bg">
- <td className="p-2 md:p-4 font-mono text-kite-text-light font-medium">#{investor.investorId}</td>
- <td className="p-2 md:p-4 font-medium text-kite-text">{investor.name}</td>
+ <tr key={`desk_${investor.id}`} className={`border-b border-kite-border hover:bg-kite-bg ${investor.id === 'admin_investor' ? 'bg-blue-50/30' : ''}`}>
+ <td className="p-2 md:p-4 font-mono text-kite-text-light font-medium">
+  {investor.id === 'admin_investor' ? <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] uppercase font-bold rounded-sm tracking-wider">Owned</span> : `#${investor.investorId}`}
+ </td>
+ <td className="p-2 md:p-4 font-medium text-kite-text flex items-center space-x-1.5 h-full">
+  <span className={investor.id === 'admin_investor' ? 'font-bold' : ''}>{investor.name}</span>
+  {investor.id === 'admin_investor' && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" title="RMAS Admin" />}
+ </td>
  <td className="p-2 md:p-4 font-medium text-kite-text text-right">{formatINR(investor.totalInvested)}</td>
  <td className="p-2 md:p-4 text-center space-x-2">
  <button onClick={() => { setSelectedInvestor(investor); setViewMode('investor-detail'); }}
@@ -361,10 +385,15 @@ export default function Investors() {
  {filteredInvestors.map(investor => {
  const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
  return (
- <div key={`mob_${investor.id}`} className="p-4 bg-white hover:bg-kite-bg">
+ <div key={`mob_${investor.id}`} className={`p-4 hover:bg-kite-bg ${investor.id === 'admin_investor' ? 'bg-blue-50/30' : 'bg-white'}`}>
  <div className="flex justify-between items-start mb-2">
- <span className="font-medium text-kite-text text-xs md:text-base">{investor.name}</span>
- <span className="font-mono text-xs text-kite-text-light bg-kite-bg px-2 py-1 rounded">#{investor.investorId}</span>
+ <div className="flex items-center space-x-1.5">
+   <span className={`font-medium text-kite-text text-xs md:text-base ${investor.id === 'admin_investor' ? 'font-bold' : ''}`}>{investor.name}</span>
+   {investor.id === 'admin_investor' && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" />}
+ </div>
+ <span className="font-mono text-xs text-kite-text-light bg-kite-bg px-2 py-1 rounded">
+   {investor.id === 'admin_investor' ? <span className="text-blue-600 font-bold uppercase tracking-wider">Owned</span> : `#${investor.investorId}`}
+ </span>
  </div>
  <div className="grid grid-cols-1 gap-3 mb-4 bg-kite-bg p-3 rounded-sm">
  <div className="flex justify-between items-center">
@@ -400,50 +429,129 @@ export default function Investors() {
  )}
 
  {viewMode === 'add-step-1' && (
-        <div className="w-full max-w-lg mx-auto bg-white border border-gray-100 rounded shadow-sm p-6 md:p-10 animate-fade-in mt-4 md:mt-8 relative overflow-hidden">
+        <div className="w-full max-w-4xl mx-auto bg-white border border-gray-100 rounded shadow-sm p-6 md:p-10 animate-fade-in mt-4 md:mt-8 relative overflow-hidden flex flex-col md:flex-row gap-8">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
             <div className="h-full bg-blue-500 w-1/2 transition-all duration-300"></div>
           </div>
-          <button type="button" onClick={() => setViewMode('list')} className="absolute top-4 left-4 p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors z-10 md:hidden">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="text-center mb-8 mt-2 md:mt-0">
-            <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Open a new account</h3>
+          
+          <div className="md:w-1/3 flex flex-col pt-4">
+            <button type="button" onClick={() => setViewMode('list')} className="w-fit p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors mb-4">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Open account</h3>
             <p className="text-sm text-gray-500 mt-2">Step 1 • Basic Profile</p>
+            
+            <div className="flex bg-gray-100 p-1 rounded mt-8">
+              <button
+                type="button"
+                className={`flex-1 py-2 text-sm font-medium rounded transition-colors ${ownerMode === 'new' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setOwnerMode('new')}
+              >
+                New Investor
+              </button>
+              <button
+                type="button"
+                className={`flex-1 py-2 text-sm font-medium rounded transition-colors ${ownerMode === 'existing' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setOwnerMode('existing')}
+              >
+                Register Owner
+              </button>
+            </div>
           </div>
-          <form onSubmit={handleNextStep} className="space-y-6">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Investor ID Number</label>
-              <input type="text" readOnly className="w-full border-b-2 border-gray-200 bg-gray-50/50 text-gray-400 font-mono p-3 outline-none cursor-not-allowed transition-colors" value={formData.investorId} />
-            </div>
 
-            <div className="group">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Full Name</label>
-              <input required type="text" autoFocus
-                className="w-full border-b-2 border-gray-200 p-3 text-lg font-medium focus:border-blue-500 outline-none transition-colors" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Radhika Merchant" />
-            </div>
+          <div className="md:w-2/3 md:pt-4">
+            <form onSubmit={handleNextStep} className="space-y-6">
+              {ownerMode === 'existing' && (
+                <div className="relative group z-20">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Select Registered Owner</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      className="w-full border-b-2 border-gray-200 p-3 text-lg font-medium focus:border-blue-500 outline-none transition-colors" 
+                      placeholder="Search owner name..." 
+                      value={ownerSearch}
+                      onChange={(e) => {
+                        setOwnerSearch(e.target.value);
+                        setShowOwnerSelect(true);
+                      }}
+                      onFocus={() => setShowOwnerSelect(true)}
+                    />
+                    {showOwnerSelect && (
+                      <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-48 overflow-y-auto z-50">
+                        {Array.from(new Set<string>(state.businesses.map(b => b.ownerName)))
+                          .filter(name => name.toLowerCase().includes(ownerSearch.toLowerCase()))
+                          .map((name, idx) => (
+                          <div 
+                            key={idx}
+                            className="p-3 hover:bg-gray-50 cursor-pointer text-gray-800"
+                            onClick={() => {
+                              const ownerBiz = state.businesses.find(b => b.ownerName === name);
+                              if (ownerBiz && ownerBiz.bankDetails) {
+                                setFormData({
+                                  ...formData,
+                                  name: ownerBiz.ownerName,
+                                  bankName: ownerBiz.bankDetails.bankName,
+                                  accountNumber: ownerBiz.bankDetails.accountNumber,
+                                  ifscCode: ownerBiz.bankDetails.ifscCode,
+                                  accountHolderName: ownerBiz.bankDetails.accountHolderName
+                                });
+                              } else if (ownerBiz) {
+                                setFormData({
+                                  ...formData,
+                                  name: ownerBiz.ownerName
+                                });
+                              }
+                              setOwnerSearch(name);
+                              setShowOwnerSelect(false);
+                            }}
+                          >
+                            {name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
-            <div className="pt-6">
-              <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded text-sm md:text-base font-semibold tracking-wide transition-all shadow-md hover:shadow-lg">Continue to Bank Details</button>
-              <button type="button" onClick={() => setViewMode('list')} className="w-full mt-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors">Cancel Application</button>
-            </div>
-          </form>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Investor ID Number</label>
+                <input type="text" readOnly className="w-full border-b-2 border-gray-200 bg-gray-50/50 text-gray-400 font-mono p-3 outline-none cursor-not-allowed transition-colors" value={formData.investorId} />
+              </div>
+
+              <div className="group">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Full Name</label>
+                <input required type="text" autoFocus={ownerMode === 'new'}
+                  readOnly={ownerMode === 'existing'}
+                  className={`w-full border-b-2 p-3 text-lg font-medium outline-none transition-colors ${ownerMode === 'existing' ? 'border-gray-200 bg-gray-50/50 text-gray-500 cursor-not-allowed' : 'border-gray-200 focus:border-blue-500'}`} 
+                  value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Radhika Merchant" />
+              </div>
+
+              <div className="pt-6">
+                <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded text-sm md:text-base font-semibold tracking-wide transition-all shadow-md hover:shadow-lg">Continue to Bank Details</button>
+                <button type="button" onClick={() => setViewMode('list')} className="w-full mt-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors md:hidden">Cancel Application</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
  {viewMode === 'add-step-2' && (
-        <div className="w-full max-w-lg mx-auto bg-white border border-gray-100 rounded shadow-sm p-6 md:p-10 animate-fade-in mt-4 md:mt-8 relative overflow-hidden">
+        <div className="w-full max-w-4xl mx-auto bg-white border border-gray-100 rounded shadow-sm p-6 md:p-10 animate-fade-in mt-4 md:mt-8 relative overflow-hidden flex flex-col md:flex-row gap-8">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
             <div className="h-full bg-blue-500 w-full transition-all duration-300"></div>
           </div>
-          <div className="mb-8">
-            <button type="button" onClick={() => setViewMode('add-step-1')} className="text-blue-500 mb-4 inline-block hover:bg-blue-50 p-1.5 rounded transition-colors">
+          
+          <div className="md:w-1/3 flex flex-col pt-4">
+            <button type="button" onClick={() => setViewMode('add-step-1')} className="w-fit text-blue-500 mb-4 inline-block hover:bg-blue-50 p-1.5 -ml-1.5 rounded transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <h3 className="text-2xl font-bold text-gray-800 tracking-tight">Link Bank Account</h3>
             <p className="text-sm text-gray-500 mt-2">Step 2 • Banking Process & Fees</p>
           </div>
-          <form onSubmit={handleVerifiedSave} className="space-y-6">
+          
+          <div className="md:w-2/3 md:pt-4">
+            <form onSubmit={handleVerifiedSave} className="space-y-6">
             <div className="group">
               <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-blue-500 transition-colors">Bank Name</label>
               <select className="w-full border-b-2 border-gray-200 p-3 bg-white font-medium focus:border-blue-500 outline-none transition-colors"
@@ -496,6 +604,7 @@ export default function Investors() {
               </button>
             </div>
           </form>
+          </div>
         </div>
       )}
  {viewMode === 'withdraw-list' && selectedInvestor && (() => {
@@ -508,6 +617,7 @@ export default function Investors() {
 
   let totalInvested = 0;
   let totalLiveProfit = 0;
+  let totalCurrentValue = 0;
 
   const holdings = Object.entries(grouped).map(([bizId, activeInvsRaw]) => {
     const activeInvs = activeInvsRaw as Investment[];
@@ -517,17 +627,19 @@ export default function Investors() {
     const { 
       investedAmount, 
       liveTrendPercentage, 
-      liveProfit 
-    } = calculateLiveProfit(activeInvs, bizId, marketState.trends);
+      liveProfit,
+      currentValue
+    } = calculateLiveProfit(activeInvs, bizId, marketState.trends, state.settings);
     
     totalInvested += investedAmount;
     totalLiveProfit += liveProfit;
+    totalCurrentValue += currentValue;
 
-    return { bizId, business, activeInvs, amount: investedAmount, liveProfit, overallTrend: liveTrendPercentage };
+    return { bizId, business, activeInvs, amount: investedAmount, liveProfit, overallTrend: liveTrendPercentage, currentValue };
   });
 
-  const curValue = totalInvested + totalLiveProfit;
-  const isProfit = totalLiveProfit >= 0;
+  const curValue = totalCurrentValue;
+  const isProfit = curValue - totalInvested >= 0;
 
   return (
  <div className="w-full bg-white border border-kite-border rounded-sm max-w-6xl mx-auto flex flex-col print:hidden">

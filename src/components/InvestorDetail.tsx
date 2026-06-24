@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { Investor, Investment } from '../types';
 import { formatINR } from '../utils/mockData';
+import { getUnifiedBankBalance, getUnifiedTransactions } from '../utils/bankBalance';
 import { ArrowLeft, User, Save, X, Edit2, Wallet, FileText, ArrowDownRight, ArrowUpRight, Building2 } from 'lucide-react';
 
 interface InvestorDetailProps {
@@ -32,46 +33,8 @@ export default function InvestorDetail({ investorId, onBack }: InvestorDetailPro
     .filter(inv => inv.investorId === investorId)
     .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 
-  const bankTransactions: { id: string, type: 'CREDIT' | 'DEBIT', amount: number, date: Date, title: string, description: string }[] = [];
-  let totalSettled = 0;
-
-  investorInvestments.forEach(inv => {
-    const business = state.businesses.find(b => b.id === inv.businessId);
-    
-    // Debit: the investor pays money to invest
-    bankTransactions.push({
-      id: `debit-${inv.id}`,
-      type: 'DEBIT',
-      amount: inv.amount,
-      date: new Date(inv.startDate),
-      title: 'Investment Made',
-      description: `To ${business?.name || 'Unknown'}`
-    });
-    
-
-    if (inv.status === 'completed' && inv.payoutDetails) {
-      const p = inv.payoutDetails;
-      
-      const rmasCover = p.rmasMarketCover || 0;
-      const rmasSubsidy = p.rmasSubsidyPays || 0;
-      
-      const actualReceived = p.totalCredited + rmasCover + rmasSubsidy;
-
-      if (actualReceived > 0) {
-        bankTransactions.push({
-          id: `credit-${inv.id}`,
-          type: 'CREDIT',
-          amount: actualReceived,
-          date: new Date(p.payoutDate),
-          title: 'Settlement Received',
-          description: `From ${business?.name || 'Unknown'}`
-        });
-        totalSettled += actualReceived;
-      }
-    }
-  });
-
-  bankTransactions.sort((a, b) => b.date.getTime() - a.date.getTime());
+  const unifiedBalance = investor ? getUnifiedBankBalance(investor.name, state.businesses, state.investors, state.investments) : 0;
+  const bankTransactions = investor ? getUnifiedTransactions(investor.name, state.businesses, state.investors, state.investments) : [];
 
   return (
     <div className="space-y-6 animate-fade-in transition-all">
@@ -173,17 +136,33 @@ export default function InvestorDetail({ investorId, onBack }: InvestorDetailPro
                   </div>
                   
                   <div className="flex flex-col justify-center items-start md:items-end p-4">
-                    <p className="text-xs text-kite-text-light mb-1">Total Settled Amount</p>
-                    <p className={"text-2xl md:text-3xl font-medium tracking-tight " + "text-kite-blue"} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
-                      {formatINR(totalSettled)}
+                    <p className="text-xs text-kite-text-light mb-1">Available balance</p>
+                    <p className={"text-2xl md:text-3xl font-medium tracking-tight " + (unifiedBalance >= 0 ? "text-kite-blue" : "text-kite-red")} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
+                      {unifiedBalance >= 0 ? '' : '-'}{formatINR(Math.abs(unifiedBalance))}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-8">
-                  <h4 className="text-xl font-medium text-kite-text mb-4">
-                    Statement
-                  </h4>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-xl font-medium text-kite-text">Statement</h4>
+                    <select 
+                      className="border border-kite-border rounded-sm px-2 py-1 text-sm bg-white outline-none"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const rows = document.querySelectorAll('.tx-row');
+                        rows.forEach(row => {
+                          if (val === 'all') row.classList.remove('hidden');
+                          else if (row.getAttribute('data-category') === val) row.classList.remove('hidden');
+                          else row.classList.add('hidden');
+                        });
+                      }}
+                    >
+                      <option value="all">All Transactions</option>
+                      <option value="commission">Commission</option>
+                      <option value="sahay">Sahay</option>
+                    </select>
+                  </div>
                   {bankTransactions.length > 0 ? (
                     <div className="overflow-x-auto border border-kite-border/50 rounded-sm">
                       <table className="w-full text-left text-sm whitespace-nowrap">
@@ -196,10 +175,14 @@ export default function InvestorDetail({ investorId, onBack }: InvestorDetailPro
                         </thead>
                         <tbody className="divide-y divide-kite-border/50 bg-white">
                           {bankTransactions.map(tx => (
-                            <tr key={tx.id} className="hover:bg-kite-bg/30 transition-colors">
+                            <tr key={tx.id} className="hover:bg-kite-bg/30 transition-colors tx-row" data-category={tx.category || 'other'}>
                               <td className="py-3 px-4 text-xs text-kite-text-light">{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                               <td className="py-3 px-4">
-                                <p className="text-sm text-kite-text">{tx.title}</p>
+                                <p className="text-sm text-kite-text flex items-center space-x-2">
+                                  <span>{tx.title}</span>
+                                  {tx.category === 'commission' && <span className="px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-700 text-[9px] uppercase tracking-wider">Commission</span>}
+                                  {tx.category === 'sahay' && <span className="px-1.5 py-0.5 rounded-sm bg-purple-100 text-purple-700 text-[9px] uppercase tracking-wider">Sahay</span>}
+                                </p>
                                 <p className="text-[11px] text-kite-text-light mt-0.5">{tx.description}</p>
                               </td>
                               <td className={"py-3 px-4 text-right text-sm " + (tx.type === 'CREDIT' ? 'text-kite-green' : 'text-kite-text')} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
