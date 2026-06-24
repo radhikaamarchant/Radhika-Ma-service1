@@ -45,27 +45,61 @@ export function calculateFinancials(
 }
 
 export function getUnifiedBankBalance(
-  adminName: string,
+  entityName: string,
   businesses: Business[],
   investors: Investor[],
   investments: Investment[],
   settings?: GlobalSettings | null
 ) {
-  let totalCommissions = 0;
-  // Calculate historical commissions from completed investments
+  let balance = 0;
+  const isAdmin = entityName === 'Radhika M' || entityName.includes('Admin') || entityName === 'Radhika Merchant';
+
+  if (isAdmin) {
+    balance = 300000000; // 30 Crore base balance
+  }
+
   investments.forEach(inv => {
-    if (inv.status === 'completed' && inv.payoutDetails) {
-      totalCommissions += inv.payoutDetails.rmasCommission;
-    } else if (inv.status === 'active') {
-      const bCommPercentage = settings?.businessCommission ?? 5;
-      const iCommPercentage = settings?.investorCommission ?? 1;
-      const profit = inv.amount * (inv.interestRate / 100); // this is a simple fallback if live trend is not passed
-      if (profit > 0) {
-        totalCommissions += profit * ((bCommPercentage + iCommPercentage) / 100);
+    if (isAdmin) {
+      if (inv.status === 'completed' && inv.payoutDetails) {
+        balance += inv.payoutDetails.rmasCommission;
+      }
+      
+      // Admin Business: receives investment
+      if (inv.businessId === 'admin_business') {
+        balance += inv.amount;
+        if (inv.status === 'completed' && inv.payoutDetails) {
+          balance -= inv.payoutDetails.totalCredited;
+          if (inv.payoutDetails.happyIncomeTax) balance -= inv.payoutDetails.happyIncomeTax;
+        }
+      }
+      
+      // Admin Investor: makes investment
+      if (inv.investorId === 'admin_investor') {
+        balance -= inv.amount;
+        if (inv.status === 'completed' && inv.payoutDetails) {
+          balance += inv.payoutDetails.totalCredited;
+        }
+      }
+    } else {
+      // Normal entities
+      const biz = businesses.find(b => b.ownerName === entityName || b.name === entityName);
+      const invt = investors.find(i => i.name === entityName);
+      
+      if (biz && inv.businessId === biz.id) {
+        balance += inv.amount;
+        if (inv.status === 'completed' && inv.payoutDetails) {
+          balance -= (inv.payoutDetails.totalCredited + (inv.payoutDetails.rmasCommission || 0) + (inv.payoutDetails.happyIncomeTax || 0));
+        }
+      } else if (invt && inv.investorId === invt.id) {
+        balance -= inv.amount;
+        if (inv.status === 'completed' && inv.payoutDetails) {
+          balance += inv.payoutDetails.totalCredited;
+        }
       }
     }
   });
-  return totalCommissions;
+
+  return balance;
 }
 
 export function getUnifiedTransactions(
@@ -75,11 +109,24 @@ export function getUnifiedTransactions(
   investments: Investment[]
 ) {
   const transactions: any[] = [];
+  const isAdmin = entityName === 'Radhika M' || entityName.includes('Admin') || entityName === 'Radhika Merchant';
   
-  if (entityName === 'Radhika M' || entityName.includes('Admin')) {
+  if (isAdmin) {
+    // Initial balance entry for Admin
+    transactions.push({
+      id: 'tx_initial_admin_balance',
+      date: '2020-01-01T00:00:00.000Z',
+      title: 'Initial RMAS Bank Balance',
+      description: 'Starting Capital',
+      amount: 300000000,
+      type: 'CREDIT',
+      category: 'capital'
+    });
+    
     investments.forEach(inv => {
       const b = businesses.find(b => b.id === inv.businessId);
       const i = investors.find(i => i.id === inv.investorId);
+      
       if (inv.status === 'completed' && inv.payoutDetails) {
         transactions.push({
           id: `tx_${inv.id}_comm`,
@@ -90,6 +137,52 @@ export function getUnifiedTransactions(
           type: 'CREDIT',
           category: 'commission'
         });
+      }
+
+      if (inv.businessId === 'admin_business') {
+        transactions.push({
+          id: `tx_${inv.id}_admin_recv`,
+          date: inv.startDate,
+          title: `Capital Received (My Business)`,
+          description: `From ${i?.name}`,
+          amount: inv.amount,
+          type: 'CREDIT',
+          category: 'capital'
+        });
+        if (inv.status === 'completed' && inv.payoutDetails) {
+          transactions.push({
+            id: `tx_${inv.id}_admin_payout`,
+            date: inv.payoutDetails.payoutDate || new Date().toISOString(),
+            title: `Settlement Paid (My Business)`,
+            description: `To ${i?.name}`,
+            amount: inv.payoutDetails.totalCredited + (inv.payoutDetails.happyIncomeTax || 0),
+            type: 'DEBIT',
+            category: 'settlement'
+          });
+        }
+      }
+
+      if (inv.investorId === 'admin_investor') {
+        transactions.push({
+          id: `tx_${inv.id}_admin_inv`,
+          date: inv.startDate,
+          title: `Investment Made (My Account)`,
+          description: `In ${b?.name}`,
+          amount: inv.amount,
+          type: 'DEBIT',
+          category: 'investment'
+        });
+        if (inv.status === 'completed' && inv.payoutDetails) {
+          transactions.push({
+            id: `tx_${inv.id}_admin_ret`,
+            date: inv.payoutDetails.payoutDate || new Date().toISOString(),
+            title: `Settlement Received (My Account)`,
+            description: `From ${b?.name} (Net)`,
+            amount: inv.payoutDetails.totalCredited,
+            type: 'CREDIT',
+            category: 'settlement'
+          });
+        }
       }
     });
   } else {

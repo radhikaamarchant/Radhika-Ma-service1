@@ -3,6 +3,7 @@ import { ArrowLeft, Save, Upload, Image as ImageIcon, BadgeCheck, X, Building2 }
 import Cropper from 'react-easy-crop';
 import { useAppContext } from '../utils/AppContext';
 import { getUnifiedBankBalance, getUnifiedTransactions } from '../utils/bankBalance';
+import { sanitizeDatabase } from '../utils/dataSanitizer';
 import { formatINR } from '../utils/mockData';
 import SettingsModal from '../components/SettingsModal';
 
@@ -129,10 +130,22 @@ export default function AdminPage() {
 
     if (!ctx) return;
 
+    // Scale down if too large
     // @ts-ignore
-    canvas.width = croppedAreaPixels.width;
+    const maxSize = 400;
     // @ts-ignore
-    canvas.height = croppedAreaPixels.height;
+    let targetWidth = croppedAreaPixels.width;
+    // @ts-ignore
+    let targetHeight = croppedAreaPixels.height;
+    
+    if (targetWidth > maxSize || targetHeight > maxSize) {
+      const ratio = Math.min(maxSize / targetWidth, maxSize / targetHeight);
+      targetWidth *= ratio;
+      targetHeight *= ratio;
+    }
+
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
 
     ctx.drawImage(
       image,
@@ -146,13 +159,11 @@ export default function AdminPage() {
       croppedAreaPixels.height,
       0,
       0,
-      // @ts-ignore
-      croppedAreaPixels.width,
-      // @ts-ignore
-      croppedAreaPixels.height
+      targetWidth,
+      targetHeight
     );
 
-    const base64Image = canvas.toDataURL('image/jpeg');
+    const base64Image = canvas.toDataURL('image/jpeg', 0.7);
     setFormData({ ...formData, photoUrl: base64Image });
     setImageSrc(null);
   };

@@ -242,24 +242,24 @@ export default function Businesses() {
  </thead>
  <tbody>
  {filteredBusinesses.map(business => (
- <tr key={`desk_${business.id}`} className={`border-b border-kite-border hover:bg-kite-bg ${business.id === 'admin_business' ? 'bg-blue-50/30' : ''}`}>
+ <tr key={`desk_${business.id}`} className={`border-b border-kite-border hover:bg-kite-bg`}>
  <td className="p-2 md:p-4 font-mono text-kite-text-light font-medium">
-  {business.id === 'admin_business' ? <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] uppercase font-bold rounded-sm tracking-wider">Owned</span> : `#${business.businessId}`}
+  #{business.businessId}
  </td>
  <td className="p-2 md:p-4 font-medium text-kite-text flex items-center space-x-1.5 h-full">
- <span className={business.id === 'admin_business' ? 'font-bold' : ''}>{business.name}</span>
+ <span className="">{business.name}</span>
  {isBlueTick(business.id) && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" title="RMAS Verified - High Profit" />}
  {isPreVerified(business.id) && <Clock  className="w-4 h-4 text-black flex-shrink-0" title="Pre-Verified" />}
  </td>
  <td className="p-2 md:p-4 text-kite-text font-medium">{business.ownerName}</td>
- <td className="p-2 md:p-4 font-medium text-kite-text">{business.id === 'admin_business' ? 'Platform Internal' : formatINR(business.fundingRequired)}</td>
+ <td className="p-2 md:p-4 font-medium text-kite-text">{formatINR(business.fundingRequired)}</td>
  <td className="p-2 md:p-4 text-kite-green font-medium">{business.interestRate}%</td>
  <td className="p-2 md:p-4 text-center">
  <MarketTrendCell businessId={business.id} showIcon={true} />
  </td>
  <td className="p-2 md:p-4 text-center space-x-2 whitespace-nowrap">
  <button onClick={() => setSelectedBusinessId(business.id)}
- className={`font-medium text-xs px-3 py-1.5 border rounded-sm transition-colors w-full ${business.id === 'admin_business' ? 'bg-kite-blue text-white border-kite-blue hover:opacity-90' : 'text-kite-text-light hover:text-kite-text border-kite-border'}`}
+ className={`font-medium text-xs px-3 py-1.5 border rounded-sm transition-colors w-full text-kite-text-light hover:text-kite-text border-kite-border hover:bg-kite-bg`}
  >
  View
  </button>
@@ -278,16 +278,16 @@ export default function Businesses() {
  {/* Mobile Cards View */}
  <div className="block md:hidden divide-y divide-gray-100">
  {filteredBusinesses.map(business => (
- <div key={`mob_${business.id}`} className={`p-3 hover:bg-kite-bg ${business.id === 'admin_business' ? 'bg-blue-50/30' : 'bg-white'}`}>
+ <div key={`mob_${business.id}`} className={`p-3 hover:bg-kite-bg bg-white dark:bg-transparent`}>
  <div className="flex justify-between items-start mb-1">
    <div className="flex flex-col">
      <div className="flex items-center space-x-1.5">
-       <span className={`font-medium text-kite-text text-sm truncate max-w-[200px] ${business.id === 'admin_business' ? 'font-bold' : ''}`}>{business.name}</span>
+       <span className={`font-medium text-kite-text text-sm truncate max-w-[200px]`}>{business.name}</span>
        {isBlueTick(business.id) && <BadgeCheck  className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />}
        {isPreVerified(business.id) && <Clock  className="w-3.5 h-3.5 text-black flex-shrink-0" />}
      </div>
      <p className="text-xs text-kite-text-light font-medium tracking-wide mt-0.5">
-       {business.id === 'admin_business' ? <span className="text-blue-600 font-bold">Owned</span> : business.ownerName}
+       {business.ownerName}
      </p>
    </div>
  </div>

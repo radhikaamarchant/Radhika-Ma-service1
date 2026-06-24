@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
 import { ArrowLeft, Building2, Save, X, Edit2, Shield, AlertCircle, BadgeCheck, Clock, Wallet, ArrowDownRight, ArrowUpRight, FileText, ImageIcon, Upload } from 'lucide-react';
@@ -32,6 +32,20 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
     location: business?.location || '',
     photoUrl: business?.photoUrl || '',
   });
+
+  useEffect(() => {
+    if (business && !isEditing) {
+      setFormData({
+        fundingRequired: (business.fundingRequired || 0).toString(),
+        interestRate: (business.interestRate || 0).toString(),
+        status: business.status || 'listed',
+        name: business.name || '',
+        description: business.description || '',
+        location: business.location || '',
+        photoUrl: business.photoUrl || '',
+      });
+    }
+  }, [business, isEditing]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -103,10 +117,22 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
 
     if (!ctx) return;
 
+    // Scale down if too large
     // @ts-ignore
-    canvas.width = croppedAreaPixels.width;
+    const maxSize = 400;
     // @ts-ignore
-    canvas.height = croppedAreaPixels.height;
+    let targetWidth = croppedAreaPixels.width;
+    // @ts-ignore
+    let targetHeight = croppedAreaPixels.height;
+    
+    if (targetWidth > maxSize || targetHeight > maxSize) {
+      const ratio = Math.min(maxSize / targetWidth, maxSize / targetHeight);
+      targetWidth *= ratio;
+      targetHeight *= ratio;
+    }
+
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
 
     ctx.drawImage(
       image,
@@ -120,13 +146,11 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
       croppedAreaPixels.height,
       0,
       0,
-      // @ts-ignore
-      croppedAreaPixels.width,
-      // @ts-ignore
-      croppedAreaPixels.height
+      targetWidth,
+      targetHeight
     );
 
-    const base64Image = canvas.toDataURL('image/jpeg');
+    const base64Image = canvas.toDataURL('image/jpeg', 0.7);
     setFormData({ ...formData, photoUrl: base64Image });
     setImageSrc(null);
   };
@@ -148,11 +172,6 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
           <h3 className={"flex md:hidden font-medium items-center space-x-1.5 " + (business.name.length > 20 ? 'text-[11px]' : 'text-sm') + " text-kite-text"}>
             <span className="truncate max-w-[200px]">{business.name}</span>
             {isBlueTick && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 shrink-0" />}
-            {business.id === 'admin_business' && (
-              <span className="bg-blue-100 text-blue-800 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
-                Owned
-              </span>
-            )}
           </h3>
         </div>
       </div>
@@ -165,12 +184,6 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
               <h3 className={"hidden md:flex font-medium items-center space-x-2 text-base text-kite-text"}>
                 <span className="truncate max-w-xs">{business.name}</span>
                 {isBlueTick && <BadgeCheck  className="w-5 h-5 text-white fill-blue-500 shrink-0" title="RMAS Verified" />}
-                {business.id === 'admin_business' && (
-                  <span className="bg-blue-100 text-blue-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm tracking-wider flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Verified & Owned
-                  </span>
-                )}
               </h3>
               {!isEditing ? (
                 <div className="flex items-center space-x-3 md:space-x-2 w-full md:w-auto justify-center">
@@ -196,7 +209,7 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                     <span>Cancel</span>
                   </button>
                   <button onClick={handleSave}
-                    className="flex items-center space-x-1 text-sm font-medium text-white bg-black hover:bg-slate-800 px-3 py-1.5 rounded-sm transition-colors"
+                    className="flex items-center space-x-1 text-sm font-medium text-white bg-kite-blue hover:bg-kite-blue/90 px-3 py-1.5 rounded-sm transition-colors"
                   >
                     <Save className="w-3 md:w-3.5 h-3 md:h-3.5" />
                     <span>Save Changes</span>
@@ -362,6 +375,26 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
               </div>
             ) : (
               <div className="space-y-6">
+                {(business.photoUrl || business.description || business.location) && (
+                  <div className="flex flex-col md:flex-row gap-6 border-b border-kite-border pb-6">
+                    {business.photoUrl && (
+                      <div className="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-full overflow-hidden border border-kite-border bg-kite-bg flex items-center justify-center">
+                        <img src={business.photoUrl} alt={business.name} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-2">
+                      {business.location && (
+                        <p className="text-sm font-medium text-kite-text-light flex items-center gap-1.5 uppercase tracking-wide">
+                          <Building2 className="w-4 h-4" />
+                          {business.location}
+                        </p>
+                      )}
+                      {business.description && (
+                        <p className="text-sm text-kite-text leading-relaxed whitespace-pre-line">{business.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div className="flex justify-between items-end md:items-start md:flex-col md:justify-start">
                     <div>

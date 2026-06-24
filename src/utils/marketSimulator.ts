@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Business, Investment } from '../types';
 
-export function getBaseMarketTrend(business: Business | undefined, investments: Investment[], isBlueTick: boolean = false): number {
+export function getBaseMarketTrend(business: Business | undefined, investments: Investment[], isBlueTick: boolean = false, overrideNow?: number): number {
   if (!business) return 0;
 
   const hashString = business.id;
@@ -11,7 +11,7 @@ export function getBaseMarketTrend(business: Business | undefined, investments: 
     hash |= 0; 
   }
   
-  const now = Date.now();
+  const now = overrideNow || Date.now();
   // 1 cycle every 5 minutes (300,000 ms) so it goes up and down throughout the day
   const cycleMs = 300000;
   const offset = Math.abs(hash) % cycleMs;
@@ -62,26 +62,4 @@ export function getBaseMarketTrend(business: Business | undefined, investments: 
   const calculatedTrend = baseRate + investorBonus - withdrawalPenalty + blueTickBonus + marketNoise;
 
   return calculatedTrend;
-}
-
-export function useLiveMarketTrend(business: Business | undefined, investments: Investment[], isBlueTick: boolean = false) {
-  const [liveTrend, setLiveTrend] = useState(() => getBaseMarketTrend(business, investments, isBlueTick));
-
-  useEffect(() => {
-    let mounted = true;
-    const interval = setInterval(() => {
-      const currentBase = getBaseMarketTrend(business, investments, isBlueTick);
-      const fluctuation = (Math.random() * 2) - 1; // +/- 1% noise
-      if (mounted) {
-        setLiveTrend(currentBase + fluctuation);
-      }
-    }, 2000); // update every 2 seconds
-    
-    return () => {
-      mounted = false;
-      clearInterval(interval);
-    };
-  }, [business, investments, isBlueTick]);
-
-  return liveTrend;
 }

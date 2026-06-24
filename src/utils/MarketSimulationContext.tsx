@@ -47,16 +47,29 @@ export const MarketSimulationProvider: React.FC<{ children: React.ReactNode }> =
  const newTrends: Record<string, number> = {};
  const newHistory = { ...prev.history };
  const newAlerts = [...prev.alerts];
+ 
+ const rawNow = Date.now();
+ const alignedNow = rawNow - (rawNow % 2000);
+ 
  businesses.forEach(b => {
  const isBlueTick = blueTickIds.has(b.id);
- const currentBase = getBaseMarketTrend(b, investments, isBlueTick);
- const fluctuation = (Math.random() * 2) - 1; // +/- 1% noise
+ const currentBase = getBaseMarketTrend(b, investments, isBlueTick, alignedNow);
+ 
+ let hash = 0;
+ for (let i = 0; i < b.id.length; i++) {
+   hash = ((hash << 5) - hash) + b.id.charCodeAt(i);
+   hash |= 0;
+ }
+ const timeBlock = Math.floor(alignedNow / 2000);
+ const x = Math.sin(hash ^ timeBlock) * 10000;
+ const fluctuation = (x - Math.floor(x)) * 2 - 1; // +/- 1% deterministic noise
+ 
  const newValue = currentBase + fluctuation;
  newTrends[b.id] = newValue;
  if (!newHistory[b.id]) {
  newHistory[b.id] = [];
  }
- const historyArr = [...newHistory[b.id], { value: newValue, timestamp: Date.now() }];
+ const historyArr = [...newHistory[b.id], { value: newValue, timestamp: alignedNow }];
  // keep last 15 values
  if (historyArr.length > 15) {
  historyArr.shift();
@@ -69,35 +82,35 @@ export const MarketSimulationProvider: React.FC<{ children: React.ReactNode }> =
  const drop = lastValue - newValue;
  // If drop is sudden and steep (> 8 or 10%)
  if (drop > 10) {
- const hasRecentShock = newAlerts.some(a => a.businessId === b.id && a.type === 'shock' && Date.now() - a.timestamp < 30000);
+ const hasRecentShock = newAlerts.some(a => a.businessId === b.id && a.type === 'shock' && alignedNow - a.timestamp < 30000);
  if (!hasRecentShock) {
  newAlerts.push({
- id: Math.random().toString(),
+ id: `${b.id}-${alignedNow}-shock`,
  type: 'shock',
  businessId: b.id,
  businessName: b.name,
  message: `⚠️ Market Shock: Significant withdrawal detected in ${b.name}. Trend correcting.`,
- timestamp: Date.now()
+ timestamp: alignedNow
  });
  }
  } else if (drop < -10) {
  // Recovery
- const hasRecentRecovery = newAlerts.some(a => a.businessId === b.id && a.type === 'recovery' && Date.now() - a.timestamp < 30000);
+ const hasRecentRecovery = newAlerts.some(a => a.businessId === b.id && a.type === 'recovery' && alignedNow - a.timestamp < 30000);
  if (!hasRecentRecovery) {
  newAlerts.push({
- id: Math.random().toString(),
+ id: `${b.id}-${alignedNow}-recovery`,
  type: 'recovery',
  businessId: b.id,
  businessName: b.name,
  message: `🚀 Market Recovery: ${b.name} is bouncing back. Buyer confidence high!`,
- timestamp: Date.now()
+ timestamp: alignedNow
  });
  }
  }
  }
  });
  // Remove old alerts > 10 seconds
- const filteredAlerts = newAlerts.filter(a => Date.now() - a.timestamp < 10000);
+ const filteredAlerts = newAlerts.filter(a => alignedNow - a.timestamp < 10000);
 
  return { trends: newTrends, history: newHistory, alerts: filteredAlerts };
  });

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../utils/AppContext';
 import { GlobalSettings, CommissionSetting } from '../types';
+import { sanitizeDatabase } from '../utils/dataSanitizer';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -19,6 +20,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const { state, dispatch } = useAppContext();
   const [settings, setSettings] = useState<GlobalSettings>(state.settings || defaultSettings);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSanitizing, setIsSanitizing] = useState(false);
 
   useEffect(() => {
     if (state.settings) {
@@ -35,6 +37,19 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
       console.error(e);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSanitize = async () => {
+    if (!window.confirm("Are you sure you want to sanitize the database? This will cap huge numbers to standard sane limits.")) return;
+    setIsSanitizing(true);
+    try {
+      const res = await sanitizeDatabase();
+      alert(res.message);
+    } catch (e) {
+      alert("Failed to sanitize database.");
+    } finally {
+      setIsSanitizing(false);
     }
   };
 
@@ -103,6 +118,23 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           {renderField('Investment Commission (Admin)', 'investmentCommission')}
           {renderField('Profit Commission (Admin)', 'profitCommission')}
           {renderField('Tax (Happy Income Tax)', 'tax')}
+
+          <div className="mt-8 border-t border-kite-border pt-6">
+            <h3 className="text-sm font-semibold text-kite-text mb-4">Danger Zone</h3>
+            <div className="bg-red-50/50 border border-red-100 rounded-md p-4 flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium text-red-800">Sanitize Database</p>
+                <p className="text-xs text-red-600 mt-1">Cap artificially large numbers to sane limits. Cannot be undone.</p>
+              </div>
+              <button
+                onClick={handleSanitize}
+                disabled={isSanitizing}
+                className="bg-red-100 text-red-700 px-4 py-2 rounded-sm text-sm font-medium hover:bg-red-200 transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isSanitizing ? 'Sanitizing...' : 'Sanitize DB'}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="p-4 md:p-6 border-t border-kite-border flex justify-end space-x-3 bg-gray-50/50 rounded-b-lg">

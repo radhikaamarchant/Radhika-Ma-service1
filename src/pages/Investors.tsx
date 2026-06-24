@@ -345,12 +345,12 @@ export default function Investors() {
  {filteredInvestors.map(investor => {
  const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
  return (
- <tr key={`desk_${investor.id}`} className={`border-b border-kite-border hover:bg-kite-bg ${investor.id === 'admin_investor' ? 'bg-blue-50/30' : ''}`}>
+ <tr key={`desk_${investor.id}`} className={`border-b border-kite-border hover:bg-kite-bg`}>
  <td className="p-2 md:p-4 font-mono text-kite-text-light font-medium">
-  {investor.id === 'admin_investor' ? <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] uppercase font-bold rounded-sm tracking-wider">Owned</span> : `#${investor.investorId}`}
+  #{investor.investorId}
  </td>
  <td className="p-2 md:p-4 font-medium text-kite-text flex items-center space-x-1.5 h-full">
-  <span className={investor.id === 'admin_investor' ? 'font-bold' : ''}>{investor.name}</span>
+  <span className="">{investor.name}</span>
   {investor.id === 'admin_investor' && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" title="RMAS Admin" />}
  </td>
  <td className="p-2 md:p-4 font-medium text-kite-text text-right">{formatINR(investor.totalInvested)}</td>
@@ -385,14 +385,14 @@ export default function Investors() {
  {filteredInvestors.map(investor => {
  const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
  return (
- <div key={`mob_${investor.id}`} className={`p-4 hover:bg-kite-bg ${investor.id === 'admin_investor' ? 'bg-blue-50/30' : 'bg-white'}`}>
+ <div key={`mob_${investor.id}`} className={`p-4 hover:bg-kite-bg bg-white dark:bg-transparent`}>
  <div className="flex justify-between items-start mb-2">
  <div className="flex items-center space-x-1.5">
-   <span className={`font-medium text-kite-text text-xs md:text-base ${investor.id === 'admin_investor' ? 'font-bold' : ''}`}>{investor.name}</span>
+   <span className={`font-medium text-kite-text text-xs md:text-base`}>{investor.name}</span>
    {investor.id === 'admin_investor' && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" />}
  </div>
  <span className="font-mono text-xs text-kite-text-light bg-kite-bg px-2 py-1 rounded">
-   {investor.id === 'admin_investor' ? <span className="text-blue-600 font-bold uppercase tracking-wider">Owned</span> : `#${investor.investorId}`}
+   #{investor.investorId}
  </span>
  </div>
  <div className="grid grid-cols-1 gap-3 mb-4 bg-kite-bg p-3 rounded-sm">
