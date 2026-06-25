@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { useMarketSimulation } from '../utils/MarketSimulationContext';
 import { formatINR } from '../utils/mockData';
-import { Lightbulb, Target, Trophy, Clock, PieChart as PieChartIcon, BadgeCheck, X, TrendingUp, Users, Info, Star } from 'lucide-react';
+import { AlertCircle, Lightbulb, Target, Trophy, Clock, PieChart as PieChartIcon, BadgeCheck, X, TrendingUp, Users, Info, Star } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Business } from '../types';
 
@@ -17,6 +17,7 @@ export default function DataAnalysis() {
  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
  const [searchTerm, setSearchTerm] = useState('');
  const [sortBy, setSortBy] = useState<'investment' | 'interest'>('interest');
+ const [activeTab, setActiveTab] = useState<string>('best-market');
 
  const businessesWithStats = state.businesses.map(b => {
  const overallTrend = marketState.trends[b.id] ?? b.interestRate;
@@ -87,13 +88,13 @@ export default function DataAnalysis() {
  });
 
  const fundingData = [
- { name: 'Funded', value: totalInvested, color: '#4caf50' },
- { name: 'Remaining', value: fundingRemaining, color: '#eeeeee' }
+ { name: 'Funded', value: totalInvested, color: 'var(--color-kite-green)' },
+ { name: 'Remaining', value: fundingRemaining, color: 'var(--border-color-hard)' }
  ];
 
  const profitData = [
- { name: 'Profit Paid', value: actualProfitPaid, color: '#4184f3' },
- { name: 'Expected', value: expectedProfitToPay, color: '#000000' }
+ { name: 'Profit Paid', value: actualProfitPaid, color: 'var(--color-kite-blue)' },
+ { name: 'Expected', value: expectedProfitToPay, color: 'var(--text-color)' }
  ];
 
  return (
@@ -118,34 +119,34 @@ export default function DataAnalysis() {
  <X className="w-4 h-4 md:w-5 md:h-5" />
  </button>
  </div>
- <div className="p-1.5 md:p-3 md:p-5 space-y-6">
- <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
- <div className="bg-kite-bg p-2 md:p-4 rounded-sm border border-kite-border">
- <p className="text-[10px] font-medium text-kite-text-light uppercase tracking-widest mb-1">Total Investors</p>
- <p className="text-xs md:text-base font-medium text-kite-text">{bizStats?.investorCount || 0}</p>
- <p className="text-[10px] text-kite-text-light mt-1">Unique</p>
+ <div className="p-2 md:p-3 lg:p-5 space-y-4 md:space-y-6">
+ <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-5 gap-2 md:gap-3">
+ <div className="bg-kite-bg p-2 md:p-4 rounded-sm border border-kite-border flex flex-col justify-center">
+ <p className="text-[9px] md:text-[10px] font-medium text-kite-text-light uppercase tracking-widest mb-0.5 md:mb-1">Total Investors</p>
+ <p className="text-sm md:text-base font-medium text-kite-text leading-tight">{bizStats?.investorCount || 0}</p>
+ <p className="text-[9px] md:text-[10px] text-kite-text-light mt-0.5 md:mt-1 leading-tight">Unique</p>
  </div>
- <div className="bg-kite-blue/10 p-2 md:p-4 rounded-sm border border-kite-blue/30">
- <p className="text-[10px] font-medium text-kite-blue uppercase tracking-widest mb-1">Active</p>
- <p className="text-xs md:text-base font-medium text-kite-blue">{bizStats?.activeInvsCount || 0}</p>
- <p className="text-[10px] text-kite-blue mt-1">Running</p>
+ <div className="bg-kite-blue/10 p-2 md:p-4 rounded-sm border border-kite-blue/30 flex flex-col justify-center">
+ <p className="text-[9px] md:text-[10px] font-medium text-kite-blue uppercase tracking-widest mb-0.5 md:mb-1">Active</p>
+ <p className="text-sm md:text-base font-medium text-kite-blue leading-tight">{bizStats?.activeInvsCount || 0}</p>
+ <p className="text-[9px] md:text-[10px] text-kite-blue mt-0.5 md:mt-1 leading-tight">Running</p>
  </div>
- <div className="bg-kite-green/10 p-2 md:p-4 rounded-sm border border-kite-green/30">
- <p className="text-[10px] font-medium text-kite-green uppercase tracking-widest mb-1">Profited</p>
- <p className="text-xs md:text-base font-medium text-kite-green">{bizStats?.profitedInvestorsCount || 0}</p>
- <p className="text-[10px] text-kite-green mt-1">Paid out</p>
+ <div className="bg-kite-green/10 p-2 md:p-4 rounded-sm border border-kite-green/30 flex flex-col justify-center">
+ <p className="text-[9px] md:text-[10px] font-medium text-kite-green uppercase tracking-widest mb-0.5 md:mb-1">Profited</p>
+ <p className="text-sm md:text-base font-medium text-kite-green leading-tight">{bizStats?.profitedInvestorsCount || 0}</p>
+ <p className="text-[9px] md:text-[10px] text-kite-green mt-0.5 md:mt-1 leading-tight">Paid out</p>
  </div>
- <div className="bg-white p-2 md:p-4 rounded-sm border border-kite-border">
- <p className="text-[10px] font-medium text-kite-text uppercase tracking-widest mb-1">Avg. Return</p>
- <p className="text-xs md:text-base font-medium text-kite-text">{bizStats?.avgReturnPct.toFixed(1)}%</p>
- <p className="text-[10px] text-kite-text mt-1">Historical</p>
+ <div className="bg-white p-2 md:p-4 rounded-sm border border-kite-border flex flex-col justify-center">
+ <p className="text-[9px] md:text-[10px] font-medium text-kite-text uppercase tracking-widest mb-0.5 md:mb-1">Avg. Return</p>
+ <p className="text-sm md:text-base font-medium text-kite-text leading-tight">{bizStats?.avgReturnPct.toFixed(1)}%</p>
+ <p className="text-[9px] md:text-[10px] text-kite-text mt-0.5 md:mt-1 leading-tight">Historical</p>
  </div>
- <div className="bg-kite-blue/10 p-2 md:p-4 rounded-sm border border-kite-blue/30">
- <p className="text-[10px] font-medium text-kite-blue uppercase tracking-widest mb-1">Live Trend</p>
- <div className="mt-1.5 text-xs md:text-base">
+ <div className="bg-kite-blue/10 p-2 md:p-4 rounded-sm border border-kite-blue/30 flex flex-col justify-center col-span-2 md:col-span-1">
+ <p className="text-[9px] md:text-[10px] font-medium text-kite-blue uppercase tracking-widest mb-0.5 md:mb-1">Live Trend</p>
+ <div className="mt-0.5 md:mt-1.5 text-sm md:text-base leading-tight">
  <MarketTrendCell businessId={business.id} showIcon={true} />
  </div>
- <p className="text-[10px] text-[#3367d6] mt-1">Real-time stats</p>
+ <p className="text-[9px] md:text-[10px] text-kite-blue mt-0.5 md:mt-1 leading-tight">Real-time stats</p>
  </div>
  </div>
 
@@ -158,9 +159,9 @@ export default function DataAnalysis() {
  <ResponsiveContainer width="100%" height="100%">
  <BarChart data={fundingData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
  
- <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666666' }} axisLine={false} tickLine={false} />
- <YAxis tickFormatter={(value) => formatINR(value)} width={80} tick={{ fontSize: 10, fill: '#666666' }} axisLine={false} tickLine={false} />
- <Tooltip cursor={{ fill: '#f9f9f9' }} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '2px', fontSize: '12px', color: '#444444' }} itemStyle={{ color: '#444444' }} formatter={(value: number) => formatINR(value)} labelStyle={{ color: '#666666', marginBottom: '4px' }} />
+ <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-light-color)' }} axisLine={false} tickLine={false} />
+ <YAxis tickFormatter={(value) => formatINR(value)} width={80} tick={{ fontSize: 10, fill: 'var(--text-light-color)' }} axisLine={false} tickLine={false} />
+ <Tooltip cursor={{ fill: 'var(--bg-color-alt)' }} contentStyle={{ backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '2px', fontSize: '12px', color: 'var(--text-color)' }} itemStyle={{ color: 'var(--text-color)' }} formatter={(value: number) => formatINR(value)} labelStyle={{ color: 'var(--text-light-color)', marginBottom: '4px' }} />
  <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
  {fundingData.map((entry, index) => (
  <Cell key={`cell-${index}`} fill={entry.color} />
@@ -179,9 +180,9 @@ export default function DataAnalysis() {
  <ResponsiveContainer width="100%" height="100%">
  <BarChart data={profitData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
  
- <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#666666' }} axisLine={false} tickLine={false} />
- <YAxis tickFormatter={(value) => formatINR(value)} width={80} tick={{ fontSize: 10, fill: '#666666' }} axisLine={false} tickLine={false} />
- <Tooltip cursor={{ fill: '#f9f9f9' }} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: '2px', fontSize: '12px', color: '#444444' }} itemStyle={{ color: '#444444' }} formatter={(value: number) => formatINR(value)} labelStyle={{ color: '#666666', marginBottom: '4px' }} />
+ <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-light-color)' }} axisLine={false} tickLine={false} />
+ <YAxis tickFormatter={(value) => formatINR(value)} width={80} tick={{ fontSize: 10, fill: 'var(--text-light-color)' }} axisLine={false} tickLine={false} />
+ <Tooltip cursor={{ fill: 'var(--bg-color-alt)' }} contentStyle={{ backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '2px', fontSize: '12px', color: 'var(--text-color)' }} itemStyle={{ color: 'var(--text-color)' }} formatter={(value: number) => formatINR(value)} labelStyle={{ color: 'var(--text-light-color)', marginBottom: '4px' }} />
  <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
  {profitData.map((entry, index) => (
  <Cell key={`cell-${index}`} fill={entry.color} />
@@ -233,177 +234,188 @@ export default function DataAnalysis() {
  <div className="max-w-6xl mx-auto space-y-6">
  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4">
  <div>
- <h2 className="text-xs md:text-base font-medium text-kite-text tracking-tight">Data Analysis & Advisory</h2>
+ <h2 className="text-[15px] md:text-xl font-medium text-kite-text tracking-tight">Marketwatch</h2>
  </div>
  </div>
 
- <div className="flex flex-col lg:flex-row lg:overflow-x-auto gap-4 lg:pb-4 snap-x items-start">
- {/* Most Backed */}
- <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
- <div className="p-2 md:p-3 border-b border-kite-border">
- <h3 className="font-medium text-kite-text flex items-center space-x-2">
- <Users  className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-500" />
- <span>Top Backed</span>
- </h3>
- <p className="text-[10px] text-kite-text-light mt-0.5">Highest unique investors.</p>
- </div>
- <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
- {topBacked.length > 0 ? topBacked.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
- <div className="min-w-0 pr-2">
- <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
- <span>{b.name}</span>
- </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">{renderLiveAmount(b)} Invested</p>
- </div>
- <div className="text-right flex-shrink-0">
- <p className="text-sm font-medium text-kite-blue">{b.investorCount}</p>
- <p className="text-[9px] text-blue-600 uppercase">Investors</p>
- </div>
- </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
- </div>
+ {/* Top Tab Bar (Zerodha Style) */}
+ <div className="sticky top-0 z-40 bg-white dark:bg-kite-bg pt-2 pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+   <div className="flex overflow-x-auto no-scrollbar border-b border-kite-border/50 items-center whitespace-nowrap">
+     {[
+       { id: 'best-market', label: 'Best Market', type: 'scroll' },
+       { id: 'top-backed', label: 'Top Backed', type: 'category' },
+       { id: 'top-invested', label: 'Top Invested', type: 'category' },
+       { id: 'top-earners', label: 'Top Earners', type: 'category' },
+       { id: 'newly-listed', label: 'Newly Listed', type: 'category' },
+       { id: 'untapped', label: 'Untapped', type: 'category' },
+       { id: 'market-overview', label: 'Market Overview', type: 'scroll' }
+     ].map(tab => (
+       <button
+         key={tab.id}
+         onClick={() => setActiveTab(tab.id)}
+         className={`px-4 pb-3 text-[13px] whitespace-nowrap flex-shrink-0 transition-colors relative ${activeTab === tab.id ? 'text-[#387ed1] dark:text-kite-text font-semibold' : 'text-kite-text-light dark:text-kite-text-light hover:text-kite-text dark:hover:text-kite-text font-medium'}`}
+       >
+         {tab.label}
+         {activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#387ed1]"></span>}
+       </button>
+     ))}
+   </div>
  </div>
 
- {/* Top Invested */}
- <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
- <div className="p-2 md:p-3 border-b border-kite-border">
- <h3 className="font-medium text-kite-text flex items-center space-x-2">
- <Target  className="w-3.5 h-3.5 md:w-4 md:h-4 text-white fill-blue-500" />
- <span>Top Invested</span>
- </h3>
- <p className="text-[10px] text-kite-text-light mt-0.5">Highest capital invested.</p>
- </div>
- <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
- {topInvested.length > 0 ? topInvested.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
- <div className="min-w-0 pr-2">
- <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
- <span>{b.name}</span>
- </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">{b.investorCount} Investors</p>
- </div>
- <div className="text-right flex-shrink-0">
- <p className="text-sm font-medium">{renderLiveAmount(b)}</p>
- <p className="text-[9px] text-kite-text-light uppercase">Capital</p>
- </div>
- </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
- </div>
- </div>
+ {/* 1. Best Market Section */}
+ {activeTab === 'best-market' && (
+ <div className="scroll-mt-24">
+   <div className="bg-white border border-kite-border rounded-sm overflow-hidden w-full">
+     <div className="p-2 md:p-4 border-b border-kite-border">
+       <h3 className="font-medium text-kite-text flex items-center space-x-2">
+         <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-green" />
+         <span>Best Market</span>
+       </h3>
+       <p className="text-[11px] text-kite-text-light mt-1">Live trend &ge; 10% above base interest.</p>
+     </div>
+     <div className="divide-y divide-kite-border max-h-[400px] overflow-y-auto">
+       {bestMarket.length > 0 ? bestMarket.map(b => (
+         <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-green/5 cursor-pointer transition-colors flex justify-between items-center group">
+           <div className="min-w-0 pr-2">
+             <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-green truncate flex items-center space-x-1">
+               <span>{b.name}</span>
+               {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500" />}
+               {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text" />}
+             </h4>
+             <p className="text-[10px] text-kite-text-light mt-0.5">Base: {b.interestRate}%</p>
+           </div>
+           <div className="text-right flex-shrink-0">
+             <p className="text-sm font-bold text-kite-green">{b.overallTrend.toFixed(1)}%</p>
+             <p className="text-[9px] text-kite-green uppercase tracking-wider mt-0.5">Live Trend</p>
+           </div>
+         </div>
+       )) : <div className="p-8 flex flex-col items-center justify-center space-y-3">
+              <AlertCircle className="w-8 h-8 text-kite-text-light opacity-50" />
+              <p className="text-sm font-medium text-kite-text">No data available</p>
+              <p className="text-xs text-kite-text-light text-center">Data will appear here once records are available.</p>
+            </div>}
+     </div>
+   </div>
+   </div>
+   )}
 
- {/* Top Earners */}
- <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
- <div className="p-2 md:p-3 border-b border-kite-border">
- <h3 className="font-medium text-kite-text flex items-center space-x-2">
- <Trophy  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-green" />
- <span>Top Earners</span>
- </h3>
- <p className="text-[10px] text-kite-text-light mt-0.5">Highest payouts delivered.</p>
- </div>
- <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
- {topEarners.length > 0 ? topEarners.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-green/10 cursor-pointer transition-colors flex justify-between items-center group">
- <div className="min-w-0 pr-2">
- <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-green truncate flex items-center space-x-1">
- <span>{b.name}</span>
- </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">{b.profitedInvestorsCount} Profited</p>
- </div>
- <div className="text-right flex-shrink-0">
- <p className="text-sm font-medium text-kite-green">{formatINR(b.totalRet)}</p>
- <p className="text-[9px] text-kite-green uppercase">Payouts</p>
- </div>
- </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
- </div>
- </div>
+ {/* 2. Category Business List Section */}
+ {['top-backed', 'top-invested', 'top-earners', 'newly-listed', 'untapped'].includes(activeTab) && (
+ <div className="scroll-mt-24">
+   {(() => {
+     let currentList: any[] = [];
+     let icon = null;
+     let title = '';
+     let desc = '';
+     
+     switch (activeTab) {
+       case 'top-backed':
+         currentList = topBacked;
+         icon = <Users className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-500" />;
+         title = 'Top Backed';
+         desc = 'Highest unique investors.';
+         break;
+       case 'top-invested':
+         currentList = topInvested;
+         icon = <Target className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-500" />;
+         title = 'Top Invested';
+         desc = 'Highest capital invested.';
+         break;
+       case 'top-earners':
+         currentList = topEarners;
+         icon = <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-green" />;
+         title = 'Top Earners';
+         desc = 'Highest payouts delivered.';
+         break;
+       case 'newly-listed':
+         currentList = newlyListed;
+         icon = <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />;
+         title = 'Newly Listed';
+         desc = 'Latest additions.';
+         break;
+       case 'untapped':
+         currentList = untappedBusinesses;
+         icon = <PieChartIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />;
+         title = 'Untapped';
+         desc = 'Fresh opportunities.';
+         break;
+     }
 
- {/* Newly Listed */}
- <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
- <div className="p-2 md:p-3 border-b border-kite-border">
- <h3 className="font-medium text-kite-text flex items-center space-x-2">
- <Clock  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />
- <span>Newly Listed</span>
- </h3>
- <p className="text-[10px] text-kite-text-light mt-0.5">Latest additions.</p>
+     return (
+       <div className="bg-white border border-kite-border rounded-sm overflow-hidden w-full">
+         <div className="p-2 md:p-4 border-b border-kite-border flex justify-between items-center bg-kite-bg/50 dark:bg-transparent">
+           <div>
+             <h3 className="font-medium text-kite-text flex items-center space-x-2">
+               {icon}
+               <span>{title}</span>
+             </h3>
+             <p className="text-[11px] text-kite-text-light mt-1">{desc}</p>
+           </div>
+           <div className="text-[11px] text-kite-text-light font-medium bg-white px-2 py-1 border border-kite-border rounded-sm">
+             {currentList.length} items
+           </div>
+         </div>
+         <div className="divide-y divide-kite-border max-h-[400px] overflow-y-auto">
+           {currentList.length > 0 ? currentList.map(b => (
+             <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-2 md:p-3 hover:bg-kite-blue/5 cursor-pointer transition-colors flex justify-between items-center group">
+               <div className="min-w-0 pr-2">
+                 <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue dark:group-hover:text-white truncate flex items-center space-x-1">
+                   <span>{b.name}</span>
+                 </h4>
+                 {activeTab === 'newly-listed' ? (
+                    <p className="text-[10px] text-kite-text-light mt-0.5 truncate">{b.ownerName}</p>
+                 ) : activeTab === 'untapped' ? (
+                    <p className="text-[10px] text-kite-text-light mt-0.5">{b.interestRate}% Base</p>
+                 ) : (
+                    <p className="text-[10px] text-kite-text-light mt-0.5">
+                      {activeTab === 'top-backed' ? `${renderLiveAmount(b)} Invested` : activeTab === 'top-invested' ? `${b.investorCount} Investors` : `${b.profitedInvestorsCount} Profited`}
+                    </p>
+                 )}
+               </div>
+               <div className="text-right flex-shrink-0">
+                 {activeTab === 'top-backed' ? (
+                   <>
+                     <p className="text-sm font-medium text-kite-blue">{b.investorCount}</p>
+                     <p className="text-[9px] text-blue-600 uppercase tracking-wider mt-0.5">Investors</p>
+                   </>
+                 ) : activeTab === 'top-invested' ? (
+                   <>
+                     <p className="text-sm font-medium">{renderLiveAmount(b)}</p>
+                     <p className="text-[9px] text-kite-text-light uppercase tracking-wider mt-0.5">Capital</p>
+                   </>
+                 ) : activeTab === 'top-earners' ? (
+                   <>
+                     <p className="text-sm font-medium text-kite-green">{formatINR(b.totalRet)}</p>
+                     <p className="text-[9px] text-kite-green uppercase tracking-wider mt-0.5">Payouts</p>
+                   </>
+                 ) : activeTab === 'newly-listed' ? (
+                   <>
+                     <p className="text-sm font-medium text-kite-text">{b.interestRate}%</p>
+                     <p className="text-[9px] text-kite-text-light uppercase tracking-wider mt-0.5">Return</p>
+                   </>
+                 ) : (
+                   <>
+                     <p className="text-sm font-medium text-kite-text">0</p>
+                     <p className="text-[9px] text-kite-text-light uppercase tracking-wider mt-0.5">Investors</p>
+                   </>
+                 )}
+               </div>
+             </div>
+           )) : <div className="p-8 flex flex-col items-center justify-center space-y-3">
+              <AlertCircle className="w-8 h-8 text-kite-text-light opacity-50" />
+              <p className="text-sm font-medium text-kite-text">No data available</p>
+              <p className="text-xs text-kite-text-light text-center">Data will appear here once records are available.</p>
+            </div>}
+         </div>
+       </div>
+     );
+   })()}
  </div>
- <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
- {newlyListed.length > 0 ? newlyListed.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
- <div className="min-w-0 pr-2">
- <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
- <span>{b.name}</span>
- </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5 truncate">{b.ownerName}</p>
- </div>
- <div className="text-right flex-shrink-0">
- <p className="text-sm font-medium text-kite-text">{b.interestRate}%</p>
- <p className="text-[9px] text-kite-text-light uppercase">Return</p>
- </div>
- </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data</div>}
- </div>
- </div>
+ )}
 
- {/* Untapped */}
- <div className="lg:w-[300px] lg:flex-shrink-0 bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col snap-start w-full">
- <div className="p-2 md:p-3 border-b border-kite-border">
- <h3 className="font-medium text-kite-text flex items-center space-x-2">
- <PieChartIcon  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text" />
- <span>Untapped</span>
- </h3>
- <p className="text-[10px] text-kite-text-light mt-0.5">Fresh opportunities.</p>
- </div>
- <div className="divide-y divide-kite-border overflow-y-auto max-h-[350px]">
- {untappedBusinesses.length > 0 ? untappedBusinesses.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-blue/10 cursor-pointer transition-colors flex justify-between items-center group">
- <div className="min-w-0 pr-2">
- <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate flex items-center space-x-1">
- <span>{b.name}</span>
- </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">{b.interestRate}% Base</p>
- </div>
- <div className="text-right flex-shrink-0">
- <p className="text-sm font-medium text-kite-text">0</p>
- <p className="text-[9px] text-kite-text-light uppercase">Investors</p>
- </div>
- </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">None</div>}
- </div>
- </div>
- </div>
-
- {/* Best Market */}
- <div className="bg-white border border-kite-border rounded-sm overflow-hidden w-full">
- <div className="p-2 md:p-4 border-b border-kite-border">
- <h3 className="font-medium text-kite-text flex items-center space-x-2">
- <TrendingUp  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-green" />
- <span>Best Market</span>
- </h3>
- <p className="text-[11px] text-kite-text-light mt-1">Live trend &ge; 10% above base interest.</p>
- </div>
- <div className="divide-y divide-kite-border">
- {bestMarket.length > 0 ? bestMarket.map(b => (
- <div key={b.id} onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)} className="p-1.5 md:p-3 hover:bg-kite-green/10 cursor-pointer transition-colors flex justify-between items-center group">
- <div className="min-w-0 pr-2">
- <h4 className="font-medium text-sm text-kite-text group-hover:text-kite-green truncate flex items-center space-x-1">
- <span>{b.name}</span>
- {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500" />}
- {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text" />}
- </h4>
- <p className="text-[10px] text-kite-text-light mt-0.5">Base: {b.interestRate}%</p>
- </div>
- <div className="text-right flex-shrink-0">
- <p className="text-sm font-bold text-kite-green">{b.overallTrend.toFixed(1)}%</p>
- <p className="text-[9px] text-kite-green uppercase">Live Trend</p>
- </div>
- </div>
- )) : <div className="p-2 md:p-4 text-center text-sm text-kite-text-light">No data available</div>}
- </div>
- </div>
-
- <div className="bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col">
+ {/* 3. Comprehensive Market Overview Section */}
+ {activeTab === 'market-overview' && (
+ <div className="bg-white border border-kite-border rounded-sm overflow-hidden flex flex-col scroll-mt-24">
  <div className="p-1.5 md:p-3 md:p-5 border-b border-kite-border flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4">
  <div>
  <h3 className="font-medium text-kite-text flex items-center space-x-2 text-xs md:text-base">
@@ -449,12 +461,12 @@ export default function DataAnalysis() {
  >
  <td className="p-4">
  <div className="flex items-center space-x-3">
- <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center font-medium text-[10px] ${statsMap.get(b.id)?.isBlueTick ? 'bg-kite-blue/10 text-kite-blue' : statsMap.get(b.id)?.isPreVerified ? 'bg-white text-kite-text' : 'bg-kite-bg text-kite-text'}`}>
- {b.name.charAt(0)}
+ <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#387ed1] to-[#2563eb] shadow-sm text-white flex-shrink-0 font-sans font-bold flex items-center justify-center text-[13px]">
+ {b.name?.trim().charAt(0).toUpperCase() || 'B'}
  </div>
  <div className="min-w-0">
  <div className="flex items-center space-x-1.5">
- <p className="font-medium text-sm text-kite-text group-hover:text-kite-blue truncate">{b.name}</p>
+ <p className="font-medium text-sm text-kite-text group-hover:text-kite-blue dark:group-hover:text-white truncate">{b.name}</p>
  {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500 flex-shrink-0" title="RMAS Verified" />}
  {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text flex-shrink-0" title="Pre-Verified" />}
  </div>
@@ -505,67 +517,34 @@ export default function DataAnalysis() {
  </div>
 
  {/* Mobile Cards View */}
- <div className="block md:hidden divide-y divide-kite-border">
+ <div className="block md:hidden divide-y divide-kite-border/50">
  {overviewBusinesses.map(b => (
  <div key={`all_mob_${b.id}`}
  onClick={() => setSelectedBusiness(state.businesses.find(biz => biz.id === b.id) || null)}
- className="p-2 md:p-4 hover:bg-kite-bg active:bg-kite-bg transition-colors cursor-pointer"
+ className="p-2 hover:bg-kite-bg active:bg-kite-bg transition-colors cursor-pointer"
  >
- <div className="flex justify-between items-start mb-3">
- <div className="flex items-center space-x-3">
- <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-medium text-sm ${statsMap.get(b.id)?.isBlueTick ? 'bg-kite-blue/10 text-kite-blue' : statsMap.get(b.id)?.isPreVerified ? 'bg-white text-kite-text' : 'bg-kite-bg text-kite-text'}`}>
- {b.name.charAt(0)}
+ <div className="flex justify-between items-center">
+ <div className="flex items-center space-x-2 min-w-0 pr-2">
+      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#387ed1] to-[#2563eb] shadow-sm text-white flex-shrink-0 font-sans font-bold flex items-center justify-center text-[10px]">
+        {b.name?.trim().charAt(0).toUpperCase() || 'B'}
+      </div>
+ <p className="font-medium text-[13px] text-kite-text truncate">{b.name}</p>
+ {statsMap.get(b.id)?.isBlueTick && <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />}
+ {statsMap.get(b.id)?.isPreVerified && <Clock className="w-3.5 h-3.5 text-kite-text flex-shrink-0" />}
  </div>
- <div>
- <div className="flex items-center space-x-1.5">
- <p className="font-medium text-sm text-kite-text">{b.name}</p>
- {statsMap.get(b.id)?.isBlueTick && <BadgeCheck  className="w-3 md:w-3.5 h-3 md:h-3.5 text-white fill-blue-500" />}
- {statsMap.get(b.id)?.isPreVerified && <Clock  className="w-3 md:w-3.5 h-3 md:h-3.5 text-kite-text" />}
- </div>
- <p className="text-[11px] text-kite-text-light uppercase tracking-wider">{b.ownerName}</p>
- </div>
- </div>
- <div className="text-right">
- <span className={`inline-block px-2 py-1 text-[10px] font-medium rounded-sm ${b.interestRate <= 10 ? 'bg-kite-blue/10 text-kite-blue' : b.interestRate <= 20 ? 'bg-white text-kite-text' : 'bg-kite-red/10 text-kite-red'}`}>
- {b.interestRate}% Int.
- </span>
+ <div className="text-right flex-shrink-0 font-medium text-[13px] text-kite-text">
+ {renderLiveAmount(b)}
  </div>
  </div>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-4 bg-kite-bg border border-kite-border rounded-sm p-3">
- <div>
- <p className="text-[10px] text-kite-text-light font-medium uppercase mb-0.5">Total Invested</p>
- <p className="font-medium text-sm text-kite-text">{renderLiveAmount(b)}</p>
+ <div className="flex justify-between items-center mt-1">
+ <div className="flex items-center space-x-2 min-w-0 pr-2">
+ <p className="text-[10px] text-kite-text-light uppercase tracking-wider truncate max-w-[100px]">{b.ownerName}</p>
+ {b.investorCount > 0 && <span className="text-[10px] text-kite-text-light border-l border-kite-border pl-2">{b.investorCount} inv</span>}
  </div>
- <div className="text-right">
- <p className="text-[10px] text-kite-text-light font-medium uppercase mb-0.5">Total Payouts</p>
- <p className={`font-medium text-sm ${b.totalRet > 0 ? 'text-kite-green' : 'text-kite-text-light'}`}>
- {b.totalRet > 0 ? formatINR(b.totalRet) : '-'}
- </p>
- </div>
- <div>
- <p className="text-[10px] text-kite-text-light font-medium uppercase mb-0.5">Live Trend</p>
- <MarketTrendCell businessId={b.id} showIcon={true} />
- </div>
- <div className="flex items-center justify-between col-span-2 pt-2 border-t border-kite-border">
- <div className="flex items-center space-x-2">
- <div className="flex items-center space-x-1 text-kite-text-light">
- <Users className="w-2.5 md:w-3 h-2.5 md:h-3" />
- <span className="font-medium text-xs">{b.investorCount} Active</span>
- </div>
- {b.profitedInvestorsCount > 0 && (
- <span className="text-[10px] text-kite-green font-medium bg-kite-green/10 px-1.5 py-0.5 rounded">
- {b.profitedInvestorsCount} Profited
- </span>
- )}
- </div>
- <div>
- {b.totalInv === 0 ? (
- <span className="text-[10px] text-kite-text-light font-medium uppercase tracking-wider">Untapped</span>
- ) : b.totalRet > 0 ? (
- <span className="text-[10px] text-kite-green font-medium uppercase tracking-wider flex items-center"><BadgeCheck  className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1" /> Verified</span>
- ) : (
- <span className="text-[10px] text-kite-blue font-medium uppercase tracking-wider">Active</span>
- )}
+ <div className="text-right flex items-center space-x-2 flex-shrink-0">
+ <span className={`text-[10px] font-medium ${b.interestRate <= 10 ? 'text-kite-blue' : b.interestRate <= 20 ? 'text-kite-text' : 'text-kite-red'}`}>{b.interestRate}% Int.</span>
+ <div className="text-[11px] min-w-[40px] text-right">
+ <MarketTrendCell businessId={b.id} showIcon={false} />
  </div>
  </div>
  </div>
@@ -574,10 +553,15 @@ export default function DataAnalysis() {
  </div>
 
  {overviewBusinesses.length === 0 && (
- <div className="p-2 md:p-4 text-center text-kite-text-light text-sm border-t border-kite-border">No businesses found.</div>
+ <div className="p-8 flex flex-col items-center justify-center space-y-3 border-t border-kite-border">
+   <AlertCircle className="w-8 h-8 text-kite-text-light opacity-50" />
+   <p className="text-sm font-medium text-kite-text">No businesses found</p>
+   <p className="text-xs text-kite-text-light text-center">Try adjusting your search or filters.</p>
+ </div>
  )}
  </div>
  </div>
+ )}
 
  {selectedBusiness && renderBusinessDetails(selectedBusiness)}
  </div>

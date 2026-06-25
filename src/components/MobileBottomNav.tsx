@@ -1,5 +1,5 @@
 import { View } from '../types';
-import { Building2, Users, ReceiptIndianRupee, LayoutDashboard, CreditCard, PieChart } from 'lucide-react';
+import { Bookmark, Gavel, User, Briefcase } from 'lucide-react';
 
 interface MobileBottomNavProps {
   currentView: View;
@@ -9,10 +9,10 @@ interface MobileBottomNavProps {
 export default function MobileBottomNav({ currentView, onNavigate }: MobileBottomNavProps) {
   // Mobile only requested buttons
   const navItems = [
-    { id: 'data-analysis' as View, label: 'Analysis', icon: PieChart },
-    { id: 'businesses' as View, label: 'Businesses', icon: Building2 },
-    { id: 'investors' as View, label: 'Investors', icon: Users },
-    { id: 'investments' as View, label: 'Investments', icon: ReceiptIndianRupee },
+    { id: 'data-analysis' as View, label: 'Analysis', icon: Bookmark },
+    { id: 'businesses' as View, label: 'Businesses', icon: Gavel },
+    { id: 'investors' as View, label: 'Investors', icon: User },
+    { id: 'investments' as View, label: 'Investments', icon: Briefcase },
   ];
 
   return (

@@ -178,7 +178,7 @@ function MainLayout() {
 
  {/* Mobile Header - Kite Style */}
   <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-kite-border shrink-0 z-40 sticky top-0">
-    <div className="flex flex-col">
+    <div className="flex flex-col cursor-pointer" onClick={() => handleNavigate('admin')}>
       <span className="text-[15px] text-black font-bold tracking-wide">Radhika MA Service</span>
       <span className="text-[10px] text-kite-text-light font-medium tracking-wide mt-0.5">MyRadhika softwere</span>
     </div>
@@ -188,7 +188,7 @@ function MainLayout() {
 
  {/* Main Content */}
  <main className="flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden flex flex-col items-center bg-kite-bg text-kite-text relative">
-   <div className="w-full max-w-full">
+   <div className="w-full max-w-full p-4 pb-24 md:p-8 md:pb-8">
      <div style={{ display: currentView === 'dashboard' ? 'block' : 'none' }}><Dashboard /></div>
      <div style={{ display: currentView === 'data-analysis' ? 'block' : 'none' }}><DataAnalysis /></div>
      <div style={{ display: currentView === 'businesses' ? 'block' : 'none' }}><Businesses /></div>

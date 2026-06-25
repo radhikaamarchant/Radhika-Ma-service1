@@ -1,11 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { ArrowLeft, Building2, Save, X, Edit2, Shield, AlertCircle, BadgeCheck, Clock, Wallet, ArrowDownRight, ArrowUpRight, FileText, ImageIcon, Upload } from 'lucide-react';
-import Cropper from 'react-easy-crop';
+import { ArrowLeft, Building2, Save, X, Edit2, Shield, AlertCircle, BadgeCheck, Clock, Wallet, ArrowDownRight, ArrowUpRight, FileText, ImageIcon, Upload, User, TrendingUp } from 'lucide-react';
 import { Business } from '../types';
 import { getVerificationStats } from '../utils/blueTick';
 import { getUnifiedBankBalance, getUnifiedTransactions } from '../utils/bankBalance';
+import { MarketTrendCell } from './MarketTrendCell';
 
 interface Props {
   businessId: string;
@@ -48,11 +48,6 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
   }, [business, isEditing]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   if (!business) return null;
 
@@ -93,227 +88,138 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
     setIsEditing(false);
   };
 
-  const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const reader = new FileReader();
-      reader.addEventListener('load', () => setImageSrc(reader.result?.toString() || null));
+      reader.addEventListener('load', () => {
+        setFormData({ ...formData, photoUrl: reader.result?.toString() || '' });
+      });
       reader.readAsDataURL(e.target.files[0]);
     }
   };
 
-  const createCroppedImage = async () => {
-    if (!imageSrc || !croppedAreaPixels) return;
-
-    const image = new Image();
-    image.src = imageSrc;
-    await new Promise((resolve) => (image.onload = resolve));
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    if (!ctx) return;
-
-    // Scale down if too large
-    // @ts-ignore
-    const maxSize = 400;
-    // @ts-ignore
-    let targetWidth = croppedAreaPixels.width;
-    // @ts-ignore
-    let targetHeight = croppedAreaPixels.height;
-    
-    if (targetWidth > maxSize || targetHeight > maxSize) {
-      const ratio = Math.min(maxSize / targetWidth, maxSize / targetHeight);
-      targetWidth *= ratio;
-      targetHeight *= ratio;
-    }
-
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-
-    ctx.drawImage(
-      image,
-      // @ts-ignore
-      croppedAreaPixels.x,
-      // @ts-ignore
-      croppedAreaPixels.y,
-      // @ts-ignore
-      croppedAreaPixels.width,
-      // @ts-ignore
-      croppedAreaPixels.height,
-      0,
-      0,
-      targetWidth,
-      targetHeight
-    );
-
-    const base64Image = canvas.toDataURL('image/jpeg', 0.7);
-    setFormData({ ...formData, photoUrl: base64Image });
-    setImageSrc(null);
-  };
-
-  const unifiedBalance = business ? getUnifiedBankBalance(business.ownerName, state.businesses, state.investors, state.investments) : 0;
+  const unifiedBalance = business ? getUnifiedBankBalance(business.ownerName, state.businesses, state.investors, state.investments, state.settings) : 0;
   
-  const bankTransactions = business ? getUnifiedTransactions(business.ownerName, state.businesses, state.investors, state.investments) : [];
+  const bankTransactions = business ? getUnifiedTransactions(business.ownerName, state.businesses, state.investors, state.investments, state.settings) : [];
 
   return (
-    <div className="space-y-6 animate-fade-in transition-all">
-      <div className="flex items-center space-x-4 mb-4 md:mb-8">
+    <div className="space-y-4 md:space-y-6 animate-fade-in transition-all pb-20">
+      {/* Header Section */}
+      <div className="flex items-start md:items-center space-x-3 mb-4 md:mb-6 border-b border-kite-border pb-4 md:pb-6">
         <button onClick={onBack}
-          className="p-2 hover:bg-kite-border rounded-full transition-colors"
+          className="p-1.5 -ml-1.5 hover:bg-kite-bg rounded transition-colors text-kite-text mt-0.5 md:mt-0"
         >
-          <ArrowLeft  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1 flex items-center justify-between">
-          <p className="hidden md:block text-sm text-kite-text-light mt-1">Detailed View & Configuration</p>
-          <h3 className={"flex md:hidden font-medium items-center space-x-1.5 " + (business.name.length > 20 ? 'text-[11px]' : 'text-sm') + " text-kite-text"}>
-            <span className="truncate max-w-[200px]">{business.name}</span>
-            {isBlueTick && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 shrink-0" />}
-          </h3>
+        <div className="flex-1 flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div className="flex flex-col">
+            <h2 className="text-lg md:text-xl font-medium text-kite-text tracking-tight flex items-center space-x-2">
+              <span className="truncate max-w-[250px] md:max-w-md">{business.name}</span>
+              {isBlueTick && <BadgeCheck className="w-4 h-4 text-white fill-blue-500 shrink-0" title="RMAS Verified" />}
+              {isPreVerified && <Clock className="w-4 h-4 text-black shrink-0" title="Pre-Verified" />}
+            </h2>
+            <div className="flex items-center space-x-2 text-[11px] md:text-xs text-kite-text-light mt-0.5">
+              <span className="font-mono">ID: #{business.businessId}</span>
+              <span className="text-kite-border">•</span>
+              <span className="font-medium">{business.ownerName}</span>
+            </div>
+          </div>
+          <div className="mt-2 md:mt-0">
+             <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-semibold ${business.status === 'listed' ? 'bg-kite-green/10 text-kite-green' : business.status === 'funded' ? 'bg-kite-text text-white' : 'bg-kite-bg text-kite-text-light'}`}>
+               {business.status}
+             </span>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4">
-        {/* Main Info */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="w-full bg-white border border-kite-border rounded-sm p-4">
-            <div className="flex justify-center md:justify-between items-center border-b border-kite-border pb-4 mb-4">
-              <h3 className={"hidden md:flex font-medium items-center space-x-2 text-base text-kite-text"}>
-                <span className="truncate max-w-xs">{business.name}</span>
-                {isBlueTick && <BadgeCheck  className="w-5 h-5 text-white fill-blue-500 shrink-0" title="RMAS Verified" />}
-              </h3>
-              {!isEditing ? (
-                <div className="flex items-center space-x-3 md:space-x-2 w-full md:w-auto justify-center">
-                  <button onClick={() => setViewMode(viewMode === 'bank' ? 'details' : 'bank')}
-                    className={"flex-1 md:flex-none justify-center flex items-center space-x-1 text-sm font-medium border px-4 md:px-3 py-2 md:py-1.5 rounded-sm transition-colors " + (viewMode === 'bank' ? 'bg-kite-blue/10 text-kite-blue border-kite-blue/30' : 'text-kite-text-light hover:text-kite-text border-kite-border bg-white hover:bg-kite-bg')}
-                  >
-                    <Wallet className="w-3.5 h-3.5" />
-                    <span>{viewMode === 'bank' ? 'Details' : 'Bank Balance'}</span>
-                  </button>
-                  <button onClick={() => setIsEditing(true)}
-                    className="flex-1 md:flex-none justify-center flex items-center space-x-1 text-sm font-medium text-kite-text-light hover:text-kite-text border border-kite-border px-4 md:px-3 py-2 md:py-1.5 rounded-sm bg-white hover:bg-kite-bg transition-colors"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    <span>Your Profile</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <button onClick={handleCancel}
-                    className="flex items-center space-x-1 text-sm font-medium text-kite-text-light hover:text-kite-text transition-colors"
-                  >
-                    <X className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                    <span>Cancel</span>
-                  </button>
-                  <button onClick={handleSave}
-                    className="flex items-center space-x-1 text-sm font-medium text-white bg-kite-blue hover:bg-kite-blue/90 px-3 py-1.5 rounded-sm transition-colors"
-                  >
-                    <Save className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                    <span>Save Changes</span>
-                  </button>
-                </div>
-              )}
-            </div>
+      {/* Action Buttons */}
+      <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
+        <button
+          onClick={() => { setViewMode(viewMode === 'bank' ? 'details' : 'bank'); setIsEditing(false); }}
+          className={`flex flex-col items-center justify-center space-y-1.5 py-3 px-2 rounded border transition-all duration-200 active:bg-gray-50 min-h-[56px] shadow-sm hover:shadow-md ${viewMode === 'bank' && !isEditing ? 'border-kite-blue bg-kite-blue/5 text-kite-blue' : 'border-kite-border bg-white text-kite-text'}`}
+        >
+          <Wallet className="w-5 h-5 shrink-0" />
+          <span className="font-medium text-[11px] md:text-xs tracking-wide">{viewMode === 'bank' && !isEditing ? 'Hide Details' : 'Bank Balance'}</span>
+        </button>
+        <button
+          onClick={() => { setIsEditing(!isEditing); setViewMode('details'); }}
+          className={`flex flex-col items-center justify-center space-y-1.5 py-3 px-2 rounded border transition-all duration-200 active:bg-gray-50 min-h-[56px] shadow-sm hover:shadow-md ${isEditing ? 'border-kite-blue bg-kite-blue/5 text-kite-blue' : 'border-kite-border bg-white text-kite-text'}`}
+        >
+          <User className="w-5 h-5 shrink-0" />
+          <span className="font-medium text-[11px] md:text-xs tracking-wide">{isEditing ? 'Hide Profile' : 'Your Profile'}</span>
+        </button>
+      </div>
 
-            
-            {viewMode === 'bank' ? (
-              <div className="w-full animate-fade-in min-h-[400px]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  <div className="p-4 border-l-4 border-kite-blue bg-kite-bg/50">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-kite-text-light mb-3 flex items-center space-x-1">
-                       <Building2 className="w-3 h-3" />
-                       <span>Registered Bank Details</span>
-                    </h4>
-                    {business.bankDetails ? (
-                      <div className="space-y-1 mt-2">
-                        <p className="font-semibold text-kite-text text-sm">{business.bankDetails.bankName}</p>
-                        <p className="font-mono text-kite-text-light text-sm tracking-widest">{business.bankDetails.accountNumber}</p>
-                        <p className="font-mono text-kite-text-light text-sm">IFSC: {business.bankDetails.ifscCode}</p>
-                        <p className="text-xs uppercase font-medium text-kite-text-light mt-2 pt-2 border-t border-kite-border">{business.bankDetails.accountHolderName}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm font-medium text-kite-text-light">No bank connected yet.</p>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-col justify-center items-start md:items-end p-4">
-                    <p className="text-xs text-kite-text-light mb-1">Available balance</p>
-                    <p className={"text-2xl md:text-3xl font-medium tracking-tight " + (unifiedBalance >= 0 ? "text-kite-blue" : "text-kite-red")} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
-                      {unifiedBalance >= 0 ? '' : '-'}{formatINR(Math.abs(unifiedBalance))}
-                    </p>
-                  </div>
-                </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="bg-white border border-kite-border p-3 md:p-4 rounded">
+          <p className="text-[10px] md:text-xs text-kite-text-light uppercase tracking-wider mb-1 font-medium">Funding Req.</p>
+          <p className="text-base md:text-xl font-medium text-kite-text">{formatINR(business.fundingRequired)}</p>
+        </div>
+        <div className="bg-white border border-kite-border p-3 md:p-4 rounded">
+          <p className="text-[10px] md:text-xs text-kite-text-light uppercase tracking-wider mb-1 font-medium">Interest Rate</p>
+          <p className="text-base md:text-xl font-medium text-kite-green">{business.interestRate}%</p>
+        </div>
+        <div className="bg-white border border-kite-border p-3 md:p-4 rounded">
+          <p className="text-[10px] md:text-xs text-kite-text-light uppercase tracking-wider mb-1 font-medium">Total Funded</p>
+          <p className="text-base md:text-xl font-medium text-kite-blue">{formatINR(totalFunded)}</p>
+        </div>
+        <div className="bg-white border border-kite-border p-3 md:p-4 rounded">
+          <p className="text-[10px] md:text-xs text-kite-text-light uppercase tracking-wider mb-1 font-medium">Investors</p>
+          <p className="text-base md:text-xl font-medium text-kite-text">{activeBusinessInvestments.length}</p>
+        </div>
+      </div>
 
-                <div className="mt-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-xl font-medium text-kite-text">Statement</h4>
-                    <select 
-                      className="border border-kite-border rounded-sm px-2 py-1 text-sm bg-white outline-none"
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const rows = document.querySelectorAll('.tx-row');
-                        rows.forEach(row => {
-                          if (val === 'all') row.classList.remove('hidden');
-                          else if (row.getAttribute('data-category') === val) row.classList.remove('hidden');
-                          else row.classList.add('hidden');
-                        });
-                      }}
-                    >
-                      <option value="all">All Transactions</option>
-                      <option value="commission">Commission</option>
-                      <option value="sahay">Sahay</option>
-                    </select>
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        
+        {/* Left Column (Holdings / Profile) */}
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          {viewMode === 'bank' && !isEditing ? (
+              <div className="bg-white border border-kite-border rounded p-4 md:p-6 animate-fade-in min-h-[400px]">
+                <div className="flex flex-col items-center justify-center py-6 border-b border-kite-border">
+                  <p className="text-[10px] md:text-xs text-kite-text-light uppercase tracking-wider mb-2">Available balance</p>
+                  <p className={`text-3xl md:text-4xl font-medium tracking-tight ${unifiedBalance >= 0 ? "text-kite-blue" : "text-kite-red"}`}>
+                    {unifiedBalance >= 0 ? '' : '-'}{formatINR(Math.abs(unifiedBalance))}
+                  </p>
+                </div>
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium text-kite-text mb-3">Recent Transactions</h4>
                   {bankTransactions.length > 0 ? (
-                    <div className="overflow-x-auto border border-kite-border/50 rounded-sm">
-                      <table className="w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-kite-bg">
-                          <tr className="text-[10px] uppercase tracking-wider text-kite-text-light border-b border-kite-border/50">
-                            <th className="py-2.5 px-4 font-normal">Date</th>
-                            <th className="py-2.5 px-4 font-normal">Particulars</th>
-                            <th className="py-2.5 px-4 text-right font-normal">Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-kite-border/50 bg-white">
-                          {bankTransactions.map(tx => (
-                            <tr key={tx.id} className="hover:bg-kite-bg/30 transition-colors tx-row" data-category={tx.category || 'other'}>
-                              <td className="py-3 px-4 text-xs text-kite-text-light">{new Date(tx.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                              <td className="py-3 px-4">
-                                <p className="text-sm text-kite-text flex items-center space-x-2">
-                                  <span>{tx.title}</span>
-                                  {tx.category === 'commission' && <span className="px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-700 text-[9px] uppercase tracking-wider">Commission</span>}
-                                  {tx.category === 'sahay' && <span className="px-1.5 py-0.5 rounded-sm bg-purple-100 text-purple-700 text-[9px] uppercase tracking-wider">Sahay</span>}
-                                </p>
-                                <p className="text-[11px] text-kite-text-light mt-0.5">{tx.description}</p>
-                              </td>
-                              <td className={"py-3 px-4 text-right text-sm " + (tx.type === 'CREDIT' ? 'text-kite-green' : 'text-kite-text')} style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
-                                {tx.type === 'CREDIT' ? '' : '-'}{formatINR(tx.amount)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="divide-y divide-kite-border">
+                      {bankTransactions.map(tx => (
+                        <div key={tx.id} className="py-3 flex justify-between items-start hover:bg-kite-bg/50 transition-colors">
+                          <div>
+                            <p className="text-sm text-kite-text font-medium flex items-center space-x-2">
+                              <span>{tx.title}</span>
+                              {tx.category === 'commission' && <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[9px] uppercase tracking-wider font-semibold">Commission</span>}
+                              {tx.category === 'sahay' && <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 text-[9px] uppercase tracking-wider font-semibold">Sahay</span>}
+                            </p>
+                            <p className="text-xs text-kite-text-light mt-0.5">{tx.description}</p>
+                            <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-wider">{new Date(tx.date).toLocaleDateString('en-IN')}</p>
+                          </div>
+                          <p className={`text-sm font-medium ${tx.type === 'CREDIT' ? 'text-kite-green' : 'text-kite-text'}`}>
+                            {tx.type === 'CREDIT' ? '+' : '-'}{formatINR(tx.amount)}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <div className="py-8 text-center text-kite-text-light text-sm border border-kite-border/50 rounded-sm">
+                    <div className="py-6 text-center text-kite-text-light text-sm">
                       No transactions recorded yet.
                     </div>
                   )}
                 </div>
               </div>
-            ) : isEditing ? (
-              <div className="space-y-6">
+          ) : isEditing ? (
+              <div className="bg-white border border-kite-border rounded p-4 md:p-6 animate-fade-in space-y-6">
                 <div className="flex flex-col items-center space-y-4 mb-6">
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border border-kite-border bg-kite-bg flex flex-col items-center justify-center relative group">
+                  <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border border-kite-border bg-kite-bg flex flex-col items-center justify-center relative group">
                     {formData.photoUrl ? (
                       <img src={formData.photoUrl} alt={business.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="text-gray-400 flex flex-col items-center">
-                        <ImageIcon className="w-6 h-6 md:w-8 md:h-8 mb-2 opacity-50" />
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-center">No Photo</span>
+                      <div className="text-kite-text-light flex flex-col items-center">
+                        <ImageIcon className="w-6 h-6 md:w-8 md:h-8 mb-1 opacity-50" />
+                        <span className="text-[9px] font-medium uppercase tracking-wider text-center">No Photo</span>
                       </div>
                     )}
                     <button 
@@ -327,282 +233,194 @@ export default function BusinessDetail({ businessId, onBack, onDelete }: Props) 
                   <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Business Name</label>
-                    <input type="text" className="w-full border-b border-gray-200 p-2 text-base font-medium focus:border-kite-blue outline-none transition-colors" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Business Name" />
+                    <label className="block text-[10px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">Business Name</label>
+                    <input type="text" className="w-full border border-kite-border rounded px-3 py-2 bg-transparent text-sm font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Business Name" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Description</label>
-                    <textarea className="w-full border-b border-gray-200 p-2 text-sm focus:border-kite-blue outline-none transition-colors resize-none h-20" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="About the business..." />
+                    <label className="block text-[10px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">Description</label>
+                    <textarea className="w-full border border-kite-border rounded px-3 py-2 bg-transparent text-sm font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none resize-none h-20" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="About the business..." />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Location</label>
-                    <input type="text" className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City, State" />
+                    <label className="block text-[10px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">Location</label>
+                    <input type="text" className="w-full border border-kite-border rounded px-3 py-2 bg-transparent text-sm font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City, State" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Status</label>
-                    <select className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors bg-white" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
+                    <label className="block text-[10px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">Status</label>
+                    <select className="w-full border border-kite-border rounded px-3 py-2 bg-transparent text-sm font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none cursor-pointer" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
                       <option value="pending">Pending</option>
                       <option value="listed">Listed</option>
                       <option value="funded">Funded</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Funding Required (₹)</label>
-                    <input type="number" className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors" value={formData.fundingRequired} onChange={e => setFormData({...formData, fundingRequired: e.target.value})} />
+                    <label className="block text-[10px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">Funding Required (₹)</label>
+                    <input type="number" className="w-full border border-kite-border rounded px-3 py-2 bg-transparent text-sm font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none" value={formData.fundingRequired} onChange={e => setFormData({...formData, fundingRequired: e.target.value})} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Interest Rate (%)</label>
-                    <input type="number" step="0.1" className="w-full border-b border-gray-200 p-2 text-sm font-medium focus:border-kite-blue outline-none transition-colors" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
-                  </div>
-                </div>
-
-                <div className="mt-8 border-t border-kite-border pt-4">
-                  <div className="p-3 bg-kite-red/5 border border-kite-red/20 rounded-sm flex items-start space-x-3 text-red-800 mb-6">
-                    <AlertCircle className="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5" />
-                    <p className="text-xs md:text-sm font-medium">Changing financial parameters only applies to future entries.</p>
-                  </div>
-                  
-                  <div className="flex justify-end pt-2">
-                    {onDelete && (
-                      <button onClick={() => { onDelete(); }} className="bg-white text-kite-red border border-kite-red/30 hover:bg-kite-red/5 font-medium text-xs md:text-sm px-4 py-2 rounded-sm transition-colors">
-                        Delete Business
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {(business.photoUrl || business.description || business.location) && (
-                  <div className="flex flex-col md:flex-row gap-6 border-b border-kite-border pb-6">
-                    {business.photoUrl && (
-                      <div className="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-full overflow-hidden border border-kite-border bg-kite-bg flex items-center justify-center">
-                        <img src={business.photoUrl} alt={business.name} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    <div className="flex-1 space-y-2">
-                      {business.location && (
-                        <p className="text-sm font-medium text-kite-text-light flex items-center gap-1.5 uppercase tracking-wide">
-                          <Building2 className="w-4 h-4" />
-                          {business.location}
-                        </p>
-                      )}
-                      {business.description && (
-                        <p className="text-sm text-kite-text leading-relaxed whitespace-pre-line">{business.description}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                  <div className="flex justify-between items-end md:items-start md:flex-col md:justify-start">
-                    <div>
-                      <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Funding Required (₹)</label>
-                      <p className="text-sm md:text-base font-medium text-kite-text">{formatINR(business.fundingRequired)}</p>
-                    </div>
-                    <div className="md:hidden">
-                      <p className="text-sm font-medium text-kite-green">{business.interestRate}%</p>
-                    </div>
-                  </div>
-
-                  <div className="hidden md:block">
-                    <label className="block text-xs font-medium text-kite-text-light uppercase tracking-wider mb-2">Interest Rate (%)</label>
-                    <p className="text-base font-medium text-kite-green">{business.interestRate}%</p>
-                  </div>
-
-                  <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex justify-between items-center md:items-start md:flex-col md:justify-start">
-                    <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-0 md:mb-2">Status</label>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-sm text-xs md:text-sm font-medium capitalize ${business.status === 'listed' ? 'bg-kite-green/10 text-green-800' : business.status === 'funded' ? 'bg-black text-white' : 'bg-gray-100 text-kite-text'}`}>
-                      {business.status}
-                    </span>
-                  </div>
-                  <div className="mt-2 md:mt-0 pt-3 border-t border-kite-border/50 md:border-0 md:pt-0 flex flex-col items-start md:justify-start">
-                    <label className="block text-[10px] md:text-xs font-medium text-kite-text-light uppercase tracking-wider mb-1 md:mb-2">Owner</label>
-                    <div className="flex md:flex-col items-baseline justify-between w-full">
-                      <p className="text-sm md:text-base font-medium text-kite-text truncate">{business.ownerName}</p>
-                      {business.authorityType && (
-                        <p className="hidden md:block text-sm font-medium text-kite-text-light mt-1">
-                          {business.authorityType}
-                          {business.rmasSubsidy ? ` (${business.rmasSubsidy}% Subsidy)` : ''}
-                        </p>
-                      )}
-                    </div>
+                    <label className="block text-[10px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">Interest Rate (%)</label>
+                    <input type="number" step="0.1" className="w-full border border-kite-border rounded px-3 py-2 bg-transparent text-sm font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} />
                   </div>
                 </div>
 
                 <div className="mt-6 border-t border-kite-border pt-4">
-                  <p className="text-sm font-medium text-kite-text-light uppercase tracking-wide mb-3">Banking Profile</p>
-                  {business.bankDetails ? (
-                    <div className="bg-kite-bg p-3 rounded-sm border border-kite-border text-sm flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-kite-text">{business.bankDetails.bankName}</p>
-                        <p className="font-mono text-kite-text-light mt-1">A/C: {business.bankDetails.accountNumber}</p>
-                        <p className="font-mono text-kite-text-light mt-0.5">IFSC: {business.bankDetails.ifscCode}</p>
-                        <p className="text-xs font-medium text-kite-text-light mt-2 uppercase">HOLDER: {business.bankDetails.accountHolderName}</p>
-                      </div>
+                  <div className="p-2 bg-orange-50 border border-orange-100 rounded flex items-start space-x-2 text-orange-800 mb-4">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <p className="text-xs font-medium">Changing financial parameters only applies to future entries.</p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                    {onDelete && (
+                      <button onClick={() => { onDelete(); }} className="w-full sm:w-auto bg-white text-kite-red border border-red-200 hover:bg-red-50 hover:border-red-300 font-medium text-sm px-4 py-2 rounded transition-colors text-center">
+                        Delete Business
+                      </button>
+                    )}
+                    <div className="flex space-x-2 w-full sm:w-auto justify-end flex-1">
+                      <button onClick={handleCancel} className="flex-1 sm:flex-none text-center bg-white text-kite-text border border-kite-border hover:bg-kite-bg font-medium text-sm px-4 py-2 rounded transition-colors">
+                        Cancel
+                      </button>
+                      <button onClick={handleSave} className="flex-1 sm:flex-none text-center bg-kite-blue hover:opacity-90 text-white font-medium text-sm px-4 py-2 rounded transition-colors shadow-sm">
+                        Save
+                      </button>
                     </div>
-                  ) : (
-                    <p className="text-sm mt-2 text-kite-text-light font-medium">Not Provided</p>
-                  )}
+                  </div>
                 </div>
               </div>
+          ) : (
+          <div className="bg-white border border-kite-border rounded animate-fade-in overflow-hidden">
+            <div className="p-3 md:p-4 border-b border-kite-border">
+              <h3 className="text-sm font-medium text-kite-text">Current Investors</h3>
+            </div>
+            
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto w-full">
+               <table className="w-full text-left text-sm whitespace-nowrap">
+                 <thead>
+                   <tr className="bg-kite-bg/50 text-[10px] tracking-wider text-kite-text-light uppercase border-b border-kite-border">
+                     <th className="px-4 py-2 font-medium">Investor</th>
+                     <th className="px-4 py-2 font-medium text-right">Amount</th>
+                     <th className="px-4 py-2 font-medium text-right">Duration</th>
+                     <th className="px-4 py-2 font-medium text-center">Status</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-kite-border">
+                   {businessInvestments.map(inv => {
+                     const investor = state.investors.find(i => i.id === inv.investorId);
+                     return (
+                       <tr key={inv.id} className="hover:bg-kite-bg transition-colors">
+                         <td className="px-4 py-2.5 font-medium text-kite-text">{investor?.name || 'Unknown'}</td>
+                         <td className="px-4 py-2.5 text-right font-medium text-kite-text">{formatINR(inv.amount)}</td>
+                         <td className="px-4 py-2.5 text-right text-kite-text-light font-medium">{inv.timePeriodMonths}M</td>
+                         <td className="px-4 py-2.5 text-center">
+                           <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-semibold ${inv.status === 'active' ? 'bg-kite-green/10 text-kite-green' : 'bg-kite-bg text-kite-text-light'}`}>
+                             {inv.status}
+                           </span>
+                         </td>
+                       </tr>
+                     );
+                   })}
+                   {businessInvestments.length === 0 && (
+                     <tr>
+                       <td colSpan={4} className="p-6 text-center text-kite-text-light text-sm">No investors found.</td>
+                     </tr>
+                   )}
+                 </tbody>
+               </table>
+            </div>
+
+            {/* Mobile Stacked View */}
+            <div className="block md:hidden divide-y divide-kite-border">
+              {businessInvestments.map(inv => {
+                const investor = state.investors.find(i => i.id === inv.investorId);
+                return (
+                  <div key={inv.id} className="p-3 bg-white">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-medium text-kite-text text-sm">{investor?.name || 'Unknown'}</span>
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-semibold ${inv.status === 'active' ? 'bg-kite-green/10 text-kite-green' : 'bg-kite-bg text-kite-text-light'}`}>
+                         {inv.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-end mt-1">
+                       <span className="text-kite-text-light text-xs font-medium">{inv.timePeriodMonths} Months</span>
+                       <span className="font-medium text-kite-text text-sm">{formatINR(inv.amount)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {businessInvestments.length === 0 && (
+                 <div className="p-6 text-center text-kite-text-light text-sm">No investors found.</div>
+              )}
+            </div>
+
+          </div>
+          )}
+        </div>
+
+        {/* Right Column (Banking & Reg Details) */}
+        <div className="space-y-4 md:space-y-6">
+          
+          {/* Banking Profile */}
+          <div className="bg-white border border-kite-border rounded p-4">
+            <h3 className="text-xs font-medium text-kite-text-light uppercase tracking-wider mb-4 flex items-center space-x-2">
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Banking Profile</span>
+            </h3>
+            {business.bankDetails ? (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[10px] text-kite-text-light uppercase tracking-wider mb-0.5">Bank Name</p>
+                  <p className="font-medium text-kite-text text-sm">{business.bankDetails.bankName}</p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] text-kite-text-light uppercase tracking-wider mb-0.5">Account Number</p>
+                    <p className="font-mono text-kite-text text-sm tracking-wide">
+                      {business.bankDetails.accountNumber.length > 4 
+                        ? 'XXXXX' + business.bankDetails.accountNumber.slice(-4) 
+                        : business.bankDetails.accountNumber}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-kite-text-light uppercase tracking-wider mb-0.5">IFSC</p>
+                    <p className="font-mono text-kite-text text-sm">{business.bankDetails.ifscCode}</p>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-kite-border">
+                  <p className="text-[10px] text-kite-text-light uppercase tracking-wider mb-0.5">Account Holder</p>
+                  <p className="font-medium text-kite-text text-sm uppercase">{business.bankDetails.accountHolderName}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm font-medium text-gray-400">No bank details recorded.</p>
             )}
           </div>
 
-          {isPreVerified && vStats && (
-            <div className="bg-white border border-kite-border rounded-sm p-2 md:p-4">
-              <div className="flex items-center space-x-2 mb-4">
-                <Clock  className="w-4 h-4 md:w-5 md:h-5 text-black" />
-                <h3 className="text-xs md:text-base font-medium text-kite-text">Verification Coming Soon: Indian Trusted & Largest Economy Business Record</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm font-medium text-kite-text">
-                  <span>Current Profit: {vStats.profitPctDisplay.toFixed(1)}%</span>
-                  <span>Goal: 60%</span>
-                </div>
-                <div className="w-full bg-kite-bg rounded-full h-2.5">
-                  <div className="bg-black h-2.5 rounded-full transition-all duration-500" style={{ width: `${vStats.progressToBlueTick * 100}%` }}></div>
-                </div>
-                <p className="text-xs text-black mt-2">
-                  Reach 60% profit delivery to investors and 20 unique investors to unlock the permanent RMAS Blue Tick and Enhanced Profile Support.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {viewMode !== 'bank' && (
-          <div className="bg-white border border-kite-border rounded-sm p-2 md:p-4 mt-6">
-            <h3 className="text-xs md:text-base font-medium text-kite-text flex justify-between items-center mb-4">
-              <span>Current Investors</span>
-              <span className="text-sm font-semibold text-kite-blue">Total Funded: {formatINR(businessInvestments.reduce((sum, inv) => sum + inv.amount, 0))}</span>
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-kite-bg border-b border-kite-border text-[10px] uppercase tracking-wider text-kite-text-light">
-                  <tr>
-                    <th className="p-2 md:p-4 font-medium">Investor</th>
-                    <th className="p-2 md:p-4 font-medium text-right md:text-left">Invested</th>
-                    <th className="hidden md:table-cell p-2 md:p-4 font-medium">Interest</th>
-                    <th className="p-2 md:p-4 font-medium text-right md:text-left">Period</th>
-                    <th className="p-2 md:p-4 font-medium text-center md:text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {businessInvestments.map(inv => {
-                  const investor = state.investors.find(i => i.id === inv.investorId);
-                  return (
-                    <tr key={inv.id} className="border-b border-kite-border hover:bg-kite-bg">
-                      <td className="p-2 md:p-4 font-medium text-kite-text truncate max-w-[120px] text-xs md:text-sm">{investor?.name}</td>
-                      <td className="p-2 md:p-4 font-medium text-kite-text text-right md:text-left text-xs md:text-sm">{formatINR(inv.amount)}</td>
-                      <td className="hidden md:table-cell p-2 md:p-4 font-medium text-kite-green">{inv.interestRate}%</td>
-                      <td className="p-2 md:p-4 text-kite-text-light font-medium text-right md:text-left text-xs md:text-sm">{inv.timePeriodMonths}M</td>
-                      <td className="p-2 md:p-4 text-center md:text-left">
-                        <span className="hidden md:inline-flex items-center px-2 py-1 rounded-sm text-xs font-medium bg-kite-green/20 text-kite-text">
-                          {inv.status.toUpperCase()}
-                        </span>
-                        <span className="md:hidden inline-flex items-center justify-center">
-                           <span className={`w-2.5 h-2.5 rounded-full ${inv.status.toLowerCase() === 'active' ? 'bg-kite-green' : 'bg-kite-blue'}`}></span>
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {businessInvestments.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="p-4 text-center text-kite-text-light font-medium">No investors have funded this business yet.</td>
-                  </tr>
-                )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          )}
-        </div>
-
-        {/* Sidebar Info */}
-        <div className="space-y-6">
-          <div className="bg-kite-bg border border-kite-border rounded-sm p-2 md:p-4">
-            <h3 className="text-sm font-medium text-kite-text-light uppercase tracking-wider mb-4 border-b border-kite-border pb-2">Registration Details</h3>
-            <div className="space-y-4">
-              <div>
+          {/* Registration Details */}
+          <div className="bg-kite-bg border border-kite-border rounded p-4">
+            <h3 className="text-xs font-medium text-kite-text-light uppercase tracking-wider mb-3 border-b border-kite-border pb-2">Registration Information</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
                 <p className="text-xs text-kite-text-light font-medium">Date Registered</p>
-                <p className="text-sm font-medium text-kite-text mt-1">{new Date(business.registrationDate).toLocaleDateString('en-IN')}</p>
+                <p className="text-xs font-medium text-kite-text">{new Date(business.registrationDate).toLocaleDateString('en-IN')}</p>
               </div>
-              <div>
-                <p className="text-xs text-kite-text-light font-medium">Reg. Commission Paid</p>
-                <p className="text-sm font-medium text-kite-text mt-1">{formatINR(business.registrationCommissionPaid)}</p>
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-kite-text-light font-medium">Commission Paid</p>
+                <p className="text-xs font-medium text-kite-text">{formatINR(business.registrationCommissionPaid)}</p>
               </div>
-              <div>
+              <div className="flex justify-between items-center">
                 <p className="text-xs text-kite-text-light font-medium">Tax Collected</p>
-                <p className="text-sm font-medium text-kite-text mt-1">{formatINR(business.taxPaid)}</p>
+                <p className="text-xs font-medium text-kite-text">{formatINR(business.taxPaid)}</p>
               </div>
-              <div className="pt-4 border-t border-kite-border">
-                <p className="text-xs text-kite-text-light font-medium">Total Setup Revenue</p>
-                <p className="text-xs md:text-base font-medium text-kite-red mt-1">{formatINR(business.registrationCommissionPaid + business.taxPaid)}</p>
+              <div className="pt-3 border-t border-kite-border flex justify-between items-center">
+                <p className="text-xs text-kite-text-light font-medium">Setup Revenue</p>
+                <p className="text-sm font-medium text-kite-blue">{formatINR(business.registrationCommissionPaid + business.taxPaid)}</p>
               </div>
             </div>
           </div>
+          
         </div>
       </div>
-
-      {/* Image Cropper Modal */}
-      {imageSrc && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-white rounded-md w-full max-w-2xl overflow-hidden flex flex-col h-[80vh]">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
-              <h3 className="font-semibold text-lg">Crop & Adjust Profile Picture</h3>
-              <button onClick={() => setImageSrc(null)} className="p-1 hover:bg-gray-100 rounded-full text-gray-500">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="flex-1 relative bg-gray-900">
-              <Cropper
-                image={imageSrc}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                cropShape="round"
-                showGrid={false}
-                onCropChange={setCrop}
-                onCropComplete={onCropComplete}
-                onZoomChange={setZoom}
-              />
-            </div>
-            
-            <div className="p-6 bg-white border-t border-gray-100">
-              <div className="mb-6 flex items-center space-x-4">
-                <span className="text-sm font-medium text-gray-500">Zoom</span>
-                <input
-                  type="range"
-                  value={zoom}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  aria-labelledby="Zoom"
-                  onChange={(e) => setZoom(Number(e.target.value))}
-                  className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setImageSrc(null)}
-                  className="px-5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 border border-gray-200 rounded-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={createCroppedImage}
-                  className="px-5 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-sm shadow-sm"
-                >
-                  Save Photo
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

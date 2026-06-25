@@ -16,6 +16,7 @@ export default function Investments() {
  const blueTickBusinessIds = getBlueTickBusinessIds(state.businesses, state.investments);
  const [showAddForm, setShowAddForm] = useState(false);
  const [searchTerm, setSearchTerm] = useState('');
+ const [activeTab, setActiveTab] = useState<'holding' | 'booked'>('holding');
  const [selectedInvestment, setSelectedInvestment] = useState<any | null>(null);
  const [selectedInvestmentIds, setSelectedInvestmentIds] = useState<string[]>([]);
  const [showInterestCalculation, setShowInterestCalculation] = useState(false);
@@ -172,7 +173,9 @@ export default function Investments() {
  const business = state.businesses.find(b => b.id === inv.businessId);
  const investor = state.investors.find(i => i.id === inv.investorId);
  const match = searchTerm.toLowerCase();
- return business?.name.toLowerCase().includes(match) || investor?.name.toLowerCase().includes(match);
+ const searchMatch = business?.name.toLowerCase().includes(match) || investor?.name.toLowerCase().includes(match);
+ const tabMatch = activeTab === 'holding' ? inv.status === 'active' : inv.status === 'completed';
+ return searchMatch && tabMatch;
  }).sort((a, b) => getTime(b.id) - getTime(a.id));
 
  const groupedInvestments = Object.values(filteredInvestments.reduce((acc, inv) => {
@@ -192,29 +195,46 @@ export default function Investments() {
 
  return (
  <div className="max-w-6xl mx-auto space-y-6">
- <div className={`flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4 ${showAddForm ? 'hidden md:flex' : 'flex'}`}>
- <div className="flex-1">
- <h2 className="text-xl md:text-base font-medium text-kite-text tracking-tight">Funding & Investments</h2>
- <p className="text-sm text-kite-text-light mt-1">Connect investors with businesses and collect commissions.</p>
- </div>
- <div className="flex-1 w-full flex justify-end gap-2 md:gap-4">
- <div className="relative w-full max-w-sm">
- <Search className="w-3.5 h-3.5 md:w-4 md:h-4 absolute left-3 top-1/2 -translate-y-1/2 text-kite-text-light"  />
- <input type="text"
- placeholder="Search by business or investor..."
- className="w-full pl-10 pr-4 py-2 border border-kite-border rounded-sm focus:ring-2 focus:ring-black outline-none transition-shadow"
- value={searchTerm}
- onChange={e => setSearchTerm(e.target.value)}
- />
- </div>
- <button onClick={() => setShowAddForm(!showAddForm)}
-    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-sm font-medium flex items-center space-x-1 md:space-x-2 transition-colors whitespace-nowrap shadow-sm text-xs md:text-sm"
-  >
- <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
- <span className="hidden md:inline">New Funding Link</span>
- <span className="md:hidden">Add Invest</span>
- </button>
- </div>
+ <div className={`flex flex-col gap-4 ${showAddForm ? 'hidden md:flex' : 'flex'}`}>
+   <div className="flex justify-between items-start">
+     <div>
+       <h2 className="text-lg md:text-xl font-medium text-kite-text tracking-tight">Order Book</h2>
+       <p className="hidden md:block text-sm text-kite-text-light mt-1">Connect investors with businesses and collect commissions.</p>
+     </div>
+     <button onClick={() => setShowAddForm(!showAddForm)}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-sm font-medium flex items-center space-x-1.5 transition-colors whitespace-nowrap shadow-sm text-[11px] md:text-sm"
+      >
+        <Plus className="w-3 h-3 md:w-4 md:h-4" />
+        <span>New Order</span>
+      </button>
+   </div>
+   
+   <div className="relative w-full">
+     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-kite-text-light"  />
+     <input type="text"
+       placeholder="Search by business or investor..."
+       className="w-full pl-9 pr-4 py-2 bg-white border border-kite-border rounded-sm focus:border-kite-blue focus:ring-1 focus:ring-kite-blue outline-none transition-shadow text-sm text-kite-text"
+       value={searchTerm}
+       onChange={e => setSearchTerm(e.target.value)}
+     />
+   </div>
+   
+   <div className="flex items-center space-x-6 border-b border-kite-border/50">
+     <button
+       onClick={() => setActiveTab('holding')}
+       className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'holding' ? 'text-kite-blue' : 'text-kite-text-light hover:text-kite-text'}`}
+     >
+       Holding
+       {activeTab === 'holding' && <span className="absolute bottom-0 left-0 w-full h-[2px] bg-kite-blue"></span>}
+     </button>
+     <button
+       onClick={() => setActiveTab('booked')}
+       className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'booked' ? 'text-kite-blue' : 'text-kite-text-light hover:text-kite-text'}`}
+     >
+       Booked
+       {activeTab === 'booked' && <span className="absolute bottom-0 left-0 w-full h-[2px] bg-kite-blue"></span>}
+     </button>
+   </div>
  </div>
 
    {showAddForm && (
@@ -227,7 +247,7 @@ export default function Investments() {
           <ArrowLeft className="w-5 h-5 md:hidden" />
           <X className="hidden md:block w-6 h-6" />
         </button>
-        <h3 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">Book new investment</h3>
+        <h3 className="text-lg md:text-xl font-bold text-gray-800 tracking-tight">Book new investment</h3>
         <p className="text-xs md:text-sm text-gray-500 mt-1 md:mt-2">Fund a business and collect commission</p>
       </div>
       <form onSubmit={handleAddSubmit} className="space-y-4 md:space-y-6 flex-1 overflow-y-auto pb-20 md:pb-0 hide-scrollbar px-1">
@@ -424,7 +444,7 @@ export default function Investments() {
 
  
   <div className="pt-4 md:pt-6 mt-2 pb-6 md:pb-0">
-    <button type="submit" disabled={isBooking} className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-70 text-white py-4 rounded text-sm md:text-base font-semibold tracking-wide transition-all shadow-md hover:shadow-lg relative overflow-hidden group">
+    <button type="submit" disabled={isBooking} className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-70 text-white py-3 md:py-3.5 rounded text-[13px] md:text-sm font-semibold tracking-wide transition-all shadow-md hover:shadow-lg relative overflow-hidden group">
       <span className={"relative z-10 flex items-center justify-center " + (isBooking ? 'opacity-0' : 'opacity-100')}>Book Investment</span>
       {isBooking && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -566,12 +586,16 @@ export default function Investments() {
         marketState.trends,
         state.settings
       );
+      
+      const completed = Number(withdrawFormData.completedMonths) || 12;
+      const scaledProfit = liveProfit * (completed / 12);
 
-      return { totalProfit: liveProfit, rmasMarketCover: 0 };
+      return { totalProfit: scaledProfit, fullLiveProfit: liveProfit, rmasMarketCover: 0 };
     };
 
     const handleConfirmWithdraw = () => {
       const profitDetails = calculateLiveProfit();
+      const prematurePenalty = Math.max(0, profitDetails.fullLiveProfit - profitDetails.totalProfit);
       const rmasFee = Number(withdrawFormData.rmasCommission) || 0;
       const happyTax = Number(withdrawFormData.happyIncomeTax) || 0;
       const totalCredited = Math.max(0, totalAmount + profitDetails.totalProfit - rmasFee - happyTax);
@@ -595,6 +619,7 @@ export default function Investments() {
             payoutDetails: {
               rmasCommission: rmasFee * ratio,
               happyIncomeTax: happyTax * ratio,
+              rmasPrematurePenalty: prematurePenalty * ratio,
               totalCredited: totalCredited * ratio,
               payoutDate: new Date().toISOString().split('T')[0],
               rmasMarketCover: profitDetails.rmasMarketCover * ratio,
@@ -770,8 +795,28 @@ export default function Investments() {
                         <input type="number" className="w-full border-b border-kite-border py-1.5 text-sm outline-none font-medium bg-transparent focus:border-kite-red text-kite-red" value={withdrawFormData.happyIncomeTax} onChange={e => setWithdrawFormData({...withdrawFormData, happyIncomeTax: e.target.value})} />
                       </div>
                     </div>
+
+                    <div className="bg-kite-bg rounded-sm p-3 text-xs border border-kite-border flex flex-col gap-1.5 mb-4">
+                      <div className="flex justify-between items-center text-kite-text-light">
+                        <span>P&L Current Trend:</span>
+                        <span className={calculateLiveProfit().totalProfit >= 0 ? 'text-kite-green font-medium' : 'text-kite-red font-medium'}>
+                          {calculateLiveProfit().totalProfit > 0 ? '+' : ''}{(calculateLiveProfit().totalProfit / totalAmount * 100).toFixed(2)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-kite-text-light">
+                        <span>Net Yield:</span>
+                        <span className={calculateLiveProfit().totalProfit < 0 ? 'text-kite-red font-medium' : 'text-kite-green font-medium'}>
+                          {calculateLiveProfit().totalProfit < 0 ? '-' : '+'}{formatINR(Math.abs(calculateLiveProfit().totalProfit))}
+                        </span>
+                      </div>
+                    </div>
                     
-                    <div className="flex flex-col items-center max-w-[280px] mx-auto mt-6">
+                    <div className="flex justify-between items-center pt-3 border-t border-kite-border mb-6">
+                      <div className="text-kite-text-light text-[10px] uppercase tracking-wider">Gross Payable</div>
+                      <div className="font-semibold text-kite-text flex items-center gap-2">Final Amt <span className="text-kite-blue text-lg">{formatINR(Math.max(0, totalAmount + calculateLiveProfit().totalProfit - (Number(withdrawFormData.rmasCommission) || 0) - (Number(withdrawFormData.happyIncomeTax) || 0)))}</span></div>
+                    </div>
+                    
+                    <div className="flex flex-col items-center max-w-[280px] mx-auto">
                       <SwipeButton 
                         text="SWIPE TO PROCEED" 
                         successText="SETTLING..." 

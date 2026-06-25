@@ -24,7 +24,7 @@ export default function Dashboard() {
  .filter(b => b.status === 'listed')
  .reduce((sum, b) => sum + b.fundingRequired, 0);
 
-  const totalCommissions = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments);
+  const totalCommissions = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments, state.settings);
 
  const stats = [
  { label: 'RMAS Profit Balance', value: formatINR(totalCommissions), icon: TrendingUp, positive: true },
@@ -154,19 +154,19 @@ export default function Dashboard() {
  <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
  <div className="bg-kite-bg p-1.5 md:p-3 rounded-sm border border-kite-border">
  <p className="text-[10px] font-medium text-kite-text-light uppercase tracking-widest">Total Required</p>
- <p className="text-xs md:text-base font-medium text-kite-text mt-1">{formatINR(business.fundingRequired)}</p>
+ <p className="text-[15px] md:text-xl font-medium text-kite-text mt-1">{formatINR(business.fundingRequired)}</p>
  </div>
  <div className="bg-kite-green/10 p-1.5 md:p-3 rounded-sm border border-kite-green/30">
  <p className="text-[10px] font-medium text-kite-green uppercase tracking-widest">Total Invested</p>
- <p className="text-xs md:text-base font-medium text-kite-green mt-1">{formatINR(totalInvested)}</p>
+ <p className="text-[15px] md:text-xl font-medium text-kite-green mt-1">{formatINR(totalInvested)}</p>
  </div>
  <div className="bg-kite-blue/10 p-1.5 md:p-3 rounded-sm border border-kite-blue/30">
  <p className="text-[10px] font-medium text-kite-blue uppercase tracking-widest">Profit Paid</p>
- <p className="text-xs md:text-base font-medium text-kite-blue mt-1">{formatINR(actualProfitPaid)}</p>
+ <p className="text-[15px] md:text-xl font-medium text-kite-blue mt-1">{formatINR(actualProfitPaid)}</p>
  </div>
  <div className="bg-white p-1.5 md:p-3 rounded-sm border border-kite-border">
  <p className="text-[10px] font-medium text-black uppercase tracking-widest">Expected</p>
- <p className="text-xs md:text-base font-medium text-black mt-1">{formatINR(expectedProfitToPay)}</p>
+ <p className="text-[15px] md:text-xl font-medium text-black mt-1">{formatINR(expectedProfitToPay)}</p>
  </div>
  <div className="bg-kite-blue/10 p-1.5 md:p-3 rounded-sm border border-blue-100">
  <p className="text-[10px] font-medium text-kite-blue uppercase tracking-widest">Live Trend</p>
@@ -248,7 +248,7 @@ export default function Dashboard() {
  <div className="max-w-6xl mx-auto space-y-6">
  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4">
  <div>
- <h2 className="text-xs md:text-base font-medium text-kite-text tracking-tight">System Overview</h2>
+ <h2 className="text-[15px] md:text-xl font-medium text-kite-text tracking-tight">System Overview</h2>
  <p className="text-xs text-kite-text-light mt-1">Key metrics and top investment opportunities for Radhika Ma Service.</p>
  </div>
  <div className="relative w-full md:w-72">
@@ -273,7 +273,7 @@ export default function Dashboard() {
  </div>
  <div>
  <p className="text-[11px] font-medium text-kite-text-light mb-1 tracking-wide uppercase leading-tight">{stat.label}</p>
- <h3 className={`text-xs md:text-base font-medium tracking-tight ${stat.positive ? 'text-kite-green' : 'text-kite-text'}`}>
+ <h3 className={`text-[15px] md:text-xl font-medium tracking-tight ${stat.positive ? 'text-kite-green' : 'text-kite-text'}`}>
  {stat.value}
  </h3>
  </div>
@@ -286,7 +286,7 @@ export default function Dashboard() {
  {/* Top Performing / Blue Tick Businesses */}
  {blueTickBusinesses.length > 0 && (
  <div className="mb-4 md:mb-8">
- <h3 className="text-xs md:text-base font-medium text-kite-text mb-4 flex items-center space-x-2">
+ <h3 className="text-[15px] md:text-xl font-medium text-kite-text mb-4 flex items-center space-x-2">
  <BadgeCheck  className="w-4 h-4 md:w-6 md:h-6 text-white fill-blue-500" />
  <span>Top Performing / Verified Businesses</span>
  </h3>
@@ -297,8 +297,8 @@ export default function Dashboard() {
  >
  <div className="absolute top-0 right-0 w-12 h-12 bg-kite-blue/10 transform rotate-45 translate-x-6 -translate-y-6 group-hover:bg-kite-blue/20 transition-colors"></div>
  <div className="flex items-center space-x-3 min-w-0 z-10">
- <div className="w-10 h-10 rounded-sm bg-kite-blue flex-shrink-0 text-white flex items-center justify-center font-medium text-xs md:text-base-inner">
- {b.name.charAt(0)}
+ <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#387ed1] to-[#2563eb] shadow-sm text-white flex-shrink-0 font-sans font-bold flex items-center justify-center text-lg">
+ {b.name?.trim().charAt(0).toUpperCase() || 'B'}
  </div>
  <div className="min-w-0">
  <div className="flex items-center space-x-1.5">
@@ -323,7 +323,7 @@ export default function Dashboard() {
 
  {/* Other Listed Businesses (Verified) */}
  <div>
- <h3 className="text-xs md:text-base font-medium text-kite-text mb-4 flex items-center space-x-2">
+ <h3 className="text-[15px] md:text-xl font-medium text-kite-text mb-4 flex items-center space-x-2">
  {preVerifiedBusinesses.length > 0 && <Clock  className="w-4 h-4 md:w-6 md:h-6 text-black" />}
  <span>{preVerifiedBusinesses.length > 0 ? "Pre-Verified / Approaching Verification" : "Other Listed Businesses"}</span>
  </h3>
@@ -337,8 +337,8 @@ export default function Dashboard() {
  >
  <div className="flex justify-between items-start">
  <div className="flex items-center space-x-3 min-w-0">
- <div className="w-8 h-8 rounded-full bg-gray-100 flex-shrink-0 text-black flex items-center justify-center font-medium text-sm">
- {b.name.charAt(0)}
+ <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#387ed1] to-[#2563eb] shadow-sm text-white flex-shrink-0 font-sans font-bold flex items-center justify-center text-sm">
+ {b.name?.trim().charAt(0).toUpperCase() || 'B'}
  </div>
  <div className="min-w-0">
  <div className="flex items-center space-x-1">
@@ -364,7 +364,7 @@ export default function Dashboard() {
  </div>
  )}
 
- <h3 className="text-xs md:text-base font-medium text-kite-text mb-4">Other Listed Businesses</h3>
+ <h3 className="text-[15px] md:text-xl font-medium text-kite-text mb-4">Other Listed Businesses</h3>
  {otherBusinesses.length === 0 && preVerifiedBusinesses.length === 0 ? (
  <div className="p-2 md:p-4 text-center text-kite-text-light text-sm font-medium">No businesses found.</div>
  ) : (
@@ -374,8 +374,8 @@ export default function Dashboard() {
  className="flex flex-col sm:flex-row sm:items-center justify-between p-1.5 md:p-3 bg-white border border-kite-border hover:border-kite-blue rounded-sm cursor-pointer transition-all hover: group overflow-hidden gap-3"
  >
  <div className="flex items-center space-x-3 min-w-0">
- <div className="w-8 h-8 rounded-full bg-kite-blue/10 flex-shrink-0 text-kite-blue flex items-center justify-center font-medium text-sm">
- {b.name.charAt(0)}
+ <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#387ed1] to-[#2563eb] shadow-sm text-white flex-shrink-0 font-sans font-bold flex items-center justify-center text-sm">
+ {b.name?.trim().charAt(0).toUpperCase() || 'B'}
  </div>
  <div className="min-w-0">
  <div className="flex items-center space-x-1">
@@ -399,7 +399,7 @@ export default function Dashboard() {
 
  <div className="grid grid-cols-1 gap-2 md:p-4 mt-3 md:mt-6">
  <div className="w-full bg-white border border-kite-border rounded-sm p-1.5 md:p-3 md:p-5 ">
- <h3 className="text-xs md:text-base font-medium text-kite-text mb-4">Recent Investments</h3>
+ <h3 className="text-[15px] md:text-xl font-medium text-kite-text mb-4">Recent Investments</h3>
  <div className="space-y-3">
  {recentFilteredInvestments.slice(0, 5).map(inv => {
  const business = state.businesses.find(b => b.id === inv.businessId);

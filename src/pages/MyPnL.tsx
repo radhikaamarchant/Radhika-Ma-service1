@@ -23,7 +23,7 @@ export default function MyPnL() {
  const [toDate, setToDate] = useState('');
  const [selectedBill, setSelectedBill] = useState<StatementEntry | null>(null);
 
- const rmasAvailableBalance = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments);
+ const rmasAvailableBalance = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments, state.settings);
  let totalCommission = 0;
  let totalTax = 0;
  const statement: StatementEntry[] = [];
@@ -434,7 +434,7 @@ export default function MyPnL() {
 
  <div className="pt-8 w-full md:w-auto">
  <button onClick={() => setShowStatement(true)}
- className="w-full md:w-auto bg-black text-white py-4 px-10 rounded-sm flex items-center justify-center space-x-3 hover:bg-gray-800 transition-colors"
+ className="w-full md:w-auto bg-black text-white py-3 md:py-3.5 px-8 md:px-10 rounded-sm flex items-center justify-center space-x-3 hover:bg-gray-800 transition-colors text-[13px] md:text-sm"
  >
  <List className="w-4 h-4 md:w-5 md:h-5" />
  <span>View Detailed P&L Statement</span>

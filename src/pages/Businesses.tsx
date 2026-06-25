@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { Plus, Search, Building2, Banknote, Building, X, BadgeCheck, ChevronDown, Clock, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Building2, Banknote, Building, X, BadgeCheck, ChevronDown, Clock, ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react';
 import { Business } from '../types';
 import BusinessDetail from '../components/BusinessDetail';
 import { INDIAN_BANKS } from '../utils/indianBanks';
@@ -204,174 +205,138 @@ export default function Businesses() {
  <div className="print:hidden space-y-6">
  {viewMode === 'list' && (
  <>
- <div className="flex justify-between items-end">
+ {/* Header Section */}
+ <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-4 space-y-3 md:space-y-0 relative z-10">
  <div>
- <h2 className="text-xl md:text-base font-medium text-kite-text tracking-tight">Company Registered</h2>
- <p className="hidden md:block text-sm text-kite-text-light mt-1">Manage registered businesses needing funding.</p>
+ <h2 className="text-[15px] md:text-xl font-medium text-kite-text tracking-tight uppercase">Businesses</h2>
  </div>
  <button onClick={startAddBusiness}
- className="bg-kite-blue hover:opacity-90 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-sm font-medium flex items-center space-x-1 md:space-x-2 transition-colors text-xs md:text-sm"
+ className="bg-kite-blue hover:opacity-90 text-white px-4 h-[40px] md:h-[44px] rounded-md font-medium flex items-center justify-center space-x-2 transition-colors text-sm w-full md:w-auto shadow-sm"
  >
- <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+ <Plus className="w-4 h-4" />
  <span>Register Business</span>
  </button>
  </div>
 
- <div className="w-full bg-white border border-kite-border rounded-sm overflow-hidden">
- <div className="p-2 md:p-4 border-b border-kite-border flex items-center bg-kite-bg">
- <Search  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text-light mr-2" />
- <input type="text" placeholder="Search businesses by name, owner, or ID..." className="bg-transparent border-none outline-none w-full text-sm font-medium placeholder-gray-400"
+ <div className="w-full bg-white border border-kite-border rounded-sm overflow-hidden sticky top-0 z-10">
+ <div className="p-2 sm:p-3 border-b border-kite-border flex items-center bg-kite-bg">
+ <Search className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text-light mr-2" />
+ <input type="text" placeholder="Search businesses by name, owner, or ID..." className="bg-transparent border-none outline-none w-full text-sm font-medium text-kite-text placeholder-gray-400"
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  />
  </div>
  <div className="overflow-hidden">
- {/* Desktop Table View */}
- <div className="hidden md:block overflow-x-auto w-full max-w-full">
- <table className="w-full text-left text-sm min-w-[1000px]">
- <thead>
- <tr className="border-b border-kite-border bg-white">
- <th className="p-2 md:p-4 font-medium text-kite-text">ID Number</th>
- <th className="p-2 md:p-4 font-medium text-kite-text">Business Name</th>
- <th className="p-2 md:p-4 font-medium text-kite-text">Owner</th>
- <th className="p-2 md:p-4 font-medium text-kite-text">Funding Needed</th>
- <th className="p-2 md:p-4 font-medium text-kite-text">Interest</th>
- <th className="p-2 md:p-4 font-medium text-kite-text text-center">Live Trend</th>
- <th className="p-2 md:p-4 font-medium text-kite-text text-center">Actions</th>
- </tr>
- </thead>
- <tbody>
+ {/* Unified Watchlist View */}
+ <div className="flex flex-col divide-y divide-kite-border">
  {filteredBusinesses.map(business => (
- <tr key={`desk_${business.id}`} className={`border-b border-kite-border hover:bg-kite-bg`}>
- <td className="p-2 md:p-4 font-mono text-kite-text-light font-medium">
-  #{business.businessId}
- </td>
- <td className="p-2 md:p-4 font-medium text-kite-text flex items-center space-x-1.5 h-full">
- <span className="">{business.name}</span>
- {isBlueTick(business.id) && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" title="RMAS Verified - High Profit" />}
- {isPreVerified(business.id) && <Clock  className="w-4 h-4 text-black flex-shrink-0" title="Pre-Verified" />}
- </td>
- <td className="p-2 md:p-4 text-kite-text font-medium">{business.ownerName}</td>
- <td className="p-2 md:p-4 font-medium text-kite-text">{formatINR(business.fundingRequired)}</td>
- <td className="p-2 md:p-4 text-kite-green font-medium">{business.interestRate}%</td>
- <td className="p-2 md:p-4 text-center">
- <MarketTrendCell businessId={business.id} showIcon={true} />
- </td>
- <td className="p-2 md:p-4 text-center space-x-2 whitespace-nowrap">
- <button onClick={() => setSelectedBusinessId(business.id)}
- className={`font-medium text-xs px-3 py-1.5 border rounded-sm transition-colors w-full text-kite-text-light hover:text-kite-text border-kite-border hover:bg-kite-bg`}
+ <div key={`inv_${business.id}`} 
+      onClick={() => setSelectedBusinessId(business.id)}
+      className="flex items-center justify-between p-3 md:p-4 bg-white hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group"
  >
- View
- </button>
- </td>
- </tr>
+   <div className="flex flex-col">
+     <div className="flex items-center space-x-1.5 mb-0.5">
+       <span className="font-medium text-kite-text text-sm md:text-base group-hover:text-kite-blue transition-colors">{business.name}</span>
+       {isBlueTick(business.id) && <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />}
+       {isPreVerified(business.id) && <Clock className="w-3 h-3 text-black flex-shrink-0" />}
+     </div>
+     <div className="flex items-center space-x-2">
+       <span className="text-[11px] md:text-xs text-kite-text-light">Owner: {business.ownerName}</span>
+       <span className="text-kite-border">•</span>
+       <span className="font-mono text-[11px] md:text-xs text-kite-text-light">ID: #{business.businessId}</span>
+     </div>
+   </div>
+   
+   <div className="flex items-center space-x-3 md:space-x-6 text-right">
+     <div className="flex flex-col items-end">
+       <span className="font-medium text-kite-text text-sm">{formatINR(business.fundingRequired)}</span>
+       <span className="text-[11px] font-medium mt-0.5 text-kite-green">
+         {business.interestRate}% ROI
+       </span>
+     </div>
+     <ChevronRight className="w-4 h-4 text-kite-text-light group-hover:text-kite-blue transition-colors flex-shrink-0 hidden md:block" />
+   </div>
+ </div>
  ))}
  {filteredBusinesses.length === 0 && (
- <tr>
- <td colSpan={7} className="p-4 text-center text-kite-text-light font-medium">No businesses found.</td>
- </tr>
+ <div className="p-8 text-center text-kite-text-light font-medium text-sm">No businesses found.</div>
  )}
- </tbody>
- </table>
  </div>
 
- {/* Mobile Cards View */}
- <div className="block md:hidden divide-y divide-gray-100">
- {filteredBusinesses.map(business => (
- <div key={`mob_${business.id}`} className={`p-3 hover:bg-kite-bg bg-white dark:bg-transparent`}>
- <div className="flex justify-between items-start mb-1">
-   <div className="flex flex-col">
-     <div className="flex items-center space-x-1.5">
-       <span className={`font-medium text-kite-text text-sm truncate max-w-[200px]`}>{business.name}</span>
-       {isBlueTick(business.id) && <BadgeCheck  className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />}
-       {isPreVerified(business.id) && <Clock  className="w-3.5 h-3.5 text-black flex-shrink-0" />}
-     </div>
-     <p className="text-xs text-kite-text-light font-medium tracking-wide mt-0.5">
-       {business.ownerName}
-     </p>
-   </div>
- </div>
- <div className="flex justify-between items-center mt-3 pt-3 border-t border-kite-border/50">
-   <div className="flex flex-col">
-     <p className="text-[10px] uppercase tracking-wider text-kite-text-light mb-1">Live Trend</p>
-     <MarketTrendCell businessId={business.id} showIcon={true} />
-   </div>
-   <button onClick={() => setSelectedBusinessId(business.id)}
-     className="bg-kite-blue hover:opacity-90 text-white font-medium text-xs px-5 py-1.5 rounded-sm"
-   >
-     View
-   </button>
- </div>
- </div>
- ))}
- {filteredBusinesses.length === 0 && (
- <div className="p-4 text-center text-kite-text-light font-medium">No businesses found.</div>
- )}
- </div>
+
  </div>
  </div>
  </>
  )}
 
  {viewMode === 'add-step-1' && (
- <div className="w-full max-w-2xl mx-auto bg-white border border-kite-border rounded-sm p-2 md:p-4 md:p-2 md:p-4">
- <div className="flex items-center space-x-2 mb-3 md:mb-6">
-   <button type="button" onClick={() => setViewMode('list')} className="md:hidden p-1 text-kite-text-light hover:bg-kite-bg rounded-sm transition-colors">
-     <ArrowLeft className="w-4 h-4" />
+ <div className="w-full max-w-xl mx-auto bg-white dark:bg-kite-surface md:border md:border-kite-border dark:md:border-kite-border md:shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:md:shadow-none rounded-lg p-4 md:p-8">
+ <div className="flex items-center mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
+   <button type="button" onClick={() => setViewMode('list')} className="p-1 -ml-1 mr-2 text-kite-text-light dark:text-kite-text-light hover:text-gray-800 dark:hover:text-kite-text transition-colors">
+     <ArrowLeft className="w-5 h-5" />
    </button>
-   <h3 className="text-xs md:text-base font-medium text-kite-text flex items-center space-x-2">
-     <Building2  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
+   <h3 className="text-base md:text-lg font-semibold text-kite-text dark:text-kite-text flex items-center space-x-2">
+     <Building2 className="w-5 h-5 text-kite-text-light dark:text-kite-text-light" />
      <span>Step 1: Business Profile</span>
    </h3>
  </div>
 
- <div className="flex bg-kite-bg p-1 rounded-sm mb-3 md:mb-6">
- <button
- type="button"
- onClick={() => {
- setOwnerMode('new');
- setFormData({ ...formData, businessId: generateBusinessId(), ownerName: '', bankName: INDIAN_BANKS[0], accountNumber: '', ifscCode: '', accountHolderName: '' });
- }}
- className={`flex-1 py-2 text-sm font-medium rounded-sm transition-colors ${ownerMode === 'new' ? 'bg-white text-kite-text' : 'text-kite-text-light hover:text-kite-text'}`}
- >
- New Business Owner
- </button>
- <button
- type="button"
- onClick={() => setOwnerMode('existing')}
- className={`flex-1 py-2 text-sm font-medium rounded-sm transition-colors ${ownerMode === 'existing' ? 'bg-white text-kite-text' : 'text-kite-text-light hover:text-kite-text'}`}
- >
- Already Registered Owner
- </button>
+ <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-4 md:mb-6">
+  <button
+    type="button"
+    onClick={() => {
+      setOwnerMode('new');
+      setFormData({ ...formData, businessId: generateBusinessId(), ownerName: '', bankName: INDIAN_BANKS[0], accountNumber: '', ifscCode: '', accountHolderName: '' });
+    }}
+    className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-sm font-medium transition-all duration-200 rounded border ${ownerMode === 'new' ? 'bg-[#387ed1] text-white border-[#387ed1]' : 'bg-white dark:bg-kite-bg text-gray-500 dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border hover:brightness-105'}`}
+  >
+    New Business Owner
+  </button>
+  <button
+    type="button"
+    onClick={() => setOwnerMode('existing')}
+    className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-sm font-medium transition-all duration-200 rounded border ${ownerMode === 'existing' ? 'bg-[#387ed1] text-white border-[#387ed1]' : 'bg-white dark:bg-kite-bg text-gray-500 dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105'}`}
+  >
+    Already Registered Owner
+  </button>
  </div>
 
  <form onSubmit={handleNextStep} className="space-y-6">
+ <AnimatePresence mode="wait">
+   <motion.div
+     key={ownerMode}
+     initial={{ opacity: 0, y: 8 }}
+     animate={{ opacity: 1, y: 0 }}
+     exit={{ opacity: 0, y: -8 }}
+     transition={{ duration: 0.2, ease: "easeOut" }}
+     className="space-y-6"
+   >
  <div className="grid grid-cols-1 gap-2 md:gap-4">
  {ownerMode === 'existing' && (
  <div className="relative z-20">
- <label className="block text-sm font-medium mb-2 text-kite-text">Select Existing Owner</label>
- <div className="w-full border border-kite-border rounded-sm p-1.5 md:p-3 bg-white cursor-pointer flex justify-between items-center"
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Select Existing Owner</label>
+ <div className="w-full border-0 border-b border-kite-border dark:border-kite-border py-2 bg-transparent cursor-pointer flex justify-between items-center transition-colors hover:border-[#387ed1]"
  onClick={() => {
  setShowOwnerSelect(!showOwnerSelect);
  setOwnerSearch('');
  }}
  >
- <span className="truncate">
+ <span className="truncate text-sm md:text-base">
  {formData.businessId ? (
- <span className="font-medium text-kite-text">{formData.ownerName} <span className="font-normal text-kite-text-light ml-1">(ID: #{formData.businessId})</span></span>
+ <span className="font-medium text-gray-800 dark:text-kite-text">{formData.ownerName} <span className="font-normal text-gray-500 dark:text-kite-text-light ml-1 font-mono text-xs">(ID: #{formData.businessId})</span></span>
  ) : (
- <span className="text-kite-text-light">Select an owner...</span>
+ <span className="text-gray-400 dark:text-gray-500 font-medium">Select an owner...</span>
  )}
  </span>
- <ChevronDown  className="w-3 md:w-4 h-3 md:h-4 text-kite-text-light" />
+ <ChevronDown  className="w-4 h-4 text-gray-400 dark:text-gray-500" />
  </div>
  {showOwnerSelect && (
- <div className="absolute z-10 w-full mt-1 bg-white border border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
- <div className="p-2 border-b border-kite-border bg-kite-bg">
+ <div className="absolute z-10 w-full mt-1 bg-white dark:bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+ <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg">
  <div className="relative">
- <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light"  />
+ <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light"  />
  <input type="text" autoFocus
- placeholder="Search owner..." className="w-full pl-8 pr-3 py-1.5 text-sm border border-kite-border rounded-sm focus:outline-none focus:ring-1 focus:ring-black"
+ placeholder="Search owner..." className="w-full pl-8 pr-3 py-1.5 text-sm border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
  value={ownerSearch}
  onChange={(e) => setOwnerSearch(e.target.value)}
  onClick={(e) => e.stopPropagation()}
@@ -380,18 +345,18 @@ export default function Businesses() {
  </div>
  <div className="overflow-y-auto flex-1">
  {uniqueOwners.filter(b => b.ownerName.toLowerCase().includes(ownerSearch.toLowerCase()) || b.businessId.toLowerCase().includes(ownerSearch.toLowerCase())).map(b => (
- <div key={`opt_${b.id}`} className="px-4 py-3 hover:bg-kite-bg cursor-pointer flex flex-col border-b border-kite-border last:border-0 transition-colors"
+ <div key={`opt_${b.id}`} className="px-4 py-3 hover:bg-kite-bg dark:hover:bg-kite-border-soft cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
  onClick={() => {
  handleExistingOwnerChange({ target: { value: b.businessId } } as any);
  setShowOwnerSelect(false);
  }}
  >
- <span className="font-medium text-kite-text">{b.ownerName}</span>
- <span className="text-xs text-kite-text-light mt-0.5">ID: #{b.businessId}</span>
+ <span className="font-medium text-kite-text dark:text-kite-text">{b.ownerName}</span>
+ <span className="text-xs text-kite-text-light dark:text-kite-text-light mt-0.5">ID: #{b.businessId}</span>
  </div>
  ))}
  {uniqueOwners.filter(b => b.ownerName.toLowerCase().includes(ownerSearch.toLowerCase()) || b.businessId.toLowerCase().includes(ownerSearch.toLowerCase())).length === 0 && (
- <div className="px-4 py-3 text-sm text-kite-text-light text-center">No owner found.</div>
+ <div className="px-4 py-3 text-sm text-kite-text-light dark:text-kite-text-light text-center">No owner found.</div>
  )}
  </div>
  </div>
@@ -399,28 +364,28 @@ export default function Businesses() {
  </div>
  )}
 
- <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">Owner ID Number {ownerMode === 'new' ? '(Auto-Generated)' : '(Linked)'}</label>
- <input type="text" readOnly className="w-full border border-kite-border bg-kite-bg text-kite-text-light font-mono rounded-sm p-1.5 md:p-3 outline-none cursor-not-allowed" value={formData.businessId} />
+  <div>
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Owner ID Number {ownerMode === 'new' ? '(Auto-Generated)' : '(Linked)'}</label>
+ <input type="text" readOnly className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-mono text-gray-500 dark:text-kite-text-light cursor-not-allowed outline-none" value={formData.businessId} />
  </div>
 
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">Business Name</label>
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Business Name</label>
  <input required type="text" autoFocus
- className="w-full border border-kite-border rounded-sm p-1.5 md:p-3 text-xs md:text-base font-medium focus:ring-2 focus:ring-black outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Acme Corp" />
+ className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1] transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Acme Corp" />
  </div>
 
  {ownerMode === 'new' && (
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">Owner Name</label>
- <input required type="text" className="w-full border border-kite-border rounded-sm p-1.5 md:p-3 font-medium focus:ring-2 focus:ring-black outline-none" value={formData.ownerName} onChange={e => setFormData({...formData, ownerName: e.target.value})} placeholder="e.g. John Doe" />
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Owner Name</label>
+ <input required type="text" className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1] transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none" value={formData.ownerName} onChange={e => setFormData({...formData, ownerName: e.target.value})} placeholder="e.g. John Doe" />
  </div>
  )}
 
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">Authority Type</label>
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Authority Type</label>
  <select
- className="w-full border border-kite-border rounded-sm p-1.5 md:p-3 font-medium focus:ring-2 focus:ring-black outline-none bg-white"
+ className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1] transition-colors outline-none cursor-pointer"
  value={formData.authorityType}
  onChange={(e) => setFormData({...formData, authorityType: e.target.value as any})}
  required
@@ -431,25 +396,25 @@ export default function Businesses() {
  </select>
  </div>
 
- {(formData.authorityType === 'Government Authorities' || formData.authorityType === 'Trust Authorities') && (
+  {(formData.authorityType === 'Government Authorities' || formData.authorityType === 'Trust Authorities') && (
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">RMAS Subsidy Rate (%)</label>
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">RMAS Subsidy Rate (%)</label>
  <input required type="number" step="0.1"
- className="w-full border border-kite-border rounded-sm p-1.5 md:p-3 font-medium focus:ring-2 focus:ring-black outline-none" value={formData.rmasSubsidy} onChange={e => setFormData({...formData, rmasSubsidy: e.target.value})} placeholder="e.g. 4" />
- <p className="text-xs text-kite-text-light mt-1">RMAS will pay this percentage towards the interest when an investor withdraws.</p>
+ className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1] transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none" value={formData.rmasSubsidy} onChange={e => setFormData({...formData, rmasSubsidy: e.target.value})} placeholder="e.g. 4" />
+ <p className="text-[11px] text-gray-500 dark:text-kite-text-light mt-1.5">RMAS will pay this percentage towards the interest when an investor withdraws.</p>
  </div>
  )}
 
- <div className="grid grid-cols-1 md:grid-cols-2">
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">Funding Required (₹)</label>
- <input required type="number" min="0"
- className="w-full border border-kite-border rounded-sm p-1.5 md:p-3 focus:ring-2 focus:ring-black outline-none" value={formData.fundingRequired} onChange={e => setFormData({...formData, fundingRequired: e.target.value})} placeholder="e.g. 500000" />
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Funding Required (₹)</label>
+ <input required type="text" inputMode="numeric"
+ className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1] transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none" value={formData.fundingRequired ? Number(formData.fundingRequired.toString().replace(/\D/g, '')).toLocaleString('en-IN') : ''} onChange={e => setFormData({...formData, fundingRequired: e.target.value.replace(/\D/g, '')})} placeholder="e.g. 5,00,000" />
  </div>
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">Interest Rate (%)</label>
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Interest Rate (%)</label>
  <input required type="number" step="0.1" min="0"
- className="w-full border border-kite-border rounded-sm p-1.5 md:p-3 focus:ring-2 focus:ring-black outline-none" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} placeholder="e.g. 12.5" />
+ className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1] transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: e.target.value})} placeholder="e.g. 12.5" />
  </div>
  </div>
 
@@ -471,11 +436,11 @@ export default function Businesses() {
  <p className="text-xs text-kite-text-light mt-0.5">Based on <span className="font-medium text-kite-green">{formData.interestRate}%</span> interest rate applied on <span className="font-mono font-medium">{formatINR(Number(formData.fundingRequired))}</span>.</p>
  </div>
  <div className="text-left md:text-right flex flex-col gap-2 min-w-0">
- <p className="text-sm font-medium text-kite-text-light border border-kite-border bg-kite-bg px-3 py-1.5 rounded-sm break-words whitespace-normal">
- Monthly Return: <span className="font-medium font-mono text-kite-text break-all">{formatINR((Number(formData.fundingRequired) * Number(formData.interestRate) / 100) / 12)}</span>
+ <p className="text-sm font-medium text-gray-500 dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg px-3 py-1.5 rounded-sm break-words whitespace-normal">
+ Monthly Return: <span className="font-medium font-mono text-gray-800 dark:text-kite-text break-all">{formatINR((Number(formData.fundingRequired) * Number(formData.interestRate) / 100) / 12)}</span>
  </p>
- <p className="text-sm font-medium text-green-800 border border-kite-green/30 bg-kite-green/10 px-3 py-1.5 rounded-sm break-words whitespace-normal">
- Yearly Return: <span className="font-medium font-mono text-green-900 break-all">{formatINR(Number(formData.fundingRequired) * Number(formData.interestRate) / 100)}</span>
+ <p className="text-sm font-medium text-green-800 dark:text-green-400 border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-sm break-words whitespace-normal">
+ Yearly Return: <span className="font-medium font-mono text-green-900 dark:text-green-300 break-all">{formatINR(Number(formData.fundingRequired) * Number(formData.interestRate) / 100)}</span>
  </p>
  </div>
  </div>
@@ -483,85 +448,88 @@ export default function Businesses() {
  </div>
  )}
  </div>
+ </motion.div>
+ </AnimatePresence>
 
- <div className="flex justify-between pt-6 border-t border-kite-border">
- <button type="button" onClick={() => setViewMode('list')} className="px-6 py-2.5 font-medium text-kite-text-light hover:text-kite-text">Cancel</button>
- <button type="submit" className="bg-kite-blue hover:bg-kite-blue text-white px-8 py-2.5 rounded-sm font-medium transition-colors">Next Page →</button>
+ <div className="flex justify-between items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border">
+ <button type="button" onClick={() => setViewMode('list')} className="px-2 py-2 text-sm font-medium text-gray-500 dark:text-kite-text-light hover:text-gray-800 dark:hover:text-kite-text transition-colors">Cancel</button>
+ <button type="submit" className="bg-[#387ed1] hover:bg-[#2b65a8] text-white px-8 py-2.5 rounded shadow-sm font-medium transition-colors flex items-center justify-center min-w-[140px]">
+   <span>Next Step</span>
+   <ArrowRight className="w-4 h-4 ml-2" />
+ </button>
  </div>
  </form>
  </div>
  )}
 
  {viewMode === 'add-step-2' && (
- <div className="w-full max-w-3xl mx-auto bg-white border border-kite-border rounded-sm p-2 md:p-4 md:p-2 md:p-4">
- <div className="flex items-center space-x-2 mb-3 md:mb-6">
-   <button type="button" onClick={() => setViewMode('add-step-1')} className="md:hidden p-1 text-kite-text-light hover:bg-kite-bg rounded-sm transition-colors">
-     <ArrowLeft className="w-4 h-4" />
+ <div className="w-full max-w-xl mx-auto bg-white dark:bg-kite-surface md:border md:border-kite-border dark:md:border-kite-border md:shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:md:shadow-none rounded-lg p-4 md:p-8">
+ <div className="flex items-center mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
+   <button type="button" onClick={() => setViewMode('add-step-1')} className="p-1 -ml-1 mr-2 text-gray-500 dark:text-kite-text-light hover:text-gray-800 dark:hover:text-kite-text transition-colors">
+     <ArrowLeft className="w-5 h-5" />
    </button>
-   <h3 className="text-xs md:text-base font-medium text-kite-text flex items-center space-x-2">
-     <Banknote  className="w-4 h-4 md:w-5 md:h-5 text-kite-text" />
-     <span>Step 2: BANKING PROCESS</span>
+   <h3 className="text-base md:text-lg font-semibold text-kite-text dark:text-kite-text flex items-center space-x-2">
+     <Banknote className="w-5 h-5 text-kite-text-light dark:text-kite-text-light" />
+     <span>Step 2: Banking Process</span>
    </h3>
  </div>
  <form onSubmit={handleVerifiedSave} className="space-y-6">
- <div className="grid grid-cols-1 md:grid-cols-2">
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="md:col-span-2">
- <label className="block text-sm font-medium mb-2 text-kite-text flex items-center space-x-1">
- <Building className="w-3 md:w-4 h-3 md:h-4" /> <span>Bank Name</span>
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider flex items-center space-x-1">
+ <Building className="w-3.5 h-3.5" /> <span>Bank Name</span>
  </label>
- <select className={`w-full border border-kite-border rounded-sm p-1.5 md:p-3 outline-none font-medium ${ownerMode === 'existing' ? 'bg-kite-bg text-kite-text-light cursor-not-allowed' : 'focus:ring-2 focus:ring-black bg-white'}`}
+ <select className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium outline-none transition-colors ${ownerMode === 'existing' ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1] cursor-pointer'}`}
  value={formData.bankName}
  onChange={(e) => setFormData({...formData, bankName: e.target.value})}
  disabled={ownerMode === 'existing'}
  >
  {INDIAN_BANKS.map(bank => (
- <option key={bank} value={bank}>{bank}</option>
+ <option key={bank} value={bank} className="bg-white dark:bg-kite-surface text-kite-text dark:text-kite-text">{bank}</option>
  ))}
  </select>
  </div>
 
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">Account Number</label>
- <input required type="text" className={`w-full border border-kite-border rounded-sm p-1.5 md:p-3 font-mono outline-none ${ownerMode === 'existing' ? 'bg-kite-bg text-kite-text-light cursor-not-allowed' : 'focus:ring-2 focus:ring-black'}`}
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Account Number</label>
+ <input required type="text" className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-mono outline-none transition-colors ${ownerMode === 'existing' ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1]'}`}
  value={formData.accountNumber} onChange={e => setFormData({...formData, accountNumber: e.target.value.replace(/\D/g, '')})} placeholder="e.g. 30291039482" readOnly={ownerMode === 'existing'}
  />
  </div>
 
  <div>
- <label className="block text-sm font-medium mb-2 text-kite-text">IFSC Code</label>
- <input required type="text" className={`w-full border border-kite-border rounded-sm p-1.5 md:p-3 font-mono uppercase outline-none ${ownerMode === 'existing' ? 'bg-kite-bg text-kite-text-light cursor-not-allowed' : 'focus:ring-2 focus:ring-black'}`}
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">IFSC Code</label>
+ <input required type="text" className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-mono uppercase outline-none transition-colors ${ownerMode === 'existing' ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1]'}`}
  value={formData.ifscCode} onChange={e => setFormData({...formData, ifscCode: e.target.value.toUpperCase()})} placeholder="e.g. SBIN0001234" readOnly={ownerMode === 'existing'}
  />
  </div>
 
  <div className="md:col-span-2">
- <label className="block text-sm font-medium mb-2 text-kite-text">Account Holder Name</label>
- <input required type="text" className={`w-full border border-kite-border rounded-sm p-1.5 md:p-3 font-medium uppercase outline-none ${ownerMode === 'existing' ? 'bg-kite-bg text-kite-text-light cursor-not-allowed' : 'bg-white text-kite-text focus:ring-2 focus:ring-black'}`}
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Account Holder Name</label>
+ <input required type="text" className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium uppercase outline-none transition-colors ${ownerMode === 'existing' ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-gray-800 dark:text-kite-text focus:ring-0 focus:border-[#387ed1]'}`}
  value={formData.accountHolderName} onChange={e => setFormData({...formData, accountHolderName: e.target.value.toUpperCase()})} readOnly={ownerMode === 'existing'}
  />
  {ownerMode === 'existing' ? (
- <p className="text-xs text-black mt-2 font-medium">Bank details are locked because this owner is already registered.</p>
+ <p className="text-[11px] text-orange-600 mt-1.5 font-medium">Bank details are locked because this owner is already registered.</p>
  ) : (
- <p className="text-xs text-kite-text-light mt-2">Auto-filled from Step 1. You can edit if bank account name differs.</p>
+ <p className="text-[11px] text-gray-500 dark:text-kite-text-light mt-1.5">Auto-filled from Step 1. You can edit if bank account name differs.</p>
  )}
  </div>
  </div>
 
- <div className="border-t border-kite-border pt-6">
- <label className="block text-sm font-medium mb-2 text-kite-text">Registration Fee (₹)</label>
- <input required type="number" className="w-full md:w-1/2 border border-blue-300 bg-kite-blue/10/50 rounded-sm p-1.5 md:p-3 font-medium text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none" value={formData.registrationFee} onChange={e => setFormData({...formData, registrationFee: e.target.value})} placeholder="Enter amount..." />
+ <div className="border-t border-kite-border dark:border-kite-border pt-6 mt-2">
+ <label className="block text-[11px] font-medium mb-1 text-kite-text-light dark:text-kite-text-light uppercase tracking-wider">Registration Fee (₹)</label>
+ <input required type="text" inputMode="numeric" className="w-full md:w-1/2 border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-sm md:text-base font-medium text-[#387ed1] focus:ring-0 focus:border-[#387ed1] outline-none transition-colors" value={formData.registrationFee ? Number(formData.registrationFee.toString().replace(/\D/g, '')).toLocaleString('en-IN') : ''} onChange={e => setFormData({...formData, registrationFee: e.target.value.replace(/\D/g, '')})} placeholder="e.g. 10,000" />
  </div>
 
- <div className="flex justify-between pt-6 border-t border-kite-border">
- <button type="button" onClick={() => setViewMode('add-step-1')} className="px-6 py-2.5 font-medium text-kite-text-light hover:text-kite-text">← Back</button>
- <button type="submit" className="bg-kite-green hover:bg-kite-green text-kite-text px-8 py-2.5 rounded-sm font-medium transition-colors">✓ Verified Business</button>
+ <div className="flex justify-between items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border">
+ <button type="button" onClick={() => setViewMode('add-step-1')} className="px-2 py-2 text-sm font-medium text-gray-500 dark:text-kite-text-light hover:text-gray-800 dark:hover:text-kite-text transition-colors">← Back</button>
+ <button type="submit" className="bg-[#4caf50] hover:bg-[#43a047] text-white px-8 py-2.5 rounded shadow-sm font-medium transition-colors">✓ Verify & Register</button>
  </div>
  </form>
  </div>
- )}
- </div>
-
- 
+  )}
   </div>
+</div>
   );
 }

@@ -14,6 +14,7 @@
   --color-kite-text: var(--text-color);
   --color-kite-text-light: var(--text-light-color);
   --color-kite-border: var(--border-color);
+  --color-kite-border-soft: var(--border-color-soft);
   --color-kite-bg: var(--bg-color-alt);
   --color-kite-surface: var(--surface-color);
 
@@ -43,14 +44,14 @@
 :root.dark {
   --text-color: #dfdfdf;
   --text-light-color: #9b9b9b;
-  --border-color-soft: #2a2a2a;
-  --border-color: #2a2a2a;
-  --border-color-hard: #3a3a3a;
+  --border-color-soft: #2b2b2b;
+  --border-color: #374151;
+  --border-color-hard: #444444;
   --bg-color-alt: #1a1a1a;
-  --surface-color: #1a1a1a;
-  --body-bg: #1a1a1a;
+  --surface-color: #1e1e1e;
+  --body-bg: #121212;
   --black-color: #ffffff; 
-  --white-color: #1a1a1a;
+  --white-color: #1e1e1e;
 }
 
 /* Maintain true white color for colored elements in dark mode */
@@ -58,24 +59,26 @@
   --white-color: #ffffff;
 }
 
-:root.dark .bg-white { background-color: var(--surface-color) !important; }
-:root.dark .bg-gray-50, :root.dark .bg-gray-100 { background-color: var(--bg-color-alt) !important; }
-:root.dark .text-black, :root.dark .text-gray-900, :root.dark .text-gray-800, :root.dark .text-gray-700 { color: var(--text-color) !important; }
-:root.dark .text-gray-600, :root.dark .text-gray-500, :root.dark .text-gray-400 { color: var(--text-light-color) !important; }
-:root.dark .border-gray-200, :root.dark .border-gray-300 { border-color: var(--border-color) !important; }
+:root.dark .bg-white:not([class*="dark:bg-"]) { background-color: var(--surface-color); }
+:root.dark .bg-gray-50:not([class*="dark:bg-"]), :root.dark .bg-gray-100:not([class*="dark:bg-"]) { background-color: var(--bg-color-alt); }
+:root.dark .text-black:not([class*="dark:text-"]), :root.dark .text-gray-900:not([class*="dark:text-"]), :root.dark .text-gray-800:not([class*="dark:text-"]), :root.dark .text-gray-700:not([class*="dark:text-"]) { color: var(--text-color); }
+:root.dark .text-gray-600:not([class*="dark:text-"]), :root.dark .text-gray-500:not([class*="dark:text-"]), :root.dark .text-gray-400:not([class*="dark:text-"]) { color: var(--text-light-color); }
+:root.dark .border-gray-200:not([class*="dark:border-"]), :root.dark .border-gray-300:not([class*="dark:border-"]) { border-color: var(--border-color); }
 
-:root.dark .bg-green-50, :root.dark .bg-green-50\/50 { background-color: rgba(74, 222, 128, 0.1) !important; }
-:root.dark .text-green-700, :root.dark .text-green-800, :root.dark .text-green-900 { color: #4ade80 !important; }
+:root.dark .bg-green-50, :root.dark .bg-green-50\/50 { background-color: rgba(34, 197, 94, 0.1) !important; }
+:root.dark .text-green-700, :root.dark .text-green-800, :root.dark .text-green-900 { color: #22c55e !important; }
 
 :root.dark .text-blue-800 { color: #93c5fd !important; }
 :root.dark .text-blue-900 { color: #bfdbfe !important; }
-:root.dark .border-blue-300 { border-color: #3b82f6 !important; }
+:root.dark .border-blue-300 { border-color: #387ed1 !important; }
 
-:root.dark .text-red-800, :root.dark .text-red-900 { color: #f87171 !important; }
-:root.dark .bg-red-50\/50, :root.dark .bg-red-50 { background-color: rgba(248, 113, 113, 0.1) !important; }
+:root.dark .text-red-800, :root.dark .text-red-900 { color: #ef4444 !important; }
+:root.dark .bg-red-50\/50, :root.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.1) !important; }
 
+:root.dark input:not([class*="dark:text-"]), :root.dark select:not([class*="dark:text-"]), :root.dark textarea:not([class*="dark:text-"]) {
+  color: var(--text-color);
+}
 :root.dark input, :root.dark select, :root.dark textarea {
-  color: var(--text-color) !important;
   background-color: transparent !important;
 }
 :root.dark option {

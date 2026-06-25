@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { formatINR } from '../utils/mockData';
-import { Plus, Search, Users, Banknote, Building, FileText, Download, X, ArrowLeft, CreditCard, Wallet, CheckCircle, BadgeCheck, Clock } from 'lucide-react';
+import { Plus, Search, Users, Banknote, Building, FileText, Download, X, ArrowLeft, CreditCard, Wallet, CheckCircle, BadgeCheck, Clock, ChevronRight } from 'lucide-react';
 import { Investor, Investment, Business } from '../types';
 import { INDIAN_BANKS } from '../utils/indianBanks';
 import { downloadElementAsPDF } from '../utils/pdfGenerator';
@@ -84,15 +84,31 @@ export default function Investors() {
  const filteredInvestors = uniqueInvestors.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
  i.investorId.includes(searchTerm)
  ).map(i => {
- let totalAmountInvested = state.investments
- .filter(inv => inv.investorId === i.id && inv.status !== 'completed')
- .reduce((sum, inv) => sum + inv.amount, 0);
+ const activeInvs = state.investments.filter(inv => inv.investorId === i.id && inv.status !== 'completed');
+ let totalAmountInvested = activeInvs.reduce((sum, inv) => sum + inv.amount, 0);
  
  if (i.id === 'admin_investor') {
-   totalAmountInvested = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments);
+   totalAmountInvested = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments, state.settings);
  }
+
+ let totalLiveProfit = 0;
+ const grouped = activeInvs.reduce((acc, inv) => {
+   if (!acc[inv.businessId]) acc[inv.businessId] = [];
+   acc[inv.businessId].push(inv);
+   return acc;
+ }, {} as Record<string, Investment[]>);
  
- return { ...i, totalInvested: totalAmountInvested };
+ Object.entries(grouped).forEach(([bizId, invs]) => {
+    const res = calculateLiveProfit(invs as Investment[], bizId, marketState.trends, state.settings);
+    totalLiveProfit += res.liveProfit;
+ });
+
+ const returnPercentage = totalAmountInvested > 0 ? (totalLiveProfit / totalAmountInvested) * 100 : 0;
+ const hasActive = activeInvs.length > 0;
+ const hasCompleted = state.investments.some(inv => inv.investorId === i.id && inv.status === 'completed');
+ const status = hasActive ? 'active' : (hasCompleted ? 'withdrawn' : 'pending');
+ 
+ return { ...i, totalInvested: totalAmountInvested, totalLiveProfit, returnPercentage, status };
  }).sort((a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime());
 
  const generateInvestorId = () => {
@@ -191,17 +207,22 @@ export default function Investors() {
  const marketTrend = marketState.trends[businessId] || 0;
 
  const calculateProfit = () => {
- if (selectedInvestments.length === 0) return { baseProfit: 0, totalProfit: 0, marketProfit: 0, rmasMarketCover: 0, marketTrend: 0, isPremature: false };
+ if (selectedInvestments.length === 0) return { baseProfit: 0, totalProfit: 0, marketProfit: 0, fullLiveProfit: 0, rmasMarketCover: 0, marketTrend: 0, isPremature: false };
  const { liveProfit, liveTrendPercentage } = calculateLiveProfit(
  selectedInvestments, 
  businessId, 
  marketState.trends,
  state.settings
  );
+ 
+ const completed = Number(withdrawFormData.completedMonths) || 12;
+ const scaledProfit = liveProfit * (completed / 12);
+
  return {
  baseProfit: 0,
- totalProfit: liveProfit,
- marketProfit: liveProfit,
+ totalProfit: scaledProfit,
+ fullLiveProfit: liveProfit,
+ marketProfit: scaledProfit,
  rmasMarketCover: 0,
  marketTrend: liveTrendPercentage,
  isPremature: false
@@ -257,6 +278,8 @@ export default function Investors() {
  const finalPayout = calculateFinalPayout();
  const totalAmount = selectedInvestments.reduce((s, i) => s + i.amount, 0);
   const burden = calculateBusinessBurden();
+  const { totalProfit, fullLiveProfit } = calculateProfit();
+  const prematurePenalty = Math.max(0, fullLiveProfit - totalProfit);
 
   selectedInvestments.forEach(inv => {
  const ratio = totalAmount > 0 ? (inv.amount / totalAmount) : (1 / selectedInvestments.length);
@@ -266,6 +289,7 @@ export default function Investors() {
  payoutDetails: {
  rmasCommission: rmasFee * ratio,
  happyIncomeTax: happyTax * ratio,
+ rmasPrematurePenalty: prematurePenalty * ratio,
  totalCredited: finalPayout * ratio,
   payoutDate: new Date().toISOString(),
   rmasMarketCover: burden.rmasMarketCover * ratio,
@@ -280,11 +304,12 @@ export default function Investors() {
  payoutDetails: {
  rmasCommission: rmasFee,
  happyIncomeTax: happyTax,
+ rmasPrematurePenalty: prematurePenalty,
  totalCredited: finalPayout,
-  payoutDate: new Date().toISOString(),
-  rmasMarketCover: burden.rmasMarketCover,
-  rmasSubsidyPays: burden.rmasSubsidyPays
-  }
+ payoutDate: new Date().toISOString(),
+ rmasMarketCover: burden.rmasMarketCover,
+ rmasSubsidyPays: burden.rmasSubsidyPays
+ }
  };
  // Generate Profit Slip
  setPdfProfitSlip({ investment: mergedInv, investor: selectedInvestor, business });
@@ -305,13 +330,13 @@ export default function Investors() {
  <div className="max-w-6xl mx-auto space-y-3 sm:space-y-6 print:m-0 print:p-0">
  {/* --- Hide this whole container during print --- */}
  <div className="print:hidden space-y-3 sm:space-y-6">
- {viewMode === 'investor-detail' && selectedInvestor && (<InvestorDetail investorId={selectedInvestor.id} onBack={() => { setViewMode('list'); setSelectedInvestor(null); }} />)}
+ {viewMode === 'investor-detail' && selectedInvestor && (<InvestorDetail investorId={selectedInvestor.id} onBack={() => { setViewMode('list'); setSelectedInvestor(null); }} onWithdraw={() => handleWithdrawClick(selectedInvestor)} />)}
 
         {viewMode === 'list' && (
  <>
  <div className="flex justify-between items-end">
  <div>
- <h2 className="text-xl md:text-base font-medium text-kite-text tracking-tight uppercase">My Investors</h2>
+ <h2 className="text-[15px] md:text-xl font-medium text-kite-text tracking-tight uppercase">My Investors</h2>
  </div>
  <button onClick={startAddInvestor}
  className="bg-kite-blue hover:opacity-90 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-sm font-medium flex items-center space-x-1 md:space-x-2 transition-colors text-xs md:text-sm"
@@ -321,107 +346,72 @@ export default function Investors() {
  </button>
  </div>
 
- <div className="w-full bg-white border border-kite-border rounded-sm overflow-hidden">
+ <div className="w-full bg-white border border-kite-border rounded-sm overflow-hidden sticky top-0 z-10">
  <div className="p-2 sm:p-4 border-b border-kite-border flex items-center bg-kite-bg">
  <Search  className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-text-light mr-2" />
- <input type="text" placeholder="Search investors by name or ID..." className="bg-transparent border-none outline-none w-full text-sm font-medium placeholder-gray-400"
+ <input type="text" placeholder="Search investor by name, ID, mobile number..." className="bg-transparent border-none outline-none w-full text-sm font-medium placeholder-gray-400"
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  />
  </div>
  <div className="overflow-hidden">
  {/* Desktop Table View */}
- <div className="hidden md:block overflow-x-auto w-full max-w-full">
- <table className="w-full text-left text-sm min-w-[800px]">
- <thead>
- <tr className="border-b border-kite-border bg-white">
- <th className="p-2 md:p-4 font-medium text-kite-text">ID Number</th>
- <th className="p-2 md:p-4 font-medium text-kite-text">Name</th>
- <th className="p-2 md:p-4 font-medium text-kite-text text-right">Total Invested</th>
- <th className="p-2 md:p-4 font-medium text-kite-text text-center">Actions</th>
- </tr>
- </thead>
- <tbody>
+ <div className="flex flex-col divide-y divide-kite-border">
  {filteredInvestors.map(investor => {
- const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
+ const activeInvs = state.investments.filter(inv => inv.investorId === investor.id && inv.status !== 'completed');
+ let totalAmountInvested = activeInvs.reduce((sum, inv) => sum + inv.amount, 0);
+ if (investor.id === 'admin_investor') {
+   totalAmountInvested = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments, state.settings);
+ }
+ let totalLiveProfit = 0;
+ const grouped = activeInvs.reduce((acc, inv) => {
+   if (!acc[inv.businessId]) acc[inv.businessId] = [];
+   acc[inv.businessId].push(inv);
+   return acc;
+ }, {} as Record<string, Investment[]>);
+ Object.entries(grouped).forEach(([bizId, invs]) => {
+    const res = calculateLiveProfit(invs as Investment[], bizId, marketState.trends, state.settings);
+    totalLiveProfit += res.liveProfit;
+ });
+ const returnPercentage = totalAmountInvested > 0 ? (totalLiveProfit / totalAmountInvested) * 100 : 0;
+ const hasActive = activeInvs.length > 0;
+ const hasCompleted = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'completed');
+ const status = hasActive ? 'active' : (hasCompleted ? 'withdrawn' : 'pending');
+
  return (
- <tr key={`desk_${investor.id}`} className={`border-b border-kite-border hover:bg-kite-bg`}>
- <td className="p-2 md:p-4 font-mono text-kite-text-light font-medium">
-  #{investor.investorId}
- </td>
- <td className="p-2 md:p-4 font-medium text-kite-text flex items-center space-x-1.5 h-full">
-  <span className="">{investor.name}</span>
-  {investor.id === 'admin_investor' && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" title="RMAS Admin" />}
- </td>
- <td className="p-2 md:p-4 font-medium text-kite-text text-right">{formatINR(investor.totalInvested)}</td>
- <td className="p-2 md:p-4 text-center space-x-2">
- <button onClick={() => { setSelectedInvestor(investor); setViewMode('investor-detail'); }}
- className="text-black bg-white border border-kite-border hover:bg-kite-bg font-medium text-xs px-3 py-1.5 rounded-sm transition-colors"
+ <div key={`inv_${investor.id}`} 
+      onClick={() => { setSelectedInvestor(investor); setViewMode('investor-detail'); }}
+      className="flex items-center justify-between p-3 md:p-4 bg-white hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group active:bg-gray-100"
  >
- My profile
- </button>
- {hasActiveInvestments && (
- <button onClick={() => handleWithdrawClick(investor)}
- className="bg-kite-blue text-white hover:bg-kite-blue font-medium text-xs px-3 py-1.5 rounded-sm"
- >
- Withdraw
- </button>
- )}
- </td>
- </tr>
+   <div className="flex flex-col">
+     <div className="flex items-center space-x-1.5 mb-0.5">
+       <span className="font-medium text-kite-text text-sm md:text-base group-hover:text-kite-blue transition-colors">{investor.name}</span>
+       {investor.id === 'admin_investor' && <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />}
+     </div>
+     <span className="font-mono text-[11px] md:text-xs text-kite-text-light">#{investor.investorId}</span>
+   </div>
+   
+   <div className="flex items-center space-x-3 md:space-x-6 text-right">
+     <div className="flex flex-col items-end">
+       <span className="font-medium text-kite-text text-sm">{formatINR(totalAmountInvested)}</span>
+       {totalAmountInvested > 0 && (
+         <span className={`text-[11px] font-medium mt-0.5 ${returnPercentage >= 0 ? 'text-kite-green' : 'text-kite-red'}`}>
+           {returnPercentage >= 0 ? '+' : ''}{returnPercentage.toFixed(2)}%
+         </span>
+       )}
+     </div>
+     <ChevronRight className="w-4 h-4 text-kite-text-light group-hover:text-kite-blue transition-colors flex-shrink-0" />
+   </div>
+ </div>
  );
  })}
  {filteredInvestors.length === 0 && (
- <tr>
- <td colSpan={5} className="p-4 text-center text-kite-text-light font-medium">No investors found.</td>
- </tr>
+ <div className="p-8 text-center text-kite-text-light font-medium text-sm">No investors found.</div>
  )}
- </tbody>
- </table>
  </div>
 
  {/* Mobile Cards View */}
- <div className="block md:hidden divide-y divide-gray-100">
- {filteredInvestors.map(investor => {
- const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
- return (
- <div key={`mob_${investor.id}`} className={`p-4 hover:bg-kite-bg bg-white dark:bg-transparent`}>
- <div className="flex justify-between items-start mb-2">
- <div className="flex items-center space-x-1.5">
-   <span className={`font-medium text-kite-text text-xs md:text-base`}>{investor.name}</span>
-   {investor.id === 'admin_investor' && <BadgeCheck  className="w-4 h-4 text-white fill-blue-500 flex-shrink-0" />}
- </div>
- <span className="font-mono text-xs text-kite-text-light bg-kite-bg px-2 py-1 rounded">
-   #{investor.investorId}
- </span>
- </div>
- <div className="grid grid-cols-1 gap-3 mb-4 bg-kite-bg p-3 rounded-sm">
- <div className="flex justify-between items-center">
- <p className="text-xs text-kite-text-light">Total Invested</p>
- <p className="font-medium text-sm text-kite-text">{formatINR(investor.totalInvested)}</p>
- </div>
- </div>
-
- <div className="flex flex-wrap gap-2">
- <button onClick={() => { setSelectedInvestor(investor); setViewMode('investor-detail'); }}
- className="flex-1 text-black bg-white font-medium text-xs px-3 py-2 border border-kite-border hover:bg-kite-bg rounded-sm text-center whitespace-nowrap min-w-[120px] transition-colors"
- >
- My profile
- </button>
- {hasActiveInvestments && (
- <button onClick={() => handleWithdrawClick(investor)}
- className="flex-1 bg-kite-blue text-white hover:bg-kite-blue font-medium text-xs px-3 py-2 rounded-sm text-center whitespace-nowrap min-w-[80px]"
- >
- Withdraw
- </button>
- )}
- </div>
- </div>
- );
- })}
- {filteredInvestors.length === 0 && (
- <div className="p-4 text-center text-kite-text-light font-medium">No investors found.</div>
- )}
+ <div className="hidden">
  </div>
  </div>
  </div>
@@ -524,11 +514,11 @@ export default function Investors() {
                 <input required type="text" autoFocus={ownerMode === 'new'}
                   readOnly={ownerMode === 'existing'}
                   className={`w-full border-b-2 p-3 text-lg font-medium outline-none transition-colors ${ownerMode === 'existing' ? 'border-gray-200 bg-gray-50/50 text-gray-500 cursor-not-allowed' : 'border-gray-200 focus:border-blue-500'}`} 
-                  value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Radhika Merchant" />
+                  value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Rahul Patel" />
               </div>
 
               <div className="pt-6">
-                <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded text-sm md:text-base font-semibold tracking-wide transition-all shadow-md hover:shadow-lg">Continue to Bank Details</button>
+                <button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 md:py-3.5 rounded text-[13px] md:text-sm font-semibold tracking-wide transition-all shadow-md hover:shadow-lg">Continue to Bank Details</button>
                 <button type="button" onClick={() => setViewMode('list')} className="w-full mt-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors md:hidden">Cancel Application</button>
               </div>
             </form>
@@ -594,7 +584,7 @@ export default function Investors() {
             </div>
 
             <div className="pt-6">
-              <button type="submit" disabled={isVerifying} className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white flex items-center justify-center space-x-2 py-4 rounded text-sm md:text-base font-semibold tracking-wide transition-all shadow-md hover:shadow-lg h-[56px] relative">
+              <button type="submit" disabled={isVerifying} className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white flex items-center justify-center space-x-2 py-3 md:py-3.5 rounded text-[13px] md:text-sm font-semibold tracking-wide transition-all shadow-md hover:shadow-lg h-[44px] md:h-[48px] relative">
                 <span className={`transition-opacity duration-300 ${isVerifying ? 'opacity-0' : 'opacity-100'}`}>Verify & Create Account</span>
                 {isVerifying && (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -891,7 +881,7 @@ export default function Investors() {
  <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
  </button>
  <div>
- <h3 className="text-xs md:text-base font-medium text-kite-text flex items-center space-x-2">
+ <h3 className="text-[15px] md:text-xl font-medium text-kite-text flex items-center space-x-2">
  <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-kite-text-light" />
  <span>Banking & Tax Records: {selectedInvestor.name}</span>
  </h3>
@@ -1046,7 +1036,7 @@ function PdfContent({ investor }: { investor: Investor }) {
  <div className="space-y-4 sm:space-y-8 leading-relaxed">
  <div className="text-center space-y-1 sm:space-y-2 border-b-2 border-black pb-3 sm:pb-3 sm:pb-6 mb-4 sm:mb-4 md:mb-8">
  <h1 className="text-base md:text-xl font-medium tracking-widest text-kite-text">RADHIKA MA SERVICE</h1>
- <h2 className="text-xs md:text-base font-medium text-kite-text mt-2">INVESTMENT SERVICE GUIDELINES RULES</h2>
+ <h2 className="text-[15px] md:text-xl font-medium text-kite-text mt-2">INVESTMENT SERVICE GUIDELINES RULES</h2>
  </div>
 
  <div className="grid grid-cols-2 gap-2 md:gap-4">
@@ -1134,8 +1124,8 @@ function ProfitSlipContent({ investment, investor, business, isBlueTick, isPreVe
  <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" />
  </div>
  <div className="border-b-4 border-black pb-3 sm:pb-6">
- <h1 className="text-xs md:text-base font-medium uppercase tracking-tighter">Radhika Ma Service</h1>
- <h2 className="text-xs md:text-base font-medium tracking-widest text-kite-text-light mt-1">OFFICIAL PROFIT SETTLEMENT SLIP</h2>
+ <h1 className="text-[15px] md:text-xl font-medium uppercase tracking-tighter">Radhika Ma Service</h1>
+ <h2 className="text-[15px] md:text-xl font-medium tracking-widest text-kite-text-light mt-1">OFFICIAL PROFIT SETTLEMENT SLIP</h2>
  </div>
 
  <div className="grid grid-cols-2 gap-2 md:gap-4">
@@ -1176,22 +1166,28 @@ function ProfitSlipContent({ investment, investor, business, isBlueTick, isPreVe
  <td className="p-2 sm:p-4 py-1.5 md:py-2 font-medium">Original Invested Capital</td>
  <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono font-medium">{formatINR(investment.amount)}</td>
  </tr>
- <tr className={`border-b border-kite-border ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'bg-kite-red/10' : 'bg-kite-green/10'}`}>
- <td className={`p-2 sm:p-4 py-1.5 md:py-2 font-medium ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
- {((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'Total Market Loss' : 'Total Profit & Interest'}
+ <tr className={`border-b border-kite-border ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount) < 0 ? 'bg-kite-red/10' : 'bg-kite-green/10'}`}>
+ <td className={`p-2 sm:p-4 py-1.5 md:py-2 font-medium ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
+ {((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount) < 0 ? 'Total Market Loss' : 'Total Profit & Interest'}
  </td>
- <td className={`p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono font-medium ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
- {((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount) < 0 ? '-' : '+'}{formatINR(Math.abs((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) - investment.amount))}
+ <td className={`p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono font-medium ${((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount) < 0 ? 'text-red-800' : 'text-green-800'}`}>
+ {((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount) < 0 ? '-' : '+'}{formatINR(Math.abs((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount))}
  </td>
  </tr>
  <tr className="bg-kite-bg border-b-2 border-black">
  <td className="p-2 sm:p-4 py-1.5 md:py-2 text-kite-text font-medium uppercase tracking-wider text-xs">Gross Payble Amount</td>
- <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-kite-text font-medium">{formatINR((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0))}</td>
+ <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-kite-text font-medium">{formatINR((payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0))}</td>
  </tr>
  {business.authorityType && business.rmasSubsidy && business.rmasSubsidy > 0 ? (
  <tr className="bg-kite-blue/10 border-b-2 border-black">
  <td className="p-2 sm:p-4 py-1.5 md:py-2 text-blue-900 font-medium text-xs uppercase tracking-wider italic">Of above Gross, RMAS Fund Contribution ({business.rmasSubsidy}%)</td>
  <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-blue-900 font-medium">{formatINR(investment.amount * ((business.rmasSubsidy || 0) / 100))}</td>
+ </tr>
+ ) : null}
+ {(payout?.rmasPrematurePenalty || 0) > 0 ? (
+ <tr>
+ <td className="p-2 sm:p-4 py-1.5 md:py-2 text-kite-red font-medium">Less: RMAS Premature Penalty</td>
+ <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-kite-red font-medium">-{formatINR(payout?.rmasPrematurePenalty || 0)}</td>
  </tr>
  ) : null}
  <tr>

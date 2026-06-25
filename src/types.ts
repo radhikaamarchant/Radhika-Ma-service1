@@ -10,6 +10,7 @@ export interface Business {
   photoUrl?: string;
   authorityType?: AuthorityType;
   rmasSubsidy?: number;
+  entryFeePaid?: number;
   registrationDate: string;
   fundingRequired: number;
   interestRate: number; // dynamically set by admin
@@ -30,6 +31,7 @@ export interface Investor {
   investorId: string;
   name: string;
   totalInvested: number;
+  entryFeePaid?: number;
   joinDate: string;
   bankDetails: {
     bankName: string;
@@ -59,6 +61,7 @@ export interface Investment {
     payoutDate: string;
     rmasMarketCover?: number;
     rmasSubsidyPays?: number;
+    rmasPrematurePenalty?: number;
   };
 }
 

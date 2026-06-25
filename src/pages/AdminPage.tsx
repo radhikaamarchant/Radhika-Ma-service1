@@ -5,7 +5,6 @@ import { useAppContext } from '../utils/AppContext';
 import { getUnifiedBankBalance, getUnifiedTransactions } from '../utils/bankBalance';
 import { sanitizeDatabase } from '../utils/dataSanitizer';
 import { formatINR } from '../utils/mockData';
-import SettingsModal from '../components/SettingsModal';
 
 interface AdminProfile {
   name: string;
@@ -22,11 +21,10 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<AdminProfile>(() => {
     const saved = localStorage.getItem('adminProfile');
-    return saved ? JSON.parse(saved) : { name: 'Radhika Merchant', address: '', photoUrl: '' };
+    return saved ? JSON.parse(saved) : { name: 'Admin', address: '', photoUrl: '' };
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [formData, setFormData] = useState(profile);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -40,70 +38,24 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (state.loading) return;
-    
     const adminBizId = 'admin_business';
     const adminInvId = 'admin_investor';
     
-    if (!state.businesses.find(b => b.id === adminBizId) || !state.investors.find(i => i.id === adminInvId)) {
-      handleSave();
+    if (state.businesses.find(b => b.id === adminBizId)) {
+      dispatch({ type: 'DELETE_BUSINESS', payload: adminBizId });
+    }
+    if (state.investors.find(i => i.id === adminInvId)) {
+      dispatch({ type: 'DELETE_INVESTOR', payload: adminInvId });
     }
   }, [state.loading, state.businesses.length, state.investors.length]);
+
+
 
   const handleSave = async () => {
     localStorage.setItem('adminProfile', JSON.stringify(formData));
     setProfile(formData);
     setIsEditing(false);
     window.dispatchEvent(new Event('adminProfileUpdated'));
-    
-    // Sync to Business and Investor
-    const adminBizId = 'admin_business';
-    const adminInvId = 'admin_investor';
-    const uniqueId = 'RMAS-ADMIN-1';
-    const adminName = 'Radhika Merchant';
-    
-    const existingBiz = state.businesses.find(b => b.id === adminBizId);
-    const businessPayload: any = {
-      id: adminBizId,
-      businessId: uniqueId,
-      name: `My ${adminName} Private Limited`,
-      ownerName: adminName,
-      registrationDate: new Date().toISOString(),
-      fundingRequired: 0,
-      interestRate: 0,
-      registrationCommissionPaid: 0,
-      taxPaid: 0,
-      status: 'listed',
-      ...existingBiz
-    };
-    // Ensure overrides
-    businessPayload.name = `My ${adminName} Private Limited`;
-    businessPayload.ownerName = adminName;
-    businessPayload.businessId = uniqueId;
-
-    const existingInv = state.investors.find(i => i.id === adminInvId);
-    const investorPayload: any = {
-      id: adminInvId,
-      investorId: uniqueId,
-      name: adminName,
-      joinDate: new Date().toISOString(),
-      totalInvested: 0,
-      rmasServiceCharge: 0,
-      bankDetails: {
-        bankName: formData.bankName || 'Unknown Bank',
-        accountNumber: formData.accountNumber || '',
-        ifscCode: formData.ifscCode || '',
-        accountHolderName: adminName
-      },
-      ...existingInv
-    };
-    investorPayload.name = adminName;
-    investorPayload.investorId = uniqueId;
-    if (formData.bankName) investorPayload.bankDetails.bankName = formData.bankName;
-    if (formData.accountNumber) investorPayload.bankDetails.accountNumber = formData.accountNumber;
-    if (formData.ifscCode) investorPayload.bankDetails.ifscCode = formData.ifscCode;
-
-    await dispatch({ type: existingBiz ? 'UPDATE_BUSINESS' : 'ADD_BUSINESS', payload: businessPayload });
-    await dispatch({ type: existingInv ? 'UPDATE_INVESTOR' : 'ADD_INVESTOR', payload: investorPayload });
   };
 
   const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
@@ -168,13 +120,13 @@ export default function AdminPage() {
     setImageSrc(null);
   };
 
-  const unifiedBalance = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments);
-  const bankTransactions = getUnifiedTransactions('Radhika M', state.businesses, state.investors, state.investments);
+  const unifiedBalance = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments, state.settings);
+  const bankTransactions = getUnifiedTransactions('Radhika M', state.businesses, state.investors, state.investments, state.settings);
 
   return (
-    <div className="flex-1 bg-kite-bg h-full p-4 md:p-8 overflow-y-auto animate-fade-in relative font-sans">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex justify-between items-end mb-8 border-b border-kite-border pb-4">
+    <div className="flex-1 bg-[#f4f4f4] md:bg-kite-bg h-full p-0 md:p-8 overflow-y-auto animate-fade-in relative font-sans">
+      <div className="max-w-3xl mx-auto space-y-2 md:space-y-6">
+        <div className="hidden md:flex justify-between items-end mb-8 border-b border-kite-border pb-4">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-kite-text">I'm Radhika</h2>
             <p className="text-sm text-kite-text-light mt-1">Admin Profile Settings</p>
@@ -182,12 +134,6 @@ export default function AdminPage() {
           <div className="flex space-x-3">
             {!isEditing && (
               <>
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="bg-gray-100 text-kite-text px-5 py-2 rounded-sm text-sm font-medium hover:bg-gray-200 transition-colors shadow-sm"
-                >
-                  General
-                </button>
                 <button
                   onClick={() => setIsEditing(true)}
                   className="bg-kite-blue text-white px-5 py-2 rounded-sm text-sm font-medium hover:bg-kite-blue/90 transition-colors shadow-sm"
@@ -199,11 +145,17 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-sm border border-kite-border p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+        <div className="bg-white md:rounded-sm border-b md:border border-gray-200 md:border-kite-border px-4 py-6 md:p-6 md:shadow-sm">
+          {/* Mobile Edit Button */}
+  {!isEditing && (
+    <div className="md:hidden flex justify-end w-full -mb-8 relative z-10">
+      <button onClick={() => setIsEditing(true)} className="text-blue-500 text-sm font-medium">Edit</button>
+    </div>
+  )}
+  <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
             {/* Photo Section */}
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-100 bg-gray-50 flex flex-col items-center justify-center relative group">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border border-gray-200 bg-gray-50 flex flex-col items-center justify-center relative group shadow-sm">
                 {formData.photoUrl ? (
                   <img src={formData.photoUrl} alt="Admin" className="w-full h-full object-cover" />
                 ) : (
@@ -258,8 +210,8 @@ export default function AdminPage() {
                     </div>
                   </div>
                   
-                  <div className="pt-6 border-t border-gray-100">
-                    <h3 className="text-sm font-bold text-kite-text tracking-tight mb-4 flex items-center"><BadgeCheck className="w-4 h-4 mr-1 text-kite-blue" /> Bank Account Details</h3>
+                  <div className="pt-5 md:pt-6 border-t border-gray-100">
+<h3 className="text-[13px] md:text-sm font-medium text-gray-800 tracking-tight mb-3 md:mb-4 flex items-center"><BadgeCheck className="w-4 h-4 mr-1 text-kite-blue" /> Bank Account Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Bank Name</label>
@@ -325,42 +277,42 @@ export default function AdminPage() {
                   </div>
                 </>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
+                  <div className="text-center md:text-left">
+    <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
+      <p className="text-xl md:text-2xl font-medium text-gray-800 tracking-tight">{profile.name}</p>
+      <BadgeCheck className="w-5 h-5 text-blue-500" />
+    </div>
+    <h3 className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-400">Admin Name</h3>
+  </div>
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Admin Name</h3>
-                    <div className="flex items-center gap-2">
-                      <p className="text-2xl font-bold text-kite-text tracking-tight">{profile.name}</p>
-                      <BadgeCheck className="w-6 h-6 text-blue-500" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Office / Home Address</h3>
+                    <h3 className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 md:mb-2">Office / Home Address</h3>
                     {profile.address ? (
-                      <p className="text-base text-kite-text whitespace-pre-wrap leading-relaxed">{profile.address}</p>
+                      <p className="text-sm md:text-base text-gray-700 whitespace-pre-wrap leading-relaxed">{profile.address}</p>
                     ) : (
                       <p className="text-sm text-kite-text-light italic">No address provided.</p>
                     )}
                   </div>
                   
                   {profile.bankName && (
-                    <div className="pt-6 border-t border-gray-100">
-                      <h3 className="text-sm font-bold text-kite-text tracking-tight mb-4 flex items-center"><BadgeCheck className="w-4 h-4 mr-1 text-kite-blue" /> Bank Account</h3>
+                    <div className="pt-5 md:pt-6 border-t border-gray-100">
+<h3 className="text-[13px] md:text-sm font-medium text-gray-800 tracking-tight mb-3 md:mb-4 flex items-center"><BadgeCheck className="w-4 h-4 mr-1 text-kite-blue" /> Bank Account</h3>
                       <div className="grid grid-cols-2 gap-y-4 gap-x-8 bg-gray-50 rounded-sm p-4 border border-gray-100">
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Bank Name</p>
-                          <p className="text-sm font-medium text-kite-text">{profile.bankName}</p>
+                          <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5 md:mb-1">Bank Name</p>
+                          <p className="text-[13px] md:text-sm font-medium text-gray-800">{profile.bankName}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Account Number</p>
-                          <p className="text-sm font-mono text-kite-text">{profile.accountNumber || '-'}</p>
+                          <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5 md:mb-1">Account Number</p>
+                          <p className="text-[13px] md:text-sm font-mono text-gray-800">{profile.accountNumber || '-'}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1">IFSC Code</p>
-                          <p className="text-sm font-mono text-kite-text">{profile.ifscCode || '-'}</p>
+                          <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5 md:mb-1">IFSC Code</p>
+                          <p className="text-[13px] md:text-sm font-mono text-gray-800">{profile.ifscCode || '-'}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Branch</p>
-                          <p className="text-sm font-medium text-kite-text">{profile.branch || '-'}</p>
+                          <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5 md:mb-1">Branch</p>
+                          <p className="text-[13px] md:text-sm font-medium text-gray-800">{profile.branch || '-'}</p>
                         </div>
                       </div>
                     </div>
@@ -373,7 +325,7 @@ export default function AdminPage() {
         
         {/* Admin Unified Statement */}
         {!isEditing && (
-          <div className="bg-white rounded-sm border border-kite-border p-6 shadow-sm">
+          <div className="bg-white md:rounded-sm border-y md:border border-gray-200 md:border-kite-border px-4 py-6 md:p-6 md:shadow-sm mt-2 md:mt-0">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-kite-text tracking-tight">Financial Statement</h3>
               <div className="text-right">
@@ -444,10 +396,6 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-
-      {showSettings && (
-        <SettingsModal onClose={() => setShowSettings(false)} />
-      )}
 
       {/* Image Cropper Modal */}
       {imageSrc && (

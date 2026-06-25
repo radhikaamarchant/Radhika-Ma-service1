@@ -95,6 +95,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
  break;
  case 'DELETE_BUSINESS':
  await deleteDoc(doc(db, 'businesses', action.payload));
+ state.investments.filter(i => i.businessId === action.payload).forEach(async (inv) => {
+   await deleteDoc(doc(db, 'investments', inv.id));
+ });
  break;
  case 'ADD_INVESTOR':
  await setDoc(doc(db, 'investors', action.payload.id), payloadWithTimestamp);
@@ -104,6 +107,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
  break;
  case 'DELETE_INVESTOR':
  await deleteDoc(doc(db, 'investors', action.payload));
+ state.investments.filter(i => i.investorId === action.payload).forEach(async (inv) => {
+   await deleteDoc(doc(db, 'investments', inv.id));
+ });
  break;
  case 'ADD_INVESTMENT':
  await setDoc(doc(db, 'investments', action.payload.id), payloadWithTimestamp);
