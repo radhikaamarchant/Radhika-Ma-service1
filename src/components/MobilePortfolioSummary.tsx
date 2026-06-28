@@ -16,23 +16,10 @@ export function MobilePortfolioSummary({
 }: MobilePortfolioSummaryProps) {
   return (
     <div
-      style={{
-        backgroundColor:"#FFFFFF",
-        borderTop:"1px solid #ECECEC",
-        padding:"16px 16px",
-        // 16px horizontal and vertical padding
-        flexShrink: 0,
-        zIndex: 20,
-      }}
-      className="md:hidden"
+      className="md:hidden shrink-0 z-20 px-4 py-4"
     >
       <div
-        style={{
-          display:"flex",
-          justifyContent:"space-between",
-          alignItems:"center",
-          marginBottom:"16px",
-        }}
+        className="flex justify-between items-center mb-4"
       >
         <div style={{ display:"flex", alignItems:"baseline", gap:"2px" }}>
           <span

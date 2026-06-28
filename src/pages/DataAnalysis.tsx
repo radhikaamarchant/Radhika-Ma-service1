@@ -187,8 +187,8 @@ export default function DataAnalysis() {
     ];
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-kite-bg/60 p-4">
-        <div className="bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-white border-b border-kite-border p-2 md:p-4 flex justify-between items-center z-10">
+        <div className="bg-white dark:bg-kite-surface border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 bg-white dark:bg-kite-surface border-b border-kite-border p-2 md:p-4 flex justify-between items-center z-10">
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="font-medium text-[11px] md:text-[12px] text-kite-text flex items-center space-x-1">
@@ -254,7 +254,7 @@ export default function DataAnalysis() {
                   Paid out
                 </p>
               </div>
-              <div className="bg-white p-2 md:p-4 rounded-sm border border-kite-border flex flex-col justify-center">
+              <div className="bg-white dark:bg-kite-surface p-2 md:p-4 rounded-sm border border-kite-border flex flex-col justify-center">
                 <p className="text-[10px] md:text-[11px] ] font-medium text-kite-text uppercase tracking-widest mb-0.5 md:mb-1">
                   Avg. Return
                 </p>
@@ -278,7 +278,7 @@ export default function DataAnalysis() {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-              <div className="w-full border border-kite-border rounded-sm p-2 md:p-4 bg-white">
+              <div className="w-full border border-kite-border rounded-sm p-2 md:p-4 bg-white dark:bg-kite-surface">
                 <h4 className="font-medium text-kite-text mb-4 text-center text-[13px] md:text-[14px]">
                   {""}
                   Funding Progress ({fundingPercentage.toFixed(1)}%){""}
@@ -332,7 +332,7 @@ export default function DataAnalysis() {
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className="w-full border border-kite-border rounded-sm p-2 md:p-4 bg-white">
+              <div className="w-full border border-kite-border rounded-sm p-2 md:p-4 bg-white dark:bg-kite-surface">
                 <h4 className="font-medium text-kite-text mb-4 text-center text-[13px] md:text-[14px]">
                   {""}
                   Profit Distribution Status{""}
@@ -457,7 +457,7 @@ export default function DataAnalysis() {
     );
   };
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div className="px-4 md:px-0 flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4">
         <div>
           <h2 className="text-[15px] md:text-[16px] font-medium text-kite-text tracking-tight">
@@ -495,7 +495,7 @@ export default function DataAnalysis() {
       {/* 1. Best Market Section */}{""}
       {activeTab ==="best-market" && (
         <div className="scroll-mt-24">
-          <div className="bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden w-full">
+          <div className="bg-white dark:bg-kite-surface border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden w-full">
             <div className="p-2 md:p-4 border-b border-kite-border">
               <h3 className="font-medium text-kite-text flex items-center space-x-2">
                 <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-kite-green" />
@@ -610,7 +610,7 @@ export default function DataAnalysis() {
                 break;
             }
             return (
-              <div className="bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden w-full">
+              <div className="bg-white dark:bg-kite-surface border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden w-full">
                 <div className="p-2 md:p-4 border-b border-kite-border flex justify-between items-center bg-kite-bg/50 dark:bg-transparent">
                   <div>
                     <h3 className="font-medium text-kite-text flex items-center space-x-2">
@@ -621,7 +621,7 @@ export default function DataAnalysis() {
                       {desc}
                     </p>
                   </div>
-                  <div className="text-[11px] md:text-[12px] text-kite-text-light font-medium bg-white px-2 py-1 border border-kite-border rounded-sm">
+                  <div className="text-[11px] md:text-[12px] text-kite-text-light font-medium bg-white dark:bg-kite-surface px-2 py-1 border border-kite-border rounded-sm">
                     {""}
                     {currentList.length} items{""}
                   </div>
@@ -733,7 +733,7 @@ export default function DataAnalysis() {
       )}{""}
       {/* 3. Comprehensive Market Overview Section */}{""}
       {activeTab ==="market-overview" && (
-        <div className="bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden flex flex-col scroll-mt-24">
+        <div className="bg-white dark:bg-kite-surface border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden flex flex-col scroll-mt-24">
           <div className="p-1.5 md:p-3 md:p-5 border-b border-kite-border flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4">
             <div>
               <h3 className="font-medium text-kite-text flex items-center space-x-2 text-[11px] md:text-[12px]">
@@ -809,7 +809,7 @@ export default function DataAnalysis() {
                     >
                       <td className="p-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#387ed1] to-[#2563eb] shadow-sm text-white flex-shrink-0 font-sans font-medium flex items-center justify-center text-[13px] md:text-[14px]">
+                          <div className="w-8 h-8 rounded-full bg-kite-blue shadow-none text-white flex-shrink-0 font-sans font-medium flex items-center justify-center text-[13px] md:text-[14px]">
                             {""}
                             {b.name?.trim().charAt(0).toUpperCase() ||"B"}{""}
                           </div>
@@ -839,7 +839,7 @@ export default function DataAnalysis() {
                       </td>
                       <td className="p-4">
                         <span
-                          className={`inline-block px-2 py-1 text-[10px] md:text-[11px] font-medium rounded-sm ${b.interestRate <= 10 ?"bg-kite-blue/10 text-kite-blue" : b.interestRate <= 20 ?"bg-white text-kite-text" :"bg-kite-red/10 text-kite-red"}`}
+                          className={`inline-block px-2 py-1 text-[10px] md:text-[11px] font-medium rounded-sm ${b.interestRate <= 10 ?"bg-kite-blue/10 text-kite-blue" : b.interestRate <= 20 ?"bg-white dark:bg-kite-surface text-kite-text" :"bg-kite-red/10 text-kite-red"}`}
                         >
                           {""}
                           {b.interestRate}%{""}
@@ -913,7 +913,7 @@ export default function DataAnalysis() {
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2 min-w-0 pr-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#387ed1] to-[#2563eb] shadow-sm text-white flex-shrink-0 font-sans font-medium flex items-center justify-center text-[10px] md:text-[11px]">
+                      <div className="w-6 h-6 rounded-full bg-kite-blue shadow-none text-white flex-shrink-0 font-sans font-medium flex items-center justify-center text-[10px] md:text-[11px]">
                         {""}
                         {b.name?.trim().charAt(0).toUpperCase() ||"B"}{""}
                       </div>

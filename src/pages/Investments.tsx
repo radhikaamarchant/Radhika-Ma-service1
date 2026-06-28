@@ -268,18 +268,18 @@ export default function Investments() {
     .slice()
     .sort((a, b) => getTime(b.id) - getTime(a.id));
   return (
-    <div className="max-w-6xl mx-auto flex flex-col font-sans bg-white min-h-screen">
+    <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent">
       {""}
       <div
-        className={`flex flex-col w-full bg-white pt-2 border-b border-gray-100 ${showAddForm ?"hidden md:flex" :"flex"}`}
+        className={`flex flex-col w-full bg-kite-surface dark:bg-transparent pt-2 border-b border-kite-border ${showAddForm ?"hidden md:flex" :"flex"}`}
       >
         {""}
         {/* Full width tabs */}{""}
-        <div className="flex w-full max-w-4xl mx-auto px-4 gap-6">
+        <div className="flex w-full w-full px-4 gap-6">
           {""}
           <button
             onClick={() => setActiveTab("holding")}
-            className={`h-[44px] flex items-center justify-center relative transition-colors ${activeTab ==="holding" ?"text-[#387ED1] font-medium" :"text-[#444444] font-medium opacity-80"}`}
+            className={`h-[44px] flex items-center justify-center relative transition-colors ${activeTab ==="holding" ?"text-[#387ED1] font-medium" :"text-kite-text font-medium opacity-80"}`}
           >
             {""}
             <span className="text-[15px] md:text-[16px]">Holdings</span>{""}
@@ -292,7 +292,7 @@ export default function Investments() {
           </button>{""}
           <button
             onClick={() => setActiveTab("booked")}
-            className={`h-[44px] flex items-center justify-center relative transition-colors ${activeTab ==="booked" ?"text-[#387ED1] font-medium" :"text-[#444444] font-medium opacity-80"}`}
+            className={`h-[44px] flex items-center justify-center relative transition-colors ${activeTab ==="booked" ?"text-[#387ED1] font-medium" :"text-kite-text font-medium opacity-80"}`}
           >
             {""}
             <span className="text-[15px] md:text-[16px]">Positions</span>{""}
@@ -306,7 +306,7 @@ export default function Investments() {
         </div>{""}
       </div>{""}
       <div
-        className={`flex items-center justify-between w-full py-3 px-4 max-w-4xl mx-auto ${showAddForm ?"hidden md:flex" :"flex"}`}
+        className={`flex items-center justify-between w-full py-3 px-4 w-full ${showAddForm ?"hidden md:flex" :"flex"}`}
       >
         {""}
         {!isSearchExpanded && (
@@ -327,7 +327,7 @@ export default function Investments() {
               <Search className="w-[18px] h-[18px] text-kite-blue" />
             </button>
           ) : (
-            <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white md:bg-transparent rounded-sm h-[36px]">
+            <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-kite-surface md:bg-transparent rounded-sm h-[36px]">
               <button
                 onClick={() => {
                   setIsSearchExpanded(false);
@@ -374,11 +374,11 @@ export default function Investments() {
               animate={{ x: 0 }}
               exit={{ x:"100%" }}
               transition={{ type:"spring", damping: 25, stiffness: 200 }}
-              className="absolute top-0 bottom-0 right-0 w-full md:max-w-[500px] bg-white shadow-2xl flex flex-col"
+              className="absolute top-0 bottom-0 right-0 w-full md:max-w-[500px] bg-kite-surface shadow-2xl flex flex-col"
             >
               {""}
               {/* Header */}{""}
-              <div className="flex items-center px-4 h-[60px] bg-white border-b border-kite-border shrink-0 sticky top-0 z-20">
+              <div className="flex items-center px-4 h-[60px] bg-kite-surface border-b border-kite-border shrink-0 sticky top-0 z-20">
                 {""}
                 <button
                   type="button"
@@ -703,7 +703,7 @@ export default function Investments() {
                 </div>{""}
               </div>{""}
               {/* BOTTOM ACTION */}{""}
-              <div className="absolute bottom-0 left-0 shrink-0 w-full bg-white border-t border-kite-border px-4 py-3 md:pb-4 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+              <div className="absolute bottom-0 left-0 shrink-0 w-full bg-white dark:bg-kite-surface px-4 py-3 md:pb-4 z-30">
                 {""}
                 <div className="md:hidden">
                   {""}
@@ -788,7 +788,7 @@ export default function Investments() {
                         damping: 25,
                         stiffness: 300,
                       }}
-                      className="absolute bottom-0 left-0 w-full bg-white rounded-t-[16px] z-50 flex flex-col max-h-[85vh] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
+                      className="absolute bottom-0 left-0 w-full bg-kite-surface rounded-t-[16px] z-50 flex flex-col max-h-[85vh] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
                     >
                       {""}
                       <div className="flex justify-center pt-3 pb-2 shrink-0">
@@ -912,7 +912,7 @@ export default function Investments() {
                         damping: 25,
                         stiffness: 300,
                       }}
-                      className="absolute bottom-0 left-0 w-full bg-white rounded-t-[16px] z-50 flex flex-col max-h-[85vh] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
+                      className="absolute bottom-0 left-0 w-full bg-kite-surface rounded-t-[16px] z-50 flex flex-col max-h-[85vh] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
                     >
                       {""}
                       <div className="flex justify-center pt-3 pb-2 shrink-0">
@@ -1015,10 +1015,10 @@ export default function Investments() {
         )}{""}
       </AnimatePresence>{""}
       <div
-        className={`w-full bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden ${showAddForm ?"hidden md:block" :"block"}`}
+        className={`w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden ${showAddForm ?"hidden md:block" :"block"}`}
       >
         {""}
-        <div className="flex flex-col divide-y divide-kite-border pb-16">
+        <div className="flex flex-col divide-y divide-kite-border border-b border-kite-border pb-16">
           {""}
           {groupedInvestments.map((inv: any) => {
             const business = state.businesses.find(
@@ -1064,7 +1064,7 @@ export default function Investments() {
             return (
               <div
                 key={inv.key}
-                className="w-full flex flex-col px-4 py-3 hover:bg-gray-50 border-b border-gray-100 transition-colors cursor-pointer group font-sans"
+                className="w-full flex flex-col px-4 py-3 hover:bg-gray-50 border-b border-kite-border-soft transition-colors cursor-pointer group font-sans"
                 onClick={() => {
                   setSelectedInvestment(inv);
                   setSelectedInvestmentIds(
@@ -1076,11 +1076,11 @@ export default function Investments() {
                 {/* Line 1: Metrics Row (Qty & Avg) */}
                 <div className="flex justify-between items-center mb-1.5 leading-tight">
                   <div className="flex items-center text-[11px] md:text-[12px]">
-                     <span className="text-[#9EA1A6] font-normal mr-1">Qty.</span>
-                     <span className="text-[#444444] font-normal tracking-wide">{qty}</span>
-                     <span className="text-[#9EA1A6] mx-1.5">•</span>
-                     <span className="text-[#9EA1A6] font-normal mr-1">Avg.</span>
-                     <span className="text-[#444444] font-normal tracking-wide">{formatINR(avgPrice).replace("₹", "")}</span>
+                     <span className="text-kite-text-light font-normal mr-1">Qty.</span>
+                     <span className="text-kite-text font-normal tracking-wide">{qty}</span>
+                     <span className="text-kite-text-light mx-1.5">•</span>
+                     <span className="text-kite-text-light font-normal mr-1">Avg.</span>
+                     <span className="text-kite-text font-normal tracking-wide">{formatINR(avgPrice).replace("₹", "")}</span>
                   </div>
                   <div className={`text-[11px] md:text-[12px] font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
                     {isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%
@@ -1089,7 +1089,7 @@ export default function Investments() {
                 {/* Line 2: Core Business Name & Absolute P&L Row */}
                 <div className="flex justify-between items-center mb-1.5 leading-tight">
                    <div className="flex items-center gap-1.5">
-                      <h3 className="text-[#444444] font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
+                      <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
                          {business?.name?.toUpperCase() || "UNKNOWN BUSINESS"}
                       </h3>
                       {business && blueTickBusinessIds.has(business.id) && (
@@ -1107,12 +1107,12 @@ export default function Investments() {
                 {/* Line 3: Footer Row (Investor Info & LTP) */}
                 <div className="flex justify-between items-center leading-tight">
                    <div className="flex items-center text-[10px] md:text-[11px]">
-                     <span className="text-[#9EA1A6] font-normal mr-1">Investor:</span>
-                     <span className="text-[#444444] font-normal uppercase tracking-wide">{investor?.name?.toUpperCase()}</span>
+                     <span className="text-kite-text-light font-normal mr-1">Investor:</span>
+                     <span className="text-kite-text font-normal uppercase tracking-wide">{investor?.name?.toUpperCase()}</span>
                    </div>
                    <div className="flex items-center text-[11px] md:text-[12px]">
-                     <span className="text-[#9EA1A6] font-normal mr-1">LTP</span>
-                     <span className="text-[#444444] font-normal tracking-wide">{formatINR(currentLTP).replace("₹", "")}</span>
+                     <span className="text-kite-text-light font-normal mr-1">LTP</span>
+                     <span className="text-kite-text font-normal tracking-wide">{formatINR(currentLTP).replace("₹", "")}</span>
                    </div>
                 </div>
               </div>
@@ -1121,7 +1121,7 @@ export default function Investments() {
           {groupedInvestments.length === 0 && (
             <div className="py-12 text-center flex flex-col items-center justify-center">
               {""}
-              <p className="text-gray-400 text-[13px] md:text-[14px] font-light">
+              <p className="text-kite-text-muted text-[13px] md:text-[14px] font-light">
                 {""}
                 No investments found.{""}
               </p>{""}
@@ -1130,9 +1130,9 @@ export default function Investments() {
         </div>{""}
         {/* Sticky Bottom Summary Bar */}{""}
         {groupedInvestments.length > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 md:relative bg-white border-t border-gray-100 px-4 py-3 flex justify-between items-center shadow-[0_-4px_10px_-2px_rgba(0,0,0,0.02)] z-30">
+          <div className="fixed bottom-0 left-0 right-0 md:relative bg-kite-surface border-t border-kite-border px-4 py-3 flex justify-between items-center shadow-[0_-4px_10px_-2px_rgba(0,0,0,0.02)] z-30">
             {""}
-            <span className="text-[11px] md:text-[12px] font-medium text-gray-500 tracking-wide">
+            <span className="text-[11px] md:text-[12px] font-medium text-kite-text-light tracking-wide">
               {""}
               Day's P&L{""}
             </span>{""}
@@ -1301,11 +1301,11 @@ export default function Investments() {
             : groupCurrentVal;
           const isProfit = holdingProfit >= 0;
           return (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center bg-white md:bg-gray-900/60 p-0 md:p-4">
+            <div className="fixed inset-0 z-[110] flex items-center justify-center bg-kite-bg md:bg-gray-900/60 dark:md:bg-gray-900/80 p-0 md:p-4">
               {""}
-              <div className="bg-white md:rounded w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl flex flex-col overflow-hidden relative">
+              <div className="bg-kite-bg md:rounded w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl flex flex-col overflow-hidden relative">
                 {""}
-                <div className="shrink-0 bg-white border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10">
+                <div className="shrink-0 bg-kite-surface border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10">
                   {""}
                   <div className="flex items-center space-x-2">
                     {""}
@@ -1347,7 +1347,7 @@ export default function Investments() {
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                                 transition={{ duration: 0.15, ease:"easeOut" }}
-                                className="absolute top-full right-0 mt-1 w-[100px] bg-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5"
+                                className="absolute top-full right-0 mt-1 w-[100px] bg-kite-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5"
                               >
                                 {""}
                                 <button
@@ -1439,7 +1439,7 @@ export default function Investments() {
                     )}{""}
                   </div>{""}
                 </div>{""}
-                <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-white">
+                <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-kite-bg">
                   {""}
                   <>
                     {""}
@@ -1462,8 +1462,8 @@ export default function Investments() {
                         <span
                           className={"inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] md:text-[11px] font-medium" +
                             (overallTrend >= 0
-                              ?"bg-[#E6F6ED] text-[#00A86B]"
-                              :"bg-[#FCEBEB] text-[#D94B4B]")
+                              ?"bg-[#E6F6ED] dark:bg-[#00A86B]/20 text-[#00A86B] dark:text-[#00A86B]"
+                              :"bg-[#FCEBEB] dark:bg-[#D94B4B]/20 text-[#D94B4B] dark:text-[#D94B4B]")
                           }
                         >
                           {""}
@@ -1603,7 +1603,7 @@ export default function Investments() {
                                   className={`block w-9 h-5 rounded-full transition-colors ${selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length ?"bg-kite-blue" :"bg-kite-border"}`}
                                 ></div>{""}
                                 <div
-                                  className={`absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform ${selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length ?"transform translate-x-4" :""}`}
+                                  className={`absolute left-0.5 top-0.5 bg-white dark:bg-kite-surface w-4 h-4 rounded-full transition-transform ${selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length ?"transform translate-x-4" :""}`}
                                 ></div>{""}
                               </div>{""}
                             </label>{""}
@@ -1949,7 +1949,7 @@ export default function Investments() {
                     />
                   )}{""}
                 {withdrawStep === 1 && (
-                  <div className="shrink-0 bg-white border-t border-kite-border p-3 md:p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+                  <div className="shrink-0 p-3 md:p-4 z-20">
                     {""}
                     <div className="md:hidden">
                       {""}
@@ -1985,13 +1985,6 @@ export default function Investments() {
                           actionType="SELL"
                           onSuccess={handleConfirmWithdraw}
                         />{""}
-                        <button
-                          onClick={() => setWithdrawStep(0)}
-                          className="mt-4 text-[13px] md:text-[14px] font-medium text-kite-blue hover:text-kite-blue-dark pb-6"
-                        >
-                          {""}
-                          Cancel{""}
-                        </button>{""}
                       </div>{""}
                     </div>{""}
                     <div className="hidden md:flex flex-col items-center">
@@ -2021,13 +2014,6 @@ export default function Investments() {
                         actionType="SELL"
                         onSuccess={handleConfirmWithdraw}
                       />{""}
-                      <button
-                        onClick={() => setWithdrawStep(0)}
-                        className="mt-3 text-[11px] md:text-[12px] font-medium text-kite-text-light hover:text-kite-text"
-                      >
-                        {""}
-                        Cancel{""}
-                      </button>{""}
                     </div>{""}
                   </div>
                 )}{""}
@@ -2043,7 +2029,7 @@ export default function Investments() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type:"spring", stiffness: 400, damping: 30 }}
-            className="fixed bottom-4 right-0 left-0 mx-4 md:left-auto md:right-8 md:mx-0 z-50 bg-white shadow-lg rounded-sm border-l-4 border-kite-blue p-4 max-w-sm flex items-start space-x-3"
+            className="fixed bottom-4 right-0 left-0 mx-4 md:left-auto md:right-8 md:mx-0 z-50 bg-kite-surface shadow-lg rounded-sm border-l-4 border-kite-blue p-4 max-w-sm flex items-start space-x-3"
           >
             {""}
             <div className="w-6 h-6 rounded-full bg-kite-blue flex items-center justify-center shrink-0 mt-0.5">

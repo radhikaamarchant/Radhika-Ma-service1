@@ -83,7 +83,7 @@ actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 
 ];
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-sm max-w-2xl w-full max-h-[90vh] overflow-auto p-6">
+      <div className="bg-white dark:bg-kite-surface rounded-sm max-w-2xl w-full max-h-[90vh] overflow-auto p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-[17px] md:text-[18px] font-medium text-kite-text">{business.name} Details</h2>
           <button onClick={() => setSelectedBusiness(null)} className="text-kite-text-light hover:text-kite-text"><X className="w-5 h-5"/></button>
@@ -104,30 +104,30 @@ actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 
 };
 
 return (
-  <div className="flex-1 overflow-auto bg-kite-bg p-4 md:p-6">
-    <div className="max-w-7xl mx-auto space-y-6">
+  <div className="flex-1 overflow-auto bg-kite-bg">
+    <div className="w-full">
       
-      <div className="flex justify-between items-center">
-        <h1 className="text-[20px] md:text-[22px] font-medium text-kite-text">Dashboard</h1>
+      <div className="flex justify-between items-center p-4 border-b border-kite-border">
+        <h1 className="text-[17px] md:text-[18px] font-medium text-kite-text uppercase">Dashboard</h1>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-kite-border border-b border-kite-border bg-white dark:bg-kite-surface">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-white p-4 rounded-sm border border-kite-border">
+          <div key={i} className="p-4">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase">{stat.label}</p>
-                <p className="text-[20px] md:text-[22px] font-medium text-kite-text mt-1">{stat.value}</p>
+                <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wider">{stat.label}</p>
+                <p className="text-[20px] md:text-[22px] font-medium text-kite-text mt-2">{stat.value}</p>
               </div>
-              <stat.icon className="w-5 h-5 text-kite-blue" />
+              <stat.icon className="w-4 h-4 text-kite-blue mt-1" />
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-sm border border-kite-border">
+      <div className="bg-white dark:bg-kite-surface mt-4 border-y border-kite-border">
         <div className="p-4 border-b border-kite-border">
-           <h2 className="text-[17px] md:text-[18px] font-medium text-kite-text">Recent Investments</h2>
+           <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text uppercase tracking-wider">Recent Investments</h2>
         </div>
         <div className="divide-y divide-kite-border">
            {recentFilteredInvestments.map(inv => {

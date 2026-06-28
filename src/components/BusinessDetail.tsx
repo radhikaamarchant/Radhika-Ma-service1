@@ -154,10 +154,10 @@ export default function BusinessDetail({
   };
 
   return (
-    <div className="bg-white flex flex-col h-full -mx-3 md:mx-0 px-0 md:px-0 md:rounded-lg animate-fade-in relative font-sans text-[#444444]">
+    <div className="bg-white dark:bg-kite-surface flex flex-col h-full -mx-3 md:mx-0 px-0 md:px-0 md:rounded-lg animate-fade-in relative font-sans text-kite-text">
       {/* Header */}
-      <div className="bg-white px-4 py-3 flex items-center border-b border-gray-100">
-        <button onClick={() => currentView === "menu" ? onBack() : setCurrentView("menu")} className="mr-4 text-[#444444]">
+      <div className="bg-white dark:bg-kite-surface px-4 py-3 flex items-center border-b border-kite-border-soft">
+        <button onClick={() => currentView === "menu" ? onBack() : setCurrentView("menu")} className="mr-4 text-kite-text">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-[17px] font-medium tracking-wide">
@@ -171,15 +171,15 @@ export default function BusinessDetail({
       </div>
 
       {currentView === "menu" && (
-        <div className="bg-white flex-1">
-          <div className="px-5 py-6 flex justify-between items-center border-b border-gray-100">
+        <div className="bg-white dark:bg-kite-surface flex-1">
+          <div className="px-5 py-6 flex justify-between items-center border-b border-kite-border-soft">
             <div>
-              <h2 className="text-[18px] md:text-[20px] font-normal text-[#444444] mb-1 tracking-wide uppercase">{business.name || "BUSINESS NAME"}</h2>
-              <p className="text-[12px] md:text-[13px] text-[#9EA1A6] tracking-widest">{business.ownerName || "Owner Name"}</p>
-              <p className="text-[12px] md:text-[13px] text-[#9EA1A6] mt-1">{business.businessId || "ID Number"}</p>
+              <h2 className="text-[18px] md:text-[20px] font-normal text-kite-text mb-1 tracking-wide uppercase">{business.name || "BUSINESS NAME"}</h2>
+              <p className="text-[12px] md:text-[13px] text-kite-text-light tracking-widest">{business.ownerName || "Owner Name"}</p>
+              <p className="text-[12px] md:text-[13px] text-kite-text-light mt-1">{business.businessId || "ID Number"}</p>
             </div>
             <div className="relative cursor-pointer shrink-0 ml-4" onClick={() => fileInputRef.current?.click()}>
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#E8F0FE] text-[#1976D2] flex items-center justify-center overflow-hidden border border-gray-100 relative">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative">
                 {business.photoUrl ? (
                   <img src={business.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -194,31 +194,31 @@ export default function BusinessDetail({
             </div>
           </div>
           
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h3 className="text-[14px] font-medium text-[#444444] mb-3">Account</h3>
+          <div className="px-5 py-4 border-b border-kite-border-soft">
+            <h3 className="text-[14px] font-medium text-kite-text mb-3">Account</h3>
             <div className="space-y-0">
               <button onClick={() => setCurrentView("funds")} className="w-full py-3.5 flex justify-between items-center group">
-                <span className="text-[14px] md:text-[15px] font-normal text-[#444444]">Funds</span>
-                <span className="text-[#444444] font-normal text-[16px]">₹</span>
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Funds</span>
+                <span className="text-kite-text font-normal text-[16px]">₹</span>
               </button>
               <div className="h-[1px] w-full bg-gray-50 my-0"></div>
               <button onClick={() => setCurrentView("profile")} className="w-full py-3.5 flex justify-between items-center group">
-                <span className="text-[14px] md:text-[15px] font-normal text-[#444444]">Profile</span>
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Profile</span>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
               </button>
               <div className="h-[1px] w-full bg-gray-50 my-0"></div>
               <button onClick={() => setCurrentView("investors")} className="w-full py-3.5 flex justify-between items-center group">
-                <span className="text-[14px] md:text-[15px] font-normal text-[#444444]">Investors details</span>
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Investors details</span>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
               </button>
               <div className="h-[1px] w-full bg-gray-50 my-0"></div>
               <button onClick={() => setCurrentView("bank")} className="w-full py-3.5 flex justify-between items-center group">
-                <span className="text-[14px] md:text-[15px] font-normal text-[#444444]">Bank details</span>
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Bank details</span>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
               </button>
               <div className="h-[1px] w-full bg-gray-50 my-0"></div>
               <button onClick={() => setCurrentView("registration")} className="w-full py-3.5 flex justify-between items-center group">
-                <span className="text-[14px] md:text-[15px] font-normal text-[#444444]">Registration Information</span>
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Registration Information</span>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
               </button>
             </div>
@@ -227,34 +227,34 @@ export default function BusinessDetail({
       )}
 
       {currentView === "funds" && (
-        <div className="p-4 md:p-6 bg-[#F8F9FA] flex-1">
-          <div className="bg-white rounded shadow-sm border border-gray-200 p-5 mb-5 text-center">
-            <p className="text-[12px] md:text-[13px] text-[#9EA1A6] font-normal mb-1 flex items-center justify-center gap-1">
-              Available balance <Info className="w-3.5 h-3.5 text-[#1976D2]" />
+        <div className="p-4 md:p-6 bg-[#F8F9FA] dark:bg-kite-bg flex-1">
+          <div className="bg-white dark:bg-kite-surface rounded shadow-sm border border-kite-border-hard p-5 mb-5 text-center">
+            <p className="text-[12px] md:text-[13px] text-kite-text-light font-normal mb-1 flex items-center justify-center gap-1">
+              Available balance <Info className="w-3.5 h-3.5 text-kite-blue" />
             </p>
-            <p className="text-[26px] md:text-[32px] font-normal text-[#1976D2] tracking-wide mb-2">
+            <p className="text-[26px] md:text-[32px] font-normal text-kite-blue tracking-wide mb-2">
               {unifiedBalance >= 0 ? "" : "-"}₹{formatINR(Math.abs(unifiedBalance)).replace("₹", "")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 mb-6">
-            <div className="bg-white rounded p-4 border border-gray-200 shadow-sm">
+            <div className="bg-white dark:bg-kite-surface rounded p-4 border border-kite-border-hard shadow-sm">
                <div className="space-y-4">
                   <div>
-                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-[#9EA1A6] uppercase">Funding Required (₹)</label>
+                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Funding Required (₹)</label>
                     <input
                       type="number"
-                      className="w-full border-b border-gray-300 py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-[#444444] focus:border-[#1976D2] outline-none"
+                      className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                       value={formData.fundingRequired}
                       onChange={(e) => setFormData({...formData, fundingRequired: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-[#9EA1A6] uppercase">Interest Rate (%)</label>
+                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Interest Rate (%)</label>
                     <input
                       type="number"
                       step="0.1"
-                      className="w-full border-b border-gray-300 py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-[#444444] focus:border-[#1976D2] outline-none"
+                      className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                       value={formData.interestRate}
                       onChange={(e) => setFormData({...formData, interestRate: e.target.value})}
                     />
@@ -266,61 +266,61 @@ export default function BusinessDetail({
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded">
-            <div className="px-4 py-3 flex justify-between items-center border-b border-gray-100">
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">Opening balance</span>
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">{formatINR(business.fundingRequired).replace("₹", "")}</span>
+          <div className="bg-white dark:bg-kite-surface border border-kite-border-hard rounded">
+            <div className="px-4 py-3 flex justify-between items-center border-b border-kite-border-soft">
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">Opening balance</span>
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">{formatINR(business.fundingRequired).replace("₹", "")}</span>
             </div>
-            <div className="px-4 py-3 flex justify-between items-center border-b border-gray-100">
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">Payin</span>
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">{formatINR(payin).replace("₹", "")}</span>
+            <div className="px-4 py-3 flex justify-between items-center border-b border-kite-border-soft">
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">Payin</span>
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">{formatINR(payin).replace("₹", "")}</span>
             </div>
-            <div className="px-4 py-3 flex justify-between items-center border-b border-gray-100">
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">Payout</span>
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">{formatINR(payout).replace("₹", "")}</span>
+            <div className="px-4 py-3 flex justify-between items-center border-b border-kite-border-soft">
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">Payout</span>
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">{formatINR(payout).replace("₹", "")}</span>
             </div>
-            <div className="px-4 py-3 flex justify-between items-center border-b border-gray-100">
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">Authorities</span>
-              <span className="text-[13px] md:text-[14px] font-normal text-[#444444]">{formatINR(authoritiesAssistance).replace("₹", "")}</span>
+            <div className="px-4 py-3 flex justify-between items-center border-b border-kite-border-soft">
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">Authorities</span>
+              <span className="text-[13px] md:text-[14px] font-normal text-kite-text">{formatINR(authoritiesAssistance).replace("₹", "")}</span>
             </div>
           </div>
         </div>
       )}
 
       {currentView === "profile" && (
-        <div className="p-4 md:p-6 bg-white flex-1 space-y-5">
+        <div className="p-4 md:p-6 bg-white dark:bg-kite-surface flex-1 space-y-5">
            <div>
-             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-[#9EA1A6] uppercase">Business Name</label>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Business Name</label>
              <input
                type="text"
-               className="w-full border-b border-gray-300 py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-[#444444] focus:border-[#1976D2] outline-none"
+               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                value={formData.name}
                onChange={(e) => setFormData({...formData, name: e.target.value})}
              />
            </div>
            <div>
-             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-[#9EA1A6] uppercase">Description</label>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Description</label>
              <textarea
-               className="w-full border-b border-gray-300 py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-[#444444] focus:border-[#1976D2] outline-none resize-none h-16"
+               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none resize-none h-16"
                value={formData.description}
                onChange={(e) => setFormData({...formData, description: e.target.value})}
              />
            </div>
            <div>
-             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-[#9EA1A6] uppercase">Location</label>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Location</label>
              <input
                type="text"
-               className="w-full border-b border-gray-300 py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-[#444444] focus:border-[#1976D2] outline-none"
+               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                value={formData.location}
                onChange={(e) => setFormData({...formData, location: e.target.value})}
              />
            </div>
            <div className="pt-4 flex justify-end gap-3">
-             <button onClick={() => setCurrentView("menu")} className="px-5 py-2 text-[#444444] border border-gray-300 rounded font-normal text-[14px]">Cancel</button>
-             <button onClick={handleSaveProfile} className="px-5 py-2 bg-[#1976D2] text-white rounded font-normal text-[14px]">Save Changes</button>
+             <button onClick={() => setCurrentView("menu")} className="px-5 py-2 text-kite-text border border-kite-border-hard rounded font-normal text-[14px]">Cancel</button>
+             <button onClick={handleSaveProfile} className="px-5 py-2 bg-kite-blue text-white rounded font-normal text-[14px]">Save Changes</button>
            </div>
            {onDelete && (
-             <div className="pt-8 border-t border-gray-100 mt-8">
+             <div className="pt-8 border-t border-kite-border-soft mt-8">
                <button onClick={onDelete} className="w-full text-center text-[#FF5722] border border-[#FF5722] hover:bg-[#FF5722]/5 rounded py-3 font-normal text-[14px] transition-colors">
                  Delete Business
                </button>
@@ -330,35 +330,35 @@ export default function BusinessDetail({
       )}
 
       {currentView === "investors" && (
-        <div className="bg-[#F8F9FA] flex-1">
-          <div className="bg-white mb-2 py-4 px-5 border-b border-gray-100 flex justify-between items-center">
-             <p className="text-[13px] md:text-[14px] text-[#444444] font-normal">Total funded</p>
-             <p className="text-[18px] md:text-[20px] font-normal text-[#444444]">{formatINR(totalFunded).replace("₹", "")}</p>
+        <div className="bg-[#F8F9FA] dark:bg-kite-bg flex-1">
+          <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
+             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total funded</p>
+             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalFunded).replace("₹", "")}</p>
           </div>
-          <div className="bg-white mb-2 py-4 px-5 border-b border-gray-100 flex justify-between items-center">
-             <p className="text-[13px] md:text-[14px] text-[#444444] font-normal">Investors</p>
-             <p className="text-[18px] md:text-[20px] font-normal text-[#444444]">{activeBusinessInvestments.length}</p>
+          <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
+             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Investors</p>
+             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{activeBusinessInvestments.length}</p>
           </div>
           
-          <div className="bg-white pt-2 border-b border-gray-100 mt-4">
-             <h3 className="px-5 py-3 text-[14px] font-normal text-[#9EA1A6] border-b border-gray-100 uppercase tracking-wider">Current investor</h3>
-             <div className="divide-y divide-gray-100">
+          <div className="bg-white dark:bg-kite-surface pt-2 border-b border-kite-border-soft mt-4">
+             <h3 className="px-5 py-3 text-[14px] font-normal text-kite-text-light border-b border-kite-border-soft uppercase tracking-wider">Current investor</h3>
+             <div className="divide-y divide-kite-border-soft">
                {businessInvestments.map(inv => {
                  const investor = state.investors.find(i => i.id === inv.investorId);
                  return (
                    <div key={inv.id} className="p-4 flex justify-between items-center px-5">
                       <div>
-                        <p className="text-[14px] md:text-[15px] font-normal text-[#444444]">{investor?.name || "Unknown"}</p>
-                        <p className="text-[12px] md:text-[13px] text-[#9EA1A6] mt-0.5">{inv.timePeriodMonths} Months • <span className={inv.status === "active" ? "text-[#4CAF50]" : "text-[#9EA1A6]"}>{inv.status}</span></p>
+                        <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{investor?.name || "Unknown"}</p>
+                        <p className="text-[12px] md:text-[13px] text-kite-text-light mt-0.5">{inv.timePeriodMonths} Months • <span className={inv.status === "active" ? "text-[#4CAF50]" : "text-kite-text-light"}>{inv.status}</span></p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[14px] md:text-[15px] font-normal text-[#444444]">{formatINR(inv.amount).replace("₹", "")}</p>
+                        <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{formatINR(inv.amount).replace("₹", "")}</p>
                       </div>
                    </div>
                  )
                })}
                {businessInvestments.length === 0 && (
-                 <div className="p-6 text-center text-[#9EA1A6] text-[13px] font-normal">
+                 <div className="p-6 text-center text-kite-text-light text-[13px] font-normal">
                    No investors found.
                  </div>
                )}
@@ -368,28 +368,28 @@ export default function BusinessDetail({
       )}
 
       {currentView === "bank" && (
-        <div className="bg-white flex-1 p-4 md:p-6 space-y-5">
+        <div className="bg-white dark:bg-kite-surface flex-1 p-4 md:p-6 space-y-5">
            {business.bankDetails ? (
              <div className="space-y-5">
-                <div className="border-b border-gray-100 pb-4">
-                  <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">Bank Name</p>
-                  <p className="text-[14px] md:text-[15px] font-normal text-[#444444]">{business.bankDetails.bankName}</p>
+                <div className="border-b border-kite-border-soft pb-4">
+                  <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Bank Name</p>
+                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{business.bankDetails.bankName}</p>
                 </div>
-                <div className="border-b border-gray-100 pb-4">
-                  <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">Account Number</p>
-                  <p className="text-[14px] md:text-[15px] font-normal text-[#444444] font-mono tracking-wider">{business.bankDetails.accountNumber}</p>
+                <div className="border-b border-kite-border-soft pb-4">
+                  <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Account Number</p>
+                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text font-mono tracking-wider">{business.bankDetails.accountNumber}</p>
                 </div>
-                <div className="border-b border-gray-100 pb-4">
-                  <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">IFSC</p>
-                  <p className="text-[14px] md:text-[15px] font-normal text-[#444444] font-mono tracking-wider">{business.bankDetails.ifscCode}</p>
+                <div className="border-b border-kite-border-soft pb-4">
+                  <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">IFSC</p>
+                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text font-mono tracking-wider">{business.bankDetails.ifscCode}</p>
                 </div>
-                <div className="border-b border-gray-100 pb-4">
-                  <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">Account Holder</p>
-                  <p className="text-[14px] md:text-[15px] font-normal text-[#444444] uppercase">{business.bankDetails.accountHolderName}</p>
+                <div className="border-b border-kite-border-soft pb-4">
+                  <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Account Holder</p>
+                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text uppercase">{business.bankDetails.accountHolderName}</p>
                 </div>
              </div>
            ) : (
-             <div className="text-center py-10 text-[#9EA1A6] text-[14px] font-normal">
+             <div className="text-center py-10 text-kite-text-light text-[14px] font-normal">
                No bank details recorded.
              </div>
            )}
@@ -397,22 +397,22 @@ export default function BusinessDetail({
       )}
 
       {currentView === "registration" && (
-        <div className="bg-white flex-1 p-4 md:p-6 space-y-5">
-           <div className="border-b border-gray-100 pb-4">
-             <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">Date Registered</p>
-             <p className="text-[14px] md:text-[15px] font-normal text-[#444444]">{new Date(business.registrationDate).toLocaleDateString("en-IN")}</p>
+        <div className="bg-white dark:bg-kite-surface flex-1 p-4 md:p-6 space-y-5">
+           <div className="border-b border-kite-border-soft pb-4">
+             <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Date Registered</p>
+             <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{new Date(business.registrationDate).toLocaleDateString("en-IN")}</p>
            </div>
-           <div className="border-b border-gray-100 pb-4">
-             <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">Commission Paid</p>
-             <p className="text-[14px] md:text-[15px] font-normal text-[#444444]">{formatINR(business.registrationCommissionPaid)}</p>
+           <div className="border-b border-kite-border-soft pb-4">
+             <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Commission Paid</p>
+             <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{formatINR(business.registrationCommissionPaid)}</p>
            </div>
-           <div className="border-b border-gray-100 pb-4">
-             <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">Tax Collected</p>
-             <p className="text-[14px] md:text-[15px] font-normal text-[#444444]">{formatINR(business.taxPaid)}</p>
+           <div className="border-b border-kite-border-soft pb-4">
+             <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Tax Collected</p>
+             <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{formatINR(business.taxPaid)}</p>
            </div>
-           <div className="border-b border-gray-100 pb-4">
-             <p className="text-[11px] md:text-[12px] text-[#9EA1A6] uppercase tracking-wide font-normal mb-1">Setup Revenue</p>
-             <p className="text-[15px] md:text-[16px] font-normal text-[#1976D2]">{formatINR(business.registrationCommissionPaid + business.taxPaid)}</p>
+           <div className="border-b border-kite-border-soft pb-4">
+             <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Setup Revenue</p>
+             <p className="text-[15px] md:text-[16px] font-normal text-kite-blue">{formatINR(business.registrationCommissionPaid + business.taxPaid)}</p>
            </div>
         </div>
       )}

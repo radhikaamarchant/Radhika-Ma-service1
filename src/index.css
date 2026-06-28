@@ -7,15 +7,17 @@
   --font-sans: "Inter", sans-serif;
   
   /* Zerodha Kite Color Palette */
-  --color-kite-blue: #387ED1;
-  --color-kite-blue-dark: #2F6FC2;
+  --color-kite-blue: #387DFF;
+  --color-kite-blue-dark: #2F6FEA;
   --color-kite-green: #16a34a;
   --color-kite-red: #df514c;
   
   --color-kite-text: var(--text-color);
   --color-kite-text-light: var(--text-light-color);
+  --color-kite-text-muted: var(--text-muted-color);
   --color-kite-border: var(--border-color);
   --color-kite-border-soft: var(--border-color-soft);
+  --color-kite-border-hard: var(--border-color-hard);
   --color-kite-bg: var(--bg-color-alt);
   --color-kite-surface: var(--surface-color);
 
@@ -30,45 +32,206 @@
 }
 
 :root {
-  --text-color: #1F2937;
-  --text-light-color: #6B7280;
-  --text-muted-color: #9CA3AF;
+  --text-color: #424242;
+  --text-light-color: #70757F;
+  --text-muted-color: #9AA3AF;
   
-  --body-bg: #F7F8FA;
+  --body-bg: #FFFFFF;
   --surface-color: #FFFFFF;
-  --bg-color-alt: #F2F3F5;
-  --bg-hover: #EEF4FF;
-  --bg-selected: #E8F2FF;
-  --bg-focus: #D8E9FF;
+  --bg-color-alt: #FFFFFF;
+  --bg-hover: #F9F9F9;
+  --bg-selected: #F9F9F9;
+  --bg-focus: #F0F0F0;
   
-  --border-color: #E5E7EB;
-  --border-color-soft: #ECECEC;
+  --border-color: #ECEFF3;
+  --border-color-soft: #F3F4F6;
   --border-color-hard: #E5E7EB;
   
-  --black-color: #111111;
+  --black-color: #424242;
   --white-color: #FFFFFF;
 }
 
 :root.dark {
-  --color-kite-blue: #4F8EF7;
+  --color-kite-blue: #4A8DF7;
   
-  --text-color: #F5F5F5;
-  --text-light-color: #B7BDC6;
-  --text-muted-color: #8D939C;
+  --text-color: #FFFFFF;
+  --text-light-color: #B8B8B8;
+  --text-muted-color: #707070;
   
-  --body-bg: #0F1115;
-  --surface-color: #181B21;
-  --bg-color-alt: #20242C;
-  --bg-hover: #252A33;
-  --bg-selected: #283547;
+  --body-bg: #181818;
+  --surface-color: #202020;
+  --bg-color-alt: #282828;
+  --bg-hover: #242424;
+  --bg-selected: #2C2C2C;
   
-  --border-color: #2B3038;
-  --border-color-soft: #2F343D;
-  --border-color-hard: #2B3038;
+  --border-color: #303030;
+  --border-color-soft: #303030;
+  --border-color-hard: #303030;
   
   --black-color: #FFFFFF; 
-  --white-color: #181B21;
+  --white-color: #202020;
 }
+
+.dark button:disabled, 
+.dark input:disabled,
+.dark .disabled\:opacity-70:disabled {
+  background-color: #404040 !important;
+  color: #707070 !important;
+  opacity: 1 !important;
+}
+
+/* Force Zerodha Kite Dark Theme */
+  :root.dark {
+    --text-color: #FFFFFF;
+    --text-light-color: #B8B8B8;
+    --text-muted-color: #707070;
+    
+    --body-bg: #181818;
+    --surface-color: #202020;
+    --bg-color-alt: #282828;
+    --header-bg: #181818;
+    --sidebar-bg: #181818;
+    
+    --bg-hover: #242424;
+    --bg-selected: #2C2C2C;
+    
+    --border-color: #303030;
+    --border-color-soft: #303030;
+    --border-color-hard: #303030;
+    
+    --color-kite-blue: #4A8DF7;
+    --color-kite-green: #4CAF50;
+    --color-kite-red: #E53935;
+    
+    --accent-orange: #FF6D2D;
+    --accent-hover: #FF8148;
+    
+    --black-color: #FFFFFF;
+    --white-color: #202020;
+  }
+
+  @media (max-width: 1023px) {
+    :root.dark {
+      --body-bg: #171F2A;
+      --surface-color: #222D3D;
+      --bg-color-alt: #222D3D;
+      --header-bg: #202B3A;
+      --sidebar-bg: #202B3A;
+      --border-color: #313C4D;
+      --border-color-soft: #313C4D;
+      --border-color-hard: #313C4D;
+      
+      --text-color: #F5F7FA;
+      --text-light-color: #9CA7B7;
+      --text-muted-color: #7D8796;
+      
+      --color-kite-blue: #4C8DFF;
+      --color-kite-blue-dark: #3B82F6;
+      
+      --color-kite-green: #6CCB5F;
+      --color-kite-red: #E86A6A;
+    }
+  }
+
+  /* Force background and text colors to match dark mode */
+  .dark body {
+    background-color: var(--body-bg) !important;
+    color: var(--text-color) !important;
+  }
+  
+  .dark .bg-white, .dark .dark\:bg-kite-surface {
+    background-color: var(--surface-color) !important;
+  }
+  
+  .dark button:disabled, 
+  .dark input:disabled,
+  .dark .disabled\:opacity-70:disabled {
+    background-color: #404040 !important;
+    color: #707070 !important;
+    opacity: 1 !important;
+  }
+  
+  .dark .bg-gray-50, .dark .bg-gray-100, .dark .dark\:bg-kite-bg {
+    background-color: var(--body-bg) !important;
+  }
+
+  .dark .hover\:bg-gray-50:hover, .dark .hover\:bg-gray-100:hover, .dark .dark\:hover\:bg-kite-surface:hover, .dark .hover\:bg-kite-bg:hover, .dark .group:hover .group-hover\:bg-gray-50 {
+    background-color: var(--bg-hover) !important;
+  }
+
+  /* Specific overrides for sections */
+  .dark header, .dark .header, .dark .top-nav {
+    background-color: var(--header-bg) !important;
+  }
+  
+  .dark .sidebar-container, .dark .sidebar-container > div {
+    background-color: var(--sidebar-bg) !important;
+  }
+  
+  .dark .main-container {
+    background-color: var(--body-bg) !important;
+  }
+
+  /* Forcing borders */
+  .dark .border, .dark .border-b, .dark .border-t, .dark .border-r, .dark .border-l, .dark .border-y, .dark .border-x, 
+  .dark .border-kite-border, .dark .border-kite-border-soft, .dark .border-kite-border-hard, .dark .border-gray-100, .dark .border-gray-200, .dark .border-gray-300 {
+    border-color: var(--border-color) !important;
+  }
+
+  /* Force shadow removal and rounded borders per rules */
+  .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl, .shadow-\[.*\] {
+    box-shadow: none !important;
+  }
+
+  /* Enforce 8px radius for cards/inputs */
+  .rounded, .rounded-md, .rounded-sm, .rounded-lg, .rounded-xl {
+    border-radius: 8px !important;
+  }
+  
+  /* Text overrides */
+  .dark .text-gray-900, .dark .text-black, .dark .text-gray-800, .dark .text-kite-text {
+    color: var(--text-color) !important;
+  }
+  
+  .dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-400, .dark .text-kite-text-light {
+    color: var(--text-light-color) !important;
+  }
+  
+  .dark .text-gray-400, .dark .text-gray-500 {
+    color: var(--text-muted-color) !important;
+  }
+
+  .dark .text-green-500, .dark .text-green-600, .dark .text-green-400, .dark .text-kite-green, .dark .text-emerald-500 {
+    color: var(--color-kite-green) !important;
+  }
+
+  .dark .text-red-500, .dark .text-red-600, .dark .text-red-400, .dark .text-kite-red {
+    color: var(--color-kite-red) !important;
+  }
+
+  /* Override links/active nav */
+  .dark .text-kite-blue {
+    color: var(--color-kite-blue) !important;
+  }
+  .dark .border-kite-blue {
+    border-color: var(--color-kite-blue) !important;
+  }
+
+  .dark input, .dark select, .dark textarea {
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+    border-radius: 8px !important;
+  }
+  .dark input::placeholder, .dark textarea::placeholder {
+    color: var(--text-light-color) !important;
+  }
+
+  /* Compact table rows */
+  td, th {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
 
 /* Maintain true white color for colored elements in dark mode */
 :root.dark :where([class*="bg-kite-blue"], [class*="bg-blue-"], [class*="bg-kite-red"], [class*="bg-kite-green"], [class*="bg-green-"], [class*="bg-red-"]) {
@@ -108,6 +271,13 @@
 
 body { font-family: var(--font-sans); font-weight: 400; background-color: var(--body-bg); color: var(--text-color); -webkit-font-smoothing: antialiased; }
 
+:root:not(.dark) .bg-white,
+:root:not(.dark) .bg-gray-50,
+:root:not(.dark) .bg-gray-100,
+:root:not(.dark) .bg-[#F8F9FA] {
+  background-color: var(--body-bg) !important;
+}
+
 /* Kite specific utility classes for scrollbars and clean looks */
 ::-webkit-scrollbar {
   width: 6px;
@@ -119,6 +289,10 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
 ::-webkit-scrollbar-thumb {
   background: var(--border-color); 
   border-radius: 4px;
+}
+
+*, body, .font-mono, .font-sans {
+  font-family: "Inter", sans-serif !important;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-light-color); 
@@ -136,4 +310,23 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
   body {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* Hide scrollbars on mobile for a cleaner app-like feel */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    scrollbar-width: none;
+  }
+}
+
+/* Ensure buttons with colored backgrounds have light text in dark mode */
+.dark button[class*="bg-kite-blue"],
+.dark button[class*="bg-blue-"],
+.dark button[class*="bg-black"],
+.dark button.bg-kite-blue,
+.dark .bg-kite-blue button,
+.dark .bg-kite-blue,
+.dark .bg-blue-500 {
+  color: #ffffff !important;
 }

@@ -282,7 +282,7 @@ export default function MyPnL() {
   };
   if (showStatement) {
     return (
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:p-4 pb-6 border-b border-kite-border print:hidden">
           <div className="flex items-center space-x-4">
             <button
@@ -301,7 +301,7 @@ export default function MyPnL() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center space-x-2 bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm px-3 py-2">
+            <div className="flex items-center space-x-2 bg-transparent border-b border-kite-border px-3 py-2">
               <Calendar className="w-3 md:w-4 h-3 md:h-4 text-kite-text-light" />
               <input
                 type="date"
@@ -311,7 +311,7 @@ export default function MyPnL() {
               />
             </div>
             <span className="text-kite-text-light">to</span>
-            <div className="flex items-center space-x-2 bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm px-3 py-2">
+            <div className="flex items-center space-x-2 bg-transparent border-b border-kite-border px-3 py-2">
               <Calendar className="w-3 md:w-4 h-3 md:h-4 text-kite-text-light" />
               <input
                 type="date"
@@ -329,7 +329,7 @@ export default function MyPnL() {
         </div>
         <div
           id="pnl-statement-table"
-          className="bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden"
+          className="bg-white dark:bg-kite-surface border-t border-kite-border overflow-hidden"
         >
           <div className="hidden print:block p-2 md:p-4 mb-4 md:mb-8">
             <h2 className="text-[11px] md:text-[12px] font-medium text-kite-text tracking-tight border-b-2 border-black pb-2 mb-4">
@@ -369,7 +369,7 @@ export default function MyPnL() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-[13px] md:text-[14px]">
+              <tbody className="divide-y divide-kite-border-soft text-[13px] md:text-[14px]">
                 {filteredStatement.length === 0 ? (
                   <tr>
                     <td
@@ -410,7 +410,7 @@ export default function MyPnL() {
                       >
                         <button
                           onClick={() => setSelectedBill(row)}
-                          className="px-3 py-1 bg-white border border-kite-border text-[11px] md:text-[12px] rounded-sm hover:bg-kite-bg transition-colors text-kite-text inline-flex items-center space-x-1"
+                          className="px-3 py-1 bg-white dark:bg-kite-surface border border-kite-border text-[11px] md:text-[12px] rounded-sm hover:bg-kite-bg transition-colors text-kite-text inline-flex items-center space-x-1"
                         >
                           <FileText className="w-3 md:w-3.5 h-3 md:h-3.5" />
                           <span>View Bill</span>
@@ -423,14 +423,14 @@ export default function MyPnL() {
             </table>
           </div>
           {/* Mobile View */}{""}
-          <div className="block md:hidden divide-y divide-gray-100">
+          <div className="block md:hidden divide-y divide-kite-border-soft">
             {filteredStatement.length === 0 ? (
               <div className="py-12 text-center text-kite-text-light uppercase tracking-widest text-[11px] md:text-[12px]">
                 No Records Found.
               </div>
             ) : (
               filteredStatement.map((row) => (
-                <div key={`pnl_mob_${row.id}`} className="p-2 md:p-4 bg-white">
+                <div key={`pnl_mob_${row.id}`} className="p-2 md:p-4 bg-white dark:bg-kite-surface">
                   <div className="flex justify-between items-start mb-2">
                     <span className="font-medium text-kite-text">
                       {row.title}
@@ -468,7 +468,7 @@ export default function MyPnL() {
         </div>
         {selectedBill && (
           <div className="fixed inset-0 z-[60] bg-black/60 flex flex-col items-center justify-center p-2 md:p-4 print:hidden backdrop-blur-sm">
-            <div className="bg-white max-w-lg w-full rounded-sm relative flex flex-col">
+            <div className="bg-white dark:bg-kite-surface max-w-lg w-full rounded-sm relative flex flex-col">
               <div className="flex justify-between items-center p-2 md:p-4 border-b border-kite-border">
                 <h3 className="text-[11px] md:text-[12px] tracking-tight text-kite-text flex items-center">
                   RADHIKA MA
@@ -490,7 +490,7 @@ export default function MyPnL() {
                   </button>
                 </div>
               </div>
-              <div id="pnl-bill-receipt" className="bg-white">
+              <div id="pnl-bill-receipt" className="bg-white dark:bg-kite-surface">
                 <div className="p-2 md:p-4 space-y-6">
                   <div className="text-center pb-6 border-b border-dashed border-kite-border relative">
                     <p className="text-[11px] md:text-[12px] uppercase tracking-widest text-kite-text-light mb-1">
@@ -557,7 +557,7 @@ export default function MyPnL() {
     );
   }
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="w-full space-y-8">
       <div>
         <h2 className="text-[11px] md:text-[12px] font-medium text-kite-text tracking-tight">
           MY P&L Overview
@@ -568,7 +568,7 @@ export default function MyPnL() {
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-        <div className="bg-white rounded-none md:rounded-sm border-y border-x-0 md:border-x border-kite-border p-2 md:p-4 md:p-4">
+        <div className="bg-transparent border-y md:border-t border-kite-border p-2 md:p-4">
           <div className="flex items-center justify-between gap-2 md:p-4 mb-3 md:mb-6">
             <span className="uppercase tracking-widest text-[11px] md:text-[12px] text-kite-blue">
               RMAS Profit Balance
@@ -584,7 +584,7 @@ export default function MyPnL() {
             </p>
           </div>
         </div>
-        <div className="bg-white rounded-none md:rounded-sm border-y border-x-0 md:border-x border-kite-border p-2 md:p-4 md:p-4">
+        <div className="bg-transparent border-y md:border-t border-kite-border p-2 md:p-4">
           <div className="flex items-center justify-between gap-2 md:p-4 mb-3 md:mb-6">
             <span className="uppercase tracking-widest text-[11px] md:text-[12px] text-blue-600">
               HPG ITC TAX

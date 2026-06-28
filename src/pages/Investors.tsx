@@ -422,7 +422,7 @@ export default function Investors() {
     );
   };
   return (
-    <div className="max-w-6xl mx-auto space-y-3 sm:space-y-6 print:m-0 print:p-0">
+    <div className="w-full space-y-3 sm:space-y-6 print:m-0 print:p-0">
       {" "}
       {/* --- Hide this whole container during print --- */}{" "}
       <div className="print:hidden space-y-3 sm:space-y-6">
@@ -476,7 +476,7 @@ export default function Investors() {
                         <Search className="w-[18px] h-[18px] text-kite-blue" />{" "}
                       </button>
                     ) : (
-                      <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white md:bg-transparent rounded-sm h-[36px]">
+                      <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white dark:bg-kite-surface md:bg-transparent rounded-sm h-[36px]">
                         {" "}
                         <button
                           onClick={() => {
@@ -511,11 +511,11 @@ export default function Investors() {
                 </div>{" "}
               </div>
             </div>{" "}
-            <div className="w-full bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden sticky top-0 z-10 md:mt-4">
+            <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden z-10 md:mt-0">
               <div className="overflow-hidden">
                 {" "}
                 {/* Desktop Table View */}{" "}
-                <div className="flex flex-col divide-y divide-kite-border">
+                <div className="flex flex-col divide-y divide-kite-border border-b border-kite-border">
                   {" "}
                   {filteredInvestors.map((investor) => {
                     const activeInvs = state.investments.filter(
@@ -576,7 +576,7 @@ export default function Investors() {
                           setSelectedInvestor(investor);
                           setViewMode("investor-detail");
                         }}
-                        className="flex items-center justify-between p-3 md:p-4 bg-white hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group active:bg-gray-100"
+                        className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-kite-surface hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group active:bg-gray-100"
                       >
                         {" "}
                         <div className="flex flex-col flex-1">
@@ -628,7 +628,7 @@ export default function Investors() {
           </>
         )}{" "}
         {viewMode === "add-step-1" && (
-          <div className="w-full max-w-xl mx-auto bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded md:shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
+          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
               <div className="h-full bg-kite-blue w-1/2 transition-all duration-300"></div>
             </div>
@@ -655,7 +655,7 @@ export default function Investors() {
             <div className="flex flex-col md:flex-row gap-3 mb-6 border-b border-kite-border pb-4">
               <button
                 type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white text-gray-500 border-kite-border hover:bg-gray-50"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50"}`}
                 onClick={() => {
                   setOwnerMode("new");
                   setFormData({
@@ -673,7 +673,7 @@ export default function Investors() {
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white text-gray-500 border-kite-border hover:bg-gray-50"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50"}`}
                 onClick={() => setOwnerMode("existing")}
               >
                 Already Registered Owner
@@ -706,7 +706,7 @@ export default function Investors() {
                     onFocus={() => setShowOwnerSelect(true)}
                   />
                   {showOwnerSelect && (
-                    <div className="absolute top-full left-0 w-full mt-1 bg-white border border-kite-border rounded max-h-48 overflow-y-auto z-50 shadow-lg">
+                    <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-kite-surface border border-kite-border rounded max-h-48 overflow-y-auto z-50 shadow-lg">
                       {Array.from(
                         new Set(state.businesses.map((b) => b.ownerName)),
                       )
@@ -815,7 +815,7 @@ export default function Investors() {
           </div>
         )}
         {viewMode === "add-step-2" && (
-          <div className="w-full max-w-xl mx-auto bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded md:shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
+          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
               <div className="h-full bg-kite-blue w-full transition-all duration-300"></div>
             </div>
@@ -1054,39 +1054,39 @@ export default function Investors() {
             const isProfit = curValue - activeTotalInvested >= 0;
 
             return (
-              <div className="w-full h-full min-h-screen bg-gray-50 md:bg-transparent md:max-w-6xl md:mx-auto md:mt-8 animate-fade-in pb-20">
+              <div className="w-full bg-white dark:bg-kite-bg md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-fade-in">
                 {/* Header and Tabs */}
-                <div className="bg-gray-50 pt-4 px-4 md:px-6 relative z-10 border-b border-gray-200 md:border-none">
+                <div className="bg-white dark:bg-kite-bg pt-4 px-4 md:px-6 relative z-10 border-b border-kite-border md:border-none">
                   <div className="flex items-center mb-6">
                     <button
                       onClick={() => setViewMode("list")}
-                      className="text-gray-700 hover:text-black transition-colors mr-3 p-1 -ml-1 rounded-full hover:bg-gray-200"
+                      className="text-kite-text-light hover:text-kite-text transition-colors mr-3 p-1 -ml-1 rounded-full hover:bg-kite-bg"
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     </button>
-                    <h2 className="text-[22px] md:text-[24px] font-bold text-gray-900 tracking-tight flex items-center">
+                    <h2 className="text-[22px] md:text-[24px] font-bold text-kite-text tracking-tight flex items-center">
                       Portfolio
-                      <span className="text-gray-500 font-medium text-[13px] md:text-[14px] ml-3 mt-1 tracking-normal uppercase">
+                      <span className="text-kite-text-light font-medium text-[13px] md:text-[14px] ml-3 mt-1 tracking-normal uppercase">
                         {selectedInvestor.name || ""}
                       </span>
                     </h2>
                   </div>
                   <div className="flex items-center gap-6">
                     <button
-                      className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "holdings" ? "border-blue-600 text-blue-600 font-medium" : "border-transparent text-gray-600 hover:text-gray-900 font-medium"}`}
+                      className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "holdings" ? "border-kite-blue text-kite-blue font-medium" : "border-transparent text-kite-text-light hover:text-kite-text font-medium"}`}
                       onClick={() => setWithdrawTab("holdings")}
                     >
                       Holdings
-                      <span className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "holdings" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}>
+                      <span className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "holdings" ? "bg-kite-blue text-white" : "bg-kite-bg text-kite-text"}`}>
                         {holdings.length}
                       </span>
                     </button>
                     <button
-                      className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "positions" ? "border-blue-600 text-blue-600 font-medium" : "border-transparent text-gray-600 hover:text-gray-900 font-medium"}`}
+                      className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "positions" ? "border-kite-blue text-kite-blue font-medium" : "border-transparent text-kite-text-light hover:text-kite-text font-medium"}`}
                       onClick={() => setWithdrawTab("positions")}
                     >
                       Positions
-                      <span className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "positions" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}>
+                      <span className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "positions" ? "bg-kite-blue text-white" : "bg-kite-bg text-kite-text"}`}>
                         {positions.length}
                       </span>
                     </button>
@@ -1094,11 +1094,11 @@ export default function Investors() {
                 </div>
 
                 {withdrawTab === "holdings" && (
-                  <div className="bg-gray-50 md:bg-white md:border md:border-kite-border md:rounded-sm overflow-hidden">
+                  <div className="bg-transparent md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
-                        <thead className="bg-white border-b border-kite-border text-kite-text-light">
+                        <thead className="bg-white dark:bg-kite-surface border-b border-kite-border text-kite-text-light">
                           <tr>
                             <th className="py-3 px-4 font-normal text-left">Instrument</th>
                             <th className="py-3 px-4 font-normal text-right">Qty.</th>
@@ -1109,7 +1109,7 @@ export default function Investors() {
                             <th className="py-3 px-4 font-normal text-right">% Chg</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 bg-white">
+                        <tbody className="divide-y divide-kite-border-soft bg-white dark:bg-kite-surface">
                           {holdings.length === 0 ? (
                             <tr>
                               <td colSpan={7}>
@@ -1182,7 +1182,7 @@ export default function Investors() {
                       ) : (
                         <>
                           {/* Kite Style Top Summary Card - Full Width on Mobile */}
-                          <div className="bg-white px-4 py-4 mb-2">
+                          <div className="bg-transparent px-4 py-4 border-b border-kite-border-soft">
                             <div className="flex justify-between items-start mb-4">
                               <div>
                                 <p className="text-[12px] text-kite-text-light mb-1">Invested</p>
@@ -1193,7 +1193,7 @@ export default function Investors() {
                                 <p className="text-[18px] text-kite-text font-normal" style={{ fontFamily: sfProFont }}>{formatINR(curValue).replace("₹", "")}</p>
                               </div>
                             </div>
-                            <div className="h-[1px] w-full bg-gray-100 mb-4"></div>
+                            <div className="h-[1px] w-full bg-kite-border-soft mb-4"></div>
                             <div className="flex justify-between items-center">
                               <p className="text-[14px] text-kite-text-light">P&L</p>
                               <div className="flex items-center space-x-2">
@@ -1208,7 +1208,7 @@ export default function Investors() {
                           </div>
 
                           {/* Kite Style List */}
-                          <div className="bg-white">
+                          <div className="bg-transparent">
                             {holdings.map((h, i) => {
                               const qty = (h.invs as Investment[]).length;
                               const avgPrice = h.investedAmount / qty;
@@ -1218,7 +1218,7 @@ export default function Investors() {
                               return (
                                 <div 
                                   key={i} 
-                                  className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                                  className="px-4 py-3 border-b border-kite-border-soft hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedPortfolioInvestment({
@@ -1237,11 +1237,11 @@ export default function Investors() {
                                   {/* Line 1: Metrics Row (Qty & Avg) */}
                                   <div className="flex justify-between items-center mb-1.5 leading-tight">
                                     <div className="flex items-center text-[11px] md:text-[12px]">
-                                       <span className="text-[#9EA1A6] font-normal mr-1">Qty.</span>
-                                       <span className="text-[#444444] font-normal tracking-wide">{qty}</span>
-                                       <span className="text-[#9EA1A6] mx-1.5">•</span>
-                                       <span className="text-[#9EA1A6] font-normal mr-1">Avg.</span>
-                                       <span className="text-[#444444] font-normal tracking-wide">{avgPrice.toFixed(2)}</span>
+                                       <span className="text-kite-text-light font-normal mr-1">Qty.</span>
+                                       <span className="text-kite-text font-normal tracking-wide">{qty}</span>
+                                       <span className="text-kite-text-light mx-1.5">•</span>
+                                       <span className="text-kite-text-light font-normal mr-1">Avg.</span>
+                                       <span className="text-kite-text font-normal tracking-wide">{avgPrice.toFixed(2)}</span>
                                     </div>
                                     <div className={`text-[11px] md:text-[12px] font-normal ${pnlPercent >= 0 ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
                                       {pnlPercent >= 0 ? "+" : ""} {pnlPercent.toFixed(2)}%
@@ -1251,7 +1251,7 @@ export default function Investors() {
                                   {/* Line 2: Core Business Name & Absolute P&L Row */}
                                   <div className="flex justify-between items-center mb-1.5 leading-tight">
                                      <div className="flex items-center gap-1.5">
-                                        <h3 className="text-[#444444] font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
+                                        <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
                                            {h.business?.name?.toUpperCase() || "UNKNOWN"}
                                         </h3>
                                      </div>
@@ -1264,12 +1264,12 @@ export default function Investors() {
                                   {/* Line 3: Footer Row (Investor Info & LTP) */}
                                   <div className="flex justify-between items-center leading-tight">
                                      <div className="flex items-center text-[10px] md:text-[11px]">
-                                     <span className="text-[#9EA1A6] font-normal mr-1">Invested:</span>
-                                       <span className="text-[#444444] font-normal uppercase tracking-wide">{formatINR(h.investedAmount).replace("₹", "")}</span>
+                                     <span className="text-kite-text-light font-normal mr-1">Invested:</span>
+                                       <span className="text-kite-text font-normal uppercase tracking-wide">{formatINR(h.investedAmount).replace("₹", "")}</span>
                                      </div>
                                      <div className="flex items-center text-[11px] md:text-[12px]">
-                                       <span className="text-[#9EA1A6] font-normal mr-1">LTP</span>
-                                       <span className="text-[#444444] font-normal tracking-wide">{ltp.toFixed(2)}</span>
+                                       <span className="text-kite-text-light font-normal mr-1">LTP</span>
+                                       <span className="text-kite-text font-normal tracking-wide">{ltp.toFixed(2)}</span>
                                        <span className={`ml-1 ${h.liveTrendPercentage >= 0 ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
                                          ({h.liveTrendPercentage >= 0 ? "+" : ""}{h.liveTrendPercentage.toFixed(2)}%)
                                        </span>
@@ -1286,11 +1286,11 @@ export default function Investors() {
                 )}
 
                 {withdrawTab === "positions" && (
-                  <div className="bg-gray-50 md:bg-white md:border md:border-kite-border md:rounded-sm overflow-hidden">
+                  <div className="bg-transparent md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
-                        <thead className="bg-white border-b border-kite-border text-kite-text-light">
+                        <thead className="bg-white dark:bg-kite-surface border-b border-kite-border text-kite-text-light">
                           <tr>
                             <th className="py-3 px-4 font-normal text-left">Instrument</th>
                             <th className="py-3 px-4 font-normal text-right">Qty.</th>
@@ -1299,7 +1299,7 @@ export default function Investors() {
                             <th className="py-3 px-4 font-normal text-center w-24">Status</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 bg-white">
+                        <tbody className="divide-y divide-kite-border-soft bg-white dark:bg-kite-surface">
                           {positions.length === 0 ? (
                             <tr>
                               <td colSpan={5}>
@@ -1361,7 +1361,7 @@ export default function Investors() {
                           <p className="text-gray-500 font-medium text-[15px]">No active positions found</p>
                         </div>
                       ) : (
-                        <div className="bg-white">
+                        <div className="bg-transparent">
                           {positions.map((p, i) => {
                             const qty = (p.invs as Investment[]).length;
                             const avgPrice = p.investedAmount / qty;
@@ -1369,7 +1369,7 @@ export default function Investors() {
                             return (
                               <div 
                                 key={i} 
-                                className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                                className="px-4 py-3 border-b border-kite-border-soft hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPortfolioInvestment({
@@ -1388,11 +1388,11 @@ export default function Investors() {
                                 {/* Line 1: Metrics Row (Qty & Avg) */}
                                 <div className="flex justify-between items-center mb-1.5 leading-tight">
                                   <div className="flex items-center text-[11px] md:text-[12px]">
-                                     <span className="text-[#9EA1A6] font-normal mr-1">Qty.</span>
-                                     <span className="text-[#444444] font-normal tracking-wide">{qty}</span>
-                                     <span className="text-[#9EA1A6] mx-1.5">•</span>
-                                     <span className="text-[#9EA1A6] font-normal mr-1">Avg.</span>
-                                     <span className="text-[#444444] font-normal tracking-wide">{avgPrice.toFixed(2)}</span>
+                                     <span className="text-kite-text-light font-normal mr-1">Qty.</span>
+                                     <span className="text-kite-text font-normal tracking-wide">{qty}</span>
+                                     <span className="text-kite-text-light mx-1.5">•</span>
+                                     <span className="text-kite-text-light font-normal mr-1">Avg.</span>
+                                     <span className="text-kite-text font-normal tracking-wide">{avgPrice.toFixed(2)}</span>
                                   </div>
                                   <div className="text-[11px] text-[#4CAF50] bg-[#4CAF50]/10 px-1.5 py-0.5 rounded tracking-wide uppercase font-medium">
                                     Closed
@@ -1402,11 +1402,11 @@ export default function Investors() {
                                 {/* Line 2: Core Business Name & Absolute P&L Row */}
                                 <div className="flex justify-between items-center mb-1.5 leading-tight">
                                    <div className="flex items-center gap-1.5">
-                                      <h3 className="text-[#444444] font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
+                                      <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
                                          {p.business?.name?.toUpperCase() || "UNKNOWN"}
                                       </h3>
                                    </div>
-                                   <div className="text-[13px] md:text-[14px] font-normal text-[#444444]">
+                                   <div className="text-[13px] md:text-[14px] font-normal text-kite-text">
                                      {formatINR(p.investedAmount).replace("₹", "")}
                                    </div>
                                 </div>
@@ -1414,8 +1414,8 @@ export default function Investors() {
                                 {/* Line 3: Footer Row (Investor Info) */}
                                 <div className="flex justify-between items-center leading-tight">
                                    <div className="flex items-center text-[10px] md:text-[11px]">
-                                     <span className="text-[#9EA1A6] font-normal mr-1">Invested:</span>
-                                     <span className="text-[#444444] font-normal uppercase tracking-wide">{formatINR(p.investedAmount).replace("₹", "")}</span>
+                                     <span className="text-kite-text-light font-normal mr-1">Invested:</span>
+                                     <span className="text-kite-text font-normal uppercase tracking-wide">{formatINR(p.investedAmount).replace("₹", "")}</span>
                                    </div>
                                 </div>
                               </div>
@@ -1432,7 +1432,7 @@ export default function Investors() {
         {viewMode === "withdraw-calc" &&
           selectedInvestor &&
           selectedInvestments.length > 0 && (
-            <div className="p-4 md:p-6 max-w-4xl mx-auto bg-white border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
+            <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
               <div className="flex justify-between items-center mb-4 border-b border-kite-border pb-4">
                 <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text uppercase">
                   Withdrawal Calculation
@@ -1463,7 +1463,7 @@ export default function Investors() {
         {viewMode === "withdraw-bank" &&
           selectedInvestor &&
           selectedInvestments.length > 0 && (
-            <div className="p-4 md:p-6 max-w-4xl mx-auto bg-white border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
+            <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
               <div className="flex justify-between items-center mb-4 border-b border-kite-border pb-4">
                 <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text uppercase">
                   Bank Transfer Confirmation
@@ -1495,7 +1495,7 @@ export default function Investors() {
             </div>
           )}
         {viewMode === "banking-record" && selectedInvestor && (
-          <div className="p-4 md:p-6 max-w-4xl mx-auto bg-white border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
+          <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
             <div className="flex justify-between items-center mb-4 border-b border-kite-border pb-4">
               <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text uppercase">
                 Banking Records
@@ -1574,9 +1574,9 @@ export default function Investors() {
       {pdfProfitSlip && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 p-4 print:hidden">
           {" "}
-          <div className="bg-white rounded-sm md:rounded w-full max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
+          <div className="bg-white dark:bg-kite-surface rounded-sm md:rounded w-full max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
             {" "}
-            <div className="sticky top-0 bg-white border-b border-kite-border p-4 flex justify-between items-center z-10">
+            <div className="sticky top-0 bg-white dark:bg-kite-surface border-b border-kite-border p-4 flex justify-between items-center z-10">
               {" "}
               <h3 className="font-normal text-[11px] md:text-[12px] text-kite-text flex items-center space-x-2">
                 {" "}
@@ -1615,11 +1615,11 @@ export default function Investors() {
                 </div>{" "}
               </div>{" "}
               {/* Provide a visual boundary for the user before printing */}{" "}
-              <div className="bg-white rounded-sm md:rounded w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+              <div className="bg-white dark:bg-kite-surface rounded-sm md:rounded w-full max-w-6xl max-h-[90vh] overflow-y-auto">
                 {" "}
                 <div
                   id="investor-pdf-content"
-                  className="bg-white border border-kite-border mx-auto max-w-3xl p-4 md:p-8 aspect-auto text-kite-text"
+                  className="bg-white dark:bg-kite-surface border border-kite-border mx-auto max-w-3xl p-4 md:p-8 aspect-auto text-kite-text"
                 >
                   {" "}
                   {/* We just show a preview here, the actual printable content is below */}{" "}
@@ -1914,7 +1914,7 @@ function ProfitSlipContent({
               </th>{" "}
             </tr>{" "}
           </thead>{" "}
-          <tbody className="divide-y divide-gray-200 text-[11px] md:text-[12px]">
+          <tbody className="divide-y divide-kite-border-hard text-[11px] md:text-[12px]">
             {" "}
             <tr>
               {" "}

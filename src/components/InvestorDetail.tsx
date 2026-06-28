@@ -152,7 +152,7 @@ export default function InvestorDetail({
       </div>
       {""}
       {isEditingDetails ? (
-        <div className="bg-white border border-kite-border rounded-sm p-4 md:p-6 animate-fade-in">
+        <div className="bg-white dark:bg-kite-surface border border-kite-border rounded-sm p-4 md:p-6 animate-fade-in">
           <h3 className="text-[13px] md:text-[14px] font-medium text-kite-text mb-4 pb-2 border-b border-kite-border">
             Edit Details
           </h3>
@@ -273,7 +273,7 @@ export default function InvestorDetail({
           <div className="mt-8 border-t border-kite-border pt-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <button
               onClick={handleDeleteInvestor}
-              className="w-full sm:w-auto bg-white text-kite-red border border-red-200 hover:bg-red-50 hover:border-red-300 font-medium text-[13px] md:text-[14px] px-4 py-2 rounded-sm transition-colors text-center"
+              className="w-full sm:w-auto bg-white dark:bg-kite-surface text-kite-red border border-red-200 hover:bg-red-50 hover:border-red-300 font-medium text-[13px] md:text-[14px] px-4 py-2 rounded-sm transition-colors text-center"
             >
               {""}
               Delete Investor{""}
@@ -281,7 +281,7 @@ export default function InvestorDetail({
             <div className="flex space-x-2 w-full sm:w-auto justify-end flex-1">
               <button
                 onClick={() => setIsEditingDetails(false)}
-                className="flex-1 sm:flex-none text-center bg-white text-kite-text border border-kite-border hover:bg-kite-bg font-medium text-[13px] md:text-[14px] px-4 py-2 rounded-sm transition-colors"
+                className="flex-1 sm:flex-none text-center bg-white dark:bg-kite-surface text-kite-text border border-kite-border hover:bg-kite-bg font-medium text-[13px] md:text-[14px] px-4 py-2 rounded-sm transition-colors"
               >
                 {""}
                 Cancel{""}
@@ -315,7 +315,7 @@ export default function InvestorDetail({
             {""}
             <button
               onClick={() => setIsEditingDetails(true)}
-              className="flex-1 bg-white text-kite-text border border-kite-border hover:bg-kite-bg font-medium text-[13px] md:text-[14px] px-4 py-3 sm:py-2.5 rounded-sm shadow-sm transition-all flex items-center justify-center space-x-2"
+              className="flex-1 bg-white dark:bg-kite-surface text-kite-text border border-kite-border hover:bg-kite-bg font-medium text-[13px] md:text-[14px] px-4 py-3 sm:py-2.5 rounded-sm shadow-sm transition-all flex items-center justify-center space-x-2"
             >
               <Edit2 className="w-4 h-4" /> <span>Edit Details</span>
             </button>
@@ -324,7 +324,7 @@ export default function InvestorDetail({
           {/* Stats Grid */}
           {""}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div className="bg-white border border-kite-border rounded-sm p-3 md:p-4">
+            <div className="bg-white dark:bg-kite-surface border border-kite-border rounded-sm p-3 md:p-4">
               <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-wider mb-1">
                 Total Invested
               </p>
@@ -332,7 +332,7 @@ export default function InvestorDetail({
                 {formatINR(totalAmountInvested)}
               </p>
             </div>
-            <div className="bg-white border border-kite-border rounded p-3 md:p-4">
+            <div className="bg-white dark:bg-kite-surface border border-kite-border rounded p-3 md:p-4">
               <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-wider mb-1">
                 Active Investments
               </p>
@@ -340,7 +340,7 @@ export default function InvestorDetail({
                 {activeInvestments.length}
               </p>
             </div>
-            <div className="bg-white border border-kite-border rounded p-3 md:p-4">
+            <div className="bg-white dark:bg-kite-surface border border-kite-border rounded p-3 md:p-4">
               <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-wider mb-1">
                 Returns Earned
               </p>
@@ -348,7 +348,7 @@ export default function InvestorDetail({
                 +{formatINR(returnsEarned)}
               </p>
             </div>
-            <div className="bg-white border border-kite-border rounded p-3 md:p-4">
+            <div className="bg-white dark:bg-kite-surface border border-kite-border rounded p-3 md:p-4">
               <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-wider mb-1">
                 Available Balance
               </p>
@@ -365,7 +365,7 @@ export default function InvestorDetail({
           {""}
           {/* Bank Profile */}
           {""}
-          <div className="bg-white border border-kite-border rounded p-4">
+          <div className="bg-white dark:bg-kite-surface border border-kite-border rounded p-4">
             <div className="flex items-center space-x-2 mb-4 pb-3 border-b border-kite-border">
               <Building2 className="w-4 h-4 text-kite-text-light" />
               <h3 className="text-[13px] md:text-[14px] font-medium text-kite-text">
@@ -418,7 +418,7 @@ export default function InvestorDetail({
           {""}
           {/* Investment History */}
           {""}
-          <div className="bg-white border border-kite-border rounded overflow-hidden">
+          <div className="bg-white dark:bg-kite-surface border border-kite-border rounded overflow-hidden">
             <div className="p-4 border-b border-kite-border">
               <h3 className="text-[13px] md:text-[14px] font-medium text-kite-text">
                 Investment History

@@ -14,6 +14,7 @@ import {
 } from"lucide-react";
 import { motion } from"framer-motion";
 import { useTheme } from"../utils/ThemeContext";
+import { Logo } from "./Logo";
 interface SidebarProps {
   currentView: View;
   onNavigate: (view: View) => void;
@@ -66,15 +67,10 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
     { id:"pnl" as View, label:"MY P&L", icon: PieChart },
   ];
   return (
-    <div className="w-[260px] h-full border-r border-kite-border bg-white flex flex-col">
+    <div className="w-[260px] h-full border-r border-kite-border bg-[#F8F9FA] dark:bg-kite-bg flex flex-col">
       <div className="p-4 border-b border-kite-border flex items-center h-[55px]">
         <div className="flex flex-col justify-center">
-          <span className="text-[15px] md:text-[16px] text-black font-medium tracking-wide">
-            Radhika MA Service
-          </span>
-          <span className="text-[10px] md:text-[11px] text-kite-text-light font-medium tracking-wide mt-0.5">
-            MyRadhika softwere
-          </span>
+          <Logo />
         </div>
       </div>
       <nav className="flex-1 py-4 overflow-y-auto">
@@ -118,21 +114,21 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
           <div className="flex bg-kite-bg p-1 rounded-sm border border-kite-border/50 shadow-inner space-x-1">
             <button
               onClick={() => setTheme("light")}
-              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="light" ?"bg-white shadow border border-kite-border text-black" :"hover:bg-gray-100 text-kite-text-light hover:text-kite-text"}`}
+              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="light" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:hover:bg-kite-border-soft text-kite-text-light hover:text-kite-text"}`}
               title="Light Mode"
             >
               <Sun className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setTheme("system")}
-              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="system" ?"bg-white shadow border border-kite-border text-black" :"hover:bg-gray-100 text-kite-text-light hover:text-kite-text"}`}
+              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="system" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:hover:bg-kite-border-soft text-kite-text-light hover:text-kite-text"}`}
               title="System Mode"
             >
               <Laptop className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setTheme("dark")}
-              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="dark" ?"bg-white shadow border border-kite-border text-black" :"hover:bg-gray-100 text-kite-text-light hover:text-kite-text"}`}
+              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="dark" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:hover:bg-kite-border-soft text-kite-text-light hover:text-kite-text"}`}
               title="Dark Mode"
             >
               <Moon className="w-3.5 h-3.5" />
@@ -143,7 +139,7 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
           onClick={() => onNavigate("admin")}
           className={`flex items-center space-x-3 p-2 -mx-2 rounded-sm transition-colors cursor-pointer group ${currentView ==="admin" ?"bg-kite-blue/5 border-r-2 border-kite-blue text-kite-blue" :"hover:bg-kite-bg"}`}
         >
-          <div className="w-8 h-8 rounded-full bg-gray-100 text-black flex items-center justify-center font-medium text-[11px] md:text-[12px] border border-gray-200 uppercase overflow-hidden">
+          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-kite-border-soft text-black flex items-center justify-center font-medium text-[11px] md:text-[12px] border border-kite-border uppercase overflow-hidden">
             {""}
             {adminPhoto ? (
               <img

@@ -146,11 +146,11 @@ export function LivePortfolioDetail({
       : groupCurrentVal;
     const isProfit = holdingProfit >= 0;
     return (
-      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-white md:bg-gray-900/60 p-0 md:p-4">
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-white dark:bg-kite-surface md:bg-gray-900/60 p-0 md:p-4">
         {""}
-        <div className="bg-white md:rounded w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl flex flex-col overflow-hidden relative">
+        <div className="bg-white dark:bg-kite-surface md:rounded w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl flex flex-col overflow-hidden relative">
           {""}
-          <div className="shrink-0 bg-white border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10">
+          <div className="shrink-0 bg-white dark:bg-kite-surface border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10">
             {""}
             <div className="flex items-center space-x-2">
               {""}
@@ -199,7 +199,7 @@ export function LivePortfolioDetail({
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95, y: -4 }}
                           transition={{ duration: 0.15, ease: "easeOut" }}
-                          className="absolute top-full right-0 mt-1 w-[100px] bg-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5"
+                          className="absolute top-full right-0 mt-1 w-[100px] bg-white dark:bg-kite-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5"
                         >
                           {""}
                           <button
@@ -280,7 +280,7 @@ export function LivePortfolioDetail({
             {""}
           </div>
           {""}
-          <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-white">
+          <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-white dark:bg-kite-surface">
             {""}
             <>
               {""}
@@ -309,8 +309,8 @@ export function LivePortfolioDetail({
                     className={
                       "inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] md:text-[11px] font-medium" +
                       (overallTrend >= 0
-                        ? "bg-[#E6F6ED] text-[#00A86B]"
-                        : "bg-[#FCEBEB] text-[#D94B4B]")
+                        ? "bg-[#E6F6ED] dark:bg-[#00A86B]/20 text-[#00A86B] dark:text-[#00A86B]"
+                        : "bg-[#FCEBEB] dark:bg-[#D94B4B]/20 text-[#D94B4B] dark:text-[#D94B4B]")
                     }
                   >
                     {""}
@@ -485,7 +485,7 @@ export function LivePortfolioDetail({
                           ></div>
                           {""}
                           <div
-                            className={`absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform ${selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length ? "transform translate-x-4" : ""}`}
+                            className={`absolute left-0.5 top-0.5 bg-white dark:bg-kite-surface w-4 h-4 rounded-full transition-transform ${selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length ? "transform translate-x-4" : ""}`}
                           ></div>
                           {""}
                         </div>
@@ -883,7 +883,7 @@ export function LivePortfolioDetail({
           )}
           {""}
           {withdrawStep === 1 && (
-            <div className="shrink-0 bg-white border-t border-kite-border p-3 md:p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+            <div className="shrink-0 p-3 md:p-4 z-20">
               {""}
               <div className="md:hidden">
                 {""}
@@ -923,14 +923,6 @@ export function LivePortfolioDetail({
                     onSuccess={handleConfirmWithdraw}
                   />
                   {""}
-                  <button
-                    onClick={() => setWithdrawStep(0)}
-                    className="mt-4 text-[13px] md:text-[14px] font-medium text-kite-blue hover:text-kite-blue-dark pb-6"
-                  >
-                    {""}
-                    Cancel{""}
-                  </button>
-                  {""}
                 </div>
                 {""}
               </div>
@@ -966,14 +958,6 @@ export function LivePortfolioDetail({
                   actionType="SELL"
                   onSuccess={handleConfirmWithdraw}
                 />
-                {""}
-                <button
-                  onClick={() => setWithdrawStep(0)}
-                  className="mt-3 text-[11px] md:text-[12px] font-medium text-kite-text-light hover:text-kite-text"
-                >
-                  {""}
-                  Cancel{""}
-                </button>
                 {""}
               </div>
               {""}

@@ -226,7 +226,7 @@ export default function Businesses() {
     );
   }
   return (
-    <div className="max-w-6xl mx-auto space-y-6 print:m-0 print:p-0">
+    <div className="w-full space-y-6 print:m-0 print:p-0">
       {" "}
       <div className="print:hidden space-y-6">
         {" "}
@@ -255,7 +255,7 @@ export default function Businesses() {
                 <div className="w-full flex justify-start pt-1 md:pt-2">
                   {" "}
                   <div
-                    className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white rounded-sm shadow-sm" : "bg-transparent"}`}
+                    className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface rounded-sm shadow-sm" : "bg-transparent"}`}
                   >
                     {" "}
                     {!isSearchExpanded && (
@@ -291,7 +291,7 @@ export default function Businesses() {
                         {searchTerm && (
                           <button
                             onClick={() => setSearchTerm("")}
-                            className="p-1.5 text-gray-400 hover:text-kite-text transition-colors flex-shrink-0"
+                            className="p-1.5 text-kite-text-muted hover:text-kite-text transition-colors flex-shrink-0"
                           >
                             {" "}
                             <X className="w-4 h-4" />{" "}
@@ -303,17 +303,17 @@ export default function Businesses() {
                 </div>{" "}
               </div>
             </div>{" "}
-            <div className="w-full bg-white border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm overflow-hidden sticky top-0 z-10">
+            <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden z-10 mt-4 md:mt-0">
               <div className="overflow-hidden">
                 {" "}
                 {/* Unified Watchlist View */}{" "}
-                <div className="flex flex-col divide-y divide-kite-border">
+                <div className="flex flex-col divide-y divide-kite-border border-b border-kite-border">
                   {" "}
                   {filteredBusinesses.map((business) => (
                     <div
                       key={`inv_${business.id}`}
                       onClick={() => setSelectedBusinessId(business.id)}
-                      className="flex items-center justify-between p-3 md:p-4 bg-white hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group"
+                      className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-kite-surface hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group"
                     >
                       {" "}
                       <div className="flex flex-col flex-1">
@@ -330,7 +330,7 @@ export default function Businesses() {
                             <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
                           )}{" "}
                           {isPreVerified(business.id) && (
-                            <Clock className="w-3 h-3 text-black flex-shrink-0" />
+                            <Clock className="w-3 h-3 text-kite-text flex-shrink-0" />
                           )}{" "}
                         </div>{" "}
                         <span className="font-sans text-[10px] md:text-[11px] ] text-kite-text-light leading-tight">
@@ -364,7 +364,7 @@ export default function Businesses() {
           </>
         )}{" "}
         {viewMode === "add-step-1" && (
-          <div className="w-full max-w-xl mx-auto bg-white dark:bg-kite-surface md:border md:border-kite-border dark:md:border-kite-border md:shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:md:shadow-none rounded-lg p-4 md:p-8">
+          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
             {" "}
             <div className="flex flex-col md:flex-row gap-3 mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
               <button
@@ -377,14 +377,14 @@ export default function Businesses() {
                     ownerName: "",
                   });
                 }}
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-bg text-gray-500 dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105"}`}
               >
                 New Business Owner
               </button>
               <button
                 type="button"
                 onClick={() => setOwnerMode("existing")}
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-bg text-gray-500 dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105"}`}
               >
                 Already Registered Owner
               </button>
@@ -421,22 +421,22 @@ export default function Businesses() {
                           <span className="truncate text-[13px] md:text-[14px]">
                             {" "}
                             {formData.businessId ? (
-                              <span className="font-normal text-gray-800 dark:text-kite-text">
+                              <span className="font-normal text-kite-text dark:text-kite-text">
                                 {formData.ownerName}{" "}
-                                <span className="font-normal text-gray-500 dark:text-kite-text-light ml-1 font-mono text-[11px] md:text-[12px]">
+                                <span className="font-normal text-kite-text-light dark:text-kite-text-light ml-1 font-mono text-[11px] md:text-[12px]">
                                   (ID: #{formData.businessId})
                                 </span>
                               </span>
                             ) : (
-                              <span className="text-gray-400 dark:text-gray-500 font-normal">
+                              <span className="text-kite-text-muted dark:text-kite-text-light font-normal">
                                 Select an owner...
                               </span>
                             )}{" "}
                           </span>{" "}
-                          <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />{" "}
+                          <ChevronDown className="w-4 h-4 text-kite-text-muted dark:text-kite-text-light" />{" "}
                         </div>{" "}
                         {showOwnerSelect && (
-                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+                          <div className="absolute z-10 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
                             {" "}
                             <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg">
                               {" "}
@@ -515,7 +515,7 @@ export default function Businesses() {
                       <input
                         type="text"
                         readOnly
-                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono text-gray-500 dark:text-kite-text-light cursor-not-allowed outline-none"
+                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono text-kite-text-light dark:text-kite-text-light cursor-not-allowed outline-none"
                         value={formData.businessId}
                       />{" "}
                     </div>{" "}
@@ -528,7 +528,7 @@ export default function Businesses() {
                         required
                         type="text"
                         autoFocus
-                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
+                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
@@ -545,7 +545,7 @@ export default function Businesses() {
                         <input
                           required
                           type="text"
-                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
+                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
                           value={formData.ownerName}
                           onChange={(e) =>
                             setFormData({
@@ -563,7 +563,7 @@ export default function Businesses() {
                         Authority Type
                       </label>{" "}
                       <select
-                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors outline-none cursor-pointer"
+                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors outline-none cursor-pointer"
                         value={formData.authorityType}
                         onChange={(e) =>
                           setFormData({
@@ -596,7 +596,7 @@ export default function Businesses() {
                           required
                           type="number"
                           step="0.1"
-                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
+                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
                           value={formData.rmasSubsidy}
                           onChange={(e) =>
                             setFormData({
@@ -606,7 +606,7 @@ export default function Businesses() {
                           }
                           placeholder="e.g. 4"
                         />{" "}
-                        <p className="text-[11px] md:text-[12px] text-gray-500 dark:text-kite-text-light mt-1.5">
+                        <p className="text-[11px] md:text-[12px] text-kite-text-light dark:text-kite-text-light mt-1.5">
                           RMAS will pay this percentage towards the interest
                           when an investor withdraws.
                         </p>{" "}
@@ -623,7 +623,7 @@ export default function Businesses() {
                           required
                           type="text"
                           inputMode="numeric"
-                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
+                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
                           value={
                             formData.fundingRequired
                               ? Number(
@@ -655,7 +655,7 @@ export default function Businesses() {
                           type="number"
                           step="0.1"
                           min="0"
-                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
+                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
                           value={formData.interestRate}
                           onChange={(e) =>
                             setFormData({
@@ -689,7 +689,7 @@ export default function Businesses() {
                             </span>{" "}
                           </button>{" "}
                           {showInterestCalculation && (
-                            <div className="p-2 md:p-4 bg-white border-t border-kite-border flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+                            <div className="p-2 md:p-4 bg-white dark:bg-kite-surface border-t border-kite-border flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
                               {" "}
                               <div>
                                 {" "}
@@ -712,10 +712,10 @@ export default function Businesses() {
                               </div>{" "}
                               <div className="text-left flex flex-col gap-2 min-w-0">
                                 {" "}
-                                <p className="text-[13px] md:text-[14px] font-normal text-gray-500 dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg px-3 py-1.5 rounded-sm break-words whitespace-normal">
+                                <p className="text-[13px] md:text-[14px] font-normal text-kite-text-light dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg px-3 py-1.5 rounded-sm break-words whitespace-normal">
                                   {" "}
                                   Monthly Return:{" "}
-                                  <span className="font-normal font-mono text-gray-800 dark:text-kite-text break-all">
+                                  <span className="font-normal font-mono text-kite-text dark:text-kite-text break-all">
                                     {formatINR(
                                       (Number(formData.fundingRequired) *
                                         Number(formData.interestRate)) /
@@ -748,7 +748,7 @@ export default function Businesses() {
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className="font-medium text-gray-500 hover:text-gray-700"
+                  className="font-medium text-kite-text-light hover:text-gray-700"
                 >
                   Cancel
                 </button>{" "}
@@ -765,7 +765,7 @@ export default function Businesses() {
           </div>
         )}{" "}
         {viewMode === "add-step-2" && (
-          <div className="w-full max-w-xl mx-auto bg-white dark:bg-kite-surface md:border md:border-kite-border dark:md:border-kite-border md:shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:md:shadow-none rounded-lg p-4 md:p-8">
+          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
             <div className="flex items-center mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
               <button
                 type="button"
@@ -784,7 +784,7 @@ export default function Businesses() {
                     <span>Bank Name</span>
                   </label>
                   <select
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal outline-none transition-colors ${ownerMode === "existing" ? "text-gray-400 dark:text-gray-500 cursor-not-allowed" : "text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue cursor-pointer"}`}
+                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue cursor-pointer"}`}
                     value={formData.bankName}
                     onChange={(e) =>
                       setFormData({ ...formData, bankName: e.target.value })
@@ -795,7 +795,7 @@ export default function Businesses() {
                       <option
                         key={bank}
                         value={bank}
-                        className="bg-white dark:bg-kite-surface text-kite-text dark:text-kite-text"
+                        className="bg-kite-surface text-kite-text dark:text-kite-text"
                       >
                         {bank}
                       </option>
@@ -809,7 +809,7 @@ export default function Businesses() {
                   <input
                     required
                     type="text"
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono outline-none transition-colors ${ownerMode === "existing" ? "text-gray-400 dark:text-gray-500 cursor-not-allowed" : "text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
+                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.accountNumber}
                     onChange={(e) =>
                       setFormData({
@@ -828,7 +828,7 @@ export default function Businesses() {
                   <input
                     required
                     type="text"
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-gray-400 dark:text-gray-500 cursor-not-allowed" : "text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
+                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.ifscCode}
                     onChange={(e) =>
                       setFormData({
@@ -847,7 +847,7 @@ export default function Businesses() {
                   <input
                     required
                     type="text"
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-gray-400 dark:text-gray-500 cursor-not-allowed" : "text-gray-800 dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
+                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.accountHolderName}
                     onChange={(e) =>
                       setFormData({
@@ -863,7 +863,7 @@ export default function Businesses() {
                       registered.
                     </p>
                   ) : (
-                    <p className="text-[11px] md:text-[12px] text-gray-500 dark:text-kite-text-light mt-1.5">
+                    <p className="text-[11px] md:text-[12px] text-kite-text-light dark:text-kite-text-light mt-1.5">
                       Auto-filled from Step 1. You can edit if bank account name
                       differs.
                     </p>

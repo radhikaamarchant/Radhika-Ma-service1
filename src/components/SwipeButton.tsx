@@ -50,7 +50,7 @@ export function SwipeButton({
   // Background colors
   let bgColor = bgClass;
   if (isRefined) {
-    bgColor = actionType ==="BUY" ?"#5282EB" :"#E14C4C";
+    bgColor = actionType ==="BUY" ?"#4A8DF7" :"#E14C4C";
   }
 
   useEffect(() => {

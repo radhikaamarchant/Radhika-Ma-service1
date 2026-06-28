@@ -6,7 +6,8 @@
 import { useState, useEffect, useRef } from"react";
 import { AppProvider } from"./utils/AppContext";
 import { View } from"./types";
-import Sidebar from"./components/Sidebar";
+import TopNav from"./components/TopNav";
+import BusinessSidebar from"./components/BusinessSidebar";
 import MobileBottomNav from"./components/MobileBottomNav";
 import Dashboard from"./pages/Dashboard";
 import DataAnalysis from"./pages/DataAnalysis";
@@ -17,6 +18,7 @@ import MyPnL from"./pages/MyPnL";
 import AdminPage from"./pages/AdminPage";
 import { Menu, X, WifiOff, Sun, Moon, Laptop } from"lucide-react";
 import { useTheme } from"./utils/ThemeContext";
+import { Logo } from "./components/Logo";
 
 import { useAppContext } from"./utils/AppContext";
 import { MOCK_BUSINESSES } from"./utils/mockData";
@@ -199,37 +201,36 @@ function MainLayout() {
   };
 
   return (
-    <div className="h-screen bg-kite-bg text-kite-text flex flex-col md:flex-row overflow-hidden pb-14 md:pb-0 font-sans">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex flex-col bg-white shrink-0 w-[260px] border-r border-gray-100 z-[100]">
-        <Sidebar currentView={currentView} onNavigate={handleNavigate} />
-      </div>
+    <div className="h-screen bg-gray-100 dark:bg-black text-kite-text flex flex-col overflow-hidden pb-14 md:pb-0 font-sans">
+      <div className="w-full h-full flex flex-col bg-white dark:bg-kite-bg relative overflow-hidden">
+        <TopNav currentView={currentView} onNavigate={handleNavigate} />
 
-      {/* Mobile Header - Kite Style */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-gray-50/50 border-b border-gray-100 shrink-0 z-40 sticky top-0">
-        <div
-          className="flex flex-col cursor-pointer"
-          onClick={() => handleNavigate("admin")}
-        >
-          <span className="text-[15px] md:text-[16px] text-black font-normal tracking-wide">
-            Radhika MA Service
-          </span>
-          <span className="text-[10px] md:text-[11px] text-gray-500 font-light tracking-wide mt-0.5">
-            MyRadhika softwere
-          </span>
+        {/* Mobile Header - Kite Style */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-gray-50/50 border-b border-kite-border-soft shrink-0 z-40 sticky top-0">
+          <div
+            className="flex flex-col cursor-pointer"
+            onClick={() => handleNavigate("admin")}
+          >
+            <Logo />
+          </div>
+
+          <ThemeToggleButton />
         </div>
 
-        <ThemeToggleButton />
-      </div>
-
-      {/* Main Content */}
-      <main className="flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden flex flex-col items-center bg-white text-kite-text relative">
-        <div className="w-full max-w-full px-0 py-0 pb-24 md:p-8 md:pb-8">
-          <div
-            style={{ display: currentView ==="dashboard" ?"block" :"none" }}
-          >
-            <Dashboard />
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Desktop Sidebar (Marketwatch) */}
+          <div className="hidden md:flex flex-col bg-white dark:bg-kite-bg shrink-0 w-[300px] border-r border-kite-border z-[100] sidebar-container">
+            <BusinessSidebar />
           </div>
+
+          {/* Main Content */}
+          <main className="flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden flex flex-col bg-white dark:bg-kite-bg text-kite-text relative main-container">
+            <div className="w-full px-0 py-0 pb-24 md:px-0 md:py-0 md:pb-8 lg:px-0 lg:py-0">
+              <div
+                style={{ display: currentView === "dashboard" ? "block" : "none" }}
+              >
+              <Dashboard />
+            </div>
           <div
             style={{
               display: currentView ==="data-analysis" ?"block" :"none",
@@ -262,9 +263,11 @@ function MainLayout() {
           </div>
         </div>
       </main>
+        </div>
+      </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-between items-center z-[100] shadow-[0_-2px_10px_rgba(0,0,0,0.02)] footer-nav">
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-kite-bg border-t border-kite-border flex justify-between items-center z-[100] shadow-[0_-2px_10px_rgba(0,0,0,0.02)] footer-nav">
         <MobileBottomNav
           currentView={currentView}
           onNavigate={handleNavigate}
@@ -280,7 +283,7 @@ export default function App() {
   if (!isOnline) {
     return (
       <div className="min-h-screen bg-kite-red/10 flex items-center justify-center font-sans text-kite-text p-4">
-        <div className="bg-white p-2 md:p-4 md:p-8 rounded-sm md:rounded max-w-md w-full text-center border-t-8 border-red-500">
+        <div className="bg-white dark:bg-kite-surface p-2 md:p-4 md:p-8 rounded-sm md:rounded max-w-md w-full text-center border-t-8 border-red-500">
           <WifiOff className="w-10 h-10 md:w-16 md:h-16 mx-auto text-kite-red mb-3 md:mb-6" />
           <h1 className="text-xs md:text-base font-medium text-kite-text mb-4 tracking-tight">
             No Internet Connection
