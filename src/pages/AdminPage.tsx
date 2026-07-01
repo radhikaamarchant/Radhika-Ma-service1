@@ -259,7 +259,7 @@ export default function AdminPage() {
         {currentView === "funds" && (
           <div className="bg-[#F8F9FA] dark:bg-kite-bg min-h-full flex flex-col animate-fade-in relative -mx-0">
             <div className="bg-white dark:bg-kite-surface flex items-center px-4 py-4 md:py-5 border-b border-kite-border-soft sticky top-0 z-10">
-              <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1">
+              <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Funds</h1>
@@ -319,7 +319,7 @@ export default function AdminPage() {
         {currentView === "profile" && (
           <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
-              <button onClick={() => { setCurrentView("menu"); setFormData(profile); }} className="mr-4 text-kite-text p-1">
+              <button onClick={() => { setCurrentView("menu"); setFormData(profile); }} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Profile Details</h1>
@@ -360,7 +360,7 @@ export default function AdminPage() {
         {currentView === "bank" && (
           <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
-              <button onClick={() => { setCurrentView("menu"); setFormData(profile); }} className="mr-4 text-kite-text p-1">
+              <button onClick={() => { setCurrentView("menu"); setFormData(profile); }} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Bank details</h1>
@@ -424,7 +424,7 @@ export default function AdminPage() {
         {currentView === "statement" && (
           <div className="bg-white dark:bg-kite-surface flex-1 animate-fade-in relative pb-10 min-h-full">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
-              <button onClick={() => setCurrentView("funds")} className="mr-4 text-kite-text p-1">
+              <button onClick={() => setCurrentView("funds")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Financial Statement</h1>
@@ -477,7 +477,7 @@ export default function AdminPage() {
 
       {/* Image Cropper Modal */}
       {imageSrc && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-kite-surface rounded w-full max-w-2xl overflow-hidden flex flex-col h-[80vh]">
             <div className="p-4 border-b border-kite-border-soft flex justify-between items-center">
               <h3 className="font-medium text-[15px] md:text-[16px] text-kite-text">

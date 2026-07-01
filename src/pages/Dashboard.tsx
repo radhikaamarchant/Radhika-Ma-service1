@@ -82,7 +82,7 @@ actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 
 // Orange
 ];
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-kite-surface rounded-sm max-w-2xl w-full max-h-[90vh] overflow-auto p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-[17px] md:text-[18px] font-medium text-kite-text">{business.name} Details</h2>
@@ -130,11 +130,11 @@ return (
            <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text uppercase tracking-wider">Recent Investments</h2>
         </div>
         <div className="divide-y divide-kite-border">
-           {recentFilteredInvestments.map(inv => {
+           {recentFilteredInvestments.map((inv, idx) => {
               const business = state.businesses.find(b => b.id === inv.businessId);
               const investor = state.investors.find(i => i.id === inv.investorId);
               return (
-                <div key={inv.id} className="p-4 flex justify-between items-center">
+                <div key={`dash_inv_${inv.id}_${idx}`} className="p-4 flex justify-between items-center">
                    <div>
                      <p className="font-normal text-[13px] md:text-[14px] uppercase text-kite-text">{business?.name}</p>
                      <p className="text-[11px] md:text-[12px] text-kite-text-light">{investor?.name}</p>

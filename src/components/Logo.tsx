@@ -7,7 +7,7 @@ export const Logo = ({ className = "" }: { className?: string }) => {
         <path d="M 6,20 L 16,10 L 32,10 L 22,20 Z" fill="#F05A28"/>
         <path d="M 6,20 L 22,20 L 32,30 L 16,30 Z" fill="#D32F2F"/>
       </svg>
-      <span className="text-[20px] font-medium tracking-tight text-black dark:text-white" style={{ fontFamily: "Inter, sans-serif", letterSpacing: "-0.02em" }}>
+      <span className="text-[20px] font-medium tracking-tight text-black dark:text-white" style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif', letterSpacing: "-0.02em" }}>
         Radhika
       </span>
     </div>

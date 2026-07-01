@@ -123,14 +123,14 @@ export default function InvestorDetail({
     }
   };
   return (
-    <div className="space-y-4 md:space-y-6 animate-fade-in pb-20 pt-8 md:pt-0 px-3 md:px-0 max-w-4xl mx-auto">
+    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-8 md:pt-0 px-3 md:px-0 max-w-4xl mx-auto">
       {""}
       {/* Header */}
       {""}
       <div className="flex items-center space-x-3 mb-4 md:mb-6">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100"
+          className="p-2 -ml-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
         >
           {" "}
           <ArrowLeft className="w-5 h-5" />{" "}
@@ -450,7 +450,7 @@ export default function InvestorDetail({
                 </thead>
                 <tbody className="divide-y divide-kite-border">
                   {""}
-                  {investorInvestments.map((inv) => {
+                  {investorInvestments.map((inv, idx) => {
                     const business = state.businesses.find(
                       (b) => b.id === inv.businessId,
                     );
@@ -461,7 +461,7 @@ export default function InvestorDetail({
                     );
                     return (
                       <tr
-                        key={inv.id}
+                        key={`desk_inv_det_${inv.id}_${idx}`}
                         className="hover:bg-kite-bg transition-colors cursor-pointer"
                         onClick={() => {
                           const bizInvs = investorInvestments.filter(
@@ -527,7 +527,7 @@ export default function InvestorDetail({
             {""}
             <div className="block md:hidden divide-y divide-kite-border">
               {""}
-              {investorInvestments.map((inv) => {
+              {investorInvestments.map((inv, idx) => {
                 const business = state.businesses.find(
                   (b) => b.id === inv.businessId,
                 );
@@ -537,7 +537,7 @@ export default function InvestorDetail({
                 );
                 return (
                   <div
-                    key={inv.id}
+                    key={`mob_inv_det_${inv.id}_${idx}`}
                     className="p-3 hover:bg-kite-bg cursor-pointer"
                     onClick={() => {
                       const bizInvs = investorInvestments.filter(

@@ -186,7 +186,7 @@ export default function DataAnalysis() {
       },
     ];
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-kite-bg/60 p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 p-4">
         <div className="bg-white dark:bg-kite-surface border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm w-full max-w-4xl max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-white dark:bg-kite-surface border-b border-kite-border p-2 md:p-4 flex justify-between items-center z-10">
             <div>

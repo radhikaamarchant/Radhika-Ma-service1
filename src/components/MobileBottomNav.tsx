@@ -25,14 +25,14 @@ export default function MobileBottomNav({
           <button
             key={item.id}
             onClick={() => onNavigate(item.id)}
-            className={`flex-1 py-1.5 flex flex-col items-center justify-center space-y-0.5 ${isActive ?"text-kite-blue" :"text-gray-500 hover:text-gray-800"}`}
+            className={`flex-1 py-2 flex flex-col items-center justify-center space-y-1 ${isActive ?"text-[#4184F3] dark:text-kite-blue" :"text-[#4A4A4A] dark:text-white hover:text-[#4A4A4A] dark:hover:text-white"}`}
           >
             <Icon
-              className={`w-[22px] h-[22px] ${isActive ?"text-kite-blue" :"text-gray-400"}`}
+              className={`w-[22px] h-[22px] ${isActive ?"text-[#4184F3] dark:text-kite-blue" :"text-[#4A4A4A] dark:text-white"}`}
               strokeWidth={isActive ? 2 : 1.5}
             />
             <span
-              className={`text-[10px] md:text-[11px] font-medium tracking-wide ${isActive ?"text-kite-blue" :"text-gray-500"}`}
+              className={`text-[10px] md:text-[11px] font-medium tracking-wide ${isActive ?"text-[#4184F3] dark:text-kite-blue" :"text-[#4A4A4A] dark:text-white"}`}
             >
               {item.label}
             </span>

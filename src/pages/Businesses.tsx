@@ -44,6 +44,7 @@ export default function Businesses() {
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [showOwnerSelect, setShowOwnerSelect] = useState(false);
   const [ownerSearch, setOwnerSearch] = useState("");
+
   // Scroll preservation
   const scrollPosRef = useRef<number>(0);
   const mainRef = useRef<HTMLElement | null>(null);
@@ -303,17 +304,17 @@ export default function Businesses() {
                 </div>{" "}
               </div>
             </div>{" "}
-            <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden z-10 mt-4 md:mt-0">
+            <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden z-10 md:mt-0">
               <div className="overflow-hidden">
                 {" "}
                 {/* Unified Watchlist View */}{" "}
                 <div className="flex flex-col divide-y divide-kite-border border-b border-kite-border">
                   {" "}
-                  {filteredBusinesses.map((business) => (
+                  {filteredBusinesses.map((business, idx) => (
                     <div
-                      key={`inv_${business.id}`}
+                      key={`inv_${business.id}_${idx}`}
                       onClick={() => setSelectedBusinessId(business.id)}
-                      className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-kite-surface hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group"
+                      className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-kite-border-soft cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group"
                     >
                       {" "}
                       <div className="flex flex-col flex-1">
@@ -349,7 +350,6 @@ export default function Businesses() {
                             {business.interestRate}% ROI{" "}
                           </span>{" "}
                         </div>{" "}
-                        <ChevronRight className="w-4 h-4 text-kite-text-light group-hover:text-kite-blue transition-colors flex-shrink-0 hidden md:block" />{" "}
                       </div>{" "}
                     </div>
                   ))}{" "}

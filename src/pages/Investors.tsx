@@ -517,7 +517,7 @@ export default function Investors() {
                 {/* Desktop Table View */}{" "}
                 <div className="flex flex-col divide-y divide-kite-border border-b border-kite-border">
                   {" "}
-                  {filteredInvestors.map((investor) => {
+                  {filteredInvestors.map((investor, idx) => {
                     const activeInvs = state.investments.filter(
                       (inv) =>
                         inv.investorId === investor.id &&
@@ -571,12 +571,12 @@ export default function Investors() {
                         : "pending";
                     return (
                       <div
-                        key={`inv_${investor.id}`}
+                        key={`inv_${investor.id}_${idx}`}
                         onClick={() => {
                           setSelectedInvestor(investor);
                           setViewMode("investor-detail");
                         }}
-                        className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-kite-surface hover:bg-kite-bg cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group active:bg-gray-100"
+                        className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-kite-border-soft cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group"
                       >
                         {" "}
                         <div className="flex flex-col flex-1">
@@ -609,9 +609,8 @@ export default function Investors() {
                                 {returnPercentage >= 0 ? "+" : ""}
                                 {returnPercentage.toFixed(2)}%{" "}
                               </span>
-                            )}{" "}
+                            )}
                           </div>{" "}
-                          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-kite-blue transition-colors flex-shrink-0" />{" "}
                         </div>{" "}
                       </div>
                     );
@@ -645,7 +644,7 @@ export default function Investors() {
                 </div>
                 <button
                   onClick={() => setViewMode("list")}
-                  className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center"
+                  className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -833,7 +832,7 @@ export default function Investors() {
                 <button
                   type="button"
                   onClick={() => setViewMode("add-step-1")}
-                  className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center"
+                  className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -1054,7 +1053,7 @@ export default function Investors() {
             const isProfit = curValue - activeTotalInvested >= 0;
 
             return (
-              <div className="w-full bg-white dark:bg-kite-bg md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-fade-in">
+              <div className="w-full bg-white dark:bg-kite-bg md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile">
                 {/* Header and Tabs */}
                 <div className="bg-white dark:bg-kite-bg pt-4 px-4 md:px-6 relative z-10 border-b border-kite-border md:border-none">
                   <div className="flex items-center mb-6">
@@ -1131,7 +1130,7 @@ export default function Investors() {
                             
                             return (
                               <tr
-                                key={i}
+                                key={`desk_inv_h_${h.bizId}_${i}`}
                                 className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1166,6 +1165,33 @@ export default function Investors() {
                           })}
                         </tbody>
                       </table>
+                      
+                      {/* Desktop Holdings Summary */}
+                      {holdings.length > 0 && (
+                        <div className="hidden md:flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-kite-bg border-t border-kite-border">
+                          <div className="flex space-x-16">
+                            <div>
+                              <p className="text-[12px] text-kite-text-light mb-1 uppercase tracking-wider">Total investment</p>
+                              <p className="text-[16px] text-kite-text font-normal" style={{ fontFamily: sfProFont }}>{formatINR(activeTotalInvested)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[12px] text-kite-text-light mb-1 uppercase tracking-wider">Current value</p>
+                              <p className="text-[16px] text-kite-text font-normal" style={{ fontFamily: sfProFont }}>{formatINR(curValue)}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[12px] text-kite-text-light mb-1 uppercase tracking-wider">Total P&L</p>
+                            <div className="flex items-center justify-end space-x-2">
+                                <span className={`text-[16px] font-medium ${isProfit ? "text-kite-green" : "text-kite-red"}`} style={{ fontFamily: sfProFont }}>
+                                  {isProfit ? "+" : ""}{formatINR(activeTotalLiveProfit)}
+                                </span>
+                                <span className={`text-[12px] font-medium px-2 py-0.5 rounded-sm ${isProfit ? "bg-kite-green/10 text-kite-green" : "bg-kite-red/10 text-kite-red"}`} style={{ fontFamily: sfProFont }}>
+                                  {isProfit ? "+" : ""}{activeTotalInvested > 0 ? ((activeTotalLiveProfit / activeTotalInvested) * 100).toFixed(2) : "0.00"}%
+                                </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Mobile Holdings List (Matches Kite App) */}
@@ -1217,8 +1243,8 @@ export default function Investors() {
                               
                               return (
                                 <div 
-                                  key={i} 
-                                  className="px-4 py-3 border-b border-kite-border-soft hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                                  key={`mob_inv_h_${h.bizId}_${i}`} 
+                                  className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 transition-colors cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedPortfolioInvestment({
@@ -1318,7 +1344,7 @@ export default function Investors() {
                             const avgPrice = p.investedAmount / qty;
                             return (
                               <tr
-                                key={i}
+                                key={`desk_inv_p_${p.bizId}_${i}`}
                                 className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1368,8 +1394,8 @@ export default function Investors() {
                             
                             return (
                               <div 
-                                key={i} 
-                                className="px-4 py-3 border-b border-kite-border-soft hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                                key={`mob_inv_p_${p.bizId}_${i}`} 
+                                className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 transition-colors cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPortfolioInvestment({
@@ -1521,7 +1547,7 @@ export default function Investors() {
                   const payout = inv.payoutDetails;
                   return (
                     <div
-                      key={i}
+                      key={`inv_pos_${inv.id}_${i}`}
                       className="p-4 border border-kite-border rounded-sm flex flex-col md:flex-row md:items-center justify-between"
                     >
                       <div>
@@ -1572,7 +1598,7 @@ export default function Investors() {
       </div>
       {/* --- Profit Slip Modal --- */}{" "}
       {pdfProfitSlip && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 p-4 print:hidden">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 dark:bg-black/70 p-4 print:hidden">
           {" "}
           <div className="bg-white dark:bg-kite-surface rounded-sm md:rounded w-full max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
             {" "}

@@ -154,10 +154,10 @@ export default function BusinessDetail({
   };
 
   return (
-    <div className="bg-white dark:bg-kite-surface flex flex-col h-full -mx-3 md:mx-0 px-0 md:px-0 md:rounded-lg animate-fade-in relative font-sans text-kite-text">
+    <div className="bg-white dark:bg-kite-surface flex flex-col h-full -mx-3 md:mx-0 px-0 md:px-0 md:rounded-lg animate-slide-in-mobile relative font-sans text-kite-text">
       {/* Header */}
       <div className="bg-white dark:bg-kite-surface px-4 py-3 flex items-center border-b border-kite-border-soft">
-        <button onClick={() => currentView === "menu" ? onBack() : setCurrentView("menu")} className="mr-4 text-kite-text">
+        <button onClick={() => currentView === "menu" ? onBack() : setCurrentView("menu")} className="mr-4 text-kite-text flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-[17px] font-medium tracking-wide">
@@ -194,32 +194,28 @@ export default function BusinessDetail({
             </div>
           </div>
           
-          <div className="px-5 py-4 border-b border-kite-border-soft">
-            <h3 className="text-[14px] font-medium text-kite-text mb-3">Account</h3>
+          <div className="px-5 py-2 border-b border-kite-border-soft">
+            <h3 className="text-[13px] font-medium text-kite-text-light mb-1 mt-2">Account</h3>
             <div className="space-y-0">
-              <button onClick={() => setCurrentView("funds")} className="w-full py-3.5 flex justify-between items-center group">
+              <button onClick={() => setCurrentView("funds")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Funds</span>
                 <span className="text-kite-text font-normal text-[16px]">₹</span>
               </button>
-              <div className="h-[1px] w-full bg-gray-50 my-0"></div>
-              <button onClick={() => setCurrentView("profile")} className="w-full py-3.5 flex justify-between items-center group">
+              <button onClick={() => setCurrentView("profile")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Profile</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
               </button>
-              <div className="h-[1px] w-full bg-gray-50 my-0"></div>
-              <button onClick={() => setCurrentView("investors")} className="w-full py-3.5 flex justify-between items-center group">
+              <button onClick={() => setCurrentView("investors")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Investors details</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
               </button>
-              <div className="h-[1px] w-full bg-gray-50 my-0"></div>
-              <button onClick={() => setCurrentView("bank")} className="w-full py-3.5 flex justify-between items-center group">
+              <button onClick={() => setCurrentView("bank")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Bank details</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
               </button>
-              <div className="h-[1px] w-full bg-gray-50 my-0"></div>
-              <button onClick={() => setCurrentView("registration")} className="w-full py-3.5 flex justify-between items-center group">
+              <button onClick={() => setCurrentView("registration")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Registration Information</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
               </button>
             </div>
           </div>
@@ -343,10 +339,10 @@ export default function BusinessDetail({
           <div className="bg-white dark:bg-kite-surface pt-2 border-b border-kite-border-soft mt-4">
              <h3 className="px-5 py-3 text-[14px] font-normal text-kite-text-light border-b border-kite-border-soft uppercase tracking-wider">Current investor</h3>
              <div className="divide-y divide-kite-border-soft">
-               {businessInvestments.map(inv => {
+               {businessInvestments.map((inv, idx) => {
                  const investor = state.investors.find(i => i.id === inv.investorId);
                  return (
-                   <div key={inv.id} className="p-4 flex justify-between items-center px-5">
+                   <div key={`biz_inv_${inv.id}_${idx}`} className="p-4 flex justify-between items-center px-5">
                       <div>
                         <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{investor?.name || "Unknown"}</p>
                         <p className="text-[12px] md:text-[13px] text-kite-text-light mt-0.5">{inv.timePeriodMonths} Months • <span className={inv.status === "active" ? "text-[#4CAF50]" : "text-kite-text-light"}>{inv.status}</span></p>

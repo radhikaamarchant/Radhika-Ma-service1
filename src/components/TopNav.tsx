@@ -54,12 +54,11 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
   }, []);
 
   const navItems = [
-    { id: "dashboard" as View, label: "Dashboard", icon: LayoutDashboard },
-    { id: "data-analysis" as View, label: "Data Analysis", icon: PieChart },
-    { id: "businesses" as View, label: "Businesses", icon: Building2 },
-    { id: "investors" as View, label: "Investors", icon: Users },
-    { id: "investments" as View, label: "Investments", icon: ReceiptIndianRupee },
-    { id: "pnl" as View, label: "MY P&L", icon: PieChart },
+    { id: "dashboard" as View, label: "Dashboard" },
+    { id: "businesses" as View, label: "Businesses" },
+    { id: "investors" as View, label: "Investors" },
+    { id: "investments" as View, label: "Investments" },
+    { id: "pnl" as View, label: "MY P&L" },
   ];
 
   return (
@@ -72,7 +71,6 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
 
       <nav className="flex items-center space-x-6 h-full">
         {navItems.map((item) => {
-          const Icon = item.icon;
           const isActive = currentView === item.id;
           return (
             <button
@@ -84,7 +82,6 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
                   : "border-transparent text-kite-text hover:text-kite-text dark:hover:text-white lg:hover:text-[#FF8148]"
               }`}
             >
-              <Icon strokeWidth={isActive ? 2 : 1.5} className="w-[16px] h-[16px]" />
               <span className="text-[13px] font-medium tracking-wide">{item.label}</span>
             </button>
           );

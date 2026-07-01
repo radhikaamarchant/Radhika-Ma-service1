@@ -55,16 +55,11 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
     };
   }, []);
   const navItems = [
-    { id:"dashboard" as View, label:"Dashboard", icon: LayoutDashboard },
-    { id:"data-analysis" as View, label:"Data Analysis", icon: PieChart },
-    { id:"businesses" as View, label:"Businesses", icon: Building2 },
-    { id:"investors" as View, label:"Investors", icon: Users },
-    {
-      id:"investments" as View,
-      label:"Investments",
-      icon: ReceiptIndianRupee,
-    },
-    { id:"pnl" as View, label:"MY P&L", icon: PieChart },
+    { id: "dashboard" as View, label: "Dashboard" },
+    { id: "businesses" as View, label: "Businesses" },
+    { id: "investors" as View, label: "Investors" },
+    { id: "investments" as View, label: "Investments" },
+    { id: "pnl" as View, label: "MY P&L" },
   ];
   return (
     <div className="w-[260px] h-full border-r border-kite-border bg-[#F8F9FA] dark:bg-kite-bg flex flex-col">
@@ -80,25 +75,20 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
           </p>
         </div>{""}
         {navItems.map((item) => {
-          const Icon = item.icon;
           const isActive = currentView === item.id;
           return (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center space-x-3 px-5 py-2.5 transition-colors text-[13px] md:text-[14px] font-medium relative group ${isActive ?"text-black" :"text-kite-text hover:text-black"} `}
+              className={`w-full flex items-center px-5 py-2.5 transition-colors text-[13px] md:text-[14px] font-medium relative group ${isActive ?"text-black dark:text-white" :"text-kite-text-light hover:text-black dark:hover:text-white"} `}
             >
               {""}
               {isActive && (
                 <motion.div
                   layoutId="activeSidebar"
-                  className="absolute left-0 top-0 bottom-0 w-[3px] bg-black"
+                  className="absolute left-0 top-0 bottom-0 w-[3px] bg-black dark:bg-white"
                 />
               )}{""}
-              <Icon
-                strokeWidth={isActive ? 2 : 1.5}
-                className={`w-[18px] h-[18px] ${isActive ?"text-black" :"text-kite-text-light group-hover:text-black"}`}
-              />
               <span className="truncate">{item.label}</span>
             </button>
           );

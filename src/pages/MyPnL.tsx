@@ -287,7 +287,7 @@ export default function MyPnL() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setShowStatement(false)}
-              className="p-2 rounded-full hover:bg-kite-bg text-kite-text-light transition-colors"
+              className="p-2 rounded-full hover:bg-kite-bg text-kite-text-light transition-colors flex items-center justify-center"
             >
               <ArrowLeft className="w-4 h-4 md:w-6 md:h-6" />
             </button>
@@ -467,7 +467,7 @@ export default function MyPnL() {
           </div>
         </div>
         {selectedBill && (
-          <div className="fixed inset-0 z-[60] bg-black/60 flex flex-col items-center justify-center p-2 md:p-4 print:hidden backdrop-blur-sm">
+          <div className="fixed inset-0 z-[60] bg-black/60 dark:bg-black/70 flex flex-col items-center justify-center p-2 md:p-4 print:hidden">
             <div className="bg-white dark:bg-kite-surface max-w-lg w-full rounded-sm relative flex flex-col">
               <div className="flex justify-between items-center p-2 md:p-4 border-b border-kite-border">
                 <h3 className="text-[11px] md:text-[12px] tracking-tight text-kite-text flex items-center">
