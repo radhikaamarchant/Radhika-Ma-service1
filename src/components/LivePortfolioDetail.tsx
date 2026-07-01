@@ -151,7 +151,7 @@ export function LivePortfolioDetail({
         {""}
         <div className="bg-white dark:bg-kite-surface md:rounded w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl flex flex-col overflow-hidden relative md:shadow-xl dark:md:shadow-none md:border md:border-gray-200 dark:md:border-[#383838]">
           {""}
-          <div className="shrink-0 bg-white dark:bg-kite-surface border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10">
+          <div className="shrink-0 bg-white dark:bg-kite-surface border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10 mobile-modal-safe">
             {""}
             <div className="flex items-center space-x-2">
               {""}

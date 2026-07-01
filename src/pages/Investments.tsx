@@ -378,7 +378,7 @@ export default function Investments() {
             className="md:hidden fixed inset-0 z-[110] bg-white dark:bg-[#1E2938] flex flex-col font-sans"
           >
             {/* Header */}
-            <div className="flex items-center px-4 pt-8 pb-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10">
+            <div className="flex items-center px-4 pb-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
               <button
                 onClick={() => setShowAddForm(false)}
                 className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center"
@@ -533,8 +533,7 @@ export default function Investments() {
 
             {/* Mobile Bottom Section */}
             <div 
-              className="md:hidden absolute bottom-0 left-0 right-0 bg-white dark:bg-[#223042] border-t border-gray-200 dark:border-[#44546A] z-50"
-              style={{ padding: "16px 16px 40px 16px", paddingBottom: "max(40px, env(safe-area-inset-bottom))" }}
+              className="md:hidden absolute bottom-0 left-0 right-0 bg-white dark:bg-[#223042] border-t border-gray-200 dark:border-[#44546A] z-50 p-4 mobile-safe-pb"
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 {(() => {
@@ -585,7 +584,7 @@ export default function Investments() {
                      transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
                      className="absolute inset-0 bg-white dark:bg-[#1E2938] z-50 flex flex-col"
                    >
-                     <div className="flex items-center px-4 h-[64px] bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 pt-2 z-10">
+                     <div className="flex items-center px-4 py-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
                        <button onClick={() => setShowBusinessSelect(false)} className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center">
                          <ArrowLeft className="w-5 h-5" />
                        </button>
@@ -635,7 +634,7 @@ export default function Investments() {
                      transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
                      className="absolute inset-0 bg-white dark:bg-[#1E2938] z-50 flex flex-col"
                    >
-                     <div className="flex items-center px-4 h-[64px] bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 pt-2 z-10">
+                     <div className="flex items-center px-4 py-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
                        <button onClick={() => setShowInvestorSelect(false)} className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center">
                          <ArrowLeft className="w-5 h-5" />
                        </button>
@@ -1043,7 +1042,7 @@ export default function Investments() {
                 transition={{ type: "tween", ease: "easeOut", duration: 0.15 }}
                 className="bg-kite-bg dark:bg-kite-surface md:rounded w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl flex flex-col overflow-hidden relative shadow-none md:border md:border-gray-200/50 dark:md:border-[#383838]/50">
                 {""}
-                <div className="shrink-0 bg-kite-surface border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10">
+                <div className="shrink-0 bg-kite-surface border-b border-kite-border px-3 py-2 md:px-4 md:py-3 flex justify-between items-center z-10 mobile-modal-safe">
                   {""}
                   <div className="flex items-center space-x-2">
                     {""}
@@ -1775,7 +1774,7 @@ export default function Investments() {
                     </div>
                   )}{""}
                 {withdrawStep === 1 && (
-                  <div className="shrink-0 p-3 pb-8 md:p-4 z-20" style={{ paddingBottom: "max(40px, env(safe-area-inset-bottom))" }}>
+                  <div className="shrink-0 p-3 md:p-4 z-20 mobile-safe-pb">
                     {""}
                     <div className="md:hidden">
                       {""}

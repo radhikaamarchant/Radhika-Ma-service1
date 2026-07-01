@@ -304,6 +304,15 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
 
 /* આ કોડ ફક્ત 768px થી નાની સ્ક્રીન (મોબાઈલ) માટે જ કામ કરશે */
 @media (max-width: 768px) {
+  .mobile-header-safe {
+    padding-top: max(12px, env(safe-area-inset-top, 0px)) !important;
+  }
+  .mobile-modal-safe {
+    padding-top: max(16px, env(safe-area-inset-top, 0px)) !important;
+  }
+  .mobile-safe-pb {
+    padding-bottom: max(40px, env(safe-area-inset-bottom, 0px)) !important;
+  }
   :root:not(.dark) .footer-nav span.text-gray-500,
   :root:not(.dark) .footer-nav svg.text-gray-400 {
     color: #44475B !important;
@@ -311,13 +320,13 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
 
   .footer-nav {
     /* નીચેની પટ્ટી માટે જરૂરી જગ્યા */
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     /* ફૂટરની કુલ ઊંચાઈમાં iOS ની સુરક્ષિત જગ્યા ઉમેરો */
-    height: calc(54px + env(safe-area-inset-bottom));
+    height: calc(54px + env(safe-area-inset-bottom, 0px));
   }
 
   body {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* Hide scrollbars on mobile for a cleaner app-like feel */

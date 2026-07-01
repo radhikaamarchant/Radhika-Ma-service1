@@ -86,7 +86,7 @@ export default function ImageCropModal({ imageUrl, onClose, onCrop }: Props) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black flex flex-col">
-      <div className="flex justify-between items-center p-4 bg-black text-white">
+      <div className="flex justify-between items-center p-4 bg-black text-white mobile-modal-safe">
         <button onClick={onClose} className="px-3 py-1 font-normal text-[15px]">Cancel</button>
         <span className="font-normal text-[16px]">Crop Image</span>
         <button onClick={handleSave} className="px-3 py-1 text-kite-blue font-medium text-[15px]">Done</button>
