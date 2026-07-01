@@ -404,7 +404,7 @@ export default function Investments() {
                         <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 uppercase tracking-wider">Business</p>
                         <div className="flex justify-between items-center">
                           <p className="text-[15px] font-medium text-gray-900 dark:text-[#F1F5F9] truncate pr-2">
-                            {selectedBusiness ? selectedBusiness.name : "Select Business"}
+                            {selectedBusiness ? selectedBusiness.name.toUpperCase() : "Select Business"}
                           </p>
                           <ChevronDown className="w-4 h-4 text-[#4184F3]" />
                         </div>
@@ -413,7 +413,7 @@ export default function Investments() {
                         <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 uppercase tracking-wider">Investor</p>
                         <div className="flex justify-between items-center">
                           <p className="text-[15px] font-medium text-gray-900 dark:text-[#F1F5F9] truncate pr-2">
-                            {selectedInvestor ? selectedInvestor.name : "Select Investor"}
+                            {selectedInvestor ? selectedInvestor.name.toUpperCase() : "Select Investor"}
                           </p>
                           <ChevronDown className="w-4 h-4 text-[#4184F3]" />
                         </div>
@@ -614,7 +614,7 @@ export default function Investments() {
                              }}
                            >
                              <div>
-                               <span className="font-medium text-[14px] text-gray-900 dark:text-[#F1F5F9]">{b.name}</span>
+                               <span className="font-medium text-[14px] text-gray-900 dark:text-[#F1F5F9] uppercase">{b.name}</span>
                                <span className="text-[12px] text-gray-500 dark:text-[#A3ACB8] block mt-0.5">ID: {b.businessId}</span>
                              </div>
                            </div>
@@ -665,7 +665,7 @@ export default function Investments() {
                              }}
                            >
                              <div>
-                               <span className="font-medium text-[14px] text-gray-900 dark:text-[#F1F5F9]">{i.name}</span>
+                               <span className="font-medium text-[14px] text-gray-900 dark:text-[#F1F5F9] uppercase">{i.name}</span>
                                <span className="text-[12px] text-gray-500 dark:text-[#A3ACB8] block mt-0.5">ID: {i.investorId} {i.email ? `• ${i.email}` : ''}</span>
                              </div>
                              {activeCount > 0 && (
@@ -1856,7 +1856,7 @@ export default function Investments() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type:"spring", stiffness: 400, damping: 30 }}
-            className={`fixed bottom-4 right-0 left-0 mx-4 md:left-auto md:right-8 md:mx-0 z-[100] bg-kite-surface shadow-lg rounded-sm border-l-4 border-kite-blue p-4 max-w-sm items-start space-x-3 ${successData.type === "SELL" ? "hidden md:flex" : "flex"}`}
+            className={`fixed bottom-24 right-0 left-0 mx-4 md:bottom-4 md:left-auto md:right-8 md:mx-0 z-[120] bg-kite-surface shadow-lg rounded-sm border-l-4 border-kite-blue p-4 max-w-sm items-start space-x-3 ${successData.type === "SELL" ? "hidden md:flex" : "flex"}`}
           >
             {""}
             <div className="w-6 h-6 rounded-full bg-kite-blue flex items-center justify-center shrink-0 mt-0.5">

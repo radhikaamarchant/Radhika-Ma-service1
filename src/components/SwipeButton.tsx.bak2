@@ -146,7 +146,7 @@ export function SwipeButton({
           animate={{ opacity: isSuccess ? 1 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* success text removed */}
+          {successText}
         </motion.div>
         <motion.div
           drag={isSuccess ? false : "x"}
