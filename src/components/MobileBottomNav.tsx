@@ -1,5 +1,7 @@
 import { View } from"../types";
 import { Bookmark, Gavel, User, Briefcase } from"lucide-react";
+import { useAppContext } from "../utils/AppContext";
+
 interface MobileBottomNavProps {
   currentView: View;
   onNavigate: (view: View) => void;

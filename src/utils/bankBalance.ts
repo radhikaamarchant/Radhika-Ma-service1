@@ -77,13 +77,24 @@ export function getUnifiedBankBalance(
         balance += i.rmasServiceCharge;
       }
     });
+  } else {
+    // Normal entities initial deductions
+    const biz = businesses.find(
+      (b) => b.ownerName === entityName || b.name === entityName,
+    );
+    const invt = investors.find((i) => i.name === entityName);
+
+    if (biz && biz.id !== "admin_business" && biz.registrationFee)
+      balance -= biz.registrationFee;
+    if (invt && invt.id !== "admin_investor" && invt.rmasServiceCharge)
+      balance -= invt.rmasServiceCharge;
   }
 
   investments.forEach((inv) => {
     if (isAdmin) {
       if (inv.adminCommissionBusiness) balance += inv.adminCommissionBusiness;
       if (inv.adminCommissionInvestor) balance += inv.adminCommissionInvestor;
-      if (inv.status ==="completed" && inv.payoutDetails) {
+      if (inv.status === "completed" && inv.payoutDetails) {
         balance += inv.payoutDetails.rmasCommission || 0;
         balance += inv.payoutDetails.happyIncomeTax || 0;
         balance += inv.payoutDetails.rmasPrematurePenalty || 0;
@@ -93,9 +104,9 @@ export function getUnifiedBankBalance(
       }
 
       // Admin Business: receives investment
-      if (inv.businessId ==="admin_business") {
+      if (inv.businessId === "admin_business") {
         balance += inv.amount;
-        if (inv.status ==="completed" && inv.payoutDetails) {
+        if (inv.status === "completed" && inv.payoutDetails) {
           balance -= inv.payoutDetails.totalCredited;
           if (inv.payoutDetails.happyIncomeTax)
             balance -= inv.payoutDetails.happyIncomeTax;
@@ -103,9 +114,9 @@ export function getUnifiedBankBalance(
       }
 
       // Admin Investor: makes investment
-      if (inv.investorId ==="admin_investor") {
+      if (inv.investorId === "admin_investor") {
         balance -= inv.amount;
-        if (inv.status ==="completed" && inv.payoutDetails) {
+        if (inv.status === "completed" && inv.payoutDetails) {
           balance += inv.payoutDetails.totalCredited;
         }
       }
@@ -116,14 +127,9 @@ export function getUnifiedBankBalance(
       );
       const invt = investors.find((i) => i.name === entityName);
 
-      if (biz && biz.id !=="admin_business" && biz.registrationFee)
-        balance -= biz.registrationFee;
-      if (invt && invt.id !=="admin_investor" && invt.rmasServiceCharge)
-        balance -= invt.rmasServiceCharge;
-
       if (biz && inv.businessId === biz.id) {
         balance += inv.amount;
-        if (inv.status ==="completed" && inv.payoutDetails) {
+        if (inv.status === "completed" && inv.payoutDetails) {
           const businessBurden =
             inv.payoutDetails.totalCredited +
             (inv.payoutDetails.rmasCommission || 0) +
@@ -134,7 +140,7 @@ export function getUnifiedBankBalance(
         }
       } else if (invt && inv.investorId === invt.id) {
         balance -= inv.amount;
-        if (inv.status ==="completed" && inv.payoutDetails) {
+        if (inv.status === "completed" && inv.payoutDetails) {
           balance += inv.payoutDetails.totalCredited;
         }
       }

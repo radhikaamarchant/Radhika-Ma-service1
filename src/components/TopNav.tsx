@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "../utils/ThemeContext";
 import { Logo } from "./Logo";
+import { initAuth } from "../utils/firebase";
+import { useAppContext } from "../utils/AppContext";
 
 interface TopNavProps {
   currentView: View;
@@ -25,6 +27,8 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
   const [adminPhoto, setAdminPhoto] = useState<string | null>(null);
 
   useEffect(() => {
+    const unsub = initAuth();
+
     const saved = localStorage.getItem("adminProfile");
     if (saved) {
       try {
@@ -48,6 +52,7 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
     window.addEventListener("storage", handleStorage);
     window.addEventListener("adminProfileUpdated", handleStorage);
     return () => {
+      if(unsub) unsub();
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("adminProfileUpdated", handleStorage);
     };
@@ -55,6 +60,7 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
 
   const navItems = [
     { id: "dashboard" as View, label: "Dashboard" },
+    { id: "data-analysis" as View, label: "Analysis" },
     { id: "businesses" as View, label: "Businesses" },
     { id: "investors" as View, label: "Investors" },
     { id: "investments" as View, label: "Investments" },

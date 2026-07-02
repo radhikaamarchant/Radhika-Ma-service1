@@ -262,7 +262,7 @@ export default function Businesses() {
                     {!isSearchExpanded && (
                       <button
                         onClick={() => setIsSearchExpanded(true)}
-                        className="-ml-1.5 p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
+                        className="-ml-1.5 p-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
                       >
                         {" "}
                         <Search className="w-[18px] h-[18px] text-kite-blue" />{" "}
@@ -276,7 +276,7 @@ export default function Businesses() {
                             setIsSearchExpanded(false);
                             setSearchTerm("");
                           }}
-                          className="p-1.5 -ml-1 hover:bg-gray-100 rounded-full mr-1 transition-colors flex-shrink-0"
+                          className="p-1.5 -ml-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full mr-1 transition-colors flex-shrink-0"
                         >
                           {" "}
                           <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />{" "}

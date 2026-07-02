@@ -68,6 +68,14 @@ export interface Investment {
   };
 }
 
+export interface AppUser {
+  id: string; // Firebase Auth UID
+  name: string;
+  email: string;
+  role: "CEO" | "EMPLOYEE" | "BUSINESS_OWNER" | "INVESTOR";
+  fund?: number; // Optional fund tracking
+}
+
 export type View =
   |"dashboard"
   |"data-analysis"

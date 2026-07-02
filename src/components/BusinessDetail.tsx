@@ -30,9 +30,10 @@ export default function BusinessDetail({
   const business = state.businesses.find((b) => b.id === businessId);
   const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const [formData, setFormData] = useState({
-    fundingRequired: business?.fundingRequired.toString() || "0",
+    fundingRequired: business?.fundingRequired ? new Intl.NumberFormat('en-IN').format(business.fundingRequired) : "0",
     interestRate: business?.interestRate.toString() || "0",
     status: business?.status || "listed",
     name: business?.name || "",
@@ -44,7 +45,7 @@ export default function BusinessDetail({
   useEffect(() => {
     if (business) {
       setFormData({
-        fundingRequired: (business.fundingRequired || 0).toString(),
+        fundingRequired: new Intl.NumberFormat('en-IN').format(business.fundingRequired || 0),
         interestRate: (business.interestRate || 0).toString(),
         status: business.status || "listed",
         name: business.name || "",
@@ -91,6 +92,10 @@ export default function BusinessDetail({
     .filter(tx => tx.category === "sahay")
     .reduce((sum, tx) => sum + tx.amount, 0);
 
+  const ownerProfit = state.investments
+    .filter((inv) => inv.businessId === businessId)
+    .reduce((sum, inv) => sum + (inv.amount * (business.interestRate || 0)) / 100, 0);
+
   const unifiedBalance = getUnifiedBankBalance(
     business.ownerName,
     state.businesses,
@@ -118,13 +123,27 @@ export default function BusinessDetail({
       type: "UPDATE_BUSINESS",
       payload: {
         ...business,
-        fundingRequired: parseFloat(formData.fundingRequired),
-        interestRate: parseFloat(formData.interestRate),
+        fundingRequired: parseFloat(formData.fundingRequired.toString().replace(/,/g, '')) || 0,
+        interestRate: parseFloat(formData.interestRate) || 0,
         status: formData.status as Business["status"],
       },
     });
-    // Add success feedback instead of closing immediately
-    alert("Funds updated successfully");
+    
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 2000);
+  };
+
+  const handleFundingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^0-9]/g, '');
+    if (!rawValue) {
+      setFormData({...formData, fundingRequired: ''});
+      return;
+    }
+    const numberValue = parseInt(rawValue, 10);
+    const formattedValue = new Intl.NumberFormat('en-IN').format(numberValue);
+    setFormData({...formData, fundingRequired: formattedValue});
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,16 +198,12 @@ export default function BusinessDetail({
               <p className="text-[12px] md:text-[13px] text-kite-text-light mt-1">{business.businessId || "ID Number"}</p>
             </div>
             <div className="relative cursor-pointer shrink-0 ml-4" onClick={() => fileInputRef.current?.click()}>
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative group">
                 {business.photoUrl ? (
                   <img src={business.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xl md:text-2xl font-normal">{business.name?.substring(0, 2).toUpperCase() || "BU"}</span>
+                  <span className="text-2xl md:text-3xl font-normal">{business.name?.substring(0, 2).toUpperCase() || "BU"}</span>
                 )}
-                
-                <div className="absolute bottom-0 w-full h-1/3 bg-black/40 flex items-center justify-center">
-                  <Upload className="w-3.5 h-3.5 text-white" />
-                </div>
               </div>
               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
             </div>
@@ -239,10 +254,10 @@ export default function BusinessDetail({
                   <div>
                     <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Funding Required (₹)</label>
                     <input
-                      type="number"
+                      type="text"
                       className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                       value={formData.fundingRequired}
-                      onChange={(e) => setFormData({...formData, fundingRequired: e.target.value})}
+                      onChange={handleFundingChange}
                     />
                   </div>
                   <div>
@@ -255,8 +270,20 @@ export default function BusinessDetail({
                       onChange={(e) => setFormData({...formData, interestRate: e.target.value})}
                     />
                   </div>
-                  <button onClick={handleSaveFunds} className="w-full bg-[#4CAF50] text-white py-3 rounded text-[14px] md:text-[15px] font-normal mt-2">
-                    + Add funds
+                  <button 
+                    onClick={handleSaveFunds} 
+                    className={`w-full py-3 rounded text-[14px] md:text-[15px] font-normal mt-2 transition-all duration-300 flex items-center justify-center ${showSuccess ? 'bg-kite-blue text-white' : 'bg-[#4CAF50] text-white'}`}
+                  >
+                    {showSuccess ? (
+                      <span className="flex items-center space-x-2 animate-fade-in">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Funds Added</span>
+                      </span>
+                    ) : (
+                      "+ Add funds"
+                    )}
                   </button>
                </div>
             </div>
@@ -274,6 +301,10 @@ export default function BusinessDetail({
             <div className="px-4 py-3 flex justify-between items-center border-b border-kite-border-soft">
               <span className="text-[13px] md:text-[14px] font-normal text-kite-text">Payout</span>
               <span className="text-[13px] md:text-[14px] font-normal text-kite-text">{formatINR(payout).replace("₹", "")}</span>
+            </div>
+            <div className="px-4 py-3 flex justify-between items-center border-b border-kite-border-soft bg-kite-blue/5">
+              <span className="text-[13px] md:text-[14px] font-medium text-kite-blue">Owner Profit</span>
+              <span className="text-[13px] md:text-[14px] font-medium text-kite-blue">{formatINR(ownerProfit).replace("₹", "")}</span>
             </div>
             <div className="px-4 py-3 flex justify-between items-center border-b border-kite-border-soft">
               <span className="text-[13px] md:text-[14px] font-normal text-kite-text">Authorities</span>
