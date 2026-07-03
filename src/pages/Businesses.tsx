@@ -23,6 +23,7 @@ import { getVerificationStats } from "../utils/blueTick";
 
 // Removed local MarketTrendCell
 import { MarketTrendCell } from "../components/MarketTrendCell";
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 
 
 export default function Businesses() {
@@ -44,6 +45,12 @@ export default function Businesses() {
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [showOwnerSelect, setShowOwnerSelect] = useState(false);
   const [ownerSearch, setOwnerSearch] = useState("");
+  
+  useMobileBackNavigation(!!selectedBusinessId, () => setSelectedBusinessId(null));
+  useMobileBackNavigation(viewMode === "add-step-1", () => setViewMode("list"));
+  useMobileBackNavigation(viewMode === "add-step-2", () => setViewMode("add-step-1"));
+  useMobileBackNavigation(showOwnerSelect, () => setShowOwnerSelect(false));
+
 
   // Scroll preservation
   const scrollPosRef = useRef<number>(0);

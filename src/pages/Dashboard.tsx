@@ -1,3 +1,4 @@
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState } from"react";
 import { useAppContext } from"../utils/AppContext";
 import { formatINR } from"../utils/mockData";
@@ -39,7 +40,10 @@ export default function Dashboard() {
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(
     null,
   );
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useMobileBackNavigation(!!selectedBusiness, () => setSelectedBusiness(null));
+ 
 
 // Calculate stats
 

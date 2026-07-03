@@ -1,3 +1,4 @@
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState } from"react";
 import { useAppContext } from"../utils/AppContext";
 import { formatINR } from"../utils/mockData";
@@ -28,6 +29,10 @@ export default function MyPnL() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [selectedBill, setSelectedBill] = useState<StatementEntry | null>(null);
+
+  useMobileBackNavigation(showStatement, () => setShowStatement(false));
+  useMobileBackNavigation(!!selectedBill, () => setSelectedBill(null));
+
   const rmasAvailableBalance = getUnifiedBankBalance("Radhika M",
     state.businesses,
     state.investors,

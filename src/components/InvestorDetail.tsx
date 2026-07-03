@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { calculateLiveProfit } from "../utils/profitCalculator";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 interface InvestorDetailProps {
   investorId: string;
   onBack: () => void;
@@ -81,8 +82,14 @@ export default function InvestorDetail({
       )
     : 0;
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+
+
+
   const [selectedPortfolioInvestment, setSelectedPortfolioInvestment] =
     useState<any>(null);
+  useMobileBackNavigation(isEditingDetails, () => setIsEditingDetails(false));
+  useMobileBackNavigation(!!selectedPortfolioInvestment, () => setSelectedPortfolioInvestment(null));
+
   const [formData, setFormData] = useState({
     name: investor?.name || "",
     mobile: investor?.mobile || "",

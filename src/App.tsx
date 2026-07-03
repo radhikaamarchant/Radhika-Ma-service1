@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect, useRef } from"react";
-import { AppProvider } from"./utils/AppContext";
+import { AppProvider } from "./utils/AppContext";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { View } from"./types";
 import TopNav from"./components/TopNav";
 import BusinessSidebar from"./components/BusinessSidebar";
@@ -93,6 +94,19 @@ function MainLayout() {
   const [currentView, setCurrentView] = useState<View>("dashboard");
 
   const { state, dispatch } = useAppContext();
+
+  // Keyboard Shortcuts Mapping
+  useKeyboardShortcuts({
+    'ctrl+s': () => {
+      console.log('Saved data (Placeholder for Ctrl+S)');
+    },
+    'ctrl+k': () => {
+      console.log('Open search (Placeholder for Ctrl+K)');
+    },
+    'shift+enter': () => {
+      console.log('Performed Shift+Enter action');
+    }
+  });
 
   // Scroll preservation for main tabs
   const scrollPositions = useRef<{ [key: string]: number }>({});

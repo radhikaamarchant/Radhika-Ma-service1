@@ -1,3 +1,4 @@
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState, useRef, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { formatINR } from "../utils/mockData";
@@ -31,6 +32,9 @@ export default function BusinessDetail({
   const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useMobileBackNavigation(currentView !== "menu", () => setCurrentView("menu"));
+
   
   const [formData, setFormData] = useState({
     fundingRequired: business?.fundingRequired ? new Intl.NumberFormat('en-IN').format(business.fundingRequired) : "0",

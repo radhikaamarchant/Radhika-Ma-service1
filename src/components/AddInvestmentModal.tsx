@@ -1,3 +1,4 @@
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, ChevronDown, CheckCircle, Search, RefreshCw, X } from "lucide-react";
@@ -37,6 +38,9 @@ export default function AddInvestmentModal({
   const [businessSearch, setBusinessSearch] = useState("");
   const [investorSearch, setInvestorSearch] = useState("");
   const [isBooking, setIsBooking] = useState(false);
+
+  useMobileBackNavigation(isOpen, onClose);
+
 
   useEffect(() => {
     if (isOpen) {

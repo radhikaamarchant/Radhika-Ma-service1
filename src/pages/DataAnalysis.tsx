@@ -1,3 +1,4 @@
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState } from"react";
 import { useAppContext } from"../utils/AppContext";
 import { useMarketSimulation } from"../utils/MarketSimulationContext";
@@ -45,6 +46,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
   const [activeTab, setActiveTab] = useState<string>("best-market");
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalBusinessId, setAddModalBusinessId] = useState("");
+  useMobileBackNavigation(!!selectedBusiness, () => setSelectedBusiness(null));
+
   const businessesWithStats = state.businesses.map((b) => {
     const overallTrend = marketState.trends[b.id] ?? b.interestRate;
     const bizInvs = state.investments.filter((i) => i.businessId === b.id);
@@ -504,6 +507,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                 onClick={() => {
                   if (onNavigate) {
                     sessionStorage.setItem("mobileAddInvestmentBusinessId", b.id);
+                    window.dispatchEvent(new Event("mobileNavigateToInvestments"));
                     onNavigate("investments");
                   }
                 }}

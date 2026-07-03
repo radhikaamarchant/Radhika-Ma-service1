@@ -1,3 +1,4 @@
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState, useRef, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { formatINR } from "../utils/mockData";
@@ -101,6 +102,9 @@ export default function Investors() {
   const [pdfInvestor, setPdfInvestor] = useState<Investor | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showVerifySuccess, setShowVerifySuccess] = useState(false);
+
+
+
   const [pdfProfitSlip, setPdfProfitSlip] = useState<{
     investment: Investment;
     investor: Investor;
@@ -118,6 +122,21 @@ export default function Investors() {
     accountHolderName: "",
     rmasServiceCharge: "",
   });
+
+  useMobileBackNavigation(viewMode === "add-step-1", () => setViewMode("list"));
+  useMobileBackNavigation(viewMode === "add-step-2", () => setViewMode("add-step-1"));
+  useMobileBackNavigation(viewMode === "withdraw-list", () => setViewMode("list"));
+  useMobileBackNavigation(viewMode === "withdraw-calc", () => setViewMode("withdraw-list"));
+  useMobileBackNavigation(viewMode === "withdraw-bank", () => setViewMode("withdraw-calc"));
+  useMobileBackNavigation(viewMode === "banking-record", () => setViewMode("list"));
+  useMobileBackNavigation(viewMode === "investor-detail", () => {
+    setViewMode("list");
+    setSelectedInvestor(null);
+  });
+  useMobileBackNavigation(!!pdfInvestor, () => setPdfInvestor(null));
+  useMobileBackNavigation(!!pdfProfitSlip, () => setPdfProfitSlip(null));
+  useMobileBackNavigation(showOwnerSelect, () => setShowOwnerSelect(false));
+  useMobileBackNavigation(!!selectedPortfolioInvestment, () => setSelectedPortfolioInvestment(null));
   const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
   const uniqueInvestors = Array.from(
     new Map<string, Investor>(state.investors.map((i) => [i.id, i])).values(),

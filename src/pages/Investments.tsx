@@ -1,3 +1,4 @@
+import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState, useRef, useEffect } from"react";
 import { useAppContext } from"../utils/AppContext";
 import AddInvestmentModal from "../components/AddInvestmentModal";
@@ -30,13 +31,25 @@ export default function Investments() {
   const { state, dispatch } = useAppContext();
 
   useEffect(() => {
-    const pendingId = sessionStorage.getItem("mobileAddInvestmentBusinessId");
-    if (pendingId) {
-      setAddModalBusinessId(pendingId);
-      setFormData((prev: any) => ({ ...prev, businessId: pendingId }));
-      setShowAddForm(true);
-      sessionStorage.removeItem("mobileAddInvestmentBusinessId");
+    const checkPending = () => {
+      const pendingId = sessionStorage.getItem("mobileAddInvestmentBusinessId");
+      if (pendingId) {
+        setAddModalBusinessId(pendingId);
+        setFormData((prev: any) => ({ ...prev, businessId: pendingId }));
+        setShowAddForm(true);
+        setIsFromAnalysis(true);
+        setShowInvestorSelect(false); // Make sure it's false to show the new investment form directly
+        sessionStorage.removeItem("mobileAddInvestmentBusinessId");
+      }
+    };
+    
+    // Clear storage on initial mount if it was used for initial state
+    if (sessionStorage.getItem("mobileAddInvestmentBusinessId")) {
+        sessionStorage.removeItem("mobileAddInvestmentBusinessId");
     }
+    
+    window.addEventListener("mobileNavigateToInvestments", checkPending);
+    return () => window.removeEventListener("mobileNavigateToInvestments", checkPending);
   }, []);
 
   const { marketState } = useMarketSimulation();
@@ -44,8 +57,8 @@ export default function Investments() {
     state.businesses,
     state.investments,
   );
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [addModalBusinessId, setAddModalBusinessId] = useState("");
+  const [showAddForm, setShowAddForm] = useState(() => !!sessionStorage.getItem("mobileAddInvestmentBusinessId"));
+  const [addModalBusinessId, setAddModalBusinessId] = useState(() => sessionStorage.getItem("mobileAddInvestmentBusinessId") || "");
   const [addModalInvestorId, setAddModalInvestorId] = useState("");
   const [orderMode, setOrderMode] = useState<"BUY" | "SELL">("BUY");
   const [isBuyFlow, setIsBuyFlow] = useState(false);
@@ -89,9 +102,13 @@ export default function Investments() {
     rmasCommission:"",
     happyIncomeTax:"",
   });
+  const [isFromAnalysis, setIsFromAnalysis] = useState(() => !!sessionStorage.getItem("mobileAddInvestmentBusinessId"));
   const [showBusinessSelect, setShowBusinessSelect] = useState(false);
   const [desktopShowBusinessSelect, setDesktopShowBusinessSelect] = useState(false);
   const [desktopShowInvestorSelect, setDesktopShowInvestorSelect] = useState(false);
+  
+
+
   const [showInvestorSelect, setShowInvestorSelect] = useState(false);
   const [businessSearch, setBusinessSearch] = useState("");
   const [investorSearch, setInvestorSearch] = useState("");
@@ -106,14 +123,14 @@ export default function Investments() {
   const [payoutFreq, setPayoutFreq] = useState("Monthly");
   const [expectedRoi, setExpectedRoi] = useState("10.5");
   const [showBrokerageROI, setShowBrokerageROI] = useState(false);
-  const [formData, setFormData] = useState({
-    businessId:"",
+  const [formData, setFormData] = useState(() => ({
+    businessId: sessionStorage.getItem("mobileAddInvestmentBusinessId") || "",
     investorId:"",
     amount:"",
     timePeriodMonths:"12",
     adminCommissionInvestorPct:"2",
     adminCommissionBusinessPct:"2",
-  });
+  }));
   const selectedBusiness = state.businesses.find(
     (b) => b.id === formData.businessId,
   );
@@ -217,6 +234,11 @@ export default function Investments() {
     ).length;
   };
   const [isBooking, setIsBooking] = useState(false);
+
+  useMobileBackNavigation(showAddForm, () => { setShowAddForm(false); setIsFromAnalysis(false); });
+  useMobileBackNavigation(showBusinessSelect, () => setShowBusinessSelect(false));
+  useMobileBackNavigation(showInvestorSelect, () => setShowInvestorSelect(false));
+  useMobileBackNavigation(!!selectedInvestment, () => setSelectedInvestment(null));
   const uniqueInvestments = Array.from(
     new Map<string, Investment>(
       state.investments.map((inv) => [inv.id, inv]),
@@ -336,6 +358,7 @@ export default function Investments() {
                 setFormData({ businessId: "", investorId: "", amount: "", timePeriodMonths: "12", adminCommissionInvestorPct: "2", adminCommissionBusinessPct: "2" });
                 setAddModalBusinessId("");
                 setAddModalInvestorId("");
+                setIsFromAnalysis(false);
               }
               setShowAddForm(!showAddForm);
             }}
@@ -392,13 +415,13 @@ export default function Investments() {
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "tween", ease: "easeOut", duration: 0.15 }}
+            transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
             className="md:hidden fixed inset-0 z-[110] bg-white dark:bg-[#1E2938] flex flex-col font-sans"
           >
             {/* Header */}
             <div className="flex items-center px-4 pb-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
               <button
-                onClick={() => setShowAddForm(false)}
+                onClick={() => { setShowAddForm(false); setIsFromAnalysis(false); }}
                 className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -418,6 +441,7 @@ export default function Investments() {
                 <div className="bg-white dark:bg-transparent overflow-hidden relative">
                   {/* Business & Investor Select */}
                   <div className="flex flex-col">
+                     {!isFromAnalysis && (
                      <div className="w-full border-b border-gray-200 dark:border-[#44546A] p-4 relative z-10" onClick={() => setShowBusinessSelect(true)}>
                         <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 uppercase tracking-wider">Business</p>
                         <div className="flex justify-between items-center">
@@ -427,6 +451,7 @@ export default function Investments() {
                           <ChevronDown className="w-4 h-4 text-[#4184F3]" />
                         </div>
                      </div>
+                     )}
                      <div className="w-full border-b border-gray-200 dark:border-[#44546A] p-4 relative z-10" onClick={() => setShowInvestorSelect(true)}>
                         <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 uppercase tracking-wider">Investor</p>
                         <div className="flex justify-between items-center">

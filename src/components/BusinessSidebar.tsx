@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { Search } from "lucide-react";
+import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import AddInvestmentModal from "./AddInvestmentModal";
 
-const LiveSidebarValue = ({ baseAmount, roi }: { baseAmount: number; roi: number }) => {
+const LiveSidebarValue = ({ baseAmount, roi, overallTrend }: { baseAmount: number; roi: number; overallTrend: number }) => {
   const [currentAmount, setCurrentAmount] = useState(baseAmount);
-  const [percentChange, setPercentChange] = useState(0);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
   
   useEffect(() => {
@@ -13,15 +13,8 @@ const LiveSidebarValue = ({ baseAmount, roi }: { baseAmount: number; roi: number
     const interval = setInterval(() => {
       const change = current * (Math.random() * 0.002 - 0.001); // +/- 0.1% change
       const newAmount = current + change;
-      let pChange = 0;
-      if (baseAmount > 0) {
-         pChange = ((newAmount - baseAmount) / baseAmount) * 100;
-      } else {
-         pChange = ((newAmount - 10000) / 10000) * 100;
-      }
       
       setCurrentAmount(newAmount);
-      setPercentChange(pChange);
       
       if (newAmount > current) setFlash("up");
       else if (newAmount < current) setFlash("down");
@@ -33,7 +26,8 @@ const LiveSidebarValue = ({ baseAmount, roi }: { baseAmount: number; roi: number
     return () => clearInterval(interval);
   }, [baseAmount]);
 
-  const isPositive = percentChange >= 0;
+  // Use the actual overall trend instead of the random fluctuation for percentage
+  const isPositive = overallTrend >= roi;
 
   return (
     <div className="flex flex-col items-end">
@@ -41,7 +35,7 @@ const LiveSidebarValue = ({ baseAmount, roi }: { baseAmount: number; roi: number
         ₹{currentAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
       </span>
       <span className={`text-[10px] ${isPositive ? "text-kite-green" : "text-kite-red"}`}>
-        {isPositive ? "+" : ""}{percentChange.toFixed(2)}%
+        {isPositive ? "+" : ""}{overallTrend.toFixed(2)}%
       </span>
     </div>
   );
@@ -49,6 +43,7 @@ const LiveSidebarValue = ({ baseAmount, roi }: { baseAmount: number; roi: number
 
 export default function BusinessSidebar() {
   const { state } = useAppContext();
+  const { marketState } = useMarketSimulation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showInvestModal, setShowInvestModal] = useState(false);
   const [investBusinessId, setInvestBusinessId] = useState("");
@@ -78,6 +73,7 @@ export default function BusinessSidebar() {
       <div className="flex-1 overflow-y-auto">
         {filteredBusinesses.map((business, index) => {
           const totalInvested = state.investments.filter(i => i.businessId === business.id).reduce((sum, inv) => sum + inv.amount, 0);
+          const overallTrend = marketState.trends[business.id] ?? business.interestRate;
           
           return (
           <div
@@ -92,7 +88,7 @@ export default function BusinessSidebar() {
               <div className="flex-1 min-w-0 flex flex-col justify-center">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] lg:text-[13px] font-medium text-kite-text truncate lg:tracking-tight uppercase">{business.name}</h4>
-                  <LiveSidebarValue baseAmount={totalInvested} roi={business.interestRate} />
+                  <LiveSidebarValue baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} />
                 </div>
                 <div className="flex items-center justify-between mt-[2px]">
                   <span className="text-[11px] text-kite-blue truncate uppercase">
