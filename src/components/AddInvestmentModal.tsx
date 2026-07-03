@@ -140,8 +140,7 @@ export default function AddInvestmentModal({
   };
 
   const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
-  const activeBusinesses = state.businesses
-    .filter((b: any) => b.status === "active" || b.status === "funded")
+  const activeBusinesses = [...state.businesses]
     .sort((a, b) => getTime(b.id) - getTime(a.id));
   const sortedInvestors = [...state.investors]
     .sort((a, b) => new Date(b.joinDate || 0).getTime() - new Date(a.joinDate || 0).getTime());
@@ -231,7 +230,7 @@ export default function AddInvestmentModal({
                                 <div className="flex-1 overflow-y-auto">
                                   {activeBusinesses.filter(b => b.name.toLowerCase().includes(businessSearch.toLowerCase())).map(b => (
                                     <button key={b.id} onClick={() => { setFormData({ ...formData, businessId: b.id }); setDesktopShowBusinessSelect(false); }} className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] flex items-center justify-between">
-                                      {b.name}
+                                      {b.name.toUpperCase()}
                                       {formData.businessId === b.id && <CheckCircle className="w-3.5 h-3.5 text-[#4184F3]" />}
                                     </button>
                                   ))}
@@ -248,7 +247,7 @@ export default function AddInvestmentModal({
                             onClick={(e) => { e.stopPropagation(); setDesktopShowInvestorSelect(!desktopShowInvestorSelect); setDesktopShowBusinessSelect(false); }}
                             className={`w-full flex items-center justify-between bg-white dark:bg-[#1B1B1B] border rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] transition-colors ${desktopShowInvestorSelect ? "border-[#4184F3]" : "border-gray-200 dark:border-[#2A2A2A] hover:border-[#4184F3]"}`}
                           >
-                            <span className="truncate">{selectedInvestor ? selectedInvestor.name : "Select Investor"}</span>
+                            <span className="truncate">{selectedInvestor ? selectedInvestor.name.toUpperCase() : "Select Investor"}</span>
                             <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-[#8F8F8F] shrink-0 ml-2 transition-transform ${desktopShowInvestorSelect ? "rotate-180" : ""}`} />
                           </button>
                           <AnimatePresence>
@@ -268,12 +267,21 @@ export default function AddInvestmentModal({
                                   </div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto">
-                                  {sortedInvestors.filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase())).map(i => (
+                                  {sortedInvestors.filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase())).map(i => {
+                                    const activeCount = selectedBusiness ? state.investments.filter((inv: any) => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active").length : 0;
+                                    return (
                                     <button key={i.id} onClick={() => { setFormData({ ...formData, investorId: i.id }); setDesktopShowInvestorSelect(false); }} className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] flex items-center justify-between">
-                                      {i.name}
+                                      <div className="flex items-center gap-2">
+                                        <span>{i.name.toUpperCase()}</span>
+                                        {activeCount > 0 && (
+                                          <div className="bg-[#4184F3] text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center justify-center min-w-[16px] h-[16px]">
+                                            {activeCount}
+                                          </div>
+                                        )}
+                                      </div>
                                       {formData.investorId === i.id && <CheckCircle className="w-3.5 h-3.5 text-[#4184F3]" />}
                                     </button>
-                                  ))}
+                                  )})}
                                 </div>
                               </motion.div>
                             )}
