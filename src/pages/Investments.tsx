@@ -28,6 +28,17 @@ import { MobilePortfolioSummary } from"../components/MobilePortfolioSummary";
 import { SwipeButton } from"../components/SwipeButton";
 export default function Investments() {
   const { state, dispatch } = useAppContext();
+
+  useEffect(() => {
+    const pendingId = sessionStorage.getItem("mobileAddInvestmentBusinessId");
+    if (pendingId) {
+      setAddModalBusinessId(pendingId);
+      setFormData((prev: any) => ({ ...prev, businessId: pendingId }));
+      setShowAddForm(true);
+      sessionStorage.removeItem("mobileAddInvestmentBusinessId");
+    }
+  }, []);
+
   const { marketState } = useMarketSimulation();
   const blueTickBusinessIds = getBlueTickBusinessIds(
     state.businesses,
@@ -275,7 +286,7 @@ export default function Investments() {
     .sort((a, b) => getTime(b.id) - getTime(a.id));
   const sortedInvestors = state.investors
     .slice()
-    .sort((a, b) => getTime(b.id) - getTime(a.id));
+    .sort((a, b) => new Date(b.joinDate || 0).getTime() - new Date(a.joinDate || 0).getTime());
   return (
     <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent">
       {""}
@@ -320,7 +331,14 @@ export default function Investments() {
         {""}
         {!isSearchExpanded && (
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => {
+              if (!showAddForm) {
+                setFormData({ businessId: "", investorId: "", amount: "", timePeriodMonths: "12", adminCommissionInvestorPct: "2", adminCommissionBusinessPct: "2" });
+                setAddModalBusinessId("");
+                setAddModalInvestorId("");
+              }
+              setShowAddForm(!showAddForm);
+            }}
             className="flex items-center space-x-1.5 px-4 py-2 bg-kite-blue text-white rounded font-medium text-[13px] md:text-[14px] hover:bg-blue-600 transition-colors shadow-sm"
           >
             {""}
@@ -421,36 +439,93 @@ export default function Investments() {
                   </div>
                   
                   {/* Amount */}
-                  <div className="flex flex-col">
-                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] p-4 relative z-10">
-                        <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-2 uppercase tracking-wider">Investment Amount</p>
+                  <div className="flex flex-col space-y-6 md:space-y-0">
+                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10">
+                        <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 md:mb-2 uppercase tracking-wider">Investment Amount</p>
                         <div className="relative">
                           <input
                             type="text"
-                            className="w-full bg-transparent px-0 py-1 text-[18px] font-medium text-gray-900 dark:text-[#F1F5F9] outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                            className="w-full bg-transparent px-0 py-0 pb-2 md:pb-0 md:py-1 text-[18px] font-medium text-gray-900 dark:text-[#F1F5F9] outline-none placeholder-gray-400 dark:placeholder-gray-500"
                             placeholder="₹0"
                             value={formData.amount ? `₹${formData.amount}` : ""}
                             onChange={handleAmountChange}
                           />
                         </div>
                      </div>
-                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] p-4 relative z-10">
-                        <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-2 uppercase tracking-wider">Duration (M)</p>
+                     <div className="hidden md:block w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10">
+                        <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 md:mb-2 uppercase tracking-wider">Duration (M)</p>
                         <div className="relative">
                           <input
                             type="number"
-                            className="w-full bg-transparent px-0 py-1 text-[18px] font-medium text-gray-900 dark:text-[#F1F5F9] outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                            className="w-full bg-transparent px-0 py-0 pb-2 md:pb-0 md:py-1 text-[18px] font-medium text-gray-900 dark:text-[#F1F5F9] outline-none placeholder-gray-400 dark:placeholder-gray-500"
                             placeholder="12"
                             value={formData.timePeriodMonths}
                             onChange={(e) => setFormData({ ...formData, timePeriodMonths: e.target.value })}
                           />
                         </div>
                      </div>
+                     <div className="md:hidden w-full pt-3 px-4 pb-4 relative z-10">
+                        <div className="flex justify-between items-center relative z-10">
+                          <div className="flex items-center space-x-2">
+                             <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium uppercase tracking-wider">Brokerage ROI</p>
+                             <div className="w-3 h-3 rounded-full border border-gray-300 dark:border-[#7F8895] flex items-center justify-center text-[8px] text-gray-500 dark:text-[#7F8895]">i</div>
+                          </div>
+                          <div className="relative inline-flex items-center cursor-pointer" onClick={() => setShowBrokerageROI(!showBrokerageROI)}>
+                            <div className={`w-9 h-5 rounded-full transition-colors ${showBrokerageROI ? "bg-[#4184F3]" : "bg-gray-300 dark:bg-[#4B5565]"}`}>
+                              <div className={`absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white transition-transform ${showBrokerageROI ? "translate-x-4" : ""} shadow-sm`}></div>
+                            </div>
+                          </div>
+                        </div>
+                        {showBrokerageROI && (
+                          <div className="space-y-4 pt-4 pb-1 mt-3 border-t border-gray-200 dark:border-[#44546A]">
+                            <div className="flex justify-between items-center">
+                              <p className="text-[13px] text-gray-700 dark:text-[#C4C4C4] font-medium">Expected ROI (%)</p>
+                              <input
+                                type="number"
+                                className="w-16 bg-transparent px-0 py-1 text-right text-[15px] font-medium text-[#4184F3] outline-none border-b border-gray-200 dark:border-[#44546A] focus:border-[#4184F3]"
+                                placeholder="10.5"
+                                value={expectedRoi}
+                                onChange={(e) => setExpectedRoi(e.target.value)}
+                              />
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <p className="text-[13px] text-gray-700 dark:text-[#C4C4C4] font-medium">Duration (M)</p>
+                              <input
+                                type="number"
+                                className="w-16 bg-transparent px-0 py-1 text-right text-[15px] font-medium text-[#4184F3] outline-none border-b border-gray-200 dark:border-[#44546A] focus:border-[#4184F3]"
+                                placeholder="12"
+                                value={formData.timePeriodMonths}
+                                onChange={(e) => setFormData({ ...formData, timePeriodMonths: e.target.value })}
+                              />
+                            </div>
+                            <div className="flex justify-between items-center">
+                               <p className="text-[13px] text-gray-700 dark:text-[#C4C4C4] font-medium">Investor Brokerage (%)</p>
+                               <input
+                                  type="number"
+                                  className="w-16 bg-transparent px-0 py-1 text-right text-[15px] font-medium text-[#4184F3] outline-none border-b border-gray-200 dark:border-[#44546A] focus:border-[#4184F3]"
+                                  placeholder="2"
+                                  value={formData.adminCommissionInvestorPct}
+                                  onChange={(e) => setFormData({ ...formData, adminCommissionInvestorPct: e.target.value })}
+                                />
+                            </div>
+                            <div className="flex justify-between items-center">
+                               <p className="text-[13px] text-gray-700 dark:text-[#C4C4C4] font-medium">Business Brokerage (%)</p>
+                               <input
+                                  type="number"
+                                  className="w-16 bg-transparent px-0 py-1 text-right text-[15px] font-medium text-[#4184F3] outline-none border-b border-gray-200 dark:border-[#44546A] focus:border-[#4184F3]"
+                                  placeholder="2"
+                                  value={formData.adminCommissionBusinessPct}
+                                  onChange={(e) => setFormData({ ...formData, adminCommissionBusinessPct: e.target.value })}
+                                />
+                            </div>
+                          </div>
+                        )}
+                     </div>
                   </div>
                 </div>
 
                 {/* Secondary Toggles Card */}
-                <div className="bg-white dark:bg-transparent overflow-hidden relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
+                <div className="hidden md:block bg-white dark:bg-transparent overflow-hidden relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
                   <div className="flex justify-between items-center relative z-10">
                     <div className="flex items-center space-x-2">
                        <span className="text-[14px] text-gray-900 dark:text-[#F1F5F9] font-medium">Brokerage ROI</span>
@@ -1856,7 +1931,7 @@ export default function Investments() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type:"spring", stiffness: 400, damping: 30 }}
-            className={`fixed bottom-[72px] right-0 left-0 mx-4 md:bottom-4 md:left-auto md:right-8 md:mx-0 z-[120] bg-kite-surface shadow-lg rounded-sm border-l-4 border-kite-blue p-4 max-w-sm items-start space-x-3 ${successData.type === "SELL" ? "hidden md:flex" : "flex"}`}
+            className={`fixed bottom-24 right-0 left-0 mx-4 md:bottom-4 md:left-auto md:right-8 md:mx-0 z-[120] bg-kite-surface shadow-lg rounded-sm border-l-4 border-kite-blue p-4 max-w-sm items-start space-x-3 ${successData.type === "SELL" ? "hidden md:flex" : "flex"}`}
           >
             {""}
             <div className="w-6 h-6 rounded-full bg-kite-blue flex items-center justify-center shrink-0 mt-0.5">

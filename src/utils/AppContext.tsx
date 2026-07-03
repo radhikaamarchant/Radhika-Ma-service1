@@ -177,9 +177,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
 
       const payloadWithTimestamp =
-        action.payload && typeof action.payload === "object"
+        "payload" in action && action.payload && typeof action.payload === "object"
           ? cleanObj({ ...action.payload, updatedAt: serverTimestamp() })
-          : action.payload;
+          : "payload" in action ? action.payload : undefined;
 
       switch (action.type) {
         case "ADD_BUSINESS":

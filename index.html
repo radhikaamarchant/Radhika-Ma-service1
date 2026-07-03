@@ -9,6 +9,28 @@
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <link rel="apple-touch-icon" href="/logo.svg" />
     <title>Radhika MA Service</title>
+    <script>
+      (function() {
+        if (window.innerWidth <= 768) {
+          try {
+            var theme = localStorage.getItem('theme');
+            var isDark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            var metaThemeColor = document.createElement('meta');
+            metaThemeColor.name = 'theme-color';
+            if (isDark) {
+              document.documentElement.classList.add('dark');
+              var style = document.createElement('style');
+              style.textContent = 'body, html { background-color: #18222F !important; }';
+              document.head.appendChild(style);
+              metaThemeColor.content = '#18222F';
+            } else {
+              metaThemeColor.content = '#FFFFFF';
+            }
+            document.head.appendChild(metaThemeColor);
+          } catch (e) {}
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -184,7 +184,7 @@ function MainLayout() {
       case"dashboard":
         return <Dashboard />;
       case"data-analysis":
-        return <DataAnalysis />;
+        return <DataAnalysis onNavigate={handleNavigate} />;
       case"businesses":
         return <Businesses />;
       case"investors":
@@ -249,7 +249,7 @@ function MainLayout() {
               display: currentView ==="data-analysis" ?"block" :"none",
             }}
           >
-            <DataAnalysis />
+            <DataAnalysis onNavigate={handleNavigate} />
           </div>
           <div
             style={{ display: currentView ==="businesses" ?"block" :"none" }}

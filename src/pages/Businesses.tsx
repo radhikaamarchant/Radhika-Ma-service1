@@ -23,8 +23,11 @@ import { getVerificationStats } from "../utils/blueTick";
 
 // Removed local MarketTrendCell
 import { MarketTrendCell } from "../components/MarketTrendCell";
+
+
 export default function Businesses() {
   const { state, dispatch } = useAppContext();
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<
     "list" | "add-step-1" | "add-step-2"
   >("list");
@@ -37,9 +40,6 @@ export default function Businesses() {
       searchInputRef.current.focus();
     }
   }, [isSearchExpanded]);
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(
-    null,
-  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [showOwnerSelect, setShowOwnerSelect] = useState(false);
@@ -237,17 +237,11 @@ export default function Businesses() {
             {/* Header Section */}{" "}
             <div className="px-3 md:px-0 flex flex-col items-start mb-3 relative z-10">
               {" "}
-              <div className="w-full flex items-center justify-between mb-3">
-                {" "}
-                <h2 className="text-[15px] md:text-[16px] font-normal text-kite-text tracking-tight uppercase">
-                  Businesses
-                </h2>{" "}
-              </div>{" "}
               <div className="flex flex-col items-start w-full gap-2">
                 {" "}
                 <button
                   onClick={startAddBusiness}
-                  className="flex items-center space-x-1.5 px-4 py-2 bg-kite-blue text-white rounded font-medium text-[13px] md:text-[14px] hover:bg-blue-600 transition-colors shadow-sm"
+                  className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none"
                 >
                   {" "}
                   <Plus className="w-4 h-4" />{" "}
@@ -678,7 +672,7 @@ export default function Businesses() {
                                 !showInterestCalculation,
                               )
                             }
-                            className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 hover:bg-gray-100 text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
+                            className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
                           >
                             {" "}
                             <span className="truncate">

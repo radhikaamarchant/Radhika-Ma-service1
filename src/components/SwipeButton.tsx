@@ -63,15 +63,21 @@ export function SwipeButton({
     if (isSuccess) return;
     const maxDrag = containerWidth - THUMB_DIAMETER - PADDING * 2;
     const threshold = maxDrag * 0.75;
-    if (x.get() >= threshold) {
+    if (info.offset.x >= threshold) {
       setIsSuccess(true);
       await controls.start({
         x: maxDrag,
         transition: { type: "spring", bounce: 0.2, duration: 0.4 },
       });
-      if (isMounted.current) {
-        onSuccess();
-      }
+      setTimeout(() => {
+        if (isMounted.current) onSuccess();
+        setTimeout(() => {
+          if (isMounted.current) {
+            setIsSuccess(false);
+            controls.start({ x: 0, transition: { type: "tween", ease: "easeOut", duration: 0.4 } });
+          }
+        }, 500);
+      }, 1000);
     } else {
       controls.start({ x: 0, transition: { type: "tween", ease: "easeOut", duration: 0.3 } });
     }

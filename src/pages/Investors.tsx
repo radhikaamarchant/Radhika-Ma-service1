@@ -41,6 +41,8 @@ type ViewMode =
 const generateId = (prefix: string) =>
   `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
 
+
+
 export default function Investors() {
   const { state, dispatch } = useAppContext();
   const { marketState } = useMarketSimulation();
@@ -457,7 +459,7 @@ export default function Investors() {
                     {" "}
                     <button
                       onClick={startAddInvestor}
-                      className="flex items-center space-x-1.5 px-4 py-2 bg-kite-blue text-white rounded font-medium text-[13px] md:text-[14px] hover:bg-blue-600 transition-colors shadow-sm"
+                      className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none"
                     >
                       {" "}
                       <Plus className="w-4 h-4" />{" "}
