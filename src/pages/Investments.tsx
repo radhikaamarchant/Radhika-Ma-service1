@@ -235,7 +235,7 @@ export default function Investments() {
   };
   const [isBooking, setIsBooking] = useState(false);
 
-  useMobileBackNavigation(showAddForm, () => { setShowAddForm(false); setIsFromAnalysis(false); });
+
   useMobileBackNavigation(showBusinessSelect, () => setShowBusinessSelect(false));
   useMobileBackNavigation(showInvestorSelect, () => setShowInvestorSelect(false));
   useMobileBackNavigation(!!selectedInvestment, () => setSelectedInvestment(null));
@@ -787,6 +787,7 @@ export default function Investments() {
           isOpen={showAddForm}
           onClose={() => {
             setShowAddForm(false);
+            setIsFromAnalysis(false);
             setAddModalBusinessId("");
             setAddModalInvestorId("");
           }}

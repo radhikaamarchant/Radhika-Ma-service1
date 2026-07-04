@@ -17,9 +17,11 @@ if (typeof window !== 'undefined') {
     }
     
     isPopping = true;
+    document.body.classList.add('is-popping');
     setTimeout(() => {
       isPopping = false;
-    }, 100);
+      document.body.classList.remove('is-popping');
+    }, 500);
     
     if (stack.length > 0) {
       const top = stack[stack.length - 1];

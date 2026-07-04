@@ -378,3 +378,32 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
 * {
   -webkit-tap-highlight-color: transparent !important;
 }
+
+/* Disable exit animations during mobile back swipe */
+
+
+/* Force modals to disappear immediately on swipe back to prevent visual jerk */
+
+
+/* Force modals to disappear immediately on swipe back to prevent visual jerk */
+body.is-popping .fixed.inset-0 {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transition: none !important;
+}
+
+/* Ensure header and nav bars don't disappear */
+body.is-popping .fixed.top-0,
+body.is-popping .fixed.bottom-0 {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+body.is-popping .absolute.inset-0.z-50,
+body.is-popping .fixed.inset-0.z-\[110\] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transition: none !important;
+}
