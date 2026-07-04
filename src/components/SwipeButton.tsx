@@ -67,17 +67,16 @@ export function SwipeButton({
       setIsSuccess(true);
       await controls.start({
         x: maxDrag,
-        transition: { type: "spring", bounce: 0.2, duration: 0.4 },
+        transition: { type: "tween", ease: "easeOut", duration: 0.2 },
       });
+      if (isMounted.current) onSuccess();
+      // Only reset after a long delay in case the parent doesn't unmount us
       setTimeout(() => {
-        if (isMounted.current) onSuccess();
-        setTimeout(() => {
-          if (isMounted.current) {
-            setIsSuccess(false);
-            controls.start({ x: 0, transition: { type: "tween", ease: "easeOut", duration: 0.4 } });
-          }
-        }, 500);
-      }, 1000);
+        if (isMounted.current) {
+          setIsSuccess(false);
+          controls.start({ x: 0, transition: { type: "tween", ease: "easeOut", duration: 0.4 } });
+        }
+      }, 3000);
     } else {
       controls.start({ x: 0, transition: { type: "tween", ease: "easeOut", duration: 0.3 } });
     }
@@ -187,12 +186,10 @@ export function SwipeButton({
         onClick={() => {
           if (isSuccess) return;
           setIsSuccess(true);
+          onSuccess();
           setTimeout(() => {
-            onSuccess();
-            setTimeout(() => {
-              if (isMounted.current) setIsSuccess(false);
-            }, 1000);
-          }, 300);
+            if (isMounted.current) setIsSuccess(false);
+          }, 3000);
         }}
         className={`hidden md:flex w-full h-11 rounded-sm items-center justify-center transition-opacity hover:opacity-90 ${colorClass} text-white font-medium uppercase tracking-[0.5px] text-[13px] md:text-[14px]`}
       >

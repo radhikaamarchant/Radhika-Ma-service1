@@ -91,7 +91,12 @@ function ThemeToggleButton() {
 }
 
 function MainLayout() {
-  const [currentView, setCurrentView] = useState<View>("dashboard");
+  const [currentView, setCurrentView] = useState<View>(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return "data-analysis";
+    }
+    return "dashboard";
+  });
 
   const { state, dispatch } = useAppContext();
 

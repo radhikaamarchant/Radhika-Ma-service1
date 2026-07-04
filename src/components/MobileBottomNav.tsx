@@ -1,6 +1,7 @@
 import { View } from"../types";
 import { Bookmark, Gavel, User, Briefcase } from"lucide-react";
 import { useAppContext } from "../utils/AppContext";
+import { triggerSelectionHaptic } from "../utils/haptics";
 
 interface MobileBottomNavProps {
   currentView: View;
@@ -26,7 +27,10 @@ export default function MobileBottomNav({
         return (
           <button
             key={item.id}
-            onClick={() => onNavigate(item.id)}
+            onClick={() => {
+              triggerSelectionHaptic();
+              onNavigate(item.id);
+            }}
             className={`flex-1 py-2 flex flex-col items-center justify-center space-y-1 ${isActive ?"text-[#4184F3] dark:text-kite-blue" :"text-[#4A4A4A] dark:text-white hover:text-[#4A4A4A] dark:hover:text-white"}`}
           >
             <Icon

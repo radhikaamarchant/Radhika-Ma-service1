@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import fs from 'fs';
+let code = `import { useEffect, useRef } from 'react';
 
 type StackItem = {
   id: string;
@@ -66,3 +67,7 @@ export function useMobileBackNavigation(isOpen: boolean, onClose: () => void) {
     };
   }, [isOpen]);
 }
+`;
+
+fs.writeFileSync('src/hooks/useMobileBackNavigation.ts', code);
+console.log("Success Hook Patch");

@@ -589,7 +589,13 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                   activeTab === "untapped" ? untappedBusinesses :
                   overviewBusinesses
                 ).map(b => (
-                  <div key={b.id} onClick={() => setSelectedBusiness(b as any)} className="p-4 flex justify-between items-center hover:bg-kite-bg/50 transition-colors cursor-pointer">
+                  <div key={b.id} onClick={() => {
+    if (onNavigate) {
+      sessionStorage.setItem("mobileAddInvestmentBusinessId", b.id);
+      window.dispatchEvent(new Event("mobileNavigateToInvestments"));
+      onNavigate("investments");
+    }
+  }} className="p-4 flex justify-between items-center hover:bg-kite-bg/50 transition-colors cursor-pointer">
                     <div className="flex flex-col">
                       <span className="font-medium text-kite-text">{b.name}</span>
                       <span className="text-xs text-kite-text/60 mt-0.5">{b.ownerName}</span>

@@ -177,13 +177,13 @@ export default function AddInvestmentModal({
                      )}
                      <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setOrderMode("BUY")}
+                          onClick={() => { setOrderMode("BUY"); setFormData({ ...formData, investorId: "" }); }}
                           className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "BUY" ? "bg-[#4184F3] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"}`}
                         >
                           BUY
                         </button>
                         <button
-                          onClick={() => setOrderMode("SELL")}
+                          onClick={() => { setOrderMode("SELL"); setFormData({ ...formData, investorId: "" }); }}
                           className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "SELL" ? "bg-[#FF5722] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"}`}
                         >
                           SELL
@@ -271,7 +271,14 @@ export default function AddInvestmentModal({
                                   </div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto">
-                                  {sortedInvestors.filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase())).map(i => {
+                                  {sortedInvestors.filter(i => {
+                                    if (!i.name.toLowerCase().includes(investorSearch.toLowerCase())) return false;
+                                    if (!isMobile && orderMode === "SELL" && selectedBusiness) {
+                                      const hasActive = state.investments.some((inv: any) => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active");
+                                      if (!hasActive) return false;
+                                    }
+                                    return true;
+                                  }).map(i => {
                                     const activeCount = selectedBusiness ? state.investments.filter((inv: any) => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active").length : 0;
                                     return (
                                     <button key={i.id} onClick={() => { setFormData({ ...formData, investorId: i.id }); setDesktopShowInvestorSelect(false); }} className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] flex items-center justify-between">

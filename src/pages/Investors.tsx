@@ -125,7 +125,7 @@ export default function Investors() {
 
   useMobileBackNavigation(viewMode === "add-step-1", () => setViewMode("list"));
   useMobileBackNavigation(viewMode === "add-step-2", () => setViewMode("add-step-1"));
-  useMobileBackNavigation(viewMode === "withdraw-list", () => setViewMode("list"));
+  useMobileBackNavigation(viewMode === "withdraw-list", () => setViewMode("investor-detail"));
   useMobileBackNavigation(viewMode === "withdraw-calc", () => setViewMode("withdraw-list"));
   useMobileBackNavigation(viewMode === "withdraw-bank", () => setViewMode("withdraw-calc"));
   useMobileBackNavigation(viewMode === "banking-record", () => setViewMode("list"));
@@ -1079,7 +1079,7 @@ export default function Investors() {
                 <div className="bg-white dark:bg-kite-bg pt-4 px-4 md:px-6 relative z-10 border-b border-kite-border md:border-none">
                   <div className="flex items-center mb-6">
                     <button
-                      onClick={() => setViewMode("list")}
+                      onClick={() => setViewMode("investor-detail")}
                       className="text-kite-text-light hover:text-kite-text transition-colors mr-3 p-1 -ml-1 rounded-full hover:bg-kite-bg"
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>

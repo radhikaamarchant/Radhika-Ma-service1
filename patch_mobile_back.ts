@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import fs from 'fs';
+const code = `import { useEffect, useRef } from 'react';
 
 type StackItem = {
   id: string;
@@ -7,7 +8,6 @@ type StackItem = {
 
 let stack: StackItem[] = [];
 let isProgrammaticPop = false;
-let isPopping = false;
 
 if (typeof window !== 'undefined') {
   window.addEventListener('popstate', (e) => {
@@ -15,11 +15,6 @@ if (typeof window !== 'undefined') {
       isProgrammaticPop = false;
       return;
     }
-    
-    isPopping = true;
-    setTimeout(() => {
-      isPopping = false;
-    }, 100);
     
     if (stack.length > 0) {
       const top = stack[stack.length - 1];
@@ -36,16 +31,8 @@ export function useMobileBackNavigation(isOpen: boolean, onClose: () => void) {
   useEffect(() => {
     if (!isOpen) return;
     
-    if (!isPopping) {
-      window.history.pushState({ internalBack: idRef.current }, '');
-    } else {
-      const currentId = window.history.state?.internalBack;
-      if (currentId) {
-        idRef.current = currentId;
-      }
-    }
-    
     const id = idRef.current;
+    window.history.pushState({ internalBack: id }, '');
     stack.push({ id, onClose: () => onCloseRef.current() });
 
     return () => {
@@ -54,15 +41,16 @@ export function useMobileBackNavigation(isOpen: boolean, onClose: () => void) {
         stack.splice(index, 1);
       }
       
-      setTimeout(() => {
-        if (window.history.state?.internalBack === id) {
-          isProgrammaticPop = true;
-          window.history.back();
-          setTimeout(() => {
-            isProgrammaticPop = false;
-          }, 100);
-        }
-      }, 0);
+      if (window.history.state?.internalBack === id) {
+        isProgrammaticPop = true;
+        window.history.back();
+        setTimeout(() => {
+          isProgrammaticPop = false;
+        }, 100);
+      }
     };
   }, [isOpen]);
 }
+`;
+fs.writeFileSync('src/hooks/useMobileBackNavigation.ts', code);
+console.log("Success MobileBack Patch");
