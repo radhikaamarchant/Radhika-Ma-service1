@@ -7,6 +7,7 @@ export interface Business {
   id: string;
   businessId: string;
   name: string;
+  shortName?: string;
   ownerName: string;
   description?: string;
   location?: string;
@@ -33,6 +34,7 @@ export interface Investor {
   id: string;
   investorId: string;
   name: string;
+  shortName?: string;
   totalInvested: number;
   entryFeePaid?: number;
   joinDate: string;
@@ -71,6 +73,7 @@ export interface Investment {
 export interface AppUser {
   id: string; // Firebase Auth UID
   name: string;
+  shortName?: string;
   email: string;
   role: "CEO" | "EMPLOYEE" | "BUSINESS_OWNER" | "INVESTOR";
   fund?: number; // Optional fund tracking

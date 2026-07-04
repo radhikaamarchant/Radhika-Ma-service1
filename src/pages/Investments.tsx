@@ -199,7 +199,7 @@ export default function Investments() {
         });
       }
       setSuccessData({
-        businessName: selectedBusiness.name,
+        businessName: selectedBusiness.shortName ? selectedBusiness.shortName.toUpperCase() : selectedBusiness.name,
         investorName: selectedInvestor
           ? selectedInvestor.name
           :"Unknown Investor",
@@ -294,7 +294,7 @@ export default function Investments() {
       const investor = state.investors.find((i) => i.id === inv.investorId);
       const match = searchTerm.toLowerCase();
       const searchMatch =
-        business?.name.toLowerCase().includes(match) ||
+        (business?.shortName ? business.shortName.toLowerCase().includes(match) : business?.name.toLowerCase().includes(match)) ||
         investor?.name.toLowerCase().includes(match);
       const tabMatch =
         activeTab ==="holding"
@@ -714,7 +714,7 @@ export default function Investments() {
                              }}
                            >
                              <div>
-                               <span className="font-medium text-[14px] text-gray-900 dark:text-[#F1F5F9] uppercase">{b.name}</span>
+                               <span className="font-medium text-[14px] text-gray-900 dark:text-[#F1F5F9] uppercase">{b.shortName ? b.shortName.toUpperCase() : b.name}</span>
                                <span className="text-[12px] text-gray-500 dark:text-[#A3ACB8] block mt-0.5">ID: {b.businessId}</span>
                              </div>
                            </div>
@@ -883,7 +883,7 @@ export default function Investments() {
                   <div className="flex justify-between items-center mb-1.5 leading-tight">
                      <div className="flex items-center gap-1.5">
                         <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
-                           {business?.name?.toUpperCase() || "UNKNOWN BUSINESS"}
+                           {business?.shortName ? business.shortName.toUpperCase() : (business?.name?.toUpperCase() || "UNKNOWN BUSINESS")}
                         </h3>
                         {business && blueTickBusinessIds.has(business.id) && (
                           <BadgeCheck
@@ -914,7 +914,7 @@ export default function Investments() {
                 <div className="hidden md:flex flex-row items-center justify-between w-full text-[13px]">
                    <div className="w-3/12 flex flex-col">
                       <div className="flex items-center gap-1.5 text-kite-text font-normal uppercase tracking-wide">
-                        {business?.name?.toUpperCase() || "UNKNOWN BUSINESS"}
+                        {business?.shortName ? business.shortName.toUpperCase() : (business?.name?.toUpperCase() || "UNKNOWN BUSINESS")}
                         {business && blueTickBusinessIds.has(business.id) && (
                           <BadgeCheck className="w-3.5 h-3.5 text-white fill-kite-blue shrink-0" title="RMAS Verified" />
                         )}
@@ -1088,7 +1088,7 @@ export default function Investments() {
             setSelectedInvestment(null);
             setWithdrawStep(0);
             setSuccessData({
-               businessName: business?.name || "",
+               businessName: business?.shortName ? business.shortName.toUpperCase() : (business?.name || ""),
                investorName: investor?.name || "",
                amount: totalCredited,
                type: "SELL",
@@ -1373,7 +1373,7 @@ export default function Investments() {
                         {""}
                         <h4 className="text-[15px] md:text-[16px] leading-[20px] font-normal text-kite-blue uppercase">
                           {""}
-                          {business?.name?.toUpperCase()}{""}
+                          {business?.shortName ? business.shortName.toUpperCase() : business?.name?.toUpperCase()}{""}
                         </h4>{""}
                         <p className="text-[11px] md:text-[12px] text-kite-text-light mt-0.5">
                           {""}

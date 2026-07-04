@@ -1918,7 +1918,7 @@ function ProfitSlipContent({
           <div className="flex items-center space-x-2">
             {" "}
             <p className="font-normal text-[11px] md:text-[12px] uppercase">
-              {business.name?.toUpperCase()}
+              {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
             </p>{" "}
             {isBlueTick && (
               <BadgeCheck className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500" />

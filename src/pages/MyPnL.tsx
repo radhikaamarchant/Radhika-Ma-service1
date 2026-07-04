@@ -46,7 +46,7 @@ export default function MyPnL() {
   state.investments.forEach((inv) => {
     const business = state.businesses.find((b) => b.id === inv.businessId);
     const investor = state.investors.find((i) => i.id === inv.investorId);
-    const bName = business ? business.name :"Unknown";
+    const bName = business ? (business.shortName ? business.shortName.toUpperCase() : business.name) : "Unknown";
     const iName = investor ? investor.name :"Unknown";
     // Upfront Commissions
     if (inv.adminCommissionBusiness > 0) {
@@ -210,10 +210,10 @@ export default function MyPnL() {
         date: b.registrationDate,
         type:"commission",
         title: `Business Registration Fees`,
-        source: b.name,
+        source: b.shortName ? b.shortName.toUpperCase() : b.name,
         amount: b.registrationCommissionPaid,
         details: [
-          { label:"Business Name", value: b.name },
+          { label:"Business Name", value: b.shortName ? b.shortName.toUpperCase() : b.name },
           { label:"Owner Name", value: b.ownerName },
           {
             label:"Registration Date",
@@ -233,10 +233,10 @@ export default function MyPnL() {
         date: b.registrationDate,
         type:"tax",
         title: `Business Registration Tax`,
-        source: b.name,
+        source: b.shortName ? b.shortName.toUpperCase() : b.name,
         amount: b.taxPaid,
         details: [
-          { label:"Business Name", value: b.name },
+          { label:"Business Name", value: b.shortName ? b.shortName.toUpperCase() : b.name },
           { label:"Owner Name", value: b.ownerName },
           {
             label:"Registration Date",

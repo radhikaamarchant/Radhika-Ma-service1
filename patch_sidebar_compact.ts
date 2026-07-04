@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import fs from 'fs';
+
+let code = `import { useState, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { Search } from "lucide-react";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import AddInvestmentModal from "./AddInvestmentModal";
 
-const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: string; baseAmount: number; roi: number; overallTrend: number }) => {
+const LiveSidebarValue = ({ baseAmount, roi, overallTrend }: { baseAmount: number; roi: number; overallTrend: number }) => {
   const [currentAmount, setCurrentAmount] = useState(baseAmount);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
   
@@ -31,20 +33,13 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: strin
   const isPositive = overallTrend >= roi;
 
   return (
-    <div className="grid grid-cols-[1fr_65px_100px] gap-2 items-center w-full">
-      <div className="min-w-0 pr-1 text-left">
-        <span className="text-[12px] lg:text-[13px] font-medium text-kite-text truncate block uppercase">{name}</span>
-      </div>
-      <div className="text-right whitespace-nowrap">
-        <span className={`text-[11px] lg:text-[12px] tabular-nums ${isPositive ? "text-kite-green" : "text-kite-red"}`}>
-          {isPositive ? "+" : ""}{overallTrend.toFixed(2)}%
-        </span>
-      </div>
-      <div className="text-right whitespace-nowrap">
-        <span className={`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums ${flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text"}`}>
-          {currentAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-        </span>
-      </div>
+    <div className="flex items-center space-x-4">
+      <span className={\`text-[11px] lg:text-[12px] \${isPositive ? "text-kite-green" : "text-kite-red"}\`}>
+        {isPositive ? "+" : ""}{overallTrend.toFixed(2)}%
+      </span>
+      <span className={\`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 min-w-[55px] text-right \${flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text"}\`}>
+        {currentAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+      </span>
     </div>
   );
 };
@@ -58,7 +53,6 @@ export default function BusinessSidebar() {
 
   const filteredBusinesses = state.businesses.filter(b =>
     b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -87,13 +81,21 @@ export default function BusinessSidebar() {
           return (
           <div
             key={business.id}
-            className="px-4 py-[12px] cursor-pointer border-b border-kite-border hover:bg-gray-50 dark:hover:bg-kite-surface transition-colors group bg-kite-bg"
+            className="px-4 py-[10px] flex items-center justify-between cursor-pointer border-b border-kite-border hover:bg-gray-50 dark:hover:bg-kite-surface transition-colors group bg-kite-bg"
             onClick={() => {
               setInvestBusinessId(business.id);
               setShowInvestModal(true);
             }}
           >
-            <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} />
+            <div className="flex items-center space-x-2.5 truncate flex-1 min-w-0 pr-4">
+              <span className="text-[13px] font-medium text-kite-text truncate uppercase">{business.name}</span>
+              <span className="text-[9px] text-kite-text-light px-1 py-[1px] bg-gray-100 dark:bg-gray-800 rounded-[2px] uppercase whitespace-nowrap shrink-0">
+                {business.ownerName}
+              </span>
+            </div>
+            <div className="shrink-0">
+              <LiveSidebarValue baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} />
+            </div>
           </div>
         )})}
         {filteredBusinesses.length === 0 && (
@@ -111,3 +113,7 @@ export default function BusinessSidebar() {
     </div>
   );
 }
+\`;
+
+fs.writeFileSync('src/components/BusinessSidebar.tsx', code);
+console.log("Success Sidebar Compact Patch");

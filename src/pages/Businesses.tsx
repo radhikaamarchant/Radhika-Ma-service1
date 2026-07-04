@@ -79,6 +79,7 @@ export default function Businesses() {
   const [formData, setFormData] = useState({
     businessId: "",
     name: "",
+    shortName: "",
     ownerName: "",
     authorityType: "Business Authorities" as any,
     rmasSubsidy: "4",
@@ -100,6 +101,7 @@ export default function Businesses() {
     .filter(
       (b) =>
         b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        b.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         b.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         b.businessId?.includes(searchTerm),
     )
@@ -157,6 +159,7 @@ export default function Businesses() {
       ...formData,
       businessId: generateBusinessId(),
       name: "",
+    shortName: "",
       ownerName: "",
       fundingRequired: "",
       interestRate: "",
@@ -189,6 +192,7 @@ export default function Businesses() {
       id: `b${Date.now()}`,
       businessId: formData.businessId,
       name: formData.name,
+      shortName: formData.shortName ? formData.shortName.toUpperCase() : "",
       ownerName: formData.ownerName,
       authorityType: formData.authorityType,
       rmasSubsidy:
@@ -326,7 +330,7 @@ export default function Businesses() {
                         <div className="flex items-center space-x-1.5 mb-1">
                           {" "}
                           <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
-                            {business.name?.toUpperCase()}
+                            {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
                           </span>{" "}
                           {isBlueTick(business.id) && (
                             <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
@@ -535,6 +539,21 @@ export default function Businesses() {
                           setFormData({ ...formData, name: e.target.value })
                         }
                         placeholder="e.g. Acme Corp"
+                      />{" "}
+                    </div>{" "}
+                    <div>
+                      {" "}
+                      <label className="block text-[11px] md:text-[12px] font-medium mb-1 text-kite-text dark:text-kite-text uppercase tracking-wider">
+                        Short Business Name
+                      </label>{" "}
+                      <input
+                        type="text"
+                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none uppercase"
+                        value={formData.shortName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, shortName: e.target.value })
+                        }
+                        placeholder="e.g. ACME"
                       />{" "}
                     </div>{" "}
                     {ownerMode === "new" && (

@@ -251,7 +251,7 @@ function MainLayout() {
 
         <div className="flex-1 flex overflow-hidden relative">
           {/* Desktop Sidebar (Marketwatch) */}
-          <div className="hidden md:flex flex-col bg-white dark:bg-kite-bg shrink-0 w-[300px] border-r border-kite-border z-[100] sidebar-container">
+          <div className="hidden md:flex flex-col bg-white dark:bg-kite-bg shrink-0 w-[320px] lg:w-[410px] max-w-[45vw] border-r border-kite-border z-[100] sidebar-container">
             <BusinessSidebar />
           </div>
 

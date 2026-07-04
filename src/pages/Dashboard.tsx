@@ -89,7 +89,7 @@ actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 
     <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-kite-surface rounded-sm max-w-2xl w-full max-h-[90vh] overflow-auto p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-[17px] md:text-[18px] font-medium text-kite-text">{business.name} Details</h2>
+          <h2 className="text-[17px] md:text-[18px] font-medium text-kite-text">{business.shortName ? business.shortName.toUpperCase() : business.name} Details</h2>
           <button onClick={() => setSelectedBusiness(null)} className="text-kite-text-light hover:text-kite-text"><X className="w-5 h-5"/></button>
         </div>
         <div className="grid grid-cols-2 gap-4 mb-6">

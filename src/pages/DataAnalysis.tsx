@@ -213,7 +213,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="font-medium text-[11px] md:text-[12px] text-kite-text flex items-center space-x-1">
-                  <span>{business.name?.toUpperCase()}</span>{""}
+                  <span>{business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}</span>{""}
                   {statsMap.get(business.id)?.isBlueTick && (
                     <BadgeCheck
                       className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500"
@@ -514,7 +514,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                 className="bg-white dark:bg-kite-bg border-b border-kite-border/40 py-3 px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
               >
                 <div className="flex flex-col">
-                  <span className="font-medium text-[13px] text-kite-text">{b.name.toUpperCase()}</span>
+                  <span className="font-medium text-[13px] text-kite-text">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</span>
                   <span className="text-[10px] text-kite-text/60 mt-0.5 uppercase tracking-wider">{b.ownerName}</span>
                 </div>
                 <div className="flex flex-col items-end">
@@ -597,7 +597,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
     }
   }} className="p-4 flex justify-between items-center hover:bg-kite-bg/50 transition-colors cursor-pointer">
                     <div className="flex flex-col">
-                      <span className="font-medium text-kite-text">{b.name}</span>
+                      <span className="font-medium text-kite-text">{b.shortName ? b.shortName.toUpperCase() : b.name}</span>
                       <span className="text-xs text-kite-text/60 mt-0.5">{b.ownerName}</span>
                     </div>
                     <div className="flex flex-col items-end">

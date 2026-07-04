@@ -41,6 +41,7 @@ export default function BusinessDetail({
     interestRate: business?.interestRate.toString() || "0",
     status: business?.status || "listed",
     name: business?.name || "",
+    shortName: business?.shortName || "",
     description: business?.description || "",
     location: business?.location || "",
     photoUrl: business?.photoUrl || "",
@@ -53,6 +54,7 @@ export default function BusinessDetail({
         interestRate: (business.interestRate || 0).toString(),
         status: business.status || "listed",
         name: business.name || "",
+        shortName: business.shortName || "",
         description: business.description || "",
         location: business.location || "",
         photoUrl: business.photoUrl || "",
@@ -114,6 +116,7 @@ export default function BusinessDetail({
       payload: {
         ...business,
         name: formData.name,
+        shortName: formData.shortName ? formData.shortName.toUpperCase() : "",
         description: formData.description,
         location: formData.location,
         photoUrl: formData.photoUrl,
@@ -197,7 +200,7 @@ export default function BusinessDetail({
         <div className="bg-white dark:bg-kite-surface flex-1">
           <div className="px-5 py-6 flex justify-between items-center border-b border-kite-border-soft">
             <div>
-              <h2 className="text-[18px] md:text-[20px] font-normal text-kite-text mb-1 tracking-wide uppercase">{business.name || "BUSINESS NAME"}</h2>
+              <h2 className="text-[18px] md:text-[20px] font-normal text-kite-text mb-1 tracking-wide uppercase">{business.shortName ? business.shortName.toUpperCase() : (business.name || "BUSINESS NAME")}</h2>
               <p className="text-[12px] md:text-[13px] text-kite-text-light tracking-widest">{business.ownerName || "Owner Name"}</p>
               <p className="text-[12px] md:text-[13px] text-kite-text-light mt-1">{business.businessId || "ID Number"}</p>
             </div>
@@ -206,7 +209,7 @@ export default function BusinessDetail({
                 {business.photoUrl ? (
                   <img src={business.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-2xl md:text-3xl font-normal">{business.name?.substring(0, 2).toUpperCase() || "BU"}</span>
+                  <span className="text-2xl md:text-3xl font-normal">{(business.shortName || business.name)?.substring(0, 2).toUpperCase() || "BU"}</span>
                 )}
               </div>
               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
@@ -327,6 +330,16 @@ export default function BusinessDetail({
                className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                value={formData.name}
                onChange={(e) => setFormData({...formData, name: e.target.value})}
+             />
+           </div>
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Short Business Name</label>
+             <input
+               type="text"
+               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none uppercase"
+               value={formData.shortName}
+               onChange={(e) => setFormData({...formData, shortName: e.target.value})}
+               placeholder="e.g. ACME"
              />
            </div>
            <div>

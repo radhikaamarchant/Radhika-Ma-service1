@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import fs from 'fs';
+
+let code = `import { useState, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { Search } from "lucide-react";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
@@ -36,12 +38,12 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: strin
         <span className="text-[12px] lg:text-[13px] font-medium text-kite-text truncate block uppercase">{name}</span>
       </div>
       <div className="text-right whitespace-nowrap">
-        <span className={`text-[11px] lg:text-[12px] tabular-nums ${isPositive ? "text-kite-green" : "text-kite-red"}`}>
+        <span className={\`text-[11px] lg:text-[12px] tabular-nums \${isPositive ? "text-kite-green" : "text-kite-red"}\`}>
           {isPositive ? "+" : ""}{overallTrend.toFixed(2)}%
         </span>
       </div>
       <div className="text-right whitespace-nowrap">
-        <span className={`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums ${flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text"}`}>
+        <span className={\`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums \${flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text"}\`}>
           {currentAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
         </span>
       </div>
@@ -58,7 +60,6 @@ export default function BusinessSidebar() {
 
   const filteredBusinesses = state.businesses.filter(b =>
     b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -93,7 +94,7 @@ export default function BusinessSidebar() {
               setShowInvestModal(true);
             }}
           >
-            <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} />
+            <LiveSidebarValue name={business.name} baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} />
           </div>
         )})}
         {filteredBusinesses.length === 0 && (
@@ -111,3 +112,7 @@ export default function BusinessSidebar() {
     </div>
   );
 }
+\`;
+
+fs.writeFileSync('src/components/BusinessSidebar.tsx', code);
+console.log("Success Sidebar Grid Patch");

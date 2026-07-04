@@ -121,8 +121,8 @@ export const MarketSimulationProvider: React.FC<{
                   id: `${b.id}-${alignedNow}-shock`,
                   type:"shock",
                   businessId: b.id,
-                  businessName: b.name,
-                  message: `⚠️ Market Shock: Significant withdrawal detected in ${b.name}. Trend correcting.`,
+                  businessName: b.shortName ? b.shortName.toUpperCase() : b.name,
+                  message: `⚠️ Market Shock: Significant withdrawal detected in ${b.shortName ? b.shortName.toUpperCase() : b.name}. Trend correcting.`,
                   timestamp: alignedNow,
                 });
               }
@@ -139,8 +139,8 @@ export const MarketSimulationProvider: React.FC<{
                   id: `${b.id}-${alignedNow}-recovery`,
                   type:"recovery",
                   businessId: b.id,
-                  businessName: b.name,
-                  message: `🚀 Market Recovery: ${b.name} is bouncing back. Buyer confidence high!`,
+                  businessName: b.shortName ? b.shortName.toUpperCase() : b.name,
+                  message: `🚀 Market Recovery: ${b.shortName ? b.shortName.toUpperCase() : b.name} is bouncing back. Buyer confidence high!`,
                   timestamp: alignedNow,
                 });
               }

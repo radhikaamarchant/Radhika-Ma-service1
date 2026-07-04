@@ -234,7 +234,7 @@ export default function AddInvestmentModal({
                                 <div className="flex-1 overflow-y-auto">
                                   {activeBusinesses.filter(b => b.name.toLowerCase().includes(businessSearch.toLowerCase())).map(b => (
                                     <button key={b.id} onClick={() => { setFormData({ ...formData, businessId: b.id }); setDesktopShowBusinessSelect(false); }} className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] flex items-center justify-between">
-                                      {b.name.toUpperCase()}
+                                      {b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}
                                       {formData.businessId === b.id && <CheckCircle className="w-3.5 h-3.5 text-[#4184F3]" />}
                                     </button>
                                   ))}
