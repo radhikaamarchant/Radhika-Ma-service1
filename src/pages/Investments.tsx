@@ -76,6 +76,7 @@ export default function Investments() {
   );
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [withdrawStep, setWithdrawStep] = useState(0);
+  const confirmWithdrawRef = useRef<() => void>();
   // Scroll preservation
   const dragRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef<number>(0);
@@ -167,24 +168,39 @@ export default function Investments() {
   };
   useKeyboardShortcuts({
     'enter': (e) => {
-      if (showAddForm && !isSubmitting && formData.businessId && formData.investorId) {
+      if (withdrawStep === 1 && confirmWithdrawRef.current) {
+        e.preventDefault();
+        confirmWithdrawRef.current();
+        return;
+      }
+      if (showAddForm && !isBooking && formData.businessId && formData.investorId) {
         e.preventDefault();
         handleAddSubmit(e as any);
       }
     },
     'shift+enter': (e) => {
-      if (showAddForm && !isSubmitting && formData.businessId && formData.investorId) {
+      if (withdrawStep === 1 && confirmWithdrawRef.current) {
+        e.preventDefault();
+        confirmWithdrawRef.current();
+        return;
+      }
+      if (showAddForm && !isBooking && formData.businessId && formData.investorId) {
         e.preventDefault();
         handleAddSubmit(e as any);
       }
     },
     'shift': (e) => {
-      if (showAddForm && !isSubmitting && formData.businessId && formData.investorId) {
+      if (withdrawStep === 1 && confirmWithdrawRef.current) {
+        e.preventDefault();
+        confirmWithdrawRef.current();
+        return;
+      }
+      if (showAddForm && !isBooking && formData.businessId && formData.investorId) {
         e.preventDefault();
         handleAddSubmit(e as any);
       }
     }
-  }, showAddForm);
+  }, showAddForm || withdrawStep === 1);
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -873,6 +889,7 @@ export default function Investments() {
             const avgPrice = inv.amount / qty;
             const currentLTP = curValue / qty;
             const isOverallTrendPositive = overallTrend >= 0;
+            
             return (
               <div
                 key={`grouped_${inv.key}_${idx}`}
@@ -1066,28 +1083,11 @@ export default function Investments() {
               rmasMarketCover: 0,
             };
           };
-          useKeyboardShortcuts({
-    'enter': (e) => {
-      if (withdrawStep === 1) {
-        e.preventDefault();
-        handleConfirmWithdraw();
-      }
-    },
-    'shift+enter': (e) => {
-      if (withdrawStep === 1) {
-        e.preventDefault();
-        handleConfirmWithdraw();
-      }
-    },
-    'shift': (e) => {
-      if (withdrawStep === 1) {
-        e.preventDefault();
-        handleConfirmWithdraw();
-      }
-    }
-  }, withdrawStep === 1);
+          
 
   const handleConfirmWithdraw = () => {
+
+
             const profitDetails = calculateLiveProfit();
             const prematurePenalty = Math.max(
               0,

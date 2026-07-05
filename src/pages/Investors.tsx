@@ -229,10 +229,10 @@ export default function Investors() {
   };
   const startAddInvestor = () => {
     let defaultServiceCharge = "";
-    if (state.settings && state.settings.newInvestorRegistration) {
-      if (state.settings.newInvestorRegistration.type === "amount") {
+    if (state.settings && state.settings.formDataRegistration) {
+      if (state.settings.formDataRegistration.type === "amount") {
         defaultServiceCharge = String(
-          state.settings.newInvestorRegistration.value,
+          state.settings.formDataRegistration.value,
         );
       }
     }
@@ -250,19 +250,19 @@ export default function Investors() {
   };
   useKeyboardShortcuts({
     'enter': (e) => {
-      if (viewMode === 'add-step-1' && newInvestor.name && newInvestor.phone) {
+      if (viewMode === 'add-step-1' && formData.name && formData.phone) {
         e.preventDefault();
         handleNextStep(e as any);
       }
     },
     'shift+enter': (e) => {
-      if (viewMode === 'add-step-1' && newInvestor.name && newInvestor.phone) {
+      if (viewMode === 'add-step-1' && formData.name && formData.phone) {
         e.preventDefault();
         handleNextStep(e as any);
       }
     },
     'shift': (e) => {
-      if (viewMode === 'add-step-1' && newInvestor.name && newInvestor.phone) {
+      if (viewMode === 'add-step-1' && formData.name && formData.phone) {
         e.preventDefault();
         handleNextStep(e as any);
       }
@@ -305,7 +305,7 @@ export default function Investors() {
     e.preventDefault();
     setIsVerifying(true);
     setTimeout(() => {
-      const newInvestor: Investor = {
+      const actualNewInvestor: Investor = {
         id: crypto.randomUUID(),
         investorId: formData.investorId,
         name: formData.name,
@@ -320,7 +320,7 @@ export default function Investors() {
         rmasServiceCharge:
           Number(formData.rmasServiceCharge.toString().replace(/,/g, "")) || 0,
       };
-      dispatch({ type: "ADD_INVESTOR", payload: newInvestor });
+      dispatch({ type: "ADD_INVESTOR", payload: actualNewInvestor });
       setIsVerifying(false);
       setShowVerifySuccess(true);
       setTimeout(() => {
@@ -548,13 +548,13 @@ export default function Investors() {
         {viewMode === "list" && (
           <>
             {" "}
-            <div className="px-3 md:px-0 flex flex-col md:flex-row md:justify-between md:items-end relative mb-3 md:mb-0">
+            <div className="px-3 md:px-4 pt-2 md:pt-4 flex flex-col md:flex-row md:justify-between md:items-center relative mb-3 md:mb-4">
               {" "}
               <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
                 {" "}
                 <div className="hidden md:block">
                   {" "}
-                  <h2 className="text-[15px] md:text-[16px] font-normal text-kite-text tracking-tight uppercase">
+                  <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
                     My Investors
                   </h2>{" "}
                 </div>{" "}

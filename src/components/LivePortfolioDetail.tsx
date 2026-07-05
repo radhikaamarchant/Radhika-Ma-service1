@@ -43,7 +43,8 @@ export function LivePortfolioDetail({
   }, [selectedInvestment]);
 
   // Inject modalCode
-  return (() => {
+  if (!selectedInvestment) return null;
+
     const business = state.businesses.find(
       (b) => b.id === selectedInvestment.businessId,
     );
@@ -368,5 +369,4 @@ export function LivePortfolioDetail({
         {""}
       </div>
     );
-  })();
 }

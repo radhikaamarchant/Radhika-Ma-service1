@@ -263,11 +263,21 @@ export default function Businesses() {
           <>
             {" "}
             {/* Header Section */}{" "}
-            <div className="px-3 md:px-0 flex flex-col items-start mb-3 relative z-10">
+            <div className="px-3 md:px-4 pt-2 md:pt-4 flex flex-col md:flex-row md:justify-between md:items-center relative mb-3 md:mb-4 z-10">
               {" "}
-              <div className="flex flex-col items-start w-full gap-2">
+              <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
                 {" "}
-                <button
+                <div className="hidden md:block">
+                  {" "}
+                  <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
+                    My Businesses
+                  </h2>{" "}
+                </div>{" "}
+                <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto md:justify-end gap-2 md:gap-4">
+                  {" "}
+                  <div className="w-full md:w-auto pt-1 md:pt-0 pb-2 md:pb-0">
+                    {" "}
+                    <button
                   onClick={startAddBusiness}
                   className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none"
                 >
@@ -275,7 +285,9 @@ export default function Businesses() {
                   <Plus className="w-4 h-4" />{" "}
                   <span>Register Business</span>{" "}
                 </button>{" "}
-                <div className="w-full flex justify-start pt-1 md:pt-2">
+                  </div>{" "}
+                  {/* Search Container (Bottom on mobile, right on desktop) */}{" "}
+                  <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
                   {" "}
                   <div
                     className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface md:dark:bg-[#161616] rounded-sm shadow-sm" : "bg-transparent"}`}
@@ -325,6 +337,7 @@ export default function Businesses() {
                   </div>{" "}
                 </div>{" "}
               </div>
+            </div>
             </div>{" "}
             <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden z-10 md:mt-0">
               <div className="overflow-hidden">
