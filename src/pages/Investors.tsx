@@ -44,6 +44,23 @@ const generateId = (prefix: string) =>
 
 
 
+
+const formatLargeNumber = (num) => {
+  if (num === 0) return "0";
+  const absNum = Math.abs(num);
+  let formatted = '';
+  if (absNum >= 10000000) {
+    formatted = (absNum / 10000000).toFixed(2).replace(/\.00$/, '') + ' CR';
+  } else if (absNum >= 100000) {
+    formatted = (absNum / 100000).toFixed(2).replace(/\.00$/, '') + ' LK';
+  } else if (absNum >= 1000) {
+    formatted = (absNum / 1000).toFixed(2).replace(/\.00$/, '') + ' K';
+  } else {
+    formatted = absNum.toFixed(2).replace(/\.00$/, '');
+  }
+  return (num < 0 ? "-" : "") + formatted;
+};
+
 export default function Investors() {
   const { state, dispatch } = useAppContext();
   const { marketState } = useMarketSimulation();
@@ -455,7 +472,13 @@ export default function Investors() {
               setViewMode("list");
               setSelectedInvestor(null);
             }}
-            onWithdraw={() => handleWithdrawClick(selectedInvestor)}
+            onWithdraw={(invs) => {
+              if (invs && invs.length > 0) {
+                handleCreditInvestorClick(invs);
+              } else {
+                handleWithdrawClick(selectedInvestor);
+              }
+            }}
           />
         )}{" "}
         {viewMode === "list" && (
@@ -497,7 +520,7 @@ export default function Investors() {
                         <Search className="w-[18px] h-[18px] text-kite-blue" />{" "}
                       </button>
                     ) : (
-                      <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white dark:bg-kite-surface md:bg-transparent rounded-sm h-[36px]">
+                      <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white dark:bg-kite-surface md:bg-gray-100 md:dark:bg-[#161616] rounded-sm h-[36px]">
                         {" "}
                         <button
                           onClick={() => {
@@ -513,7 +536,7 @@ export default function Investors() {
                           ref={searchInputRef}
                           type="text"
                           placeholder="Search Eg: Radhika"
-                          className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 font-sans h-[36px]"
+                          className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                         />{" "}
@@ -536,8 +559,15 @@ export default function Investors() {
               <div className="overflow-hidden">
                 {" "}
                 {/* Desktop Table View */}{" "}
-                <div className="flex flex-col divide-y divide-kite-border border-b border-kite-border">
-                  {" "}
+                <div className="flex flex-col border-b border-kite-border pb-20 md:pb-0">
+                  {/* DESKTOP HEADER */}
+                  <div className="hidden md:flex items-center px-4 bg-[#F9F9F9] dark:bg-[#1a1a1a] border-b border-kite-border">
+                    <div className="w-[30%] text-left py-2 text-[12px] text-kite-text-muted">INVESTOR NAME</div>
+                    <div className="w-[14%] text-left py-2 text-[12px] text-kite-text-muted border-l border-kite-vertical-divider pl-4">ID</div>
+                    <div className="w-[18%] text-right py-2 text-[12px] text-kite-text-muted border-l border-kite-vertical-divider pr-4">INVEST AMOUNT</div>
+                    <div className="w-[16%] text-right py-2 text-[12px] text-kite-text-muted border-l border-kite-vertical-divider pr-4">PERCENTAGE</div>
+                    <div className="w-[22%] text-right py-2 text-[12px] text-kite-text-muted border-l border-kite-vertical-divider pl-5">TOTAL PROFIT</div>
+                  </div>
                   {filteredInvestors.map((investor, idx) => {
                     const activeInvs = state.investments.filter(
                       (inv) =>
@@ -597,8 +627,10 @@ export default function Investors() {
                           setSelectedInvestor(investor);
                           setViewMode("investor-detail");
                         }}
-                        className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-kite-border-soft cursor-pointer transition-colors min-h-[50px] md:min-h-[60px] group"
+                        className="flex flex-col bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] cursor-pointer transition-colors min-h-[50px] group"
                       >
+                        {/* Mobile View */}
+                        <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
                         {" "}
                         <div className="flex flex-col flex-1">
                           {" "}
@@ -634,8 +666,43 @@ export default function Investors() {
                           </div>{" "}
                         </div>{" "}
                       </div>
-                    );
-                  })}{" "}
+                        {/* Desktop View */}
+                        <div className="hidden md:flex items-center w-full px-4 border-b border-kite-border">
+                          <div className="w-[30%] text-left py-3 flex items-center overflow-hidden pr-2">
+                            <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
+                              {investor.name?.toUpperCase()}
+                            </span>
+                            {investor.id === "admin_investor" && (
+                              <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
+                            )}
+                          </div>
+                          <div className="w-[14%] text-left py-3 text-[12px] text-kite-text-light font-mono truncate pl-4 border-l border-kite-vertical-divider">
+                            {investor.investorId}
+                          </div>
+                          <div className="w-[18%] text-right py-3 text-[13px] font-normal text-kite-text pr-4 border-l border-kite-vertical-divider truncate">
+                            {totalAmountInvested > 0 ? `₹${formatLargeNumber(totalAmountInvested)}` : "NOT INVESTED"}
+                          </div>
+                          <div className="w-[16%] text-right py-3 text-[13px] pr-4 border-l border-kite-vertical-divider truncate">
+                            {totalAmountInvested > 0 ? (
+                              <span className={returnPercentage >= 0 ? "text-kite-green" : "text-kite-red"}>
+                                {returnPercentage >= 0 ? "+" : ""}{returnPercentage.toFixed(2)}%
+                              </span>
+                            ) : (
+                              <span className="text-kite-text-light">NOT INVESTED</span>
+                            )}
+                          </div>
+                          <div className="w-[22%] text-right py-3 text-[13px] font-normal pl-5 border-l border-kite-vertical-divider truncate">
+                            {totalAmountInvested > 0 ? (
+                               <span className={totalLiveProfit >= 0 ? "text-kite-green" : "text-kite-red"}>
+                                  {totalLiveProfit >= 0 ? "+" : ""}₹{formatLargeNumber(totalLiveProfit)}
+                               </span>
+                            ) : (
+                              <span className="text-kite-text-light">NOT INVESTED</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );})}{" "}
                   {filteredInvestors.length === 0 && (
                     <div className="p-8 text-center text-gray-600 font-normal text-[13px] md:text-[14px]">
                       No investors found.
@@ -1070,6 +1137,26 @@ export default function Investors() {
               },
             );
 
+            // Fetch IPO Applications from localStorage
+            const savedBidsApps = localStorage.getItem("bids_applications");
+            const bidsApps = savedBidsApps ? JSON.parse(savedBidsApps).filter((a: any) => a.investorId === selectedInvestor.id) : [];
+            const savedIpos = localStorage.getItem("bids_ipos");
+            const allIpos = savedIpos ? JSON.parse(savedIpos) : [];
+            // Active IPO apps (Not listed, not cancelled, not refunded)
+            const activeBidsApps = bidsApps.filter((a: any) => 
+               a.applicationStatus !== 'Cancelled' && 
+               a.allotmentStatus !== 'Not Allotted' && 
+               a.listingStatus !== 'Listed'
+            );
+            
+            // History IPO apps (Refunded/Cancelled)
+            const historyBidsApps = bidsApps.filter((a: any) => 
+               a.applicationStatus === 'Cancelled' || 
+               a.allotmentStatus === 'Not Allotted'
+            );
+
+
+
             const curValue = activeTotalCurrentValue;
             const isProfit = curValue - activeTotalInvested >= 0;
 
@@ -1152,7 +1239,7 @@ export default function Investors() {
                             return (
                               <tr
                                 key={`desk_inv_h_${h.bizId}_${i}`}
-                                className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
+                                className="hover:bg-gray-50/50 dark:hover:bg-[#202020] transition-colors cursor-pointer group"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPortfolioInvestment({
@@ -1265,7 +1352,7 @@ export default function Investors() {
                               return (
                                 <div 
                                   key={`mob_inv_h_${h.bizId}_${i}`} 
-                                  className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 transition-colors cursor-pointer"
+                                  className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#202020] transition-colors cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedPortfolioInvestment({
@@ -1325,6 +1412,34 @@ export default function Investors() {
                                 </div>
                               );
                             })}
+                            
+                          {/* Active IPO Apps on Mobile */}
+                          {activeBidsApps.map((app: any) => {
+                             const ipo = allIpos.find((i: any) => i.id === app.ipoId);
+                             let displayStatus = 'IPO APPLIED';
+                             if (app.allotmentStatus === 'Allotted') displayStatus = 'IPO ALLOTTED';
+
+                             return (
+                              <div key={app.id} className="bg-transparent px-4 py-4 border-b border-kite-border-soft">
+                                <div className="flex justify-between items-center mb-1.5 leading-tight">
+                                   <div className="flex items-center gap-1.5">
+                                      <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
+                                         {ipo?.companyName?.toUpperCase() || 'UNKNOWN IPO'}
+                                      </h3>
+                                   </div>
+                                   <div className="text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium bg-kite-blue/10 text-kite-blue">
+                                     {displayStatus}
+                                   </div>
+                                </div>
+                                <div className="flex justify-between items-center leading-tight">
+                                   <div className="flex items-center text-[10px] md:text-[11px]">
+                                     <span className="text-kite-text-light font-normal mr-1">Invested:</span>
+                                     <span className="text-kite-text font-normal uppercase tracking-wide">{formatINR(app.appliedAmount).replace("₹", "")}</span>
+                                   </div>
+                                </div>
+                              </div>
+                             );
+                          })}
                           </div>
                         </>
                       )}
@@ -1366,7 +1481,7 @@ export default function Investors() {
                             return (
                               <tr
                                 key={`desk_inv_p_${p.bizId}_${i}`}
-                                className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
+                                className="hover:bg-gray-50/50 dark:hover:bg-[#202020] transition-colors cursor-pointer group"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPortfolioInvestment({
@@ -1387,13 +1502,89 @@ export default function Investors() {
                                 <td className="py-4 px-4 text-right text-kite-text font-normal" style={{ fontFamily: sfProFont }}>{avgPrice.toFixed(2)}</td>
                                 <td className="py-4 px-4 text-right text-kite-text font-normal" style={{ fontFamily: sfProFont }}>{formatINR(p.investedAmount)}</td>
                                 <td className="py-4 px-4 text-center">
-                                  <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">Closed</span>
+                                  <span className="bg-kite-blue/10 text-kite-blue px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">Closed</span>
                                 </td>
                               </tr>
                             );
                           })}
                         </tbody>
                       </table>
+                      {historyBidsApps.length > 0 && (
+                        <table className="w-full text-left text-[13px] md:text-[14px] mt-6">
+                          <thead className="bg-white dark:bg-kite-surface border-y border-kite-border text-kite-text-light">
+                            <tr>
+                              <th className="font-normal py-3 px-4 md:px-6 w-[30%]">IPO APPLIED</th>
+                              <th className="font-normal py-3 px-4 md:px-6 text-right w-[20%]">AMOUNT</th>
+                              <th className="font-normal py-3 px-4 md:px-6 text-right w-[30%]">STATUS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {historyBidsApps.map((app: any) => {
+                               const ipo = allIpos.find((i: any) => i.id === app.ipoId);
+                               const isRefunded = app.applicationStatus === 'Cancelled' || app.allotmentStatus === 'Not Allotted';
+                               const isListed = app.listingStatus === 'Listed';
+                               if (isListed) return null; // handled by normal investments
+
+                               let displayStatus = 'IPO APPLIED';
+                               if (isRefunded) displayStatus = 'REFUNDED';
+                               else if (app.allotmentStatus === 'Allotted') displayStatus = 'IPO ALLOTTED';
+
+                               return (
+                                 <tr key={app.id} className="border-b border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]">
+                                   <td className="py-3 px-4 md:px-6">
+                                     <div className="flex items-center gap-2">
+                                       <span className="text-kite-text font-normal uppercase tracking-wide">{ipo?.companyName?.toUpperCase() || 'UNKNOWN IPO'}</span>
+                                     </div>
+                                   </td>
+                                   <td className="py-3 px-4 md:px-6 text-right font-normal text-kite-text">
+                                     {formatINR(app.appliedAmount).replace("₹", "")}
+                                   </td>
+                                   <td className="py-3 px-4 md:px-6 text-right font-normal">
+                                      <span className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? 'bg-[#FF5722]/10 text-[#FF5722]' : 'bg-kite-blue/10 text-kite-blue'}`}>
+                                        {displayStatus}
+                                      </span>
+                                   </td>
+                                 </tr>
+                               );
+                            })}
+                          </tbody>
+                        </table>
+                        )}
+                        {activeBidsApps.length > 0 && (
+                        <table className="w-full text-left text-[13px] md:text-[14px] mt-6 border-t border-kite-border">
+                          <thead className="bg-white dark:bg-kite-surface border-b border-kite-border text-kite-text-light">
+                            <tr>
+                              <th className="font-normal py-3 px-4 md:px-6 w-[30%]">ACTIVE IPO</th>
+                              <th className="font-normal py-3 px-4 md:px-6 text-right w-[20%]">AMOUNT</th>
+                              <th className="font-normal py-3 px-4 md:px-6 text-right w-[30%]">STATUS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeBidsApps.map((app: any) => {
+                               const ipo = allIpos.find((i: any) => i.id === app.ipoId);
+                               let displayStatus = 'IPO APPLIED';
+                               if (app.allotmentStatus === 'Allotted') displayStatus = 'IPO ALLOTTED';
+                               return (
+                                 <tr key={app.id} className="border-b border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]">
+                                   <td className="py-3 px-4 md:px-6">
+                                     <div className="flex items-center gap-2">
+                                       <span className="text-kite-text font-normal uppercase tracking-wide">{ipo?.companyName?.toUpperCase() || 'UNKNOWN IPO'}</span>
+                                     </div>
+                                   </td>
+                                   <td className="py-3 px-4 md:px-6 text-right font-normal text-kite-text">
+                                     {formatINR(app.appliedAmount).replace("₹", "")}
+                                   </td>
+                                   <td className="py-3 px-4 md:px-6 text-right font-normal">
+                                      <span className="text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium bg-kite-blue/10 text-kite-blue">
+                                        {displayStatus}
+                                      </span>
+                                   </td>
+                                 </tr>
+                               );
+                            })}
+                          </tbody>
+                        </table>
+                        )}
                     </div>
 
                     {/* Mobile Positions List */}
@@ -1416,7 +1607,7 @@ export default function Investors() {
                             return (
                               <div 
                                 key={`mob_inv_p_${p.bizId}_${i}`} 
-                                className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 transition-colors cursor-pointer"
+                                className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#202020] transition-colors cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPortfolioInvestment({
@@ -1468,6 +1659,40 @@ export default function Investors() {
                               </div>
                             );
                           })}
+                          
+                          {/* IPO Apps on Mobile */}
+                          {historyBidsApps.map((app: any) => {
+                             const ipo = allIpos.find((i: any) => i.id === app.ipoId);
+                             const isRefunded = app.applicationStatus === 'Cancelled' || app.allotmentStatus === 'Not Allotted';
+                             const isListed = app.listingStatus === 'Listed';
+                             if (isListed) return null;
+
+                             let displayStatus = 'IPO APPLIED';
+                             if (isRefunded) displayStatus = 'REFUNDED';
+                             else if (app.allotmentStatus === 'Allotted') displayStatus = 'IPO ALLOTTED';
+
+                             return (
+                              <div key={app.id} className="bg-transparent px-4 py-4 border-b border-kite-border-soft">
+                                <div className="flex justify-between items-center mb-1.5 leading-tight">
+                                   <div className="flex items-center gap-1.5">
+                                      <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
+                                         {ipo?.companyName?.toUpperCase() || 'UNKNOWN IPO'}
+                                      </h3>
+                                   </div>
+                                   <div className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? 'bg-[#FF5722]/10 text-[#FF5722]' : 'bg-kite-blue/10 text-kite-blue'}`}>
+                                     {displayStatus}
+                                   </div>
+                                </div>
+                                <div className="flex justify-between items-center leading-tight">
+                                   <div className="flex items-center text-[10px] md:text-[11px]">
+                                     <span className="text-kite-text-light font-normal mr-1">Invested:</span>
+                                     <span className="text-kite-text font-normal uppercase tracking-wide">{formatINR(app.appliedAmount).replace("₹", "")}</span>
+                                   </div>
+                                </div>
+                              </div>
+                             );
+                          })}
+
                         </div>
                       )}
                     </div>

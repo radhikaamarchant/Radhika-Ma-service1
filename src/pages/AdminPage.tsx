@@ -169,17 +169,25 @@ export default function AdminPage() {
 
     let authorities = 0;
     let investmentsCommission = 0;
-    let brokerage = 0;
+        let brokerage = 0;
     let hpgTax = 0;
-
+    
     state.investments.forEach(inv => {
       investmentsCommission += (inv.adminCommissionBusiness || 0) + (inv.adminCommissionInvestor || 0);
+      
       if (inv.status === "completed" && inv.payoutDetails) {
         authorities += (inv.payoutDetails.rmasSubsidyPays || 0);
         brokerage += (inv.payoutDetails.rmasCommission || 0);
         hpgTax += (inv.payoutDetails.happyIncomeTax || 0);
       }
     });
+    
+    try {
+      const bidsComms = JSON.parse(localStorage.getItem("bids_commissions") || "[]");
+      bidsComms.forEach((c: any) => {
+         brokerage += (c.amount || 0);
+      });
+    } catch(e) {}
 
     return {
       regOwnerFees,

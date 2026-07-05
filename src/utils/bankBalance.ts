@@ -268,6 +268,36 @@ export function getUnifiedTransactions(
         }
       }
     });
+    
+    try {
+      const bidsComms = JSON.parse(localStorage.getItem("bids_commissions") || "[]");
+      bidsComms.forEach((c: any) => {
+         transactions.push({
+           id: c.id || `tx_bids_${Math.random()}`,
+           date: c.date || new Date().toISOString(),
+           title: c.type === 'IPO Listing' ? 'IPO Listing Fee' : (c.type === 'Exit' ? 'Exit Commission' : 'Platform Commission'),
+           description: 'From Bids Platform',
+           amount: c.amount || 0,
+           type: 'CREDIT',
+           category: 'commission'
+         });
+      });
+    } catch(e) {}
+    
+    try {
+      const bidsComms = JSON.parse(localStorage.getItem("bids_commissions") || "[]");
+      bidsComms.forEach((c: any) => {
+         transactions.push({
+           id: c.id || `tx_bids_${Math.random()}`,
+           date: c.date || new Date().toISOString(),
+           title: c.type === 'IPO Listing' ? 'IPO Listing Fee' : (c.type === 'Exit' ? 'Exit Commission' : 'Application Commission'),
+           description: 'From Bids Platform',
+           amount: c.amount || 0,
+           type: 'CREDIT',
+           category: 'commission'
+         });
+      });
+    } catch(e) {}
   } else {
     // For specific business or investor
     const isBusiness = businesses.some(
@@ -318,6 +348,46 @@ export function getUnifiedTransactions(
           });
         }
       });
+      try {
+        const bidsComms = JSON.parse(localStorage.getItem("bids_commissions") || "[]");
+        bidsComms.forEach((c: any) => {
+          if (c.type === 'IPO Listing' && c.investorId === biz.id) {
+            transactions.push({
+              id: c.id || `tx_bids_ipo_${Math.random()}`,
+              date: c.date || new Date().toISOString(),
+              title: `IPO Listing Charge`,
+              description: `Paid to RMAS`,
+              amount: c.amount || 0,
+              type: "DEBIT",
+              category: "fee",
+            });
+          }
+        });
+      } catch(e) {}
+      
+      try {
+        const bidsApps = JSON.parse(localStorage.getItem("bids_applications") || "[]");
+        const ipos = JSON.parse(localStorage.getItem("bids_ipos") || "[]");
+        bidsApps.forEach((app: any) => {
+          const ipo = ipos.find((i: any) => i.id === app.ipoId);
+          if (!ipo) return;
+          const ipoBizId = businesses.find(b => b.shortName?.toUpperCase() === ipo.companyName || b.name.toUpperCase() === ipo.companyName)?.id;
+          if (biz.id === ipoBizId) {
+            // Business only gets money if Allotted, but NOT if Listed (because Investment takes over)
+            if (app.allotmentStatus === 'Allotted' && app.listingStatus !== 'Listed') {
+                transactions.push({
+                  id: app.id + "_recv" || `tx_bids_app_recv_${Math.random()}`,
+                  date: app.applicationDate || new Date().toISOString(),
+                  title: `IPO Capital Received`,
+                  description: `From Investor ID: ${app.investorId}`,
+                  amount: app.appliedAmount,
+                  type: "CREDIT",
+                  category: "capital",
+                });
+            }
+          }
+        });
+      } catch(e) {}
     } else if (inv) {
       if (inv.id !=="admin_investor" && inv.rmasServiceCharge) {
         transactions.push({
@@ -355,6 +425,60 @@ export function getUnifiedTransactions(
           });
         }
       });
+      
+      try {
+        const bidsComms = JSON.parse(localStorage.getItem("bids_commissions") || "[]");
+        bidsComms.forEach((c: any) => {
+          if (c.investorId === inv.id && c.type !== 'IPO Listing') {
+            transactions.push({
+              id: c.id || `tx_bids_comm_${Math.random()}`,
+              date: c.date || new Date().toISOString(),
+              title: c.type === 'Exit' ? `Exit Commission` : `Application Commission`,
+              description: `Paid to RMAS`,
+              amount: c.amount || 0,
+              type: "DEBIT",
+              category: "fee",
+            });
+          }
+        });
+        const bidsApps = JSON.parse(localStorage.getItem("bids_applications") || "[]");
+        const ipos = JSON.parse(localStorage.getItem("bids_ipos") || "[]");
+        bidsApps.forEach((app: any) => {
+          if (app.investorId === inv.id) {
+            const ipo = ipos.find((i: any) => i.id === app.ipoId);
+            // Always deduct when applied, unless Listed
+            if (app.listingStatus !== 'Listed') {
+                transactions.push({
+                  id: app.id || `tx_bids_app_inv_${Math.random()}`,
+                  date: app.applicationDate || new Date().toISOString(),
+                  title: `Locked IPO Balance`,
+                  description: `For ${ipo?.companyName || 'Unknown IPO'}`,
+                  amount: app.appliedAmount,
+                  type: "DEBIT",
+                  category: "investment",
+                });
+            }
+            
+            // If Refunded, credit it back
+            if (app.applicationStatus === 'Cancelled' || app.allotmentStatus === 'Not Allotted') {
+              transactions.push({
+                id: app.id + "_refund" || `tx_bids_app_ret_${Math.random()}`,
+                date: new Date().toISOString(),
+                title: `IPO Refund`,
+                description: `From ${ipo?.companyName || 'Unknown IPO'}`,
+                amount: app.appliedAmount,
+                type: "CREDIT",
+                category: "settlement",
+              });
+            }
+            // If Exited (we only show it in Investents page but here as well for sync)
+            else if (app.listingStatus === 'Exited') {
+              // Not sure if Exited applies to IPO apps in Bids, but let's keep it safe.
+              // We removed Exit in favor of standard holding selling, but leaving it if it's there.
+            }
+          }
+        });
+      } catch(e) {}
     }
   }
 

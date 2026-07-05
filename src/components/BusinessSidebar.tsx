@@ -4,6 +4,23 @@ import { Search } from "lucide-react";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import AddInvestmentModal from "./AddInvestmentModal";
 
+
+const formatLargeNumber = (num: number) => {
+  if (num === 0) return "0";
+  const absNum = Math.abs(num);
+  let formatted = '';
+  if (absNum >= 10000000) {
+    formatted = (absNum / 10000000).toFixed(2).replace(/\.00$/, '') + ' CR';
+  } else if (absNum >= 100000) {
+    formatted = (absNum / 100000).toFixed(2).replace(/\.00$/, '') + ' LK';
+  } else if (absNum >= 1000) {
+    formatted = (absNum / 1000).toFixed(2).replace(/\.00$/, '') + ' K';
+  } else {
+    formatted = absNum.toFixed(2).replace(/\.00$/, '');
+  }
+  return (num < 0 ? "-" : "") + formatted;
+};
+
 const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: string; baseAmount: number; roi: number; overallTrend: number }) => {
   const [currentAmount, setCurrentAmount] = useState(baseAmount);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
@@ -31,7 +48,7 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: strin
   const isPositive = overallTrend >= roi;
 
   return (
-    <div className="grid grid-cols-[1fr_65px_100px] gap-2 items-center w-full">
+    <div className="grid grid-cols-[1fr_65px_80px] lg:grid-cols-[1fr_75px_90px] gap-2 items-center w-full">
       <div className="min-w-0 pr-1 text-left">
         <span className="text-[12px] lg:text-[13px] font-medium text-kite-text truncate block uppercase">{name}</span>
       </div>
@@ -42,7 +59,7 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: strin
       </div>
       <div className="text-right whitespace-nowrap">
         <span className={`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums ${flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text"}`}>
-          {currentAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+          {formatLargeNumber(currentAmount)}
         </span>
       </div>
     </div>

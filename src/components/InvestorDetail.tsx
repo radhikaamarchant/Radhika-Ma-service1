@@ -27,12 +27,14 @@ import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 interface InvestorDetailProps {
   investorId: string;
   onBack: () => void;
-  onWithdraw?: () => void;
+  onWithdraw?: (investments: any[]) => void;
+  onBuyClick?: (investment: any) => void;
 }
 export default function InvestorDetail({
   investorId,
   onBack,
   onWithdraw,
+  onBuyClick,
 }: InvestorDetailProps) {
   const { state, dispatch } = useAppContext();
   const { marketState } = useMarketSimulation();
@@ -527,7 +529,7 @@ export default function InvestorDetail({
                         </td>
                         <td className="p-3 text-center">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-kite-green" : inv.status === "completed" ? "bg-blue-100 text-blue-700" : "bg-kite-border text-kite-text-light"}`}
+                            className={`px-2 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-kite-green" : inv.status === "completed" ? "bg-kite-blue/10 text-kite-blue" : "bg-kite-border text-kite-text-light"}`}
                           >
                             {""}
                             {inv.status}
@@ -591,7 +593,7 @@ export default function InvestorDetail({
                         {business?.name?.toUpperCase() || "UNKNOWN"}
                       </span>
                       <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-kite-green" : inv.status === "completed" ? "bg-blue-100 text-blue-700" : "bg-kite-border text-kite-text-light"}`}
+                        className={`px-1.5 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-kite-green" : inv.status === "completed" ? "bg-kite-blue/10 text-kite-blue" : "bg-kite-border text-kite-text-light"}`}
                       >
                         {""}
                         {inv.status}
@@ -637,6 +639,8 @@ export default function InvestorDetail({
         <LivePortfolioDetail
           selectedInvestment={selectedPortfolioInvestment}
           onClose={() => setSelectedPortfolioInvestment(null)}
+          onSellClick={onWithdraw}
+          onBuyClick={onBuyClick}
         />
       )}
     </div>

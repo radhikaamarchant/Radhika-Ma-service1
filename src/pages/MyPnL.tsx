@@ -395,7 +395,7 @@ export default function MyPnL() {
                       </td>
                       <td className="py-4 px-6 text-center">
                         <span
-                          className={`px-2 py-1 text-[10px] md:text-[11px] uppercase tracking-widest rounded-sm ${row.type ==="commission" ?"bg-kite-blue/20 text-blue-800" :"bg-blue-100 text-blue-800"}`}
+                          className={`px-2 py-1 text-[10px] md:text-[11px] uppercase tracking-widest rounded-sm ${row.type ==="commission" ?"bg-kite-blue/10 text-kite-blue" :"bg-kite-blue/10 text-kite-blue"}`}
                         >
                           {row.type}
                         </span>
@@ -441,7 +441,7 @@ export default function MyPnL() {
                       {row.title}
                     </span>
                     <span
-                      className={`px-2 py-1 text-[10px] md:text-[11px] uppercase tracking-widest rounded-sm ${row.type ==="commission" ?"bg-kite-blue/20 text-blue-800" :"bg-blue-100 text-blue-800"}`}
+                      className={`px-2 py-1 text-[10px] md:text-[11px] uppercase tracking-widest rounded-sm ${row.type ==="commission" ?"bg-kite-blue/10 text-kite-blue" :"bg-kite-blue/10 text-kite-blue"}`}
                     >
                       {row.type}
                     </span>

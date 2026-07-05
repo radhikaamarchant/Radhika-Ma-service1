@@ -12,6 +12,7 @@ export function LivePortfolioDetail({
   selectedInvestment,
   onClose,
   onBuyClick,
+  onSellClick,
 }: any) {
   const { state, dispatch } = useAppContext();
   const { marketState } = useMarketSimulation();
@@ -157,7 +158,7 @@ export function LivePortfolioDetail({
               {""}
               <button
                 onClick={() => setSelectedInvestment(null)}
-                className="p-2 -ml-2 text-kite-text hover:bg-gray-50 rounded-full transition-colors"
+                className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:hover:bg-[#202020] rounded-full transition-colors"
               >
                 {""}
                 <ArrowLeft className="w-[24px] h-[24px]" />
@@ -178,12 +179,36 @@ export function LivePortfolioDetail({
                   {""}
                   <button
                     onClick={() => setShowTradeOptions(!showTradeOptions)}
-                    className="p-2 -mr-2 text-kite-text hover:bg-gray-50 rounded-full transition-colors"
+                    className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:hover:bg-[#202020] rounded-full transition-colors outline-none"
                   >
                     {""}
                     <MoreVertical className="w-[24px] h-[24px]" />
                     {""}
                   </button>
+                  {""}
+                  <div className="hidden md:flex items-center space-x-3 mr-2">
+                    <button
+                      onClick={() => {
+                        setShowTradeOptions(false);
+                        if (onBuyClick) onBuyClick(selectedInvestment);
+                      }}
+                      className="px-4 py-1.5 bg-[#4184F3] hover:bg-[#387ED1] text-white text-[13px] font-medium rounded transition-colors outline-none"
+                    >
+                      ADD
+                    </button>
+                    <button
+                      onClick={() => {
+    setShowTradeOptions(false);
+    if (onSellClick) {
+      const activeInvs = selectedInvestment.groupedInvestmentsList.filter((i: any) => selectedInvestmentIds.includes(i.id));
+      onSellClick(activeInvs);
+    }
+  }}
+                      className="px-4 py-1.5 bg-[#D94B4B] hover:bg-[#C93B3B] text-white text-[13px] font-medium rounded transition-colors outline-none"
+                    >
+                      EXIT
+                    </button>
+                  </div>
                   {""}
                   <AnimatePresence>
                     {""}
@@ -204,7 +229,7 @@ export function LivePortfolioDetail({
                         >
                           {""}
                           <button
-                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg transition-colors"
+                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors"
                             onClick={() => {
                               setShowTradeOptions(false);
                               if (onBuyClick) onBuyClick(selectedInvestment);
@@ -215,675 +240,26 @@ export function LivePortfolioDetail({
                           </button>
                           {""}
                           <button
-                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#D94B4B] hover:bg-kite-bg transition-colors border-t border-kite-border"
+                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#D94B4B] hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors border-t border-kite-border"
                             onClick={() => {
-                              setShowTradeOptions(false);
-                              let defaultComm = 0;
-                              let defaultTax = 0;
-                              const prof = globalCalculateLiveProfit(
-                                selectedInvestment.groupedInvestmentsList.filter(
-                                  (i: any) =>
-                                    selectedInvestmentIds.includes(i.id),
-                                ),
-                                selectedInvestment.businessId,
-                                marketState.trends,
-                                state.settings,
-                              ).liveProfit;
-                              if (state.settings) {
-                                if (state.settings.rmasCommission?.enabled) {
-                                  defaultComm =
-                                    state.settings.rmasCommission.type ===
-                                    "percentage"
-                                      ? (prof *
-                                          state.settings.rmasCommission.value) /
-                                        100
-                                      : state.settings.rmasCommission.value;
-                                }
-                                if (state.settings.tax?.enabled) {
-                                  defaultTax =
-                                    state.settings.tax.type === "percentage"
-                                      ? (prof * state.settings.tax.value) / 100
-                                      : state.settings.tax.value;
-                                }
-                              }
-                              setWithdrawFormData({
-                                ...withdrawFormData,
-                                completedMonths: String(
-                                  selectedInvestment.timePeriodMonths,
-                                ),
-                                rmasCommission: Math.max(
-                                  0,
-                                  defaultComm,
-                                ).toFixed(2),
-                                happyIncomeTax: Math.max(0, defaultTax).toFixed(
-                                  2,
-                                ),
-                              });
-                              setWithdrawStep(1);
-                              // Jump to Sell Flow
-                            }}
-                          >
-                            {""}
-                            SELL{""}
-                          </button>
-                          {""}
-                        </motion.div>
-                        {""}
-                      </>
-                    )}
-                    {""}
-                  </AnimatePresence>
-                  {""}
-                </div>
-              )}
-              {""}
-            </div>
-            {""}
-          </div>
-          {""}
-          <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-white dark:bg-kite-surface">
-            {""}
-            <>
-              {""}
-              <div className="flex justify-between items-start mb-4">
-                {""}
-                <div>
-                  {""}
-                  <h4 className="text-[15px] md:text-[16px] leading-[20px] font-normal text-kite-blue uppercase">
-                    {""}
-                    {business?.name?.toUpperCase()}
-                    {""}
-                  </h4>
-                  {""}
-                  <p className="text-[11px] md:text-[12px] text-kite-text-light mt-0.5">
-                    {""}
-                    Investment ID: #{selectedInvestment.id} •{""}
-                    {selectedInvestment.status.toUpperCase()}
-                    {""}
-                  </p>
-                  {""}
-                </div>
-                {""}
-                <div className="text-right">
-                  {""}
-                  <span
-                    className={
-                      "inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] md:text-[11px] font-medium" +
-                      (overallTrend >= 0
-                        ? "bg-[#E6F6ED] dark:bg-[#00A86B]/20 text-[#00A86B] dark:text-[#00A86B]"
-                        : "bg-[#FCEBEB] dark:bg-[#D94B4B]/20 text-[#D94B4B] dark:text-[#D94B4B]")
-                    }
-                  >
-                    {""}
-                    {overallTrend >= 0 ? "+" : ""}
-                    {""}
-                    {overallTrend.toFixed(2)}%{""}
-                  </span>
-                  {""}
-                </div>
-                {""}
-              </div>
-              {""}
-              <div className="grid grid-cols-2 gap-y-4 gap-x-4 pb-4 border-b border-kite-border">
-                {""}
-                <div>
-                  {""}
-                  <p className="text-[11px] md:text-[12px] text-kite-text-light mb-0.5">
-                    {""}
-                    Capital Invested{""}
-                  </p>
-                  {""}
-                  <p className="text-[13px] md:text-[14px] ] font-medium text-kite-text">
-                    {""}
-                    {formatINR(totalAmount)}
-                    {""}
-                  </p>
-                  {""}
-                </div>
-                {""}
-                <div className="text-right">
-                  {""}
-                  <p className="text-[11px] md:text-[12px] text-kite-text-light mb-0.5">
-                    {""}
-                    Current Value{""}
-                  </p>
-                  {""}
-                  <p className="text-[13px] md:text-[14px] ] font-medium text-kite-text">
-                    {""}
-                    {formatINR(curValue)}
-                    {""}
-                  </p>
-                  {""}
-                </div>
-                {""}
-                <div>
-                  {""}
-                  <p className="text-[11px] md:text-[12px] text-kite-text-light mb-0.5">
-                    {""}
-                    Live P&L{""}
-                  </p>
-                  {""}
-                  <p
-                    className={
-                      "text-[13px] md:text-[14px] ] font-medium" +
-                      (isProfit
-                        ? selectedInvestment.status === "completed"
-                          ? "text-kite-blue"
-                          : "text-[#00A86B]"
-                        : "text-[#D94B4B]")
-                    }
-                  >
-                    {""}
-                    {isProfit ? "+" : ""} {formatINR(holdingProfit)}
-                    {""}
-                  </p>
-                  {""}
-                </div>
-                {""}
-                <div className="text-right">
-                  {""}
-                  <p className="text-[11px] md:text-[12px] text-kite-text-light mb-0.5">
-                    {""}
-                    Investor{""}
-                  </p>
-                  {""}
-                  <p className="text-[13px] md:text-[14px] font-medium text-kite-text">
-                    {""}
-                    {investor?.name?.toUpperCase()}
-                    {""}
-                  </p>
-                  {""}
-                </div>
-                {""}
-                <div>
-                  {""}
-                  <p className="text-[11px] md:text-[12px] text-kite-text-light mb-0.5">
-                    {""}
-                    Start Date{""}
-                  </p>
-                  {""}
-                  <p className="text-[13px] md:text-[14px] font-medium text-kite-text">
-                    {""}
-                    {activeGroupedInvestments.length > 1
-                      ? "Multiple Dates"
-                      : new Date(
-                          selectedInvestment.startDate,
-                        ).toLocaleDateString("en-IN")}
-                    {""}
-                  </p>
-                  {""}
-                </div>
-                {""}
-                <div className="text-right">
-                  {""}
-                  <p className="text-[11px] md:text-[12px] text-kite-text-light mb-0.5">
-                    {""}
-                    Expected Maturity{""}
-                  </p>
-                  {""}
-                  <p className="text-[13px] md:text-[14px] font-medium text-kite-text">
-                    {""}
-                    {activeGroupedInvestments.length > 1
-                      ? "Multiple Dates"
-                      : new Date(selectedInvestment.endDate).toLocaleDateString(
-                          "en-IN",
-                        )}
-                    {""}
-                  </p>
-                  {""}
-                </div>
-                {""}
-              </div>
-              {""}
-              {selectedInvestment.groupedInvestmentsList.length > 1 &&
-                withdrawStep === 0 && (
-                  <div className="pt-5 mb-2">
-                    {""}
-                    <p className="text-[11px] md:text-[12px] font-medium text-kite-text-light uppercase tracking-[0.5px] mb-3">
-                      {""}
-                      {selectedInvestment.status === "active"
-                        ? "SELECT QUANTITIES TO BOOK PROFIT"
-                        : "SELECT QUANTITIES TO VIEW"}
-                      {""}
-                    </p>
-                    {""}
-                    <div className="space-y-3 max-h-48 overflow-y-auto pr-1 mt-2">
-                      {""}
-                      <label className="flex items-center justify-between cursor-pointer pb-3 border-b border-kite-border">
-                        {""}
-                        <span className="text-[13px] md:text-[14px] text-kite-text">
-                          {""}
-                          {selectedInvestment.status === "active"
-                            ? "Withdraw All Quantities"
-                            : "View All Quantities"}
-                          {""}
-                        </span>
-                        {""}
-                        <div className="relative">
-                          {""}
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            checked={
-                              selectedInvestmentIds.length ===
-                              selectedInvestment.groupedInvestmentsList.length
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedInvestmentIds(
-                                  selectedInvestment.groupedInvestmentsList.map(
-                                    (i: any) => i.id,
-                                  ),
-                                );
-                              } else {
-                                setSelectedInvestmentIds([]);
-                              }
-                            }}
-                          />
-                          {""}
-                          <div
-                            className={`block w-9 h-5 rounded-full transition-colors ${selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length ? "bg-kite-blue" : "bg-kite-border"}`}
-                          ></div>
-                          {""}
-                          <div
-                            className={`absolute left-0.5 top-0.5 bg-white dark:bg-kite-surface w-4 h-4 rounded-full transition-transform ${selectedInvestmentIds.length === selectedInvestment.groupedInvestmentsList.length ? "transform translate-x-4" : ""}`}
-                          ></div>
-                          {""}
-                        </div>
-                        {""}
-                      </label>
-                      {""}
-                      {selectedInvestment.groupedInvestmentsList.map(
-                        (invUnit: any, idx: number) => {
-                          const unitProf = globalCalculateLiveProfit(
-                            [invUnit],
-                            selectedInvestment.businessId,
-                            marketState.trends,
-                            state.settings,
-                          ).liveProfit;
-                          const unitCurVal = invUnit.amount + unitProf;
-                          const unitIsProfit = unitProf >= 0;
-                          return (
-                            <label
-                              key={`liveport_${invUnit.id}_${idx}`}
-                              className="flex items-start space-x-3 cursor-pointer py-1 border-b border-kite-bg last:border-0"
-                            >
-                              {""}
-                              <div className="pt-2">
-                                {""}
-                                <input
-                                  type="checkbox"
-                                  checked={selectedInvestmentIds.includes(
-                                    invUnit.id,
-                                  )}
-                                  onChange={(e) => {
-                                    if (e.target.checked)
-                                      setSelectedInvestmentIds([
-                                        ...selectedInvestmentIds,
-                                        invUnit.id,
-                                      ]);
-                                    else
-                                      setSelectedInvestmentIds(
-                                        selectedInvestmentIds.filter(
-                                          (id) => id !== invUnit.id,
-                                        ),
-                                      );
-                                  }}
-                                  className="rounded text-kite-blue focus:ring-[#387ED1] cursor-pointer w-[16px] h-[16px] border-kite-border"
-                                />
-                                {""}
-                              </div>
-                              {""}
-                              <div className="hidden md:flex flex-1 items-center justify-between pt-1.5">
-                                {""}
-                                <span className="text-kite-text-light text-[13px] md:text-[14px] truncate max-w-[120px]">
-                                  {""}#{invUnit.id}
-                                  {""}
-                                </span>
-                                {""}
-                                <span className="font-medium text-kite-text text-[13px] md:text-[14px]">
-                                  {""}
-                                  {formatINR(invUnit.amount)}
-                                  {""}
-                                </span>
-                                {""}
-                              </div>
-                              {""}
-                              <div className="md:hidden flex-1 flex justify-between items-center">
-                                {""}
-                                <div className="flex flex-col">
-                                  {""}
-                                  <span className="text-[11px] md:text-[12px] text-kite-text-light">
-                                    Invested
-                                  </span>
-                                  {""}
-                                  <span className="text-[13px] md:text-[14px] font-medium text-kite-text">
-                                    {formatINR(invUnit.amount)}
-                                  </span>
-                                  {""}
-                                </div>
-                                {""}
-                                <div className="flex flex-col items-end">
-                                  {""}
-                                  <div className="flex items-center gap-1.5">
-                                    {""}
-                                    <span className="text-[11px] md:text-[12px] text-kite-text-light">
-                                      Current
-                                    </span>
-                                    {""}
-                                    <span className="text-[13px] md:text-[14px] font-medium text-kite-text">
-                                      {formatINR(unitCurVal)}
-                                    </span>
-                                    {""}
-                                  </div>
-                                  {""}
-                                  <span
-                                    className={`text-[11px] md:text-[12px] font-medium ${unitIsProfit ? (selectedInvestment.status === "completed" ? "text-kite-blue" : "text-[#00A86B]") : "text-[#D94B4B]"}`}
-                                  >
-                                    {""}
-                                    {unitIsProfit ? "+" : ""}
-                                    {formatINR(unitProf)}
-                                    {""}
-                                  </span>
-                                  {""}
-                                </div>
-                                {""}
-                              </div>
-                              {""}
-                            </label>
-                          );
-                        },
-                      )}
-                      {""}
-                    </div>
-                    {""}
-                  </div>
-                )}
-              {""}
-              {selectedInvestment.status === "active" && withdrawStep === 1 && (
-                <div className="mt-4 pt-4 border-t border-kite-border/50">
-                  {""}
-                  <h4 className="text-kite-red font-medium text-[11px] md:text-[12px] tracking-wider mb-4">
-                    {""}
-                    SELL DETAILS{""}
-                  </h4>
-                  {""}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    {""}
-                    <div>
-                      {""}
-                      <label className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-widest block mb-1">
-                        {""}
-                        Completed Months{""}
-                      </label>
-                      {""}
-                      <input
-                        type="number"
-                        className="w-full border-b border-kite-blue/30 py-1.5 text-[13px] md:text-[14px] outline-none font-medium bg-transparent focus:border-kite-blue"
-                        value={withdrawFormData.completedMonths}
-                        onChange={(e) =>
-                          setWithdrawFormData({
-                            ...withdrawFormData,
-                            completedMonths: e.target.value,
-                          })
-                        }
-                      />
-                      {""}
-                    </div>
-                    {""}
-                    <div>
-                      {""}
-                      <label className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-widest block mb-1">
-                        {""}
-                        RMAS Comm (₹){""}
-                      </label>
-                      {""}
-                      <input
-                        type="number"
-                        className="w-full border-b border-kite-border py-1.5 text-[13px] md:text-[14px] outline-none font-medium bg-transparent focus:border-kite-blue"
-                        value={withdrawFormData.rmasCommission}
-                        onChange={(e) =>
-                          setWithdrawFormData({
-                            ...withdrawFormData,
-                            rmasCommission: e.target.value,
-                          })
-                        }
-                      />
-                      {""}
-                    </div>
-                    {""}
-                    <div>
-                      {""}
-                      <label className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-widest block mb-1">
-                        {""}
-                        Income Tax (₹){""}
-                      </label>
-                      {""}
-                      <input
-                        type="number"
-                        className="w-full border-b border-kite-border py-1.5 text-[13px] md:text-[14px] outline-none font-medium bg-transparent focus:border-kite-red text-kite-red"
-                        value={withdrawFormData.happyIncomeTax}
-                        onChange={(e) =>
-                          setWithdrawFormData({
-                            ...withdrawFormData,
-                            happyIncomeTax: e.target.value,
-                          })
-                        }
-                      />
-                      {""}
-                    </div>
-                    {""}
-                  </div>
-                  {""}
-                  <div className="flex flex-col gap-1.5 mb-6 text-[11px] md:text-[12px]">
-                    {""}
-                    <div className="flex justify-between items-center text-kite-text-light">
-                      {""}
-                      <span>P&L Current Trend:</span>
-                      {""}
-                      <span
-                        className={
-                          calculateLiveProfit().totalProfit >= 0
-                            ? "text-kite-green font-medium"
-                            : "text-kite-red font-medium"
-                        }
-                      >
-                        {""}
-                        {calculateLiveProfit().totalProfit > 0 ? "+" : ""}
-                        {""}
-                        {(
-                          (calculateLiveProfit().totalProfit / totalAmount) *
-                          100
-                        ).toFixed(2)}
-                        {""}%{""}
-                      </span>
-                      {""}
-                    </div>
-                    {""}
-                    <div className="flex justify-between items-center text-kite-text-light">
-                      {""}
-                      <span>Net Yield:</span>
-                      {""}
-                      <span
-                        className={
-                          calculateLiveProfit().totalProfit < 0
-                            ? "text-kite-red font-medium"
-                            : "text-kite-green font-medium"
-                        }
-                      >
-                        {""}
-                        {calculateLiveProfit().totalProfit < 0 ? "-" : "+"}
-                        {""}
-                        {formatINR(Math.abs(calculateLiveProfit().totalProfit))}
-                        {""}
-                      </span>
-                      {""}
-                    </div>
-                    {""}
-                  </div>
-                  {""}
-                </div>
-              )}
-              {""}
-              {selectedInvestment.status === "completed" &&
-                activeGroupedInvestments.some((i: any) => i.payoutDetails) && (
-                  <div className="p-4 bg-kite-green/5 border border-kite-green/20 rounded-sm">
-                    {""}
-                    <h4 className="font-medium text-kite-green flex items-center space-x-2 mb-4">
-                      {""}
-                      <CheckCircle className="w-4 h-4" />
-                      {""}
-                      <span>Completed Settlement Breakdown</span>
-                      {""}
-                    </h4>
-                    {""}
-                    <div className="space-y-2 text-[13px] md:text-[14px] text-green-900">
-                      {""}
-                      <div className="flex justify-between">
-                        {""}
-                        <span>Gross Payout (Capital + Profit)</span>
-                        {""}
-                        <span className="font-medium">
-                          {""}
-                          {formatINR(
-                            activeGroupedInvestments.reduce(
-                              (sum: number, i: any) =>
-                                sum +
-                                (i.payoutDetails?.totalCredited || 0) +
-                                (i.payoutDetails?.rmasCommission || 0) +
-                                (i.payoutDetails?.happyIncomeTax || 0),
-                              0,
-                            ),
-                          )}
-                          {""}
-                        </span>
-                        {""}
-                      </div>
-                      {""}
-                      <div className="flex justify-between text-[11px] md:text-[12px]">
-                        {""}
-                        <span>RMAS Commission Deducted</span>
-                        {""}
-                        <span className="text-kite-red">
-                          {""}-{""}
-                          {formatINR(
-                            activeGroupedInvestments.reduce(
-                              (sum: number, i: any) =>
-                                sum + (i.payoutDetails?.rmasCommission || 0),
-                              0,
-                            ),
-                          )}
-                          {""}
-                        </span>
-                        {""}
-                      </div>
-                      {""}
-                      <div className="flex justify-between text-[11px] md:text-[12px]">
-                        {""}
-                        <span>Income Tax Deducted</span>
-                        {""}
-                        <span className="text-kite-red">
-                          {""}-{""}
-                          {formatINR(
-                            activeGroupedInvestments.reduce(
-                              (sum: number, i: any) =>
-                                sum + (i.payoutDetails?.happyIncomeTax || 0),
-                              0,
-                            ),
-                          )}
-                          {""}
-                        </span>
-                        {""}
-                      </div>
-                      {""}
-                      <div className="flex justify-between pt-2 border-t border-kite-green/20 mt-2 font-medium">
-                        {""}
-                        <span>Net Amount Credited</span>
-                        {""}
-                        <span>
-                          {""}
-                          {formatINR(
-                            activeGroupedInvestments.reduce(
-                              (sum: number, i: any) =>
-                                sum + (i.payoutDetails?.totalCredited || 0),
-                              0,
-                            ),
-                          )}
-                          {""}
-                        </span>
-                        {""}
-                      </div>
-                      {""}
-                      <div className="flex justify-between text-[11px] md:text-[12px] mt-1 text-kite-text-light">
-                        {""}
-                        <span>Payout Date</span>
-                        {""}
-                        <span className="font-mono">
-                          {""}
-                          {activeGroupedInvestments.length > 1
-                            ? "Multiple Dates"
-                            : new Date(
-                                activeGroupedInvestments[0]?.payoutDetails
-                                  ?.payoutDate ||
-                                  selectedInvestment.payoutDetails.payoutDate,
-                              ).toLocaleDateString("en-IN")}
-                          {""}
-                        </span>
-                        {""}
-                      </div>
-                      {""}
-                    </div>
-                    {""}
-                  </div>
-                )}
-              {""}
-            </>
-            {""}
-          </div>
-          {""}
-          {withdrawStep === 0 && selectedInvestment.status === "active" && (
-            <MobilePortfolioSummary
-              invested={formatINR(totalAmount)}
-              currentValue={formatINR(curValue)}
-              profit={`${isProfit ? "+" : ""}${formatINR(holdingProfit)}`}
-              isProfit={isProfit}
-              onSwipeSuccess={() => {
-                let defaultComm = 0;
-                let defaultTax = 0;
-                const prof = globalCalculateLiveProfit(
-                  selectedInvestment.groupedInvestmentsList.filter((i: any) =>
-                    selectedInvestmentIds.includes(i.id),
-                  ),
-                  selectedInvestment.businessId,
-                  marketState.trends,
-                  state.settings,
-                ).liveProfit;
-                if (state.settings) {
-                  if (state.settings.rmasCommission?.enabled) {
-                    defaultComm =
-                      state.settings.rmasCommission.type === "percentage"
-                        ? (prof * state.settings.rmasCommission.value) / 100
-                        : state.settings.rmasCommission.value;
-                  }
-                  if (state.settings.tax?.enabled) {
-                    defaultTax =
-                      state.settings.tax.type === "percentage"
-                        ? (prof * state.settings.tax.value) / 100
-                        : state.settings.tax.value;
-                  }
-                }
-                setWithdrawFormData({
-                  ...withdrawFormData,
-                  completedMonths: String(selectedInvestment.timePeriodMonths),
-                  rmasCommission: Math.max(0, defaultComm).toFixed(2),
-                  happyIncomeTax: Math.max(0, defaultTax).toFixed(2),
-                });
-                setWithdrawStep(1);
-              }}
-            />
-          )}
-          {""}
-          {withdrawStep === 1 && (
+    setShowTradeOptions(false);
+    if (onSellClick) {
+      const activeInvs = selectedInvestment.groupedInvestmentsList.filter((i: any) => selectedInvestmentIds.includes(i.id));
+      onSellClick(activeInvs);
+    }
+  }}
+>
+  EXIT
+</button>
+</motion.div>
+</>
+)}
+</AnimatePresence>
+</div>
+)}
+</div>
+</div>
+{withdrawStep === 1 && (
             <div className="shrink-0 p-3 md:p-4 z-20">
               {""}
               <div className="md:hidden">
@@ -953,12 +329,13 @@ export function LivePortfolioDetail({
                   {""}
                 </div>
                 {""}
-                <SwipeButton
-                  text="SWIPE TO SELL"
-                  successText="SETTLING..."
-                  actionType="SELL"
-                  onSuccess={handleConfirmWithdraw}
-                />
+                <button
+                  onClick={handleConfirmWithdraw}
+                  className="w-full py-3 bg-[#D94B4B] hover:bg-[#C93B3B] text-white font-medium rounded transition-colors uppercase tracking-wider text-[13px] md:text-[14px]"
+                >
+                  {""}
+                  CONFIRM SELL{""}
+                </button>
                 {""}
               </div>
               {""}

@@ -482,13 +482,13 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
       <div className="w-full md:hidden pb-4">
         <div className="px-4 py-3 border-b border-gray-100 dark:border-kite-border/50 bg-white dark:bg-kite-bg sticky top-0 z-10">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-[#8F8F8F]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 md:dark:text-[#7A7A7A] dark:text-[#8F8F8F]" />
             <input 
               type="text"
               placeholder="Search Eg: Radhika Kite Trade"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-[#111111] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors font-sans"
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 md:dark:bg-[#161616] dark:bg-[#111111] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors font-sans"
             />
           </div>
         </div>

@@ -87,6 +87,7 @@ export type View =
   |"investments"
   |"banking"
   |"pnl"
+  |"bids"
   |"admin";
 
 export interface CommissionSetting {

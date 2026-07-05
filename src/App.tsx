@@ -17,6 +17,7 @@ import Investors from"./pages/Investors";
 import Investments from"./pages/Investments";
 import MyPnL from"./pages/MyPnL";
 import AdminPage from"./pages/AdminPage";
+import Bids from "./pages/Bids";
 import { Menu, X, WifiOff, Sun, Moon, Laptop } from"lucide-react";
 import { useTheme } from"./utils/ThemeContext";
 import { Logo } from "./components/Logo";
@@ -212,6 +213,8 @@ function MainLayout() {
         return <Investments />;
       case"pnl":
         return <MyPnL />;
+      case"bids":
+        return <Bids />;
       case"admin":
         return <AdminPage />;
       default:
@@ -289,6 +292,9 @@ function MainLayout() {
           </div>
           <div style={{ display: currentView ==="pnl" ?"block" :"none" }}>
             <MyPnL />
+          </div>
+          <div style={{ display: currentView === "bids" ? "block" : "none" }}>
+            <Bids />
           </div>
           <div style={{ display: currentView ==="admin" ?"block" :"none" }}>
             <AdminPage />

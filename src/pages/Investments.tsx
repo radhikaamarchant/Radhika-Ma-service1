@@ -377,7 +377,7 @@ export default function Investments() {
               <Search className="w-[18px] h-[18px] text-kite-blue" />
             </button>
           ) : (
-            <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-kite-surface md:bg-transparent rounded-sm h-[36px]">
+            <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-kite-surface md:bg-gray-100 md:dark:bg-[#161616] rounded-sm h-[36px]">
               <button
                 onClick={() => {
                   setIsSearchExpanded(false);
@@ -391,7 +391,7 @@ export default function Investments() {
                 ref={searchInputRef}
                 type="text"
                 placeholder="Search Eg: RMAS,SARITA.."
-                className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 font-sans h-[36px]"
+                className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -430,7 +430,7 @@ export default function Investments() {
                 <h2 className="text-[17px] font-normal text-gray-900 dark:text-[#F1F5F9] leading-tight">
                   {selectedBusiness ? selectedBusiness.name.toUpperCase() : "New Investment"}
                 </h2>
-                <p className="text-[12px] text-gray-500 dark:text-[#A3ACB8] mt-0.5 font-normal">
+                <p className="text-[12px] text-gray-500 dark:text-[#7A7A7A] mt-0.5 font-normal">
                   FND {selectedBusiness ? formatINR(selectedBusiness.fundingRequired || 0) : "₹0"} • INC {selectedBusiness ? formatINR(state.investments.filter((inv: any) => inv.businessId === selectedBusiness.id).reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0)) : "₹0"}
                 </p>
               </div>
@@ -801,14 +801,13 @@ export default function Investments() {
         {""}
         <div className="flex flex-col pb-16">
           {/* DESKTOP HEADER */}
-          <div className="hidden md:flex flex-row items-center justify-between w-full px-4 py-2 text-[11px] text-kite-text-light tracking-wide font-normal bg-kite-surface border-b border-kite-border-soft">
-             <div className="w-3/12 text-left">Instrument</div>
-             <div className="w-1/12 text-right">Qty.</div>
-             <div className="w-2/12 text-right">Avg. cost</div>
-             <div className="w-2/12 text-right">LTP</div>
-             <div className="w-2/12 text-right">Cur. val</div>
-             <div className="w-2/12 text-right">P&L</div>
-             <div className="w-1/12 text-right">Net chg.</div>
+          <div className="hidden md:flex flex-row items-stretch justify-between w-full px-4 text-[11px] text-kite-text-light tracking-wide font-normal bg-kite-surface border-b border-kite-border-soft">
+             <div className="w-4/12 text-left py-2">Instrument</div>
+             <div className="w-1/12 text-right py-2">Qty.</div>
+             <div className="w-2/12 text-right py-2">Avg. cost</div>
+             <div className="w-2/12 text-right py-2 pr-5">Cur. val</div>
+             <div className="w-2/12 text-right py-2 pl-5 border-l border-kite-vertical-divider">P&L</div>
+             <div className="w-1/12 text-right py-2">Net chg.</div>
           </div>
           {""}
           {groupedInvestments.map((inv: any, idx: number) => {
@@ -855,7 +854,7 @@ export default function Investments() {
             return (
               <div
                 key={`grouped_${inv.key}_${idx}`}
-                className="w-full flex flex-col md:flex-row md:items-center px-4 py-3 md:py-3 hover:bg-gray-50 dark:hover:bg-[#202020] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
+                className="w-full flex flex-col md:flex-row md:items-stretch px-4 py-3 md:py-0 hover:bg-gray-50 dark:hover:bg-[#202020] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
                 onClick={() => {
                   setSelectedInvestment(inv);
                   setSelectedInvestmentIds(
@@ -911,26 +910,26 @@ export default function Investments() {
                 </div>
 
                 {/* DESKTOP VIEW */}
-                <div className="hidden md:flex flex-row items-center justify-between w-full text-[13px]">
-                   <div className="w-3/12 flex flex-col">
-                      <div className="flex items-center gap-1.5 text-kite-text font-normal uppercase tracking-wide">
+                <div className="hidden md:flex flex-row items-stretch justify-between w-full text-[13px]">
+                   <div className="w-4/12 flex flex-col gap-[2px] justify-center py-3">
+                      <div className="flex items-center gap-1.5 text-kite-text font-normal text-[13px] leading-[18px] uppercase tracking-wide desktop-business-name">
                         {business?.shortName ? business.shortName.toUpperCase() : (business?.name?.toUpperCase() || "UNKNOWN BUSINESS")}
                         {business && blueTickBusinessIds.has(business.id) && (
                           <BadgeCheck className="w-3.5 h-3.5 text-white fill-kite-blue shrink-0" title="RMAS Verified" />
                         )}
                       </div>
-                      <span className="text-[11px] text-kite-text-light uppercase tracking-wide mt-0.5">{investor?.name?.toUpperCase()}</span>
+                      <span className="text-kite-text-light font-normal text-[12px] leading-[18px] uppercase tracking-wide desktop-investor-name">
+                        {investor?.name?.toUpperCase()}
+                      </span>
                    </div>
-                   <div className="w-1/12 text-right text-kite-text-light">{qty}</div>
-                   <div className="w-2/12 text-right text-kite-text-light">{formatINR(avgPrice).replace("₹", "")}</div>
-                   <div className="w-2/12 text-right text-kite-text-light">{formatINR(currentLTP).replace("₹", "")}</div>
-                   <div className="w-2/12 text-right text-kite-text-light">{formatINR(curValue).replace("₹", "")}</div>
-                   <div className={`w-2/12 text-right font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
-                      {isProfit && holdingProfit >= 0 ? "+" : ""}
-                      {formatINR(holdingProfit).replace("₹", "")}
+                   <div className="w-1/12 text-right text-kite-text-light flex flex-col justify-center py-3">{qty}</div>
+                   <div className="w-2/12 text-right text-kite-text-light flex flex-col justify-center py-3">{formatINR(avgPrice).replace("₹", "")}</div>
+                   <div className="w-2/12 text-right text-kite-text-light pr-5 flex flex-col justify-center py-3">{formatINR(curValue).replace("₹", "")}</div>
+                   <div className={`w-2/12 text-right font-normal text-[12px] leading-[16px] desktop-pnl pl-5 border-l border-kite-vertical-divider flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                      <div className="block">{isProfit && holdingProfit >= 0 ? "+" : ""}{formatINR(holdingProfit).replace("₹", "")}</div>
                    </div>
-                   <div className={`w-1/12 text-right font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
-                      {isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%
+                   <div className={`w-1/12 text-right font-normal text-[12px] leading-[16px] desktop-net-chg flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                      <div className="block">{isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%</div>
                    </div>
                 </div>
               </div>
