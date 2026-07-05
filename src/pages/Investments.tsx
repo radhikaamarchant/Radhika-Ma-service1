@@ -1,6 +1,7 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState, useRef, useEffect } from"react";
 import { useAppContext } from"../utils/AppContext";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import AddInvestmentModal from "../components/AddInvestmentModal";
 import { formatINR } from"../utils/mockData";
 import {
@@ -164,6 +165,27 @@ export default function Investments() {
       totalAdmin: fromInvestor + fromBusiness,
     };
   };
+  useKeyboardShortcuts({
+    'enter': (e) => {
+      if (showAddForm && !isSubmitting && formData.businessId && formData.investorId) {
+        e.preventDefault();
+        handleAddSubmit(e as any);
+      }
+    },
+    'shift+enter': (e) => {
+      if (showAddForm && !isSubmitting && formData.businessId && formData.investorId) {
+        e.preventDefault();
+        handleAddSubmit(e as any);
+      }
+    },
+    'shift': (e) => {
+      if (showAddForm && !isSubmitting && formData.businessId && formData.investorId) {
+        e.preventDefault();
+        handleAddSubmit(e as any);
+      }
+    }
+  }, showAddForm);
+
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBusiness || !formData.investorId) {
@@ -1044,7 +1066,28 @@ export default function Investments() {
               rmasMarketCover: 0,
             };
           };
-          const handleConfirmWithdraw = () => {
+          useKeyboardShortcuts({
+    'enter': (e) => {
+      if (withdrawStep === 1) {
+        e.preventDefault();
+        handleConfirmWithdraw();
+      }
+    },
+    'shift+enter': (e) => {
+      if (withdrawStep === 1) {
+        e.preventDefault();
+        handleConfirmWithdraw();
+      }
+    },
+    'shift': (e) => {
+      if (withdrawStep === 1) {
+        e.preventDefault();
+        handleConfirmWithdraw();
+      }
+    }
+  }, withdrawStep === 1);
+
+  const handleConfirmWithdraw = () => {
             const profitDetails = calculateLiveProfit();
             const prematurePenalty = Math.max(
               0,

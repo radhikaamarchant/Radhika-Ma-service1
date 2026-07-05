@@ -1,4 +1,5 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import React, { useState, useRef, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { formatINR } from "../utils/mockData";
@@ -247,6 +248,27 @@ export default function Investors() {
     });
     setViewMode("add-step-1");
   };
+  useKeyboardShortcuts({
+    'enter': (e) => {
+      if (viewMode === 'add-step-1' && newInvestor.name && newInvestor.phone) {
+        e.preventDefault();
+        handleNextStep(e as any);
+      }
+    },
+    'shift+enter': (e) => {
+      if (viewMode === 'add-step-1' && newInvestor.name && newInvestor.phone) {
+        e.preventDefault();
+        handleNextStep(e as any);
+      }
+    },
+    'shift': (e) => {
+      if (viewMode === 'add-step-1' && newInvestor.name && newInvestor.phone) {
+        e.preventDefault();
+        handleNextStep(e as any);
+      }
+    }
+  }, viewMode === 'add-step-1');
+
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
@@ -258,6 +280,27 @@ export default function Investors() {
     });
     setViewMode("add-step-2");
   };
+  useKeyboardShortcuts({
+    'enter': (e) => {
+      if (viewMode === 'add-step-2') {
+        e.preventDefault();
+        handleVerifiedSave(e as any);
+      }
+    },
+    'shift+enter': (e) => {
+      if (viewMode === 'add-step-2') {
+        e.preventDefault();
+        handleVerifiedSave(e as any);
+      }
+    },
+    'shift': (e) => {
+      if (viewMode === 'add-step-2') {
+        e.preventDefault();
+        handleVerifiedSave(e as any);
+      }
+    }
+  }, viewMode === 'add-step-2');
+
   const handleVerifiedSave = (e: React.FormEvent) => {
     e.preventDefault();
     setIsVerifying(true);
@@ -391,6 +434,27 @@ export default function Investors() {
     if (e && e.preventDefault) e.preventDefault();
     setViewMode("withdraw-bank");
   };
+  useKeyboardShortcuts({
+    'enter': (e) => {
+      if (viewMode === 'withdraw-bank') {
+        e.preventDefault();
+        handlePay();
+      }
+    },
+    'shift+enter': (e) => {
+      if (viewMode === 'withdraw-bank') {
+        e.preventDefault();
+        handlePay();
+      }
+    },
+    'shift': (e) => {
+      if (viewMode === 'withdraw-bank') {
+        e.preventDefault();
+        handlePay();
+      }
+    }
+  }, viewMode === 'withdraw-bank');
+
   const handlePay = () => {
     if (selectedInvestments.length === 0 || !selectedInvestor) return;
     const business = state.businesses.find(

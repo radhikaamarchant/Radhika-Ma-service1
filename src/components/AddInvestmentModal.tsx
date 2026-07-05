@@ -1,4 +1,5 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, ChevronDown, CheckCircle, Search, RefreshCw, X } from "lucide-react";
@@ -91,6 +92,27 @@ export default function AddInvestmentModal({
       totalAdmin: fromInvestor + fromBusiness,
     };
   };
+
+  useKeyboardShortcuts({
+    'enter': (e) => {
+      if (!isBooking && selectedBusiness && selectedInvestor) {
+        e.preventDefault();
+        handleAddSubmit(e as any);
+      }
+    },
+    'shift+enter': (e) => {
+      if (!isBooking && selectedBusiness && selectedInvestor) {
+        e.preventDefault();
+        handleAddSubmit(e as any);
+      }
+    },
+    'shift': (e) => {
+      if (!isBooking && selectedBusiness && selectedInvestor) {
+        e.preventDefault();
+        handleAddSubmit(e as any);
+      }
+    }
+  }, isOpen);
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();

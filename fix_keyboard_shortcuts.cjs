@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+const fs = require('fs');
+const content = `import { useEffect } from 'react';
 
 type ShortcutMap = {
   [key: string]: (e: KeyboardEvent) => void;
@@ -41,7 +42,7 @@ export function useKeyboardShortcuts(shortcuts: ShortcutMap, active: boolean = t
           // Execute the mapped function
           shortcuts[shortcutString](e);
         } catch (error) {
-          console.error(`Error executing shortcut ${shortcutString}:`, error);
+          console.error(\`Error executing shortcut \${shortcutString}:\`, error);
         }
       }
     };
@@ -55,3 +56,5 @@ export function useKeyboardShortcuts(shortcuts: ShortcutMap, active: boolean = t
     };
   }, [shortcuts, active]);
 }
+`;
+fs.writeFileSync('src/hooks/useKeyboardShortcuts.ts', content);

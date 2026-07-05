@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, MoreVertical, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppContext } from "../utils/AppContext";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import { calculateLiveProfit as globalCalculateLiveProfit } from "../utils/profitCalculator";
 import { formatINR } from "../utils/mockData";
@@ -74,7 +75,28 @@ export function LivePortfolioDetail({
         rmasMarketCover: 0,
       };
     };
-    const handleConfirmWithdraw = () => {
+    useKeyboardShortcuts({
+    'enter': (e) => {
+      if (withdrawStep === 1) {
+        e.preventDefault();
+        handleConfirmWithdraw();
+      }
+    },
+    'shift+enter': (e) => {
+      if (withdrawStep === 1) {
+        e.preventDefault();
+        handleConfirmWithdraw();
+      }
+    },
+    'shift': (e) => {
+      if (withdrawStep === 1) {
+        e.preventDefault();
+        handleConfirmWithdraw();
+      }
+    }
+  }, withdrawStep === 1);
+
+  const handleConfirmWithdraw = () => {
       const profitDetails = calculateLiveProfit();
       const prematurePenalty = Math.max(
         0,
