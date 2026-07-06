@@ -62,6 +62,7 @@ export default function Businesses() {
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [showOwnerSelect, setShowOwnerSelect] = useState(false);
   const [ownerSearch, setOwnerSearch] = useState("");
+  const [expandedBusinessId, setExpandedBusinessId] = useState<string | null>(null);
   
   useMobileBackNavigation(!!selectedBusinessId, () => setSelectedBusinessId(null));
   useMobileBackNavigation(viewMode === "add-step-1", () => setViewMode("list"));
@@ -401,16 +402,27 @@ export default function Businesses() {
                     </div>
                         {/* Desktop View */}
                         <div className="hidden md:flex items-center w-full px-4 border-b border-kite-border">
-                          <div className="w-[30%] text-left py-3 flex items-center overflow-hidden">
-                            <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
-                              {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
-                            </span>
-                            {isBlueTick(business.id) && (
-                              <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
-                            )}
-                            {isPreVerified(business.id) && (
-                              <Clock className="w-3 h-3 text-kite-text flex-shrink-0 ml-1.5" />
-                            )}
+                          <div className="w-[30%] text-left py-3 flex items-center justify-between overflow-hidden pr-4">
+                            <div className="flex items-center overflow-hidden flex-1">
+                              <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
+                                {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
+                              </span>
+                              {isBlueTick(business.id) && (
+                                <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
+                              )}
+                              {isPreVerified(business.id) && (
+                                <Clock className="w-3 h-3 text-kite-text flex-shrink-0 ml-1.5" />
+                              )}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedBusinessId(expandedBusinessId === business.id ? null : business.id);
+                              }}
+                              className={`ml-4 focus:outline-none flex-shrink-0 flex items-center justify-center p-0.5 rounded transition-all hover:bg-gray-100 dark:hover:bg-[#202020] ${expandedBusinessId === business.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                            >
+                              <ChevronDown className={`w-[14px] h-[14px] text-kite-text-light transition-transform duration-300 ${expandedBusinessId === business.id ? "rotate-180" : ""}`} />
+                            </button>
                           </div>
                           <div className="w-[28%] text-left py-3 text-[13px] text-kite-text-light truncate pl-4 border-l border-kite-vertical-divider">
                             {business.ownerName}
@@ -425,7 +437,33 @@ export default function Businesses() {
                             {`₹${formatLargeNumber(totalInvested)}`}
                           </div>
                         </div>
-                      </div>
+                      
+                        {/* Expanded Section (Desktop Only) */}
+                        <AnimatePresence>
+                          {expandedBusinessId === business.id && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.25, ease: "easeInOut" }}
+                              className="hidden md:block overflow-hidden bg-[#FAFBFC] dark:bg-[#151515]"
+                            >
+                              <div className="px-4 py-3 flex flex-col">
+                                <div className="grid grid-cols-12 gap-6">
+                                  <div className="col-span-8 flex flex-col">
+                                    <span className="text-kite-text-light text-[11px] font-normal">Details</span>
+                                    <span className="text-kite-text text-[14px] font-medium mt-0.5">{business.description || "No description provided for this business owner."}</span>
+                                  </div>
+                                  <div className="col-span-4 flex flex-col border-l border-kite-vertical-divider pl-6">
+                                    <span className="text-kite-text-light text-[11px] font-normal">Address</span>
+                                    <span className="text-kite-text text-[14px] font-medium mt-0.5">{business.location || "Not specified"}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+</div>
                     );
                   })}{" "}
                   {filteredBusinesses.length === 0 && (
