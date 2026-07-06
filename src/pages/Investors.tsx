@@ -31,6 +31,7 @@ import { getUnifiedBankBalance } from "../utils/bankBalance";
 import { SwipeButton } from "../components/SwipeButton";
 import { LivePortfolioDetail } from "../components/LivePortfolioDetail";
 import InvestorDetail from "../components/InvestorDetail";
+import AddInvestmentModal from "../components/AddInvestmentModal";
 type ViewMode =
   | "list"
   | "add-step-1"
@@ -68,6 +69,9 @@ export default function Investors() {
   const statsMap = getVerificationStats(state.businesses, state.investments);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addModalBusinessId, setAddModalBusinessId] = useState("");
+  const [addModalInvestorId, setAddModalInvestorId] = useState("");
   const [withdrawTab, setWithdrawTab] = useState<"holdings" | "positions">(
     "holdings",
   );
@@ -543,6 +547,11 @@ export default function Investors() {
                 handleWithdrawClick(selectedInvestor);
               }
             }}
+            onBuyClick={(investment: any) => {
+              setAddModalBusinessId(investment.businessId);
+              setAddModalInvestorId(investment.investorId);
+              setShowAddForm(true);
+            }}
           />
         )}{" "}
         {viewMode === "list" && (
@@ -698,7 +707,10 @@ export default function Investors() {
                         {" "}
                         <div className="flex flex-col flex-1">
                           {" "}
-                          <div className="flex items-center space-x-1.5 mb-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            {investor.photoUrl ? (
+                              <img src={investor.photoUrl} alt="Profile" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+                            ) : null}
                             {" "}
                             <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
                               {investor.name?.toUpperCase()}
@@ -732,7 +744,10 @@ export default function Investors() {
                       </div>
                         {/* Desktop View */}
                         <div className="hidden md:flex items-center w-full px-4 border-b border-kite-border">
-                          <div className="w-[30%] text-left py-3 flex items-center overflow-hidden pr-2">
+                          <div className="w-[30%] text-left py-3 flex items-center overflow-hidden pr-2 gap-2">
+                            {investor.photoUrl ? (
+                              <img src={investor.photoUrl} alt="Profile" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                            ) : null}
                             <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
                               {investor.name?.toUpperCase()}
                             </span>
@@ -806,7 +821,7 @@ export default function Investors() {
             <div className="flex flex-col md:flex-row gap-3 mb-6 border-b border-kite-border pb-4">
               <button
                 type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]"}`}
                 onClick={() => {
                   setOwnerMode("new");
                   setFormData({
@@ -824,7 +839,7 @@ export default function Investors() {
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]"}`}
                 onClick={() => setOwnerMode("existing")}
               >
                 Already Registered Owner
@@ -861,6 +876,7 @@ export default function Investors() {
                       {Array.from(
                         new Set(state.businesses.map((b) => b.ownerName)),
                       )
+                        .filter((name) => !state.investors.some((inv) => (inv.name || "").toLowerCase() === ((name as string) || "").toLowerCase()))
                         .filter((name) =>
                           ((name as string) || "")
                             .toLowerCase()
@@ -869,7 +885,7 @@ export default function Investors() {
                         .map((name, idx) => (
                           <div
                             key={idx}
-                            className="p-3 hover:bg-gray-50 cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
+                            className="p-3 hover:bg-gray-50 dark:hover:bg-[#202020] cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
                             onClick={() => {
                               const ownerBiz = state.businesses.find(
                                 (b) => b.ownerName === name,
@@ -1974,6 +1990,13 @@ export default function Investors() {
           <PdfContent investor={pdfInvestor} />{" "}
         </div>
       )}{" "}
+      
+      <AddInvestmentModal 
+        isOpen={showAddForm}
+        onClose={() => setShowAddForm(false)}
+        initialBusinessId={addModalBusinessId}
+        initialInvestorId={addModalInvestorId}
+      />
       {selectedPortfolioInvestment && (
         <LivePortfolioDetail
           selectedInvestment={selectedPortfolioInvestment}

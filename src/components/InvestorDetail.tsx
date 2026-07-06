@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import ImageCropModal from "./ImageCropModal";
 import { useAppContext } from "../utils/AppContext";
 import { Investor, Investment } from "../types";
 import { formatINR } from "../utils/mockData";
@@ -102,7 +103,38 @@ export default function InvestorDetail({
     accountNumber: investor?.bankDetails?.accountNumber || "",
     ifscCode: investor?.bankDetails?.ifscCode || "",
     accountHolderName: investor?.bankDetails?.accountHolderName || "",
+    photoUrl: investor?.photoUrl || "",
   });
+  const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        setCropImageUrl(reader.result?.toString() || null);
+      });
+      reader.readAsDataURL(e.target.files[0]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleCropComplete = (croppedUrl: string) => {
+    setFormData({ ...formData, photoUrl: croppedUrl });
+    // Also save directly if we want, or wait for save button
+    // Let's save directly to investor object for immediate effect
+    dispatch({
+      type: "UPDATE_INVESTOR",
+      payload: {
+        ...investor,
+        photoUrl: croppedUrl,
+      },
+    });
+    setCropImageUrl(null);
+  };
+
   const handleSaveDetails = () => {
     dispatch({
       type: "UPDATE_INVESTOR",
@@ -118,6 +150,7 @@ export default function InvestorDetail({
           ifscCode: formData.ifscCode,
           accountHolderName: formData.accountHolderName,
         },
+        photoUrl: formData.photoUrl,
       },
     });
     setIsEditingDetails(false);
@@ -133,6 +166,15 @@ export default function InvestorDetail({
   };
   return (
     <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-8 md:pt-0 px-3 md:px-0 max-w-4xl mx-auto">
+
+      {cropImageUrl && (
+        <ImageCropModal
+          imageUrl={cropImageUrl}
+          onClose={() => setCropImageUrl(null)}
+          onCrop={handleCropComplete}
+        />
+      )}
+
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
           <div className="bg-white dark:bg-kite-bg p-6 rounded-md max-w-sm w-full">
@@ -159,27 +201,41 @@ export default function InvestorDetail({
       {""}
       {/* Header */}
       {""}
-      <div className="flex items-center space-x-3 mb-4 md:mb-6">
-        <button
-          onClick={onBack}
-          className="p-2 -ml-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
-        >
-          {" "}
-          <ArrowLeft className="w-5 h-5" />{" "}
-        </button>
-        <div className="flex flex-col">
-          <h2 className="text-[15px] md:text-[16px] md:text-[16px] font-medium text-kite-text">
-            {investor.name?.toUpperCase()}
-          </h2>
-          <span
-            className="text-[11px] md:text-[12px] text-kite-text-light tracking-wide"
-            style={{
-              fontFamily:
-                '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-            }}
+      <div className="flex justify-between items-start mb-4 md:mb-6">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={onBack}
+            className="p-2 -ml-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
           >
-            #{investor.investorId}
-          </span>
+            {" "}
+            <ArrowLeft className="w-5 h-5" />{" "}
+          </button>
+          
+          <div className="relative cursor-pointer shrink-0" onClick={() => fileInputRef.current?.click()}>
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative group">
+              {investor.photoUrl ? (
+                <img src={investor.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl md:text-2xl font-normal">{(investor.shortName || investor.name)?.substring(0, 2).toUpperCase()}</span>
+              )}
+            </div>
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+          </div>
+
+          <div className="flex flex-col">
+            <h2 className="text-[15px] md:text-[16px] font-medium text-kite-text">
+              {investor.name?.toUpperCase()}
+            </h2>
+            <span
+              className="text-[11px] md:text-[12px] text-kite-text-light tracking-wide"
+              style={{
+                fontFamily:
+                  '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+              }}
+            >
+              #{investor.investorId}
+            </span>
+          </div>
         </div>
       </div>
       {""}
@@ -497,12 +553,12 @@ export default function InvestorDetail({
                         className="hover:bg-kite-bg transition-colors cursor-pointer"
                         onClick={() => {
                           const bizInvs = investorInvestments.filter(
-                            (i) => i.businessId === inv.businessId,
+                            (i) => i.businessId === inv.businessId && i.status === inv.status,
                           );
                           setSelectedPortfolioInvestment({
                             businessId: inv.businessId,
                             investorId: investor.id,
-                            status: "active",
+                            status: inv.status,
                             timePeriodMonths: bizInvs[0].timePeriodMonths,
                             interestRate: bizInvs[0].interestRate,
                             startDate: bizInvs[0].startDate,

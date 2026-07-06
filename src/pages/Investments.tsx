@@ -1294,7 +1294,7 @@ export default function Investments() {
                              }}
                              className="px-4 py-1.5 bg-[#D94B4B] hover:bg-[#C93B3B] text-white text-[13px] font-medium rounded transition-colors"
                            >
-                             EXIT
+                             SELL
                            </button>
                         </div>
                         <AnimatePresence>
