@@ -52,7 +52,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleQuotaError = (error: any) => {
-      console.error("Firestore error:", error);
+      console.warn("Firestore error:", error.message);
       setState((s) => ({
         ...s,
         businesses: s.businesses.length ? s.businesses : MOCK_BUSINESSES,

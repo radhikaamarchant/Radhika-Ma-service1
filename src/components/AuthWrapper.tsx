@@ -32,7 +32,7 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
               setLoading(false);
             }
           } catch (error) {
-            console.error("Firestore quota error in auth:", error);
+            console.warn("Firestore quota error in auth:", error.message);
             // Graceful fallback to mock user
             dispatch({ 
               type: "SET_CURRENT_USER", 
@@ -71,7 +71,7 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
             setRoleSelection(true);
           }
         } catch (error) {
-          console.error("Firestore quota error in login:", error);
+          console.warn("Firestore quota error in login:", error.message);
           dispatch({ type: "SET_CURRENT_USER", payload: { id: result.user.uid, name: result.user.displayName || "Mock User", email: result.user.email || "", role: "CEO", fund: 0 } as AppUser });
         }
       }
