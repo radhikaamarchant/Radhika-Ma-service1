@@ -22,12 +22,22 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
         if (!user.isAnonymous) {
           setAuthUser(user);
           // Check if user exists in db
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            dispatch({ type: "SET_CURRENT_USER", payload: userDoc.data() as AppUser });
-            setLoading(false);
-          } else {
-            setRoleSelection(true);
+          try {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+              dispatch({ type: "SET_CURRENT_USER", payload: userDoc.data() as AppUser });
+              setLoading(false);
+            } else {
+              setRoleSelection(true);
+              setLoading(false);
+            }
+          } catch (error) {
+            console.error("Firestore quota error in auth:", error);
+            // Graceful fallback to mock user
+            dispatch({ 
+              type: "SET_CURRENT_USER", 
+              payload: { id: user.uid, name: user.displayName || "Mock User", email: user.email || "", role: "CEO", fund: 0 } as AppUser 
+            });
             setLoading(false);
           }
         } else {
@@ -53,11 +63,16 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
       const result = await googleSignIn();
       if (result) {
         setAuthUser(result.user);
-        const userDoc = await getDoc(doc(db, "users", result.user.uid));
-        if (userDoc.exists()) {
-          dispatch({ type: "SET_CURRENT_USER", payload: userDoc.data() as AppUser });
-        } else {
-          setRoleSelection(true);
+        try {
+          const userDoc = await getDoc(doc(db, "users", result.user.uid));
+          if (userDoc.exists()) {
+            dispatch({ type: "SET_CURRENT_USER", payload: userDoc.data() as AppUser });
+          } else {
+            setRoleSelection(true);
+          }
+        } catch (error) {
+          console.error("Firestore quota error in login:", error);
+          dispatch({ type: "SET_CURRENT_USER", payload: { id: result.user.uid, name: result.user.displayName || "Mock User", email: result.user.email || "", role: "CEO", fund: 0 } as AppUser });
         }
       }
     } catch (err) {

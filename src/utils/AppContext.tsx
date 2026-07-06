@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
+import { MOCK_BUSINESSES, MOCK_INVESTORS, MOCK_INVESTMENTS } from "./mockData";
 
 export interface AppState {
   businesses: Business[];
@@ -52,6 +53,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleQuotaError = (error: any) => {
       console.error("Firestore error:", error);
+      setState((s) => ({
+        ...s,
+        businesses: s.businesses.length ? s.businesses : MOCK_BUSINESSES,
+        investors: s.investors.length ? s.investors : MOCK_INVESTORS,
+        investments: s.investments.length ? s.investments : MOCK_INVESTMENTS,
+        loading: false,
+        error: "Firestore quota exceeded. Switched to offline mock data mode.",
+      }));
     };
 
     const unsubBusinesses = onSnapshot(collection(db, "businesses"), (snap) => {
