@@ -452,7 +452,7 @@ export default function Businesses() {
                                 <div className="grid grid-cols-12 gap-6">
                                   <div className="col-span-8 flex flex-col">
                                     <span className="text-kite-text-light text-[11px] font-normal">Details</span>
-                                    <span className="text-kite-text text-[14px] font-medium mt-0.5">{business.description || "No description provided for this business owner."}</span>
+                                    <span className="text-kite-text text-[14px] font-medium mt-0.5 whitespace-pre-wrap">{business.description || "No description provided for this business owner."}</span>
                                   </div>
                                   <div className="col-span-4 flex flex-col border-l border-kite-vertical-divider pl-6">
                                     <span className="text-kite-text-light text-[11px] font-normal">Address</span>

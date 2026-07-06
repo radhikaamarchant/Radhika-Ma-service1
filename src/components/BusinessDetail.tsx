@@ -36,6 +36,7 @@ export default function BusinessDetail({
   useMobileBackNavigation(currentView !== "menu", () => setCurrentView("menu"));
 
   
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [formData, setFormData] = useState({
     fundingRequired: business?.fundingRequired ? new Intl.NumberFormat('en-IN').format(business.fundingRequired) : "0",
     interestRate: business?.interestRate.toString() || "0",
@@ -201,7 +202,7 @@ export default function BusinessDetail({
           <div className="px-5 py-6 flex justify-between items-center border-b border-kite-border-soft">
             <div>
               <h2 className="text-[18px] md:text-[20px] font-normal text-kite-text mb-1 tracking-wide uppercase">{business.shortName ? business.shortName.toUpperCase() : (business.name || "BUSINESS NAME")}</h2>
-              <p className="text-[12px] md:text-[13px] text-kite-text-light tracking-widest">{business.ownerName || "Owner Name"}</p>
+              <p className="text-[12px] md:text-[13px] text-kite-text-light tracking-normal">{business.ownerName || "Owner Name"}</p>
               <p className="text-[12px] md:text-[13px] text-kite-text-light mt-1">{business.businessId || "ID Number"}</p>
             </div>
             <div className="relative cursor-pointer shrink-0 ml-4" onClick={() => fileInputRef.current?.click()}>
@@ -333,6 +334,12 @@ export default function BusinessDetail({
              />
            </div>
            <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Business Owner Name</label>
+             <div className="w-full py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text tracking-normal">
+               {business.ownerName}
+             </div>
+           </div>
+           <div>
              <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Short Business Name</label>
              <input
                type="text"
@@ -345,9 +352,12 @@ export default function BusinessDetail({
            <div>
              <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Description</label>
              <textarea
-               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none resize-none h-16"
+               className={`w-full border-b bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none transition-all duration-200 ${isEditingDescription ? 'border border-kite-border-hard rounded-md p-3 mt-1 resize-y min-h-[150px]' : 'border-kite-border-hard py-1.5 resize-none h-16 overflow-hidden'}`}
                value={formData.description}
                onChange={(e) => setFormData({...formData, description: e.target.value})}
+               onFocus={() => setIsEditingDescription(true)}
+               onBlur={() => setIsEditingDescription(false)}
+               placeholder={isEditingDescription ? "Enter detailed description here..." : "No description"}
              />
            </div>
            <div>
