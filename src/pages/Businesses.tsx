@@ -421,7 +421,7 @@ export default function Businesses() {
                               }}
                               className={`ml-4 focus:outline-none flex-shrink-0 flex items-center justify-center p-0.5 rounded transition-all hover:bg-gray-100 dark:hover:bg-[#202020] ${expandedBusinessId === business.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                             >
-                              <ChevronDown className={`w-[14px] h-[14px] text-kite-text-light transition-transform duration-300 ${expandedBusinessId === business.id ? "rotate-180" : ""}`} />
+                              <ChevronDown className={`w-[17px] h-[17px] text-kite-text-light transition-transform duration-300 ${expandedBusinessId === business.id ? "rotate-180" : ""}`} />
                             </button>
                           </div>
                           <div className="w-[28%] text-left py-3 text-[13px] text-kite-text-light truncate pl-4 border-l border-kite-vertical-divider">
