@@ -12,6 +12,9 @@ import {
   ArrowLeft,
   User,
   Save,
+  Camera,
+  Eye,
+  Trash2,
   X,
   Edit2,
   Wallet,
@@ -86,6 +89,8 @@ export default function InvestorDetail({
     : 0;
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [showPhotoPreview, setShowPhotoPreview] = useState(false);
 
 
 
@@ -133,6 +138,18 @@ export default function InvestorDetail({
       },
     });
     setCropImageUrl(null);
+  };
+
+  const handleDeletePhoto = () => {
+    setFormData({ ...formData, photoUrl: "" });
+    dispatch({
+      type: "UPDATE_INVESTOR",
+      payload: {
+        ...investor,
+        photoUrl: "",
+      },
+    });
+    setShowPhotoMenu(false);
   };
 
   const handleSaveDetails = () => {
@@ -211,14 +228,53 @@ export default function InvestorDetail({
             <ArrowLeft className="w-5 h-5" />{" "}
           </button>
           
-          <div className="relative cursor-pointer shrink-0" onClick={() => fileInputRef.current?.click()}>
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative group">
+          <div className="relative shrink-0">
+            <div 
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative group cursor-pointer"
+              onClick={() => {
+                if (investor.photoUrl) {
+                  setShowPhotoMenu(!showPhotoMenu);
+                } else {
+                  fileInputRef.current?.click();
+                }
+              }}
+            >
               {investor.photoUrl ? (
                 <img src={investor.photoUrl} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-xl md:text-2xl font-normal">{(investor.shortName || investor.name)?.substring(0, 2).toUpperCase()}</span>
               )}
             </div>
+            
+            {showPhotoMenu && investor.photoUrl && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowPhotoMenu(false)}></div>
+                <div className="absolute top-full left-0 md:left-1/2 md:-translate-x-1/2 mt-2 w-40 bg-white dark:bg-kite-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5">
+                  <button 
+                    onClick={() => { setShowPhotoMenu(false); setShowPhotoPreview(true); }}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors"
+                  >
+                    <Eye className="w-[18px] h-[18px] text-kite-text-light" />
+                    <span>View Photo</span>
+                  </button>
+                  <button 
+                    onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click(); }}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors border-t border-kite-border"
+                  >
+                    <Camera className="w-[18px] h-[18px] text-kite-text-light" />
+                    <span>Upload New</span>
+                  </button>
+                  <button 
+                    onClick={handleDeletePhoto}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-[#D94B4B] hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors border-t border-kite-border"
+                  >
+                    <Trash2 className="w-[18px] h-[18px]" />
+                    <span>Remove</span>
+                  </button>
+                </div>
+              </>
+            )}
+
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
           </div>
 
@@ -699,6 +755,28 @@ export default function InvestorDetail({
           onBuyClick={onBuyClick}
         />
       )}
+      {showPhotoPreview && investor.photoUrl && (
+        <div className="fixed inset-0 z-[110] bg-black md:bg-black/80 flex flex-col md:items-center md:justify-center md:p-8">
+          <div className="flex justify-between items-center p-4 bg-black text-white mobile-modal-safe w-full shrink-0 md:hidden">
+            <span className="font-medium text-[16px]">Profile Photo</span>
+            <button onClick={() => setShowPhotoPreview(false)} className="px-3 py-1 font-normal text-[15px]">Close</button>
+          </div>
+          
+          <div className="flex-1 md:flex-initial md:bg-white md:dark:bg-kite-surface md:rounded-lg md:overflow-hidden md:flex md:flex-col md:w-full md:max-w-xl md:shadow-2xl flex flex-col w-full h-full md:h-auto">
+            <div className="hidden md:flex justify-between items-center p-4 border-b border-kite-border bg-white dark:bg-kite-surface text-kite-text shrink-0">
+              <span className="font-medium text-[16px]">Profile Photo</span>
+              <button onClick={() => setShowPhotoPreview(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-[#202020] rounded-full transition-colors">
+                <X className="w-5 h-5 text-kite-text-light" />
+              </button>
+            </div>
+            
+            <div className="flex-1 flex items-center justify-center bg-black md:bg-gray-100 md:dark:bg-black p-0 md:p-8 relative">
+              <img src={investor.photoUrl} alt="Profile Preview" className="w-full h-auto max-h-[80vh] md:max-h-[60vh] object-contain" />
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
