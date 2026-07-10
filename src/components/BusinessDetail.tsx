@@ -1,10 +1,12 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import React, { useState, useRef, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
+import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import { formatINR } from "../utils/mockData";
 import {
   ArrowLeft,
   Upload,
+  Search,
   ChevronRight,
   Info
 } from "lucide-react";
@@ -22,12 +24,30 @@ interface Props {
   onDelete?: () => void;
 }
 
+
+const formatCompactZerodha = (num: number) => {
+  if (num === 0) return "0";
+  const absNum = Math.abs(num);
+  if (absNum >= 10000000) {
+    return (num / 10000000).toFixed(2).replace(/\.00$/, '') + 'Cr';
+  }
+  if (absNum >= 100000) {
+    return (num / 100000).toFixed(2).replace(/\.00$/, '') + 'LK';
+  }
+  if (absNum >= 1000) {
+    return (num / 1000).toFixed(2).replace(/\.00$/, '') + 'K';
+  }
+  return num.toString();
+};
+
 export default function BusinessDetail({
   businessId,
   onBack,
   onDelete,
 }: Props) {
   const { state, dispatch } = useAppContext();
+  const { marketState } = useMarketSimulation();
+  const marketTrends = marketState.trends;
   const business = state.businesses.find((b) => b.id === businessId);
   const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
@@ -81,6 +101,19 @@ export default function BusinessDetail({
     (sum, inv) => sum + inv.amount,
     0,
   );
+
+  const totalProfitPay = activeBusinessInvestments.reduce((sum, inv) => {
+    const trend = marketTrends[businessId] || 0;
+    const liveProfit = inv.amount * (trend / 100);
+    return sum + Math.max(0, liveProfit);
+  }, 0);
+  
+  const totalProfitPayMobile = activeBusinessInvestments.reduce(
+    (sum, inv) => sum + (inv.amount * (business.interestRate || 0)) / 100,
+    0,
+  );
+  
+  const [investorSearchQuery, setInvestorSearchQuery] = useState("");
   
   const payin = state.investments
     .filter(i => i.businessId === businessId)
@@ -418,29 +451,107 @@ export default function BusinessDetail({
              <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total funded</p>
              <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalFunded).replace("₹", "")}</p>
           </div>
+          <div className="hidden md:flex bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft justify-between items-center">
+             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total profit pay</p>
+             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalProfitPay).replace("₹", "")}</p>
+          </div>
+          <div className="md:hidden bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
+             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total profit pay</p>
+             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalProfitPayMobile).replace("₹", "")}</p>
+          </div>
           <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
              <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Investors</p>
              <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{activeBusinessInvestments.length}</p>
           </div>
           
           <div className="bg-white dark:bg-kite-surface pt-2 border-b border-kite-border-soft mt-4">
-             <h3 className="px-5 py-3 text-[14px] font-normal text-kite-text-light border-b border-kite-border-soft uppercase tracking-wider">Current investor</h3>
-             <div className="divide-y divide-kite-border-soft">
-               {businessInvestments.map((inv, idx) => {
+             <div className="px-5 py-3 border-b border-kite-border-soft flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+               <h3 className="text-[14px] font-normal text-kite-text-light uppercase tracking-wider">Current investors</h3>
+               <div className="relative hidden md:block">
+                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light" />
+                 <input
+                   type="text"
+                   placeholder="Search..."
+                   value={investorSearchQuery}
+                   onChange={(e) => setInvestorSearchQuery(e.target.value)}
+                   className="w-full md:w-[240px] pl-8 pr-3 py-1.5 text-[13px] border border-kite-border-soft dark:border-kite-border-hard bg-white dark:bg-kite-bg text-kite-text rounded-sm focus:outline-none focus:border-kite-blue focus:ring-[0.5px] focus:ring-kite-blue transition-all"
+                 />
+               </div>
+             </div>
+             
+             <div className="hidden md:block overflow-x-auto w-full max-w-full">
+               <table className="w-full text-left text-[13px] md:text-[14px] min-w-[800px]">
+                 <thead className="border-b-2 border-black dark:border-kite-border font-medium uppercase text-[11px] md:text-[12px] tracking-wider text-kite-text">
+                   <tr>
+                     <th className="py-4 pl-5 pr-4 w-48">Investor Name</th>
+                     <th className="py-4 px-4 text-right">Amount</th>
+                     <th className="py-4 px-4 text-right">Owner Profit</th>
+                     <th className="py-4 px-4 text-right">Live Profit</th>
+                     <th className="py-4 px-4 text-center">Period</th>
+                     <th className="py-4 pr-5 pl-4 text-right">Status</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-kite-border-soft text-[13px] md:text-[14px]">
+                   {businessInvestments.filter(inv => {
+                     const investor = state.investors.find(i => i.id === inv.investorId);
+                     return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
+                   }).map((inv, idx) => {
+                     const investor = state.investors.find(i => i.id === inv.investorId);
+                     const ownerProfit = (inv.amount * (business.interestRate || 0)) / 100;
+                     const trend = marketTrends[businessId] || 0;
+                     const isCompleted = inv.status === "completed";
+                     const liveProfit = isCompleted ? 0 : inv.amount * (trend / 100);
+                     return (
+                       <tr key={`biz_inv_desk_${inv.id}_${idx}`} className="hover:bg-kite-bg transition-colors group">
+                         <td className="py-4 pl-5 pr-4 text-kite-text font-medium whitespace-nowrap uppercase">{investor?.name?.toUpperCase() || "UNKNOWN"}</td>
+                         <td className={`py-4 px-4 text-right font-mono font-medium ${isCompleted ? 'text-kite-blue' : 'text-kite-text'}`}>{formatCompactZerodha(inv.amount)}</td>
+                         <td className="py-4 px-4 text-right font-mono font-medium text-kite-text-light">{formatCompactZerodha(ownerProfit)}</td>
+                         <td className="py-4 px-4 text-right font-mono font-medium text-[#4CAF50]">
+                           {isCompleted ? "-" : `${liveProfit >= 0 ? "+" : ""}${formatCompactZerodha(liveProfit)}`}
+                         </td>
+                         <td className="py-4 px-4 text-center text-kite-text-light">{inv.timePeriodMonths} Months</td>
+                         <td className="py-4 pr-5 pl-4 text-right">
+                           <span className={inv.status === "active" ? "text-[#4CAF50] uppercase text-[11px] font-medium tracking-wider" : "text-kite-text-light uppercase text-[11px] font-medium tracking-wider"}>
+                             {inv.status}
+                           </span>
+                         </td>
+                       </tr>
+                     )
+                   })}
+                   {businessInvestments.filter(inv => {
+                     const investor = state.investors.find(i => i.id === inv.investorId);
+                     return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
+                   }).length === 0 && (
+                     <tr><td colSpan={6} className="py-12 text-center text-kite-text-light font-medium">No investors found.</td></tr>
+                   )}
+                 </tbody>
+               </table>
+             </div>
+             
+             <div className="divide-y divide-kite-border-soft md:hidden">
+               {businessInvestments.filter(inv => {
                  const investor = state.investors.find(i => i.id === inv.investorId);
+                 return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
+               }).map((inv, idx) => {
+                 const investor = state.investors.find(i => i.id === inv.investorId);
+                 const profit = (inv.amount * (business.interestRate || 0)) / 100;
                  return (
-                   <div key={`biz_inv_${inv.id}_${idx}`} className="p-4 flex justify-between items-center px-5">
+                   <div key={`biz_inv_mob_${inv.id}_${idx}`} className="p-4 flex justify-between items-center px-5">
                       <div>
                         <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{investor?.name || "Unknown"}</p>
                         <p className="text-[12px] md:text-[13px] text-kite-text-light mt-0.5">{inv.timePeriodMonths} Months • <span className={inv.status === "active" ? "text-[#4CAF50]" : "text-kite-text-light"}>{inv.status}</span></p>
                       </div>
                       <div className="text-right">
                         <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{formatINR(inv.amount).replace("₹", "")}</p>
+                        <p className="text-[12px] md:text-[13px] font-medium text-[#4CAF50] mt-0.5">+{formatINR(profit).replace("₹", "")}</p>
                       </div>
                    </div>
                  )
                })}
-               {businessInvestments.length === 0 && (
+               {businessInvestments.filter(inv => {
+                 const investor = state.investors.find(i => i.id === inv.investorId);
+                 return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
+               }).length === 0 && (
                  <div className="p-6 text-center text-kite-text-light text-[13px] font-normal">
                    No investors found.
                  </div>
