@@ -1029,15 +1029,10 @@ export default function Businesses() {
                     }
                     readOnly={ownerMode === "existing"}
                   />
-                  {ownerMode === "existing" ? (
+                  {ownerMode === "existing" && (
                     <p className="text-[11px] md:text-[12px] text-orange-600 mt-1.5 font-normal">
                       Bank details are locked because this owner is already
                       registered.
-                    </p>
-                  ) : (
-                    <p className="text-[11px] md:text-[12px] text-kite-text-light dark:text-kite-text-light mt-1.5">
-                      Auto-filled from Step 1. You can edit if bank account name
-                      differs.
                     </p>
                   )}
                 </div>

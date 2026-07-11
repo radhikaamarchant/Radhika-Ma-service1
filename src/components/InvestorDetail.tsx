@@ -24,6 +24,7 @@ import {
   Building2,
   TrendingUp,
   ChevronRight,
+  Search,
 } from "lucide-react";
 import { calculateLiveProfit } from "../utils/profitCalculator";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
@@ -50,6 +51,14 @@ export default function InvestorDetail({
       (a, b) =>
         new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     );
+  const [investmentSearch, setInvestmentSearch] = useState("");
+
+  const filteredInvestments = investorInvestments.filter((inv) => {
+    if (!investmentSearch.trim()) return true;
+    const business = state.businesses.find((b) => b.id === inv.businessId);
+    return business?.name?.toLowerCase().includes(investmentSearch.toLowerCase());
+  });
+
   const activeInvestments = investorInvestments.filter(
     (inv) => inv.status === "active",
   );
@@ -563,17 +572,27 @@ export default function InvestorDetail({
           {/* Investment History */}
           {""}
           <div className="bg-white dark:bg-kite-surface border border-kite-border rounded overflow-hidden">
-            <div className="p-4 border-b border-kite-border">
+            <div className="p-4 border-b border-kite-border flex justify-between items-center">
               <h3 className="text-[13px] md:text-[14px] font-medium text-kite-text">
                 Investment History
               </h3>
+              <div className="relative hidden md:block">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-kite-text-light" />
+                <input
+                  type="text"
+                  placeholder="Search investments"
+                  value={investmentSearch}
+                  onChange={(e) => setInvestmentSearch(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 w-[220px] text-[12px] bg-kite-bg border border-kite-border rounded-[4px] outline-none focus:border-kite-blue focus:ring-1 focus:ring-kite-blue/20 transition-all text-kite-text dark:text-[#E3E3E3]"
+                />
+              </div>
             </div>
             {""}
             {/* Desktop Table */}
             {""}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto max-h-[400px] overflow-y-auto">
               <table className="w-full text-left text-[13px] md:text-[14px]">
-                <thead className="bg-kite-bg/50">
+                <thead className="bg-kite-bg dark:bg-kite-bg sticky top-0 z-10">
                   <tr className="text-[11px] md:text-[12px] uppercase tracking-wider text-kite-text-light">
                     <th className="p-3 font-medium border-b border-kite-border">
                       Business
@@ -592,9 +611,9 @@ export default function InvestorDetail({
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-kite-border">
+                <tbody className="divide-y divide-kite-border relative">
                   {""}
-                  {investorInvestments.map((inv, idx) => {
+                  {filteredInvestments.map((inv, idx) => {
                     const business = state.businesses.find(
                       (b) => b.id === inv.businessId,
                     );
@@ -630,7 +649,7 @@ export default function InvestorDetail({
                         <td className="p-3 font-medium text-kite-text">
                           {business?.name?.toUpperCase() || "UNKNOWN"}
                         </td>
-                        <td className="p-3 font-medium text-right">
+                        <td className={`p-3 font-medium text-right ${inv.status === "completed" ? "text-[#4184F3]" : ""}`}>
                           {formatINR(inv.amount)}
                         </td>
                         <td className="p-3 text-kite-text-light text-center">
