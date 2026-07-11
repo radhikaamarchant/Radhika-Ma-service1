@@ -62,6 +62,8 @@ export default function Businesses() {
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [showOwnerSelect, setShowOwnerSelect] = useState(false);
   const [ownerSearch, setOwnerSearch] = useState("");
+  const [bankSearch, setBankSearch] = useState("");
+  const [showBankSelect, setShowBankSelect] = useState(false);
   const [expandedBusinessId, setExpandedBusinessId] = useState<string | null>(null);
   
   useMobileBackNavigation(!!selectedBusinessId, () => setSelectedBusinessId(null));
@@ -911,24 +913,57 @@ export default function Businesses() {
                     <Building className="w-3.5 h-3.5" />
                     <span>Bank Name</span>
                   </label>
-                  <select
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue cursor-pointer"}`}
-                    value={formData.bankName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, bankName: e.target.value })
-                    }
-                    disabled={ownerMode === "existing"}
-                  >
-                    {INDIAN_BANKS.map((bank) => (
-                      <option
-                        key={bank}
-                        value={bank}
-                        className="bg-kite-surface text-kite-text dark:text-kite-text"
-                      >
-                        {bank}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative z-20">
+                    <div
+                      className={`w-full border-0 border-b border-kite-border py-2 bg-transparent cursor-pointer flex justify-between items-center transition-colors hover:border-kite-blue ${ownerMode === "existing" ? "opacity-50 pointer-events-none" : ""}`}
+                      onClick={() => {
+                        setShowBankSelect(!showBankSelect);
+                        setBankSearch("");
+                      }}
+                    >
+                      <span className="truncate text-[13px] md:text-[14px] text-kite-text">
+                        {formData.bankName || "Select Bank"}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-kite-text-muted" />
+                    </div>
+                    {showBankSelect && (
+                      <div className="absolute z-10 w-full mt-1 bg-kite-surface border border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col shadow-lg">
+                        <div className="p-2 border-b border-kite-border bg-kite-bg">
+                          <div className="relative">
+                            <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light" />
+                            <input
+                              type="text"
+                              autoFocus
+                              placeholder="Search bank..."
+                              className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-kite-border bg-transparent text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-kite-blue"
+                              value={bankSearch}
+                              onChange={(e) => setBankSearch(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        </div>
+                        <div className="overflow-y-auto flex-1">
+                          {INDIAN_BANKS.filter(b => b.toLowerCase().includes(bankSearch.toLowerCase())).map(bank => (
+                            <div
+                              key={bank}
+                              className="px-4 py-2 hover:bg-kite-bg cursor-pointer border-b border-kite-border last:border-0 text-[13px] text-kite-text"
+                              onClick={() => {
+                                setFormData({ ...formData, bankName: bank });
+                                setShowBankSelect(false);
+                              }}
+                            >
+                              {bank}
+                            </div>
+                          ))}
+                          {INDIAN_BANKS.filter(b => b.toLowerCase().includes(bankSearch.toLowerCase())).length === 0 && (
+                            <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
+                              No bank found.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[11px] md:text-[12px] font-medium mb-1 text-kite-text dark:text-kite-text uppercase tracking-wider">
@@ -939,13 +974,19 @@ export default function Businesses() {
                     type="text"
                     className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.accountNumber}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
+                      const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
+                      const last4 = raw.length >= 4 ? raw.slice(-4) : raw;
+                      const ifscPrefix = formData.ifscCode.replace(/[^A-Z]/g, "").slice(0, 3);
+                      const newIfsc = ifscPrefix.length === 3 ? ifscPrefix + last4 : ifscPrefix;
                       setFormData({
                         ...formData,
-                        accountNumber: e.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                    placeholder="e.g. 30291039482"
+                        accountNumber: formatted,
+                        ifscCode: newIfsc,
+                      });
+                    }}
+                    placeholder="e.g. 1234 5678 9012"
                     readOnly={ownerMode === "existing"}
                   />
                 </div>
@@ -958,13 +999,16 @@ export default function Businesses() {
                     type="text"
                     className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.ifscCode}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const prefix = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
+                      const rawAcc = formData.accountNumber.replace(/\D/g, "");
+                      const last4 = rawAcc.length >= 4 ? rawAcc.slice(-4) : rawAcc;
                       setFormData({
                         ...formData,
-                        ifscCode: e.target.value.toUpperCase(),
-                      })
-                    }
-                    placeholder="e.g. SBIN0001234"
+                        ifscCode: prefix.length === 3 ? prefix + last4 : prefix,
+                      });
+                    }}
+                    placeholder="e.g. HDF9012"
                     readOnly={ownerMode === "existing"}
                   />
                 </div>
