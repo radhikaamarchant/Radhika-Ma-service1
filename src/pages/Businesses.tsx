@@ -1,481 +1,403 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import {
+  Search,
+  Plus,
+  ArrowLeft,
+  X,
+  ChevronDown,
+  BadgeCheck,
+  Clock,
+  CheckCircle2,
+  User,
+  Building,
+  Trash2,
+  ArrowRight
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAppContext } from "../utils/AppContext";
+import { Business, Investor, Investment } from "../types";
 import { formatINR } from "../utils/mockData";
 import {
-  Plus,
-  Search,
-  Building2,
-  Banknote,
-  Building,
-  X,
-  BadgeCheck,
-  ChevronDown,
-  Clock,
-  ArrowLeft,
-  ArrowRight,
-  ChevronRight,
-} from "lucide-react";
-import { Business } from "../types";
-import BusinessDetail from "../components/BusinessDetail";
+  getVerificationStats,
+  getBlueTickBusinessIds,
+} from "../utils/blueTick";
 import { INDIAN_BANKS } from "../utils/indianBanks";
-import { getVerificationStats } from "../utils/blueTick";
-
-// Removed local MarketTrendCell
-import { MarketTrendCell } from "../components/MarketTrendCell";
-import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-
-
-
-const formatLargeNumber = (num) => {
-  if (num === 0) return "0";
-  const absNum = Math.abs(num);
-  let formatted = '';
-  if (absNum >= 10000000) {
-    formatted = (absNum / 10000000).toFixed(2).replace(/\.00$/, '') + ' CR';
-  } else if (absNum >= 100000) {
-    formatted = (absNum / 100000).toFixed(2).replace(/\.00$/, '') + ' LK';
-  } else if (absNum >= 1000) {
-    formatted = (absNum / 1000).toFixed(2).replace(/\.00$/, '') + ' K';
-  } else {
-    formatted = absNum.toFixed(2).replace(/\.00$/, '');
-  }
-  return (num < 0 ? "-" : "") + formatted;
-};
+import BusinessDetail from "../components/BusinessDetail";
 
 export default function Businesses() {
   const { state, dispatch } = useAppContext();
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<
-    "list" | "add-step-1" | "add-step-2"
-  >("list");
-  const [ownerMode, setOwnerMode] = useState<"new" | "existing">("new");
+
+  const [viewMode, setViewMode] = useState("list");
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (isSearchExpanded && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchExpanded]);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showInterestCalculation, setShowInterestCalculation] = useState(false);
+  const searchInputRef = useRef(null);
+
+  const [expandedBusinessId, setExpandedBusinessId] = useState(null);
+  const [selectedBusinessId, setSelectedBusinessId] = useState(null);
+
   const [showOwnerSelect, setShowOwnerSelect] = useState(false);
   const [ownerSearch, setOwnerSearch] = useState("");
-  const [bankSearch, setBankSearch] = useState("");
+  const [ownerMode, setOwnerMode] = useState("existing");
   const [showBankSelect, setShowBankSelect] = useState(false);
-  const [expandedBusinessId, setExpandedBusinessId] = useState<string | null>(null);
-  
-  useMobileBackNavigation(!!selectedBusinessId, () => setSelectedBusinessId(null));
-  useMobileBackNavigation(viewMode === "add-step-1", () => setViewMode("list"));
-  useMobileBackNavigation(viewMode === "add-step-2", () => setViewMode("add-step-1"));
-  useMobileBackNavigation(showOwnerSelect, () => setShowOwnerSelect(false));
+  const [bankSearch, setBankSearch] = useState("");
+  const [showInterestCalculation, setShowInterestCalculation] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [showVerifySuccess, setShowVerifySuccess] = useState(false);
 
-
-  // Scroll preservation
-  const scrollPosRef = useRef<number>(0);
-  const mainRef = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    mainRef.current = document.querySelector("main");
-  }, []);
-  useEffect(() => {
-    // Use selectedBusinessId to check
-    // if detail view is active
-    const isList = viewMode === "list" && !selectedBusinessId;
-    if (isList) {
-      if (mainRef.current) {
-        setTimeout(() => {
-          if (mainRef.current) mainRef.current.scrollTop = scrollPosRef.current;
-        }, 10);
-      }
-    } else {
-      if (mainRef.current) {
-        scrollPosRef.current = mainRef.current.scrollTop;
-        mainRef.current.scrollTop = 0;
-      }
-    }
-  }, [viewMode, selectedBusinessId]);
-  // Form State
   const [formData, setFormData] = useState({
-    businessId: "",
     name: "",
     shortName: "",
     ownerName: "",
-    authorityType: "Business Authorities" as any,
-    rmasSubsidy: "4",
     fundingRequired: "",
     interestRate: "",
-    bankName: INDIAN_BANKS[0],
+    businessId: "",
+    description: "",
+    location: "",
+    authorityType: "Business Authorities",
+    rmasSubsidy: "",
+    bankName: "",
     accountNumber: "",
     ifscCode: "",
     accountHolderName: "",
-    registrationFee: "",
-    commissionPercentage: "1",
-    taxPercentage: "18",
+    registrationFee: ""
   });
-  const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
-  const uniqueBusinesses = Array.from(
-    new Map<string, Business>(state.businesses.map((b) => [b.id, b])).values(),
-  );
-  const filteredBusinesses = uniqueBusinesses
-    .filter(
-      (b) =>
-        b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.businessId?.includes(searchTerm),
-    )
-    .sort((a, b) => getTime(b.id) - getTime(a.id));
-  const statsMap = getVerificationStats(state.businesses, state.investments);
-  const isBlueTick = (bizId: string) =>
-    statsMap.get(bizId)?.isBlueTick ?? false;
-  const isPreVerified = (bizId: string) =>
-    statsMap.get(bizId)?.isPreVerified ?? false;
-  const uniqueOwners = Array.from(
-    new Set(state.businesses.map((b) => b.businessId)),
-  ).map((id) => state.businesses.find((b) => b.businessId === id)!);
-  const handleExistingOwnerChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
-    const selectedOwnerId = e.target.value;
-    const ownerRecord = state.businesses.find(
-      (b) => b.businessId === selectedOwnerId,
-    );
-    if (ownerRecord) {
-      setFormData({
-        ...formData,
-        businessId: ownerRecord.businessId,
-        ownerName: ownerRecord.ownerName,
-        authorityType:
-          ownerRecord.authorityType || ("Business Authorities" as any),
-        rmasSubsidy: ownerRecord.rmasSubsidy?.toString() || "4",
-        bankName: ownerRecord.bankDetails?.bankName || INDIAN_BANKS[0],
-        accountNumber: ownerRecord.bankDetails?.accountNumber || "",
-        ifscCode: ownerRecord.bankDetails?.ifscCode || "",
-        accountHolderName: ownerRecord.bankDetails?.accountHolderName || "",
-      });
-    }
-  };
-  const calculateFees = () => {
-    const funding = parseFloat(formData.fundingRequired) || 0;
-    const commPct = parseFloat(formData.commissionPercentage) || 0;
-    const taxPct = parseFloat(formData.taxPercentage) || 0;
-    const commission = (funding * commPct) / 100;
-    const tax = (commission * taxPct) / 100;
-    return { commission, tax, total: commission + tax };
-  };
-  const generateBusinessId = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-  const startAddBusiness = () => {
-    setOwnerMode("new");
-    let defaultRegFee = "";
-    if (state.settings && state.settings.newBusinessRegistration) {
-      if (state.settings.newBusinessRegistration.type === "amount") {
-        defaultRegFee = String(state.settings.newBusinessRegistration.value);
+
+  const uniqueOwners = useMemo(() => {
+    const ownersMap = new Map();
+    state.businesses.forEach((b) => {
+      if (b.ownerName && !ownersMap.has(b.ownerName)) {
+        ownersMap.set(b.ownerName, b);
       }
-    }
-    setFormData({
-      ...formData,
-      businessId: generateBusinessId(),
-      name: "",
-    shortName: "",
-      ownerName: "",
-      fundingRequired: "",
-      interestRate: "",
-      bankName: INDIAN_BANKS[0],
-      accountNumber: "",
-      ifscCode: "",
-      accountHolderName: "",
-      registrationFee: defaultRegFee,
     });
+    return Array.from(ownersMap.values());
+  }, [state.businesses]);
+
+  const statsMap = useMemo(
+    () => getVerificationStats(state.businesses, state.investments),
+    [state.businesses, state.investments],
+  );
+
+  const formatLargeNumber = (num) => {
+    if (num >= 10000000) {
+      return (num / 10000000).toFixed(2) + " CR";
+    }
+    if (num >= 100000) {
+      return (num / 100000).toFixed(2) + " L";
+    }
+    return num.toLocaleString("en-IN");
+  };
+
+  const isBlueTick = (id) => statsMap.get(id)?.isBlueTick ?? false;
+  const isPreVerified = (id) => statsMap.get(id)?.isPreVerified ?? false;
+
+  const filteredBusinesses = state.businesses.filter(
+    (b) =>
+      (b.name && b.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (b.ownerName &&
+        b.ownerName.toLowerCase().includes(searchTerm.toLowerCase())),
+  );
+
+  const startAddBusiness = () => {
     setViewMode("add-step-1");
   };
+
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    if (ownerMode === "existing" && !formData.businessId) {
-      alert("Please select an existing owner.");
-      return;
-    }
-    if (!formData.name.trim() || !formData.ownerName.trim()) return;
-    setFormData({
-      ...formData,
-      accountHolderName: formData.ownerName.toUpperCase(),
-      // auto fill all caps
-    });
     setViewMode("add-step-2");
   };
+
   const handleVerifiedSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const fees = calculateFees();
-    const newBusiness: Business = {
-      id: `b${Date.now()}`,
-      businessId: formData.businessId,
-      name: formData.name,
-      shortName: formData.shortName ? formData.shortName.toUpperCase() : "",
-      ownerName: formData.ownerName,
-      authorityType: formData.authorityType,
-      rmasSubsidy:
-        formData.authorityType === "Government Authorities" ||
-        formData.authorityType === "Trust Authorities"
-          ? Number(formData.rmasSubsidy) || 4
-          : 0,
-      registrationDate: new Date().toISOString().split("T")[0],
-      fundingRequired: parseFloat(formData.fundingRequired),
-      interestRate: parseFloat(formData.interestRate),
-      registrationCommissionPaid: fees.commission,
-      taxPaid: fees.tax,
-      status: "listed",
-      bankDetails: {
-        bankName: formData.bankName,
-        accountNumber: formData.accountNumber,
-        ifscCode: formData.ifscCode.toUpperCase(),
-        accountHolderName: formData.accountHolderName.toUpperCase(),
-      },
-      registrationFee: Number(formData.registrationFee) || 0,
-    };
-    dispatch({ type: "ADD_BUSINESS", payload: newBusiness });
-    setViewMode("list");
+    setIsVerifying(true);
+    setTimeout(() => {
+      const newBusiness: Business = {
+        id: crypto.randomUUID(),
+        businessId: formData.businessId || generateBusinessId(),
+        name: formData.name,
+        shortName: formData.shortName,
+        ownerName: formData.ownerName,
+        fundingRequired: Number(formData.fundingRequired.toString().replace(/\D/g, "")),
+        interestRate: Number(formData.interestRate),
+        authorityType: formData.authorityType as any,
+        rmasSubsidy: Number(formData.rmasSubsidy) || 0,
+        bankDetails: {
+          bankName: formData.bankName,
+          accountNumber: formData.accountNumber,
+          ifscCode: formData.ifscCode.toUpperCase(),
+          accountHolderName: formData.accountHolderName.toUpperCase(),
+        },
+        registrationFee: Number(formData.registrationFee.toString().replace(/\D/g, "")),
+        status: "pending",
+        registrationDate: new Date().toISOString(),
+        registrationCommissionPaid: 0,
+        taxPaid: 0
+      };
+      dispatch({ type: "ADD_BUSINESS", payload: newBusiness });
+      setIsVerifying(false);
+      setShowVerifySuccess(true);
+      setTimeout(() => {
+        setShowVerifySuccess(false);
+        setViewMode("list");
+      }, 2000);
+    }, 1500);
   };
-  if (selectedBusinessId) {
-    const businessForDetail = state.businesses.find(
-      (b) => b.id === selectedBusinessId,
-    );
-    return (
-      <BusinessDetail
-        businessId={selectedBusinessId}
-        onBack={() => setSelectedBusinessId(null)}
-        onDelete={() => {
-          const id = selectedBusinessId;
-          setSelectedBusinessId(null);
-          setDeletingId(id);
-          setTimeout(() => {
-            dispatch({ type: "DELETE_BUSINESS", payload: id });
-            setDeletingId(null);
-          }, 600);
-        }}
-      />
-    );
-  }
+
+  const handleExistingOwnerChange = (val) => {};
+  const generateBusinessId = () => "BIZ" + Math.floor(Math.random() * 1000);
+
   return (
     <div className="w-full space-y-6 print:m-0 print:p-0">
-      {" "}
       <div className="print:hidden space-y-6">
-        {" "}
-        {viewMode === "list" && (
+        {selectedBusinessId ? (
+          <BusinessDetail
+            businessId={selectedBusinessId}
+            onBack={() => setSelectedBusinessId(null)}
+          />
+        ) : viewMode === "list" && (
           <>
-            {" "}
-            {/* Header Section */}{" "}
-            <div className="px-3 md:px-4 pt-2 md:pt-4 flex flex-col md:flex-row md:justify-between md:items-center relative mb-3 md:mb-4 z-10">
-              {" "}
-              <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
-                {" "}
-                <div className="hidden md:block">
-                  {" "}
-                  <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
-                    My Businesses
-                  </h2>{" "}
-                </div>{" "}
-                <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto md:justify-end gap-2 md:gap-4">
-                  {" "}
-                  <div className="w-full md:w-auto pt-1 md:pt-0 pb-2 md:pb-0">
-                    {" "}
-                    <button
-                  onClick={startAddBusiness}
-                  className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none"
-                >
-                  {" "}
-                  <Plus className="w-4 h-4" />{" "}
-                  <span>Register Business</span>{" "}
-                </button>{" "}
-                  </div>{" "}
-                  {/* Search Container (Bottom on mobile, right on desktop) */}{" "}
-                  <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
-                  {" "}
-                  <div
-                    className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface md:dark:bg-[#161616] rounded-sm shadow-sm" : "bg-transparent"}`}
-                  >
-                    {" "}
-                    {!isSearchExpanded && (
-                      <button
-                        onClick={() => setIsSearchExpanded(true)}
-                        className="-ml-1.5 p-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
-                      >
-                        {" "}
-                        <Search className="w-[18px] h-[18px] text-kite-blue" />{" "}
-                      </button>
-                    )}{" "}
-                    {isSearchExpanded && (
-                      <div className="flex items-center w-full min-h-[36px] px-1">
-                        {" "}
+            <div className="w-full">
+              <div className="md:sticky md:top-0 z-30 bg-white dark:bg-kite-bg w-full">
+                {/* Header Section */}
+                <div className="px-3 md:px-4 pt-2 md:pt-4 pb-2 md:pb-4 flex flex-col md:flex-row md:justify-between md:items-center relative mb-1 md:mb-0 bg-white dark:bg-kite-bg">
+                  <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
+                    <div className="hidden md:block">
+                      <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
+                        My Businesses
+                      </h2>
+                    </div>
+                    <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto md:justify-end gap-2 md:gap-4">
+                      <div className="w-full md:w-auto pt-1 md:pt-0 pb-2 md:pb-0">
                         <button
-                          onClick={() => {
-                            setIsSearchExpanded(false);
-                            setSearchTerm("");
-                          }}
-                          className="p-1.5 -ml-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full mr-1 transition-colors flex-shrink-0"
+                          onClick={startAddBusiness}
+                          className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none"
                         >
-                          {" "}
-                          <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />{" "}
-                        </button>{" "}
-                        <input
-                          ref={searchInputRef}
-                          type="text"
-                          placeholder="Search Eg: Radhika Kite Trade"
-                          className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                        />{" "}
-                        {searchTerm && (
-                          <button
-                            onClick={() => setSearchTerm("")}
-                            className="p-1.5 text-kite-text-muted hover:text-kite-text transition-colors flex-shrink-0"
-                          >
+                          <Plus className="w-4 h-4" />
+                          <span>Register Business</span>
+                        </button>
+                      </div>
+                      {/* Search Container */}
+                      <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
+                        <div
+                          className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface md:dark:bg-[#161616] rounded-sm shadow-sm" : "bg-transparent"}`}
+                        >
+                          {!isSearchExpanded && (
+                            <button
+                              onClick={() => setIsSearchExpanded(true)}
+                              className="-ml-1.5 p-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
+                            >
+                              <Search className="w-[18px] h-[18px] text-kite-blue" />
+                            </button>
+                          )}
+                          {isSearchExpanded && (
+                            <div className="flex items-center w-full min-h-[36px] px-1">
+                              <button
+                                onClick={() => {
+                                  setIsSearchExpanded(false);
+                                  setSearchTerm("");
+                                }}
+                                className="p-1.5 -ml-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full mr-1 transition-colors flex-shrink-0"
+                              >
+                                <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />
+                              </button>
+                              <input
+                                ref={searchInputRef}
+                                type="text"
+                                placeholder="Search Eg: Radhika Kite Trade"
+                                className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                              />
+                              {searchTerm && (
+                                <button
+                                  onClick={() => setSearchTerm("")}
+                                  className="p-1.5 text-kite-text-light hover:text-kite-text transition-colors flex-shrink-0"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DESKTOP HEADER */}
+                <div className="hidden md:flex items-center px-4 bg-white dark:bg-[#1a1a1a] border-b border-kite-border w-full">
+                  <div className="w-[30%] text-left py-2 text-[12px] text-kite-text">
+                    BUSINESS NAME
+                  </div>
+                  <div className="w-[28%] text-left py-2 text-[12px] text-kite-text border-l border-kite-vertical-divider pl-4">
+                    OWNER NAME
+                  </div>
+                  <div className="w-[14%] text-left py-2 text-[12px] text-kite-text border-l border-kite-vertical-divider pl-4">
+                    ID
+                  </div>
+                  <div className="w-[14%] text-right py-2 text-[12px] text-kite-text border-l border-kite-vertical-divider pr-4">
+                    ROI
+                  </div>
+                  <div className="w-[14%] text-right py-2 text-[12px] text-kite-text pl-5 border-l border-kite-vertical-divider">
+                    FUND
+                  </div>
+                </div>
+              </div>
+              <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none md:overflow-visible overflow-hidden z-10 md:mt-0">
+                <div className="md:overflow-visible overflow-hidden">
+                  {" "}
+                  {/* Unified Watchlist View */}{" "}
+                  <div className="flex flex-col border-b border-kite-border pb-20 md:pb-0">
+                    {filteredBusinesses.map((business, idx) => {
+                      const activeInvestments = state.investments.filter(
+                        (inv) =>
+                          inv.businessId === business.id &&
+                          inv.status === "active",
+                      );
+                      const totalInvested = activeInvestments.reduce(
+                        (sum, inv) => sum + inv.amount,
+                        0,
+                      );
+                      return (
+                        <div
+                          key={`inv_${business.id}_${idx}`}
+                          onClick={() => setSelectedBusinessId(business.id)}
+                          className="flex flex-col bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] cursor-pointer transition-colors min-h-[50px] group"
+                        >
+                          {/* Mobile View */}
+                          <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
                             {" "}
-                            <X className="w-4 h-4" />{" "}
-                          </button>
-                        )}{" "}
+                            <div className="flex flex-col flex-1">
+                              {" "}
+                              <span className="text-[10px] md:text-[11px] ] text-kite-text-light mb-0.5 leading-tight">
+                                {business.ownerName}
+                              </span>{" "}
+                              <div className="flex items-center space-x-1.5 mb-1">
+                                {" "}
+                                <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
+                                  {business.shortName
+                                    ? business.shortName.toUpperCase()
+                                    : business.name?.toUpperCase()}
+                                </span>{" "}
+                                {isBlueTick(business.id) && (
+                                  <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
+                                )}{" "}
+                                {isPreVerified(business.id) && (
+                                  <Clock className="w-3 h-3 text-kite-text flex-shrink-0" />
+                                )}{" "}
+                              </div>{" "}
+                              <span className="font-sans text-[10px] md:text-[11px] ] text-kite-text-light leading-tight">
+                                {business.businessId}
+                              </span>{" "}
+                            </div>{" "}
+                            <div className="flex items-center space-x-3 md:space-x-6 text-right">
+                              {" "}
+                              <div className="flex flex-col items-end">
+                                {" "}
+                                <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
+                                  {formatINR(business.fundingRequired)}
+                                </span>{" "}
+                                <span className="text-[11px] md:text-[12px] font-normal mt-0.5 text-kite-green">
+                                  {" "}
+                                  {business.interestRate}% ROI{" "}
+                                </span>{" "}
+                              </div>{" "}
+                            </div>{" "}
+                          </div>
+                          {/* Desktop View */}
+                          <div className="hidden md:flex items-center w-full px-4 border-b border-kite-border">
+                            <div className="w-[30%] text-left py-3 flex items-center justify-between overflow-hidden pr-4">
+                              <div className="flex items-center overflow-hidden flex-1">
+                                <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
+                                  {business.shortName
+                                    ? business.shortName.toUpperCase()
+                                    : business.name?.toUpperCase()}
+                                </span>
+                                {isBlueTick(business.id) && (
+                                  <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
+                                )}
+                                {isPreVerified(business.id) && (
+                                  <Clock className="w-3 h-3 text-kite-text flex-shrink-0 ml-1.5" />
+                                )}
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedBusinessId(
+                                    expandedBusinessId === business.id
+                                      ? null
+                                      : business.id,
+                                  );
+                                }}
+                                className={`ml-4 focus:outline-none flex-shrink-0 flex items-center justify-center p-0.5 rounded transition-all hover:bg-gray-100 dark:hover:bg-[#202020] ${expandedBusinessId === business.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                              >
+                                <ChevronDown
+                                  className={`w-[17px] h-[17px] text-kite-text-light transition-transform duration-300 ${expandedBusinessId === business.id ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            </div>
+                            <div className="w-[28%] text-left py-3 text-[13px] text-kite-text-light truncate pl-4 border-l border-kite-vertical-divider">
+                              {business.ownerName}
+                            </div>
+                            <div className="w-[14%] text-left py-3 text-[12px] text-kite-text font-mono truncate pl-4 border-l border-kite-vertical-divider">
+                              {business.businessId}
+                            </div>
+                            <div className="w-[14%] text-right py-3 text-[13px] text-kite-green pr-4 border-l border-kite-vertical-divider truncate">
+                              {business.interestRate}%
+                            </div>
+                            <div className="w-[14%] text-right py-3 text-[13px] font-normal text-kite-text pl-5 border-l border-kite-vertical-divider truncate">
+                              {`₹${formatLargeNumber(totalInvested)}`}
+                            </div>
+                          </div>
+
+                          {/* Expanded Section (Desktop Only) */}
+                          <AnimatePresence>
+                            {expandedBusinessId === business.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{
+                                  duration: 0.25,
+                                  ease: "easeInOut",
+                                }}
+                                className="hidden md:block overflow-hidden bg-[#FAFBFC] dark:bg-[#151515]"
+                              >
+                                <div className="px-4 py-3 flex flex-col">
+                                  <div className="grid grid-cols-12 gap-6">
+                                    <div className="col-span-8 flex flex-col">
+                                      <span className="text-kite-text-light text-[11px] font-normal">
+                                        Details
+                                      </span>
+                                      <span className="text-kite-text text-[14px] font-medium mt-0.5 whitespace-pre-wrap">
+                                        {business.description ||
+                                          "No description provided for this business owner."}
+                                      </span>
+                                    </div>
+                                    <div className="col-span-4 flex flex-col border-l border-kite-vertical-divider pl-6">
+                                      <span className="text-kite-text-light text-[11px] font-normal">
+                                        Address
+                                      </span>
+                                      <span className="text-kite-text text-[14px] font-medium mt-0.5">
+                                        {business.location || "Not specified"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}{" "}
+                    {filteredBusinesses.length === 0 && (
+                      <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">
+                        No businesses found.
                       </div>
                     )}{" "}
                   </div>{" "}
                 </div>{" "}
-              </div>
-            </div>
-            </div>{" "}
-            <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden z-10 md:mt-0">
-              <div className="overflow-hidden">
-                {" "}
-                {/* Unified Watchlist View */}{" "}
-                <div className="flex flex-col border-b border-kite-border pb-20 md:pb-0">
-                  {/* DESKTOP HEADER */}
-                  <div className="hidden md:flex items-center px-4 bg-[#F9F9F9] dark:bg-[#1a1a1a] border-b border-kite-border">
-                    <div className="w-[30%] text-left py-2 text-[12px] text-kite-text-muted">BUSSINESS NAME</div>
-                    <div className="w-[28%] text-left py-2 text-[12px] text-kite-text-muted border-l border-kite-vertical-divider pl-4">OWNER NAME</div>
-                    <div className="w-[14%] text-left py-2 text-[12px] text-kite-text-muted border-l border-kite-vertical-divider pl-4">ID</div>
-                    <div className="w-[14%] text-right py-2 text-[12px] text-kite-text-muted border-l border-kite-vertical-divider pr-4">ROI</div>
-                    <div className="w-[14%] text-right py-2 text-[12px] text-kite-text-muted pl-5 border-l border-kite-vertical-divider">FUND</div>
-                  </div>
-                  {filteredBusinesses.map((business, idx) => {
-                    const activeInvestments = state.investments.filter(inv => inv.businessId === business.id && inv.status === "active");
-                    const totalInvested = activeInvestments.reduce((sum, inv) => sum + inv.amount, 0);
-                    return (
-                      <div
-                        key={`inv_${business.id}_${idx}`}
-                        onClick={() => setSelectedBusinessId(business.id)}
-                        className="flex flex-col bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] cursor-pointer transition-colors min-h-[50px] group"
-                      >
-                        {/* Mobile View */}
-                        <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
-                      {" "}
-                      <div className="flex flex-col flex-1">
-                        {" "}
-                        <span className="text-[10px] md:text-[11px] ] text-kite-text-light mb-0.5 leading-tight">
-                          {business.ownerName}
-                        </span>{" "}
-                        <div className="flex items-center space-x-1.5 mb-1">
-                          {" "}
-                          <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
-                            {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
-                          </span>{" "}
-                          {isBlueTick(business.id) && (
-                            <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
-                          )}{" "}
-                          {isPreVerified(business.id) && (
-                            <Clock className="w-3 h-3 text-kite-text flex-shrink-0" />
-                          )}{" "}
-                        </div>{" "}
-                        <span className="font-sans text-[10px] md:text-[11px] ] text-kite-text-light leading-tight">
-                          {business.businessId}
-                        </span>{" "}
-                      </div>{" "}
-                      <div className="flex items-center space-x-3 md:space-x-6 text-right">
-                        {" "}
-                        <div className="flex flex-col items-end">
-                          {" "}
-                          <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
-                            {formatINR(business.fundingRequired)}
-                          </span>{" "}
-                          <span className="text-[11px] md:text-[12px] font-normal mt-0.5 text-kite-green">
-                            {" "}
-                            {business.interestRate}% ROI{" "}
-                          </span>{" "}
-                        </div>{" "}
-                      </div>{" "}
-                    </div>
-                        {/* Desktop View */}
-                        <div className="hidden md:flex items-center w-full px-4 border-b border-kite-border">
-                          <div className="w-[30%] text-left py-3 flex items-center justify-between overflow-hidden pr-4">
-                            <div className="flex items-center overflow-hidden flex-1">
-                              <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
-                                {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
-                              </span>
-                              {isBlueTick(business.id) && (
-                                <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
-                              )}
-                              {isPreVerified(business.id) && (
-                                <Clock className="w-3 h-3 text-kite-text flex-shrink-0 ml-1.5" />
-                              )}
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedBusinessId(expandedBusinessId === business.id ? null : business.id);
-                              }}
-                              className={`ml-4 focus:outline-none flex-shrink-0 flex items-center justify-center p-0.5 rounded transition-all hover:bg-gray-100 dark:hover:bg-[#202020] ${expandedBusinessId === business.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-                            >
-                              <ChevronDown className={`w-[17px] h-[17px] text-kite-text-light transition-transform duration-300 ${expandedBusinessId === business.id ? "rotate-180" : ""}`} />
-                            </button>
-                          </div>
-                          <div className="w-[28%] text-left py-3 text-[13px] text-kite-text-light truncate pl-4 border-l border-kite-vertical-divider">
-                            {business.ownerName}
-                          </div>
-                          <div className="w-[14%] text-left py-3 text-[12px] text-kite-text-light font-mono truncate pl-4 border-l border-kite-vertical-divider">
-                            {business.businessId}
-                          </div>
-                          <div className="w-[14%] text-right py-3 text-[13px] text-kite-green pr-4 border-l border-kite-vertical-divider truncate">
-                            {business.interestRate}%
-                          </div>
-                          <div className="w-[14%] text-right py-3 text-[13px] font-normal text-kite-text pl-5 border-l border-kite-vertical-divider truncate">
-                            {`₹${formatLargeNumber(totalInvested)}`}
-                          </div>
-                        </div>
-                      
-                        {/* Expanded Section (Desktop Only) */}
-                        <AnimatePresence>
-                          {expandedBusinessId === business.id && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.25, ease: "easeInOut" }}
-                              className="hidden md:block overflow-hidden bg-[#FAFBFC] dark:bg-[#151515]"
-                            >
-                              <div className="px-4 py-3 flex flex-col">
-                                <div className="grid grid-cols-12 gap-6">
-                                  <div className="col-span-8 flex flex-col">
-                                    <span className="text-kite-text-light text-[11px] font-normal">Details</span>
-                                    <span className="text-kite-text text-[14px] font-medium mt-0.5 whitespace-pre-wrap">{business.description || "No description provided for this business owner."}</span>
-                                  </div>
-                                  <div className="col-span-4 flex flex-col border-l border-kite-vertical-divider pl-6">
-                                    <span className="text-kite-text-light text-[11px] font-normal">Address</span>
-                                    <span className="text-kite-text text-[14px] font-medium mt-0.5">{business.location || "Not specified"}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-</div>
-                    );
-                  })}{" "}
-                  {filteredBusinesses.length === 0 && (
-                    <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">
-                      No businesses found.
-                    </div>
-                  )}{" "}
-                </div>{" "}
               </div>{" "}
-            </div>{" "}
+            </div>
           </>
         )}{" "}
         {viewMode === "add-step-1" && (
@@ -543,12 +465,12 @@ export default function Businesses() {
                                 </span>
                               </span>
                             ) : (
-                              <span className="text-kite-text-muted dark:text-kite-text-light font-normal">
+                              <span className="text-kite-text-light dark:text-kite-text-light font-normal">
                                 Select an owner...
                               </span>
                             )}{" "}
                           </span>{" "}
-                          <ChevronDown className="w-4 h-4 text-kite-text-muted dark:text-kite-text-light" />{" "}
+                          <ChevronDown className="w-4 h-4 text-kite-text-light dark:text-kite-text-light" />{" "}
                         </div>{" "}
                         {showOwnerSelect && (
                           <div className="absolute z-10 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
@@ -598,7 +520,7 @@ export default function Businesses() {
                                     <span className="font-normal text-kite-text dark:text-kite-text">
                                       {b.ownerName}
                                     </span>{" "}
-                                    <span className="text-[11px] md:text-[12px] text-kite-text-light dark:text-kite-text-light mt-0.5">
+                                    <span className="text-[11px] md:text-[12px] text-kite-text dark:text-kite-text-light mt-0.5">
                                       ID: #{b.businessId}
                                     </span>{" "}
                                   </div>
@@ -661,7 +583,10 @@ export default function Businesses() {
                         className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none uppercase"
                         value={formData.shortName}
                         onChange={(e) =>
-                          setFormData({ ...formData, shortName: e.target.value })
+                          setFormData({
+                            ...formData,
+                            shortName: e.target.value,
+                          })
                         }
                         placeholder="e.g. ACME"
                       />{" "}
@@ -736,7 +661,7 @@ export default function Businesses() {
                           }
                           placeholder="e.g. 4"
                         />{" "}
-                        <p className="text-[11px] md:text-[12px] text-kite-text-light dark:text-kite-text-light mt-1.5">
+                        <p className="text-[11px] md:text-[12px] text-kite-text dark:text-kite-text-light mt-1.5">
                           RMAS will pay this percentage towards the interest
                           when an investor withdraws.
                         </p>{" "}
@@ -826,7 +751,7 @@ export default function Businesses() {
                                 <p className="text-[13px] md:text-[14px] font-normal text-kite-text">
                                   Calculated Return to Investor
                                 </p>{" "}
-                                <p className="text-[11px] md:text-[12px] text-kite-text-light mt-0.5">
+                                <p className="text-[11px] md:text-[12px] text-kite-text mt-0.5">
                                   Based on{" "}
                                   <span className="font-normal text-kite-green">
                                     {formData.interestRate}%
@@ -924,7 +849,7 @@ export default function Businesses() {
                       <span className="truncate text-[13px] md:text-[14px] text-kite-text">
                         {formData.bankName || "Select Bank"}
                       </span>
-                      <ChevronDown className="w-4 h-4 text-kite-text-muted" />
+                      <ChevronDown className="w-4 h-4 text-kite-text-light" />
                     </div>
                     {showBankSelect && (
                       <div className="absolute z-10 w-full mt-1 bg-kite-surface border border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col shadow-lg">
@@ -943,7 +868,9 @@ export default function Businesses() {
                           </div>
                         </div>
                         <div className="overflow-y-auto flex-1">
-                          {INDIAN_BANKS.filter(b => b.toLowerCase().includes(bankSearch.toLowerCase())).map(bank => (
+                          {INDIAN_BANKS.filter((b) =>
+                            b.toLowerCase().includes(bankSearch.toLowerCase()),
+                          ).map((bank) => (
                             <div
                               key={bank}
                               className="px-4 py-2 hover:bg-kite-bg cursor-pointer border-b border-kite-border last:border-0 text-[13px] text-kite-text"
@@ -955,7 +882,9 @@ export default function Businesses() {
                               {bank}
                             </div>
                           ))}
-                          {INDIAN_BANKS.filter(b => b.toLowerCase().includes(bankSearch.toLowerCase())).length === 0 && (
+                          {INDIAN_BANKS.filter((b) =>
+                            b.toLowerCase().includes(bankSearch.toLowerCase()),
+                          ).length === 0 && (
                             <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
                               No bank found.
                             </div>
@@ -972,14 +901,21 @@ export default function Businesses() {
                   <input
                     required
                     type="text"
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
+                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.accountNumber}
                     onChange={(e) => {
-                      const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
-                      const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
+                      const raw = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 12);
+                      const formatted = raw.replace(/(\d{4})(?=\d)/g, "$1 ");
                       const last4 = raw.length >= 4 ? raw.slice(-4) : raw;
-                      const ifscPrefix = formData.ifscCode.replace(/[^A-Z]/g, "").slice(0, 3);
-                      const newIfsc = ifscPrefix.length === 3 ? ifscPrefix + last4 : ifscPrefix;
+                      const ifscPrefix = formData.ifscCode
+                        .replace(/[^A-Z]/g, "")
+                        .slice(0, 3);
+                      const newIfsc =
+                        ifscPrefix.length === 3
+                          ? ifscPrefix + last4
+                          : ifscPrefix;
                       setFormData({
                         ...formData,
                         accountNumber: formatted,
@@ -997,12 +933,16 @@ export default function Businesses() {
                   <input
                     required
                     type="text"
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
+                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.ifscCode}
                     onChange={(e) => {
-                      const prefix = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
+                      const prefix = e.target.value
+                        .toUpperCase()
+                        .replace(/[^A-Z]/g, "")
+                        .slice(0, 3);
                       const rawAcc = formData.accountNumber.replace(/\D/g, "");
-                      const last4 = rawAcc.length >= 4 ? rawAcc.slice(-4) : rawAcc;
+                      const last4 =
+                        rawAcc.length >= 4 ? rawAcc.slice(-4) : rawAcc;
                       setFormData({
                         ...formData,
                         ifscCode: prefix.length === 3 ? prefix + last4 : prefix,
@@ -1019,7 +959,7 @@ export default function Businesses() {
                   <input
                     required
                     type="text"
-                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-muted dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
+                    className={`w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue"}`}
                     value={formData.accountHolderName}
                     onChange={(e) =>
                       setFormData({

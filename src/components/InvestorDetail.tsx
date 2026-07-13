@@ -25,8 +25,11 @@ import {
   TrendingUp,
   ChevronRight,
   Search,
+  Landmark,
+  ChevronDown,
 } from "lucide-react";
 import { calculateLiveProfit } from "../utils/profitCalculator";
+import { INDIAN_CITIES } from "../utils/indianCities";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 interface InvestorDetailProps {
@@ -97,6 +100,7 @@ export default function InvestorDetail({
       )
     : 0;
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [isBankDetailsExpanded, setIsBankDetailsExpanded] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
   const [showPhotoPreview, setShowPhotoPreview] = useState(false);
@@ -110,15 +114,23 @@ export default function InvestorDetail({
 
   const [formData, setFormData] = useState({
     name: investor?.name || "",
-    mobile: investor?.mobile || "",
-    email: investor?.email || "",
-    address: investor?.address || "",
+    bio: investor?.bio || "",
+    address: {
+      flatHouse: investor?.address?.flatHouse || "",
+      residentHouseName: investor?.address?.residentHouseName || "",
+      landmark: investor?.address?.landmark || "",
+      city: investor?.address?.city || "",
+      state: investor?.address?.state || "",
+    },
     bankName: investor?.bankDetails?.bankName || "",
     accountNumber: investor?.bankDetails?.accountNumber || "",
     ifscCode: investor?.bankDetails?.ifscCode || "",
     accountHolderName: investor?.bankDetails?.accountHolderName || "",
     photoUrl: investor?.photoUrl || "",
   });
+
+  const [citySearch, setCitySearch] = useState("");
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,8 +179,7 @@ export default function InvestorDetail({
       payload: {
         ...investor,
         name: formData.name,
-        mobile: formData.mobile,
-        email: formData.email,
+        bio: formData.bio,
         address: formData.address,
         bankDetails: {
           bankName: formData.bankName,
@@ -191,7 +202,7 @@ export default function InvestorDetail({
     onBack();
   };
   return (
-    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-8 md:pt-0 px-3 md:px-0 max-w-4xl mx-auto">
+    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-8 md:pt-0 px-3 md:px-0 w-full">
 
       {cropImageUrl && (
         <ImageCropModal
@@ -228,16 +239,18 @@ export default function InvestorDetail({
       {/* Header */}
       {""}
       <div className="flex justify-between items-start mb-4 md:mb-6">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-start space-x-3">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
+            className="p-2 -ml-2 mt-2 md:mt-4 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
           >
             {" "}
             <ArrowLeft className="w-5 h-5" />{" "}
           </button>
           
-          <div className="relative shrink-0">
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-3">
+              <div className="relative shrink-0">
             <div 
               className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative group cursor-pointer"
               onClick={() => {
@@ -288,18 +301,38 @@ export default function InvestorDetail({
           </div>
 
           <div className="flex flex-col">
-            <h2 className="text-[15px] md:text-[16px] font-medium text-kite-text">
-              {investor.name?.toUpperCase()}
-            </h2>
-            <span
-              className="text-[11px] md:text-[12px] text-kite-text-light tracking-wide"
-              style={{
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-              }}
-            >
-              #{investor.investorId}
-            </span>
+                <h2 className="text-[15px] md:text-[16px] font-medium text-kite-text">
+                  {investor.name?.toUpperCase()}
+                </h2>
+                <span
+                  className="text-[11px] md:text-[12px] text-kite-text-light tracking-wide"
+                  style={{
+                    fontFamily:
+                      '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                  }}
+                >
+                  #{investor.investorId}
+                </span>
+              </div>
+            </div>
+            
+            {investor.bio && (
+              <p className="mt-4 text-[12px] md:text-[13px] text-kite-text whitespace-pre-wrap leading-relaxed max-w-2xl">
+                {investor.bio}
+              </p>
+            )}
+            {investor.address && (investor.address.flatHouse || investor.address.residentHouseName || investor.address.landmark || investor.address.city || investor.address.state) && (
+              <div className="mt-3 text-[11px] md:text-[12px] text-kite-text-light flex flex-col space-y-0.5">
+                {investor.address.flatHouse && <p>{investor.address.flatHouse}</p>}
+                {investor.address.residentHouseName && <p>{investor.address.residentHouseName}</p>}
+                {investor.address.landmark && <p>{investor.address.landmark}</p>}
+                {(investor.address.city || investor.address.state) && (
+                  <p>
+                    {investor.address.city}{investor.address.city && investor.address.state ? ', ' : ''}{investor.address.state}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -323,43 +356,130 @@ export default function InvestorDetail({
                 }
               />
             </div>
+            <div className="md:col-span-2">
+              <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
+                Bio
+              </label>
+              <textarea
+                className="w-full border border-kite-border rounded-sm px-3 py-2 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none min-h-[100px] resize-y whitespace-pre-wrap"
+                value={formData.bio}
+                onChange={(e) =>
+                  setFormData({ ...formData, bio: e.target.value })
+                }
+                placeholder="Enter investor bio..."
+              />
+            </div>
+            <div className="md:col-span-2 pt-4 pb-2">
+              <h4 className="text-[11px] md:text-[12px] font-medium text-kite-text uppercase tracking-wider border-b border-kite-border pb-2">
+                Address Details
+              </h4>
+            </div>
             <div>
               <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
-                Mobile Number
+                Flat / House No.
               </label>
               <input
                 type="text"
                 className="w-full border border-kite-border rounded-sm px-3 py-2 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none"
-                value={formData.mobile}
+                value={formData.address.flatHouse}
                 onChange={(e) =>
-                  setFormData({ ...formData, mobile: e.target.value })
+                  setFormData({ ...formData, address: { ...formData.address, flatHouse: e.target.value } })
                 }
               />
             </div>
             <div>
               <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
-                Email
+                Resident / House Name
               </label>
               <input
-                type="email"
+                type="text"
                 className="w-full border border-kite-border rounded-sm px-3 py-2 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none"
-                value={formData.email}
+                value={formData.address.residentHouseName}
                 onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
+                  setFormData({ ...formData, address: { ...formData.address, residentHouseName: e.target.value } })
                 }
               />
             </div>
             <div className="md:col-span-2">
               <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
-                Address
+                Circle & Landmark
               </label>
               <input
                 type="text"
                 className="w-full border border-kite-border rounded-sm px-3 py-2 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none"
-                value={formData.address}
+                value={formData.address.landmark}
                 onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
+                  setFormData({ ...formData, address: { ...formData.address, landmark: e.target.value } })
                 }
+              />
+            </div>
+            <div className="relative">
+              <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
+                City
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  className="w-full border border-kite-border rounded-sm px-3 py-2 pr-8 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none"
+                  value={showCityDropdown ? citySearch : formData.address.city}
+                  onChange={(e) => {
+                    setCitySearch(e.target.value);
+                    if (!showCityDropdown) setShowCityDropdown(true);
+                  }}
+                  onFocus={() => {
+                    setCitySearch("");
+                    setShowCityDropdown(true);
+                  }}
+                  onBlur={() => {
+                    // Small delay to allow clicking on dropdown
+                    setTimeout(() => setShowCityDropdown(false), 200);
+                  }}
+                  placeholder="Search city..."
+                />
+                <Search className="absolute right-2 top-2.5 w-4 h-4 text-kite-text-light pointer-events-none" />
+              </div>
+              
+              {showCityDropdown && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-kite-surface border border-kite-border rounded-sm shadow-lg max-h-60 overflow-y-auto">
+                  {INDIAN_CITIES.filter((c) =>
+                    c.city.toLowerCase().includes(citySearch.toLowerCase())
+                  ).slice(0, 50).map((c, i) => (
+                    <div
+                      key={i}
+                      className="px-3 py-2 hover:bg-kite-bg cursor-pointer text-[13px] md:text-[14px] border-b border-kite-border last:border-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevents onBlur from firing before onClick
+                        setFormData({
+                          ...formData,
+                          address: { ...formData.address, city: c.city, state: c.state }
+                        });
+                        setCitySearch("");
+                        setShowCityDropdown(false);
+                      }}
+                    >
+                      <span className="font-medium">{c.city}</span>
+                      <span className="text-kite-text-light text-[11px] md:text-[12px] ml-2 block sm:inline">{c.state}</span>
+                    </div>
+                  ))}
+                  {INDIAN_CITIES.filter((c) =>
+                    c.city.toLowerCase().includes(citySearch.toLowerCase())
+                  ).length === 0 && (
+                    <div className="px-3 py-2 text-[13px] md:text-[14px] text-kite-text-light">
+                      No city found
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
+                State
+              </label>
+              <input
+                type="text"
+                disabled
+                className="w-full border border-kite-border rounded-sm px-3 py-2 bg-kite-bg dark:bg-[#1a1a1a] text-[13px] md:text-[14px] font-medium text-kite-text outline-none cursor-not-allowed opacity-70"
+                value={formData.address.state}
               />
             </div>
             <div className="md:col-span-2 pt-4 pb-2">
@@ -468,9 +588,9 @@ export default function InvestorDetail({
             {""}
             <button
               onClick={() => setIsEditingDetails(true)}
-              className="flex-1 bg-white dark:bg-kite-surface text-kite-text border border-kite-border hover:bg-kite-bg font-medium text-[13px] md:text-[14px] px-4 py-3 sm:py-2.5 rounded-sm shadow-sm transition-all flex items-center justify-center space-x-2"
+              className="w-full sm:w-auto sm:ml-auto bg-white dark:bg-kite-surface text-kite-text border border-kite-border hover:bg-kite-bg font-medium text-[12px] md:text-[13px] px-3 py-2 rounded-sm shadow-sm transition-all flex items-center justify-center space-x-1.5"
             >
-              <Edit2 className="w-4 h-4" /> <span>Edit Details</span>
+              <Edit2 className="w-3.5 h-3.5" /> <span>Edit Details</span>
             </button>
           </div>
           {""}
@@ -518,53 +638,67 @@ export default function InvestorDetail({
           {""}
           {/* Bank Profile */}
           {""}
-          <div className="bg-white dark:bg-kite-surface border border-kite-border rounded p-4">
-            <div className="flex items-center space-x-2 mb-4 pb-3 border-b border-kite-border">
-              <Building2 className="w-4 h-4 text-kite-text-light" />
-              <h3 className="text-[13px] md:text-[14px] font-medium text-kite-text">
-                Bank Profile
-              </h3>
+          <div className="bg-white dark:bg-kite-surface border border-kite-border rounded overflow-hidden">
+            <div 
+              className={`flex items-center justify-between p-4 cursor-pointer hover:bg-kite-bg transition-colors ${isBankDetailsExpanded ? 'border-b border-kite-border' : ''}`}
+              onClick={() => setIsBankDetailsExpanded(!isBankDetailsExpanded)}
+            >
+              <div className="flex items-center space-x-2">
+                <Landmark className="w-4 h-4 text-kite-text-light" />
+                <h3 className="text-[13px] md:text-[14px] font-medium text-kite-text">
+                  Bank Profile
+                </h3>
+              </div>
+              {isBankDetailsExpanded ? (
+                <ChevronDown className="w-4 h-4 text-kite-text-light" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-kite-text-light" />
+              )}
             </div>
             {""}
-            {investor.bankDetails ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
-                    Bank Name
+            {isBankDetailsExpanded && (
+              <div className="p-4">
+                {investor.bankDetails ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
+                        Bank Name
+                      </p>
+                      <p className="text-[13px] md:text-[14px] font-medium text-kite-text mt-0.5">
+                        {investor.bankDetails.bankName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
+                        Account No.
+                      </p>
+                      <p className="text-[13px] md:text-[14px] font-medium font-mono text-kite-text mt-0.5">
+                        {investor.bankDetails.accountNumber}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
+                        IFSC Code
+                      </p>
+                      <p className="text-[13px] md:text-[14px] font-medium font-mono text-kite-text mt-0.5">
+                        {investor.bankDetails.ifscCode}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
+                        Holder Name
+                      </p>
+                      <p className="text-[13px] md:text-[14px] font-medium text-kite-text mt-0.5">
+                        {investor.bankDetails.accountHolderName}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[13px] md:text-[14px] text-kite-text-light py-2">
+                    No bank details added.
                   </p>
-                  <p className="text-[13px] md:text-[14px] font-medium text-kite-text mt-0.5">
-                    {investor.bankDetails.bankName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
-                    Account No.
-                  </p>
-                  <p className="text-[13px] md:text-[14px] font-medium font-mono text-kite-text mt-0.5">
-                    {investor.bankDetails.accountNumber}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
-                    IFSC Code
-                  </p>
-                  <p className="text-[13px] md:text-[14px] font-medium font-mono text-kite-text mt-0.5">
-                    {investor.bankDetails.ifscCode}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
-                    Holder Name
-                  </p>
-                  <p className="text-[13px] md:text-[14px] font-medium text-kite-text mt-0.5">
-                    {investor.bankDetails.accountHolderName}
-                  </p>
-                </div>
+                )}
               </div>
-            ) : (
-              <p className="text-[13px] md:text-[14px] text-kite-text-light py-2">
-                No bank details added.
-              </p>
             )}
             {""}
           </div>

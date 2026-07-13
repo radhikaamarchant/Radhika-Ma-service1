@@ -385,7 +385,8 @@ export default function Investments() {
           </button>{""}
         </div>{""}
       </div>{""}
-      <div
+      <div className="md:sticky md:top-0 z-30 bg-white dark:bg-kite-bg shadow-sm w-full">
+<div
         className={`flex items-center justify-between w-full py-3 px-4 w-full ${showAddForm ?"hidden md:flex" :"flex"}`}
       >
         {""}
@@ -445,7 +446,18 @@ export default function Investments() {
           )}
         </div>{""}
       </div>{""}
-      <AnimatePresence>
+      
+{/* DESKTOP HEADER */}
+          <div className="hidden md:flex flex-row items-stretch justify-between w-full px-4 text-[11px] text-kite-text-light tracking-wide font-normal bg-kite-surface border-b border-kite-border-soft">
+             <div className="w-4/12 text-left py-2">Instrument</div>
+             <div className="w-1/12 text-right py-2">Qty.</div>
+             <div className="w-2/12 text-right py-2">Avg. cost</div>
+             <div className="w-2/12 text-right py-2 pr-5">Cur. val</div>
+             <div className="w-2/12 text-right py-2 pl-5 border-l border-kite-vertical-divider">P&L</div>
+             <div className="w-1/12 text-right py-2">Net chg.</div>
+          </div>
+</div>
+<AnimatePresence>
         {""}
         {showAddForm && (
           <motion.div
@@ -838,15 +850,7 @@ export default function Investments() {
       >
         {""}
         <div className="flex flex-col pb-16">
-          {/* DESKTOP HEADER */}
-          <div className="hidden md:flex flex-row items-stretch justify-between w-full px-4 text-[11px] text-kite-text-light tracking-wide font-normal bg-kite-surface border-b border-kite-border-soft">
-             <div className="w-4/12 text-left py-2">Instrument</div>
-             <div className="w-1/12 text-right py-2">Qty.</div>
-             <div className="w-2/12 text-right py-2">Avg. cost</div>
-             <div className="w-2/12 text-right py-2 pr-5">Cur. val</div>
-             <div className="w-2/12 text-right py-2 pl-5 border-l border-kite-vertical-divider">P&L</div>
-             <div className="w-1/12 text-right py-2">Net chg.</div>
-          </div>
+          
           {""}
           {groupedInvestments.map((inv: any, idx: number) => {
             const business = state.businesses.find(

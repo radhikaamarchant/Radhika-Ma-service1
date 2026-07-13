@@ -46,6 +46,14 @@ export interface Investor {
     accountHolderName: string;
   };
   rmasServiceCharge: number;
+  bio?: string;
+  address?: {
+    flatHouse?: string;
+    residentHouseName?: string;
+    landmark?: string;
+    city?: string;
+    state?: string;
+  };
 }
 
 export interface Investment {
