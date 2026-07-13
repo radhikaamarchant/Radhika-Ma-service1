@@ -1,6 +1,9 @@
 import React, { useState, useRef } from "react";
 import ImageCropModal from "./ImageCropModal";
-import { useAppContext } from "../utils/AppContext";
+import { useAppContext } from '../utils/AppContext';
+import BioMentionEditor from './BioMentionEditor';
+import BioRenderer from './BioRenderer';
+import InvestorPreviewModal from './InvestorPreviewModal';
 import { Investor, Investment } from "../types";
 import { formatINR } from "../utils/mockData";
 import { LivePortfolioDetail } from "./LivePortfolioDetail";
@@ -104,6 +107,8 @@ export default function InvestorDetail({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
   const [showPhotoPreview, setShowPhotoPreview] = useState(false);
+  const [selectedPreviewInvestor, setSelectedPreviewInvestor] = useState<Investor | null>(null);
+  const [previewHistory, setPreviewHistory] = useState<Investor[]>([]);
 
 
 
@@ -318,7 +323,15 @@ export default function InvestorDetail({
             
             {investor.bio && (
               <p className="mt-4 text-[12px] md:text-[13px] text-kite-text whitespace-pre-wrap leading-relaxed max-w-2xl">
-                {investor.bio}
+                <BioRenderer 
+                  bio={investor.bio} 
+                  onMentionClick={(type, id, data) => {
+                    if (type === 'investor') {
+                      setPreviewHistory([data]);
+                      setSelectedPreviewInvestor(data);
+                    }
+                  }} 
+                />
               </p>
             )}
             {investor.address && (investor.address.flatHouse || investor.address.residentHouseName || investor.address.landmark || investor.address.city || investor.address.state) && (
@@ -360,13 +373,9 @@ export default function InvestorDetail({
               <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
                 Bio
               </label>
-              <textarea
-                className="w-full border border-kite-border rounded-sm px-3 py-2 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none min-h-[100px] resize-y whitespace-pre-wrap"
-                value={formData.bio}
-                onChange={(e) =>
-                  setFormData({ ...formData, bio: e.target.value })
-                }
-                placeholder="Enter investor bio..."
+              <BioMentionEditor
+                value={formData.bio || ''}
+                onChange={(val) => setFormData({ ...formData, bio: val })}
               />
             </div>
             <div className="md:col-span-2 pt-4 pb-2">
@@ -930,6 +939,32 @@ export default function InvestorDetail({
         </div>
       )}
 
+      {selectedPreviewInvestor && (
+        <InvestorPreviewModal
+          investor={selectedPreviewInvestor}
+          onClose={() => {
+            setPreviewHistory(prev => {
+              if (prev.length <= 1) {
+                setSelectedPreviewInvestor(null);
+                return [];
+              }
+              const newHistory = prev.slice(0, -1);
+              setSelectedPreviewInvestor(newHistory[newHistory.length - 1]);
+              return newHistory;
+            });
+          }}
+          businesses={state.businesses}
+          investors={state.investors}
+          investments={state.investments}
+          settings={state.settings}
+          onMentionClick={(type, id, data) => {
+            if (type === 'investor') {
+              setPreviewHistory(prev => [...prev, data]);
+              setSelectedPreviewInvestor(data);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

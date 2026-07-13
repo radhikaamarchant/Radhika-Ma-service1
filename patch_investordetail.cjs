@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-let content = fs.readFileSync('src/pages/Investors.tsx', 'utf-8');
+let content = fs.readFileSync('src/components/InvestorDetail.tsx', 'utf-8');
 
 if (!content.includes('const [previewHistory, setPreviewHistory]')) {
     content = content.replace(
@@ -9,12 +9,29 @@ if (!content.includes('const [previewHistory, setPreviewHistory]')) {
     );
 }
 
-content = content.replace(
-    /setSelectedPreviewInvestor\(investor\);/g,
-    'setSelectedPreviewInvestor(investor);\n                                  setPreviewHistory([investor]);'
-);
+// Replace the BioRenderer block where it's first triggered
+const oldBioRender = `<BioRenderer 
+                  bio={investor.bio} 
+                  onMentionClick={(type, id, data) => {
+                    if (type === 'investor') {
+                      setSelectedPreviewInvestor(data);
+                    }
+                  }} 
+                />`;
 
-// We need to replace the onClose and onMentionClick in InvestorPreviewModal
+const newBioRender = `<BioRenderer 
+                  bio={investor.bio} 
+                  onMentionClick={(type, id, data) => {
+                    if (type === 'investor') {
+                      setPreviewHistory([data]);
+                      setSelectedPreviewInvestor(data);
+                    }
+                  }} 
+                />`;
+
+content = content.replace(oldBioRender, newBioRender);
+
+// Replace InvestorPreviewModal block
 const oldModalStr = `<InvestorPreviewModal
           investor={selectedPreviewInvestor}
           onClose={() => setSelectedPreviewInvestor(null)}
@@ -56,18 +73,4 @@ const newModalStr = `<InvestorPreviewModal
 
 content = content.replace(oldModalStr, newModalStr);
 
-fs.writeFileSync('src/pages/Investors.tsx', content);
-
-// Now for InvestorDetail.tsx
-let detailContent = fs.readFileSync('src/components/InvestorDetail.tsx', 'utf-8');
-
-if (!detailContent.includes('const [previewHistory, setPreviewHistory]')) {
-    detailContent = detailContent.replace(
-        'const [selectedPreviewInvestor, setSelectedPreviewInvestor] = useState<Investor | null>(null);',
-        'const [selectedPreviewInvestor, setSelectedPreviewInvestor] = useState<Investor | null>(null);\n  const [previewHistory, setPreviewHistory] = useState<Investor[]>([]);'
-    );
-}
-
-// In InvestorDetail.tsx, the initial trigger is not `setSelectedPreviewInvestor(investor)` directly from a list. 
-// Wait, when is InvestorPreviewModal opened in InvestorDetail.tsx? It's opened when clicking a bio mention!
-// Let's check where it's opened.
+fs.writeFileSync('src/components/InvestorDetail.tsx', content);
