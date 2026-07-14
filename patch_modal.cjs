@@ -1,20 +1,37 @@
 const fs = require('fs');
 
-let content = fs.readFileSync('src/pages/Investors.tsx', 'utf-8');
+let code = fs.readFileSync('src/components/BusinessPreviewModal.tsx', 'utf-8');
 
-const originalModalStart = `<div className="relative w-full max-w-4xl bg-white dark:bg-kite-bg rounded-lg shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] min-h-[400px] animate-scale-in" onClick={(e) => e.stopPropagation()}>`;
+code = code.replace(
+  `      <div className="relative w-full max-w-4xl bg-white dark:bg-kite-bg rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh] md:max-h-[85vh] animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-full z-[101]"
+        >
+          <X className="w-5 h-5 md:w-6 md:h-6" />
+        </button>`,
+  `      <div className="relative w-full max-w-4xl bg-white dark:bg-kite-bg rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh] md:max-h-[85vh] animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="absolute top-3 right-3 md:top-4 md:right-4 p-2 text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-full z-[101]"
+        >
+          <X className="w-5 h-5 md:w-6 md:h-6" />
+        </button>`
+);
 
-const originalImageSide = `<div className="w-full md:w-1/2 bg-gray-100 dark:bg-[#1a1a1a] flex items-center justify-center h-[300px] md:h-auto md:min-h-0 relative shrink-0 border-b md:border-b-0 md:border-r border-kite-border">`;
+code = code.replace(
+  `              </div>
+              <div className="pt-2">
+                <h2 className="text-[18px] md:text-[22px] font-medium text-kite-text mb-1 leading-tight">{business.name?.toUpperCase()}</h2>`,
+  `              </div>
+              <div className="pt-2 pr-8 md:pr-0">
+                <h2 className="text-[18px] md:text-[22px] font-medium text-kite-text mb-1 leading-tight">{business.name?.toUpperCase()}</h2>`
+);
 
-const originalInfoSide = `<div className="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto bg-white dark:bg-kite-bg">`;
-
-const originalBio = `<h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-2">Bio</h3>`;
-const originalAddress = `<h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-2">Full Address</h3>`;
-
-content = content.replace(originalModalStart, `<div className="relative w-full max-w-4xl bg-white dark:bg-kite-bg rounded-lg shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[85vh] animate-scale-in" onClick={(e) => e.stopPropagation()}>`);
-content = content.replace(originalImageSide, `<div className="w-full md:w-1/2 bg-gray-100 dark:bg-[#1a1a1a] flex items-center justify-center h-[40vh] md:h-auto md:min-h-0 relative shrink-0 border-b md:border-b-0 md:border-r border-kite-border">`);
-content = content.replace(originalInfoSide, `<div className="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto bg-white dark:bg-kite-bg flex-1">`);
-content = content.replace(originalBio, `<!-- <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-2">Bio</h3> -->`);
-content = content.replace(originalAddress, `<!-- <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-2">Full Address</h3> -->`);
-
-fs.writeFileSync('src/pages/Investors.tsx', content);
+fs.writeFileSync('src/components/BusinessPreviewModal.tsx', code);

@@ -37,7 +37,7 @@ export default function BioRenderer({ bio, onMentionClick }: BioRendererProps) {
                   }}
                   className="text-kite-blue font-medium hover:underline focus:outline-none"
                 >
-                  @{(bMatch.shortName || bMatch.name).toUpperCase()}
+                  {(bMatch.shortName || bMatch.name).toUpperCase()}
                 </button>
                 {punctuation}
               </span>
@@ -52,7 +52,7 @@ export default function BioRenderer({ bio, onMentionClick }: BioRendererProps) {
                   }}
                   className="text-kite-blue font-medium hover:underline focus:outline-none"
                 >
-                  @{iMatch.shortName || iMatch.name}
+                  {iMatch.shortName || iMatch.name}
                 </button>
                 {punctuation}
               </span>

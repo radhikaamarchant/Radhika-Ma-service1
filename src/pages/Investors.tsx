@@ -2,6 +2,7 @@ import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import React, { useState, useRef, useEffect } from "react";
 import InvestorPreviewModal from '../components/InvestorPreviewModal';
+import BusinessPreviewModal from '../components/BusinessPreviewModal';
 import { useAppContext } from "../utils/AppContext";
 import { formatINR } from "../utils/mockData";
 import {
@@ -69,6 +70,8 @@ export default function Investors() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedPreviewInvestor, setSelectedPreviewInvestor] = useState<Investor | null>(null);
   const [previewHistory, setPreviewHistory] = useState<Investor[]>([]);
+  const [selectedPreviewBusiness, setSelectedPreviewBusiness] = useState<Business | null>(null);
+  const [previewBusinessHistory, setPreviewBusinessHistory] = useState<Business[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [addModalBusinessId, setAddModalBusinessId] = useState("");
@@ -2519,6 +2522,7 @@ export default function Investors() {
         />
       )}
       {selectedPreviewInvestor && (
+        <>
         <InvestorPreviewModal
           investor={selectedPreviewInvestor}
           onClose={() => {
@@ -2540,9 +2544,42 @@ export default function Investors() {
             if (type === 'investor') {
               setPreviewHistory(prev => [...prev, data]);
               setSelectedPreviewInvestor(data);
+            } else if (type === 'business') {
+              setPreviewBusinessHistory(prev => [...prev, data]);
+              setSelectedPreviewBusiness(data);
             }
           }}
         />
+        {selectedPreviewBusiness && (
+        <BusinessPreviewModal
+          business={selectedPreviewBusiness}
+          onClose={() => {
+            setPreviewBusinessHistory(prev => {
+              if (prev.length <= 1) {
+                setSelectedPreviewBusiness(null);
+                return [];
+              }
+              const newHistory = prev.slice(0, -1);
+              setSelectedPreviewBusiness(newHistory[newHistory.length - 1]);
+              return newHistory;
+            });
+          }}
+          businesses={state.businesses}
+          investors={state.investors}
+          investments={state.investments}
+          settings={state.settings}
+          onMentionClick={(type, id, data) => {
+            if (type === 'investor') {
+              setPreviewHistory(prev => [...prev, data]);
+              setSelectedPreviewInvestor(data);
+            } else if (type === 'business') {
+              setPreviewBusinessHistory(prev => [...prev, data]);
+              setSelectedPreviewBusiness(data);
+            }
+          }}
+        />
+        )}
+        </>
       )}
     </div>
   );

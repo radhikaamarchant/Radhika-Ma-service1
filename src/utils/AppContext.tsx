@@ -50,6 +50,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     currentUser: null,
   });
 
+    const applyChanges = <T extends { id?: string }>(currentList: T[], changes: any[]): T[] => {
+    let newList = [...currentList];
+    changes.forEach((change) => {
+      const data = change.doc.data() as T;
+      const id = data.id || change.doc.id;
+      if (change.type === "added") {
+        const idx = newList.findIndex((item) => (item.id || (item as any).uid) === id);
+        if (idx === -1) {
+          newList.push(data);
+        } else {
+          newList[idx] = data;
+        }
+      }
+      if (change.type === "modified") {
+        newList = newList.map((item) => ((item.id || (item as any).uid) === id ? data : item));
+      }
+      if (change.type === "removed") {
+        newList = newList.filter((item) => (item.id || (item as any).uid) !== id);
+      }
+    });
+    return newList;
+  };
+
   useEffect(() => {
     const handleQuotaError = (error: any) => {
       console.warn("Firestore error:", error.message);
@@ -66,7 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const unsubBusinesses = onSnapshot(collection(db, "businesses"), (snap) => {
       setState((s) => ({
         ...s,
-        businesses: snap.docs.map((d) => d.data() as Business),
+        businesses: applyChanges(s.businesses, snap.docChanges()),
         loading: false,
       }));
     }, handleQuotaError);
@@ -74,14 +97,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const unsubInvestors = onSnapshot(collection(db, "investors"), (snap) => {
       setState((s) => ({
         ...s,
-        investors: snap.docs.map((d) => d.data() as Investor),
+        investors: applyChanges(s.investors, snap.docChanges()),
       }));
     }, handleQuotaError);
 
     const unsubInvestments = onSnapshot(collection(db, "investments"), (snap) => {
       setState((s) => ({
         ...s,
-        investments: snap.docs.map((d) => d.data() as Investment),
+        investments: applyChanges(s.investments, snap.docChanges()),
       }));
     }, handleQuotaError);
 
@@ -97,7 +120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
       setState((s) => ({
         ...s,
-        users: snap.docs.map((d) => d.data() as AppUser),
+        users: applyChanges(s.users, snap.docChanges()),
       }));
     }, handleQuotaError);
 
