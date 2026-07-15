@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { motion } from "motion/react";
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "./firebase";
+import { db, auth, googleSignIn, cachedAccessToken } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
 
 import { syncToSheets, fetchFromSheets } from "./googleSheets";
@@ -91,14 +91,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
           users: sheetData?.users?.length ? sheetData.users : s.users,
           settings: sheetData?.settings ? sheetData.settings : s.settings,
           loading: false,
-          error: "Database daily limit reached! Wait until tomorrow for your real data to load, then use 'Google Account Sync' in Admin to back it up.",
+          error: "Database daily limit reached! App is running in Google Sheets backup mode.",
         }));
       } catch (err) {
         setState((s) => ({
           ...s,
           loading: false,
-          error: "Database daily limit reached! Wait until tomorrow for your real data to load, or sign in to Google in the Admin panel to sync your backup.",
+          error: "Database daily limit reached! Changes will only sync via Google Sheets. Sign in to sync your device.",
         }));
+        localStorage.removeItem("hideErrorBanner");
       }
     };
 
@@ -334,53 +335,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Skip if we recently dispatched a local update (wait 15s to allow sync to settle)
       if (Date.now() - lastLocalUpdate < 15000) return;
       
-      if (auth.currentUser && !auth.currentUser.isAnonymous) {
-        try {
-          const sheetData = await fetchFromSheets();
-          // Ensure no local updates happened while we were fetching
-          if (sheetData && Date.now() - lastLocalUpdate >= 15000) {
-            setState((s) => {
-              const newBusinesses = sheetData.businesses?.length ? sheetData.businesses : s.businesses;
-              const newInvestors = sheetData.investors?.length ? sheetData.investors : s.investors;
-              const newInvestments = sheetData.investments?.length ? sheetData.investments : s.investments;
-              const newUsers = sheetData.users?.length ? sheetData.users : s.users;
-              const newSettings = sheetData.settings ? sheetData.settings : s.settings;
-              
-              if (
-                JSON.stringify(newBusinesses) === JSON.stringify(s.businesses) &&
-                JSON.stringify(newInvestors) === JSON.stringify(s.investors) &&
-                JSON.stringify(newInvestments) === JSON.stringify(s.investments) &&
-                JSON.stringify(newUsers) === JSON.stringify(s.users) &&
-                JSON.stringify(newSettings) === JSON.stringify(s.settings)
-              ) {
-                return s; // No changes
-              }
+      try {
+        const sheetData = await fetchFromSheets();
+        // Ensure no local updates happened while we were fetching
+        if (sheetData && Date.now() - lastLocalUpdate >= 15000) {
+          setState((s) => {
+            const newBusinesses = sheetData.businesses?.length ? sheetData.businesses : s.businesses;
+            const newInvestors = sheetData.investors?.length ? sheetData.investors : s.investors;
+            const newInvestments = sheetData.investments?.length ? sheetData.investments : s.investments;
+            const newUsers = sheetData.users?.length ? sheetData.users : s.users;
+            const newSettings = sheetData.settings ? sheetData.settings : s.settings;
+            
+            if (
+              JSON.stringify(newBusinesses) === JSON.stringify(s.businesses) &&
+              JSON.stringify(newInvestors) === JSON.stringify(s.investors) &&
+              JSON.stringify(newInvestments) === JSON.stringify(s.investments) &&
+              JSON.stringify(newUsers) === JSON.stringify(s.users) &&
+              JSON.stringify(newSettings) === JSON.stringify(s.settings)
+            ) {
+              return s; // No changes
+            }
 
-              return {
-                ...s,
-                businesses: newBusinesses,
-                investors: newInvestors,
-                investments: newInvestments,
-                users: newUsers,
-                settings: newSettings,
-                loading: false,
-                error: undefined
-              };
-            });
-          }
-        } catch (e) {
-          // ignore
+            return {
+              ...s,
+              businesses: newBusinesses,
+              investors: newInvestors,
+              investments: newInvestments,
+              users: newUsers,
+              settings: newSettings,
+              loading: false,
+              error: undefined
+            };
+          });
+        }
+      } catch (e: any) {
+        if (e.message?.includes("no access token") || e.message?.includes("Failed to read from sheets")) {
+           setState(s => {
+              if (s.error && (s.error.includes("Database daily limit reached") || s.error.includes("Google Sheets Sync paused"))) {
+                localStorage.removeItem("hideErrorBanner");
+                return {
+                   ...s, 
+                   error: "Google Sheets Sync paused. Sign in to sync your device."
+                };
+              }
+              return s;
+           });
         }
       }
     };
 
     const unsubAuth = auth.onAuthStateChanged((user) => {
-      if (user && !user.isAnonymous) {
-        checkAndFetch();
-        pollingInterval = setInterval(checkAndFetch, 5000);
-      } else {
-        if (pollingInterval) clearInterval(pollingInterval);
-      }
+      checkAndFetch();
+      pollingInterval = setInterval(checkAndFetch, 5000);
     });
 
     return () => {
@@ -420,12 +426,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ) : (
         <>
           {state.error && localStorage.getItem("hideErrorBanner") !== "true" && (
-            <div className="bg-red-500/10 text-red-500 p-2 text-center text-xs w-full fixed top-0 z-50 flex items-center justify-center">
+            <div className="bg-red-500/10 text-red-500 p-2 text-center text-xs w-full fixed top-0 z-50 flex items-center justify-center flex-wrap gap-3">
               <span>{state.error}</span>
+              {(!cachedAccessToken) && (
+                <button 
+                  onClick={() => {
+                    googleSignIn().then(() => {
+                       dispatch({ type: "CLEAR_ERROR" } as any);
+                    }).catch(console.error);
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
+                >
+                  Sign in to Sync
+                </button>
+              )}
               <button 
                 onClick={() => {
                   localStorage.setItem("hideErrorBanner", "true");
-                  dispatch({ type: "CLEAR_ERROR" } as any); // Force re-render or handle differently, but simplest is just window reload or rely on state.
+                  dispatch({ type: "CLEAR_ERROR" } as any);
                 }} 
                 className="ml-4 hover:opacity-70 text-red-700 font-bold"
               >
