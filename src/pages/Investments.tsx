@@ -1,5 +1,5 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-import React, { useState, useRef, useEffect } from"react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from"react";
 import { useAppContext } from"../utils/AppContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import AddInvestmentModal from "../components/AddInvestmentModal";
@@ -81,20 +81,31 @@ export default function Investments() {
   const dragRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef<number>(0);
   const mainRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
-    mainRef.current = document.querySelector("main");
-  }, []);
-  useEffect(() => {
+    const mainEl = document.querySelector("main");
+    mainRef.current = mainEl;
+    if (!mainEl) return;
+    
+    const handleScroll = () => {
+      const isList = !showAddForm && !selectedInvestment;
+      if (isList) {
+        scrollPosRef.current = mainEl.scrollTop;
+      }
+    };
+    
+    mainEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => mainEl.removeEventListener("scroll", handleScroll);
+  }, [showAddForm, selectedInvestment]);
+
+  useLayoutEffect(() => {
     const isList = !showAddForm && !selectedInvestment;
     if (isList) {
       if (mainRef.current) {
-        setTimeout(() => {
-          if (mainRef.current) mainRef.current.scrollTop = scrollPosRef.current;
-        }, 10);
+        mainRef.current.scrollTop = scrollPosRef.current;
       }
     } else {
       if (mainRef.current) {
-        scrollPosRef.current = mainRef.current.scrollTop;
         mainRef.current.scrollTop = 0;
       }
     }

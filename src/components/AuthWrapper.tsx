@@ -49,7 +49,7 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
               dispatch({ type: "RESTORE_STATE", payload: sheetData });
             }
           } catch (err) {
-            console.error("Failed to fetch from sheets on initAuth:", err);
+            console.warn("Failed to fetch from sheets on initAuth:", err);
           }
         } else {
           // It's an anonymous user, we force them to sign in
@@ -93,7 +93,7 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
             dispatch({ type: "CLEAR_ERROR" } as any);
           }
         } catch (err) {
-          console.error("Failed to restore from sheets on login:", err);
+          console.warn("Failed to restore from sheets on login:", err);
         }
       }
     } catch (err) {

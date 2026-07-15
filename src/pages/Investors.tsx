@@ -1,6 +1,6 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import InvestorPreviewModal from '../components/InvestorPreviewModal';
 import BusinessPreviewModal from '../components/BusinessPreviewModal';
 import { useAppContext } from "../utils/AppContext";
@@ -89,19 +89,29 @@ export default function Investors() {
   // Scroll preservation
   const scrollPosRef = useRef<number>(0);
   const mainRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
-    mainRef.current = document.querySelector("main");
-  }, []);
-  useEffect(() => {
+    const mainEl = document.querySelector("main");
+    mainRef.current = mainEl;
+    if (!mainEl) return;
+    
+    const handleScroll = () => {
+      if (viewMode === "list") {
+        scrollPosRef.current = mainEl.scrollTop;
+      }
+    };
+    
+    mainEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => mainEl.removeEventListener("scroll", handleScroll);
+  }, [viewMode]);
+
+  useLayoutEffect(() => {
     if (viewMode === "list") {
       if (mainRef.current) {
-        setTimeout(() => {
-          if (mainRef.current) mainRef.current.scrollTop = scrollPosRef.current;
-        }, 10);
+        mainRef.current.scrollTop = scrollPosRef.current;
       }
     } else {
       if (mainRef.current) {
-        scrollPosRef.current = mainRef.current.scrollTop;
         mainRef.current.scrollTop = 0;
       }
     }

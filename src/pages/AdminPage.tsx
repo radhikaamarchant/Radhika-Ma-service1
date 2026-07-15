@@ -42,6 +42,7 @@ export default function AdminPage() {
   });
 
   const [currentView, setCurrentView] = useState<AdminView>("menu");
+  const [showNotifications, setShowNotifications] = useState(false);
   const [googleUser, setGoogleUser] = useState(auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null);
 
   useEffect(() => {
@@ -260,7 +261,53 @@ export default function AdminPage() {
                 <h1 className="text-[26px] md:text-[28px] font-bold text-kite-text">
                   Account
                 </h1>
-                <Bell className="w-5 h-5 text-kite-text-light" />
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="relative p-1 rounded-full hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition-colors focus:outline-none"
+                  >
+                    <Bell className="w-5 h-5 text-kite-text-light" />
+                    {state.error && localStorage.getItem("hideErrorBanner") !== "true" && (
+                      <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-kite-bg"></span>
+                    )}
+                  </button>
+                  {showNotifications && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-kite-surface rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-kite-border z-[100] p-4 text-left">
+                      {state.error && localStorage.getItem("hideErrorBanner") !== "true" ? (
+                        <div className="flex flex-col gap-2">
+                           <div className="flex justify-between items-start gap-2">
+                             <span className="text-red-500 text-[13px] font-medium leading-snug">{state.error}</span>
+                             <button 
+                               onClick={() => {
+                                 localStorage.setItem("hideErrorBanner", "true");
+                                 dispatch({ type: "CLEAR_ERROR" } as any);
+                                 setShowNotifications(false);
+                               }} 
+                               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+                             >
+                               <X className="w-4 h-4" />
+                             </button>
+                           </div>
+                           {!cachedAccessToken && (
+                             <button 
+                               onClick={() => {
+                                 googleSignIn().then(() => {
+                                    dispatch({ type: "CLEAR_ERROR" } as any);
+                                    setShowNotifications(false);
+                                 }).catch(console.error);
+                               }}
+                               className="bg-kite-blue text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors self-start mt-2"
+                             >
+                               Sign in to Sync
+                             </button>
+                           )}
+                        </div>
+                      ) : (
+                        <p className="text-[13px] text-kite-text-light text-center py-4">No new notifications</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               <p className="text-[15px] md:text-[16px] text-kite-text mb-2 tracking-wide flex items-center gap-1.5">
                 {profile.name} <BadgeCheck className="w-[18px] h-[18px] text-kite-blue " />

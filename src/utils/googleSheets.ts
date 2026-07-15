@@ -41,7 +41,7 @@ export const getOrCreateSpreadsheet = async (): Promise<string | null> => {
       }),
     });
     if (!res.ok) {
-      console.error("Failed to create spreadsheet", await res.text());
+      console.warn("Failed to create spreadsheet", await res.text());
       return null;
     }
     const data = await res.json();
@@ -51,7 +51,7 @@ export const getOrCreateSpreadsheet = async (): Promise<string | null> => {
       return id;
     }
   } catch (e) {
-    console.error("Error creating spreadsheet", e);
+    console.warn("Error creating spreadsheet", e);
   }
   return null;
 };
@@ -93,7 +93,7 @@ export const syncToSheets = async (state: AppState) => {
       }),
     });
   } catch (e) {
-    console.error("Failed to sync to sheets", e);
+    console.warn("Failed to sync to sheets", e);
     throw e;
   }
 };
@@ -141,7 +141,7 @@ export const fetchFromSheets = async (): Promise<Partial<AppState> | null> => {
     
     return { businesses, investors, investments, users, settings };
   } catch (e) {
-    console.error("Failed to fetch from sheets", e);
+    console.warn("Failed to fetch from sheets", e);
     throw e;
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import {
   Search,
   Plus,
@@ -43,6 +43,39 @@ export default function Businesses() {
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showVerifySuccess, setShowVerifySuccess] = useState(false);
+
+  // Scroll preservation
+  const scrollPosRef = useRef<number>(0);
+  const mainRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const mainEl = document.querySelector("main");
+    mainRef.current = mainEl;
+    if (!mainEl) return;
+    
+    const handleScroll = () => {
+      const isList = viewMode === "list" && !selectedBusinessId;
+      if (isList) {
+        scrollPosRef.current = mainEl.scrollTop;
+      }
+    };
+    
+    mainEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => mainEl.removeEventListener("scroll", handleScroll);
+  }, [viewMode, selectedBusinessId]);
+
+  useLayoutEffect(() => {
+    const isList = viewMode === "list" && !selectedBusinessId;
+    if (isList) {
+      if (mainRef.current) {
+        mainRef.current.scrollTop = scrollPosRef.current;
+      }
+    } else {
+      if (mainRef.current) {
+        mainRef.current.scrollTop = 0;
+      }
+    }
+  }, [viewMode, selectedBusinessId]);
 
   const [formData, setFormData] = useState({
     name: "",

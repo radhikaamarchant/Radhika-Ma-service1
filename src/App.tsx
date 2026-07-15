@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef } from"react";
+import { useState, useEffect, useLayoutEffect, useRef } from"react";
 import { AppProvider } from "./utils/AppContext";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { View } from"./types";
@@ -126,13 +126,10 @@ function MainLayout() {
     setCurrentView(newView);
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!mainRef.current) mainRef.current = document.querySelector("main");
     if (mainRef.current) {
-      setTimeout(() => {
-        if (mainRef.current)
-          mainRef.current.scrollTop = scrollPositions.current[currentView] || 0;
-      }, 10);
+      mainRef.current.scrollTop = scrollPositions.current[currentView] || 0;
     }
   }, [currentView]);
 

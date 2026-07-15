@@ -293,7 +293,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         lastLocalUpdate = Date.now();
         clearTimeout(syncTimeout);
         syncTimeout = setTimeout(() => {
-          syncToSheets(updatedState!).catch((e) => console.error("Sheets sync failed", e));
+          syncToSheets(updatedState!).catch((e) => console.warn("Sheets sync failed", e));
         }, 3000);
       }
     }
@@ -425,32 +425,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         </motion.div>
       ) : (
         <>
-          {state.error && localStorage.getItem("hideErrorBanner") !== "true" && (
-            <div className="bg-red-500/10 text-red-500 p-2 text-center text-xs w-full fixed top-0 z-50 flex items-center justify-center flex-wrap gap-3">
-              <span>{state.error}</span>
-              {(!cachedAccessToken) && (
-                <button 
-                  onClick={() => {
-                    googleSignIn().then(() => {
-                       dispatch({ type: "CLEAR_ERROR" } as any);
-                    }).catch(console.error);
-                  }}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
-                >
-                  Sign in to Sync
-                </button>
-              )}
-              <button 
-                onClick={() => {
-                  localStorage.setItem("hideErrorBanner", "true");
-                  dispatch({ type: "CLEAR_ERROR" } as any);
-                }} 
-                className="ml-4 hover:opacity-70 text-red-700 font-bold"
-              >
-                ✕
-              </button>
-            </div>
-          )}
           {children}
         </>
       )}
