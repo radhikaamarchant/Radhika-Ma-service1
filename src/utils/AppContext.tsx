@@ -8,7 +8,7 @@ import { io } from "socket.io-client";
 
 // Initialize socket connection
 const socket = io(window.location.origin, {
-  path: "/socket.io"
+  path: "/socket.io", transports: ["websocket"]
 });
 
 export interface AppState {
@@ -199,6 +199,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!action.fromSocket && socket.connected) {
       socket.emit("dispatch_action", action);
     }
+
+    if (!action.fromSocket) {
+      lastLocalUpdate = Date.now();
+    } else {
+      lastSocketUpdate = Date.now();
+    }
     
     // Optimistic Update so the app doesn't freeze/stop if Firebase is down
     setState((prevState) => {
@@ -340,12 +346,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
     } finally {
-      // We set lastLocalUpdate here to trigger the syncToSheets useEffect
-      if (!action.fromSocket) {
-        lastLocalUpdate = Date.now();
-      } else {
-        lastSocketUpdate = Date.now();
-      }
+      // Handled at top of dispatch
     }
   };
 
