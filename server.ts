@@ -1,10 +1,27 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
+import { Server } from "socket.io";
+import http from "http";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+  const server = http.createServer(app);
+  
+  const io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+
+  io.on("connection", (socket) => {
+    socket.on("dispatch_action", (data) => {
+      // Broadcast the action to all other connected clients
+      socket.broadcast.emit("receive_action", data);
+    });
+  });
 
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
@@ -24,7 +41,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }

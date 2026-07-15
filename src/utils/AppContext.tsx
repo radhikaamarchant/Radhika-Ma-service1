@@ -3,8 +3,13 @@ import { motion } from "motion/react";
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth, googleSignIn, cachedAccessToken } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
-
 import { syncToSheets, fetchFromSheets } from "./googleSheets";
+import { io } from "socket.io-client";
+
+// Initialize socket connection
+const socket = io(window.location.origin, {
+  path: "/socket.io"
+});
 
 export interface AppState {
   businesses: Business[];
@@ -17,7 +22,7 @@ export interface AppState {
   currentUser: AppUser | null;
 }
 
-type Action =
+export type Action = (
   | { type: "ADD_BUSINESS"; payload: Business }
   | { type: "UPDATE_BUSINESS_STATUS"; payload: { id: string; status: Business["status"] } }
   | { type: "UPDATE_BUSINESS"; payload: Business }
@@ -31,7 +36,8 @@ type Action =
   | { type: "UPDATE_SETTINGS"; payload: GlobalSettings }
   | { type: "SET_CURRENT_USER"; payload: AppUser | null }
   | { type: "CLEAR_ERROR" }
-  | { type: "RESTORE_STATE"; payload: Partial<AppState> };
+  | { type: "RESTORE_STATE"; payload: Partial<AppState> }
+) & { fromSocket?: boolean };
 
 const AppContext = createContext<
   | {
@@ -43,6 +49,7 @@ const AppContext = createContext<
 
 let syncTimeout: any;
 let lastLocalUpdate = 0;
+let lastSocketUpdate = 0;
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>({
@@ -77,6 +84,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     return newList;
   };
+
+  useEffect(() => {
+    const handleSocketAction = (action: Action) => {
+      // Apply the action received from the socket
+      dispatch({ ...action, fromSocket: true });
+    };
+
+    socket.on("receive_action", handleSocketAction);
+    
+    return () => {
+      socket.off("receive_action", handleSocketAction);
+    };
+  }, []);
 
   useEffect(() => {
     const handleQuotaError = async (error: any) => {
@@ -153,6 +173,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const dispatch = async (action: Action) => {
     let updatedState: AppState | null = null;
     
+    // Broadcast action to other clients if it's not from socket
+    if (!action.fromSocket && socket.connected) {
+      socket.emit("dispatch_action", action);
+    }
+    
     // Optimistic Update so the app doesn't freeze/stop if Firebase is down
     setState((prevState) => {
       let newState = { ...prevState };
@@ -219,6 +244,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
 
     try {
+      if (action.fromSocket) {
+        return; // Skip Firebase update if this is a mirrored action from another client
+      }
+
       const cleanObj = (obj: any): any => {
         if (obj === null || typeof obj !== "object") {
           if (typeof obj === "number" && Number.isNaN(obj)) return 0;
@@ -290,7 +319,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
     } finally {
       // We set lastLocalUpdate here to trigger the syncToSheets useEffect
-      lastLocalUpdate = Date.now();
+      if (!action.fromSocket) {
+        lastLocalUpdate = Date.now();
+      } else {
+        lastSocketUpdate = Date.now();
+      }
     }
   };
 
@@ -339,12 +372,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     const checkAndFetch = async () => {
       // Skip if we recently dispatched a local update (wait 15s to allow sync to settle)
-      if (Date.now() - lastLocalUpdate < 15000) return;
+      if (Date.now() - lastLocalUpdate < 15000 || Date.now() - lastSocketUpdate < 15000) return;
       
       try {
         const sheetData = await fetchFromSheets();
-        // Ensure no local updates happened while we were fetching
-        if (sheetData && Date.now() - lastLocalUpdate >= 15000) {
+        // Ensure no local or socket updates happened while we were fetching
+        if (sheetData && Date.now() - lastLocalUpdate >= 15000 && Date.now() - lastSocketUpdate >= 15000) {
           setState((s) => {
             const newBusinesses = sheetData.businesses?.length ? sheetData.businesses : s.businesses;
             const newInvestors = sheetData.investors?.length ? sheetData.investors : s.investors;
