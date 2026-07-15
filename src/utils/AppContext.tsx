@@ -91,10 +91,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
       dispatch({ ...action, fromSocket: true });
     };
 
+    const handleSyncState = (serverState: any) => {
+      setState(s => ({
+        ...s,
+        ...serverState,
+        loading: false,
+        error: undefined
+      }));
+    };
+
+    const handleRequestState = () => {
+      setState(s => {
+        if (!s.loading && s.businesses.length > 0) {
+          socket.emit("provide_full_state", s);
+        }
+        return s;
+      });
+    };
+
     socket.on("receive_action", handleSocketAction);
+    socket.on("sync_full_state", handleSyncState);
+    socket.on("request_full_state", handleRequestState);
     
     return () => {
       socket.off("receive_action", handleSocketAction);
+      socket.off("sync_full_state", handleSyncState);
+      socket.off("request_full_state", handleRequestState);
     };
   }, []);
 
@@ -331,6 +353,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check if the change was recently triggered by a local dispatch
     if (Date.now() - lastLocalUpdate < 2000 && !state.loading) {
+      if (socket.connected) {
+         socket.emit("provide_full_state", state);
+      }
       clearTimeout(syncTimeout);
       syncTimeout = setTimeout(() => {
         syncToSheets(state).catch((e) => console.warn("Sheets sync failed", e));
@@ -425,6 +450,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const unsubAuth = auth.onAuthStateChanged((user) => {
       checkAndFetch();
+      if (pollingInterval) clearInterval(pollingInterval);
       pollingInterval = setInterval(checkAndFetch, 5000);
     });
 

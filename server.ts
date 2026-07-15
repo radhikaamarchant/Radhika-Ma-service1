@@ -16,7 +16,23 @@ async function startServer() {
     }
   });
 
+  let globalState: any = null;
+
   io.on("connection", (socket) => {
+    // When a new client connects, send them the latest state if we have it
+    if (globalState) {
+      socket.emit("sync_full_state", globalState);
+    } else {
+      // If server just restarted and has no state, ask this client for its state
+      socket.emit("request_full_state");
+    }
+
+    // Client provides full state (e.g. on initial load or after a change)
+    socket.on("provide_full_state", (state) => {
+      globalState = state;
+      socket.broadcast.emit("sync_full_state", state);
+    });
+
     socket.on("dispatch_action", (data) => {
       // Broadcast the action to all other connected clients
       socket.broadcast.emit("receive_action", data);
