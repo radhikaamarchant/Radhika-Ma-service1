@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { motion } from "motion/react";
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
 
 import { syncToSheets, fetchFromSheets } from "./googleSheets";
@@ -42,6 +42,7 @@ const AppContext = createContext<
 >(undefined);
 
 let syncTimeout: any;
+let lastLocalUpdate = 0;
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>({
@@ -80,17 +81,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleQuotaError = async (error: any) => {
       console.warn("Firestore error:", error.message);
-      const sheetData = await fetchFromSheets();
-      setState((s) => ({
-        ...s,
-        businesses: sheetData?.businesses?.length ? sheetData.businesses : s.businesses,
-        investors: sheetData?.investors?.length ? sheetData.investors : s.investors,
-        investments: sheetData?.investments?.length ? sheetData.investments : s.investments,
-        users: sheetData?.users?.length ? sheetData.users : s.users,
-        settings: sheetData?.settings ? sheetData.settings : s.settings,
-        loading: false,
-        error: "Database daily limit reached! Wait until tomorrow for your real data to load, then use 'Google Account Sync' in Admin to back it up.",
-      }));
+      try {
+        const sheetData = await fetchFromSheets();
+        setState((s) => ({
+          ...s,
+          businesses: sheetData?.businesses?.length ? sheetData.businesses : s.businesses,
+          investors: sheetData?.investors?.length ? sheetData.investors : s.investors,
+          investments: sheetData?.investments?.length ? sheetData.investments : s.investments,
+          users: sheetData?.users?.length ? sheetData.users : s.users,
+          settings: sheetData?.settings ? sheetData.settings : s.settings,
+          loading: false,
+          error: "Database daily limit reached! Wait until tomorrow for your real data to load, then use 'Google Account Sync' in Admin to back it up.",
+        }));
+      } catch (err) {
+        setState((s) => ({
+          ...s,
+          loading: false,
+          error: "Database daily limit reached! Wait until tomorrow for your real data to load, or sign in to Google in the Admin panel to sync your backup.",
+        }));
+      }
     };
 
     const unsubBusinesses = onSnapshot(collection(db, "businesses"), (snap) => {
@@ -280,6 +289,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
     } finally {
       if (updatedState) {
+        lastLocalUpdate = Date.now();
         clearTimeout(syncTimeout);
         syncTimeout = setTimeout(() => {
           syncToSheets(updatedState!).catch((e) => console.error("Sheets sync failed", e));
@@ -315,6 +325,69 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.addEventListener('googleAuthSuccess', handleGoogleAuthSuccess);
     return () => window.removeEventListener('googleAuthSuccess', handleGoogleAuthSuccess);
   }, [state, dispatch]);
+
+  // Poll Google Sheets if logged in via Google
+  useEffect(() => {
+    let pollingInterval: any;
+    
+    const checkAndFetch = async () => {
+      // Skip if we recently dispatched a local update (wait 15s to allow sync to settle)
+      if (Date.now() - lastLocalUpdate < 15000) return;
+      
+      if (auth.currentUser && !auth.currentUser.isAnonymous) {
+        try {
+          const sheetData = await fetchFromSheets();
+          // Ensure no local updates happened while we were fetching
+          if (sheetData && Date.now() - lastLocalUpdate >= 15000) {
+            setState((s) => {
+              const newBusinesses = sheetData.businesses?.length ? sheetData.businesses : s.businesses;
+              const newInvestors = sheetData.investors?.length ? sheetData.investors : s.investors;
+              const newInvestments = sheetData.investments?.length ? sheetData.investments : s.investments;
+              const newUsers = sheetData.users?.length ? sheetData.users : s.users;
+              const newSettings = sheetData.settings ? sheetData.settings : s.settings;
+              
+              if (
+                JSON.stringify(newBusinesses) === JSON.stringify(s.businesses) &&
+                JSON.stringify(newInvestors) === JSON.stringify(s.investors) &&
+                JSON.stringify(newInvestments) === JSON.stringify(s.investments) &&
+                JSON.stringify(newUsers) === JSON.stringify(s.users) &&
+                JSON.stringify(newSettings) === JSON.stringify(s.settings)
+              ) {
+                return s; // No changes
+              }
+
+              return {
+                ...s,
+                businesses: newBusinesses,
+                investors: newInvestors,
+                investments: newInvestments,
+                users: newUsers,
+                settings: newSettings,
+                loading: false,
+                error: undefined
+              };
+            });
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
+    const unsubAuth = auth.onAuthStateChanged((user) => {
+      if (user && !user.isAnonymous) {
+        checkAndFetch();
+        pollingInterval = setInterval(checkAndFetch, 5000);
+      } else {
+        if (pollingInterval) clearInterval(pollingInterval);
+      }
+    });
+
+    return () => {
+      unsubAuth();
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
+  }, []);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>

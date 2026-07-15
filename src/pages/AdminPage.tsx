@@ -17,7 +17,7 @@ import {
   getUnifiedTransactions,
 } from "../utils/bankBalance";
 import { formatINR } from "../utils/mockData";
-import { googleSignIn, cachedAccessToken } from "../utils/firebase";
+import { googleSignIn, cachedAccessToken, auth } from "../utils/firebase";
 import { syncToSheets, fetchFromSheets } from "../utils/googleSheets";
 
 interface AdminProfile {
@@ -42,6 +42,15 @@ export default function AdminPage() {
   });
 
   const [currentView, setCurrentView] = useState<AdminView>("menu");
+  const [googleUser, setGoogleUser] = useState(auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null);
+
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged(user => {
+      setGoogleUser(user && !user.isAnonymous ? user : null);
+    });
+    return unsub;
+  }, []);
+
   const [formData, setFormData] = useState(profile);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -299,11 +308,21 @@ export default function AdminPage() {
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Bank details</span>
                     <Building2 className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-                 <button onClick={handleGoogleSync} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-kite-bg transition-colors group w-full text-left">
-                    <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Google Account Sync (Backup)</span>
-                    <svg className="w-4 h-4 text-kite-text-light mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path fill="currentColor" d="M21.35 11.1H12.18V13.83H18.69C18.36 17.64 15.19 19.27 12.19 19.27C8.36 19.27 5 16.25 5 12C5 7.9 8.2 4.73 12.2 4.73C15.29 4.73 17.1 6.7 17.1 6.7L19 4.72C19 4.72 16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12C2.03 17.05 6.16 22 12.25 22C17.6 22 21.5 18.33 21.5 12.91C21.5 11.76 21.35 11.1 21.35 11.1Z" />
-                    </svg>
+                 <button onClick={handleGoogleSync} className="flex flex-col px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-kite-bg transition-colors group w-full text-left">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Google Account Sync (Backup)</span>
+                      <svg className="w-4 h-4 text-kite-text-light mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="currentColor" d="M21.35 11.1H12.18V13.83H18.69C18.36 17.64 15.19 19.27 12.19 19.27C8.36 19.27 5 16.25 5 12C5 7.9 8.2 4.73 12.2 4.73C15.29 4.73 17.1 6.7 17.1 6.7L19 4.72C19 4.72 16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12C2.03 17.05 6.16 22 12.25 22C17.6 22 21.5 18.33 21.5 12.91C21.5 11.76 21.35 11.1 21.35 11.1Z" />
+                      </svg>
+                    </div>
+                    {googleUser && (
+                      <div className="flex items-center mt-2 text-sm text-kite-text-light">
+                        {googleUser.photoURL && (
+                          <img src={googleUser.photoURL} alt="Profile" className="w-5 h-5 rounded-full mr-2" referrerPolicy="no-referrer" />
+                        )}
+                        <span>{googleUser.displayName || googleUser.email || "Signed in"}</span>
+                      </div>
+                    )}
                  </button>
                  <button onClick={handleGoogleRestore} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-kite-bg transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Restore from Google Account</span>
