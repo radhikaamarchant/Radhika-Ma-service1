@@ -4,7 +4,7 @@ import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimest
 import { db, auth, googleSignIn, cachedAccessToken } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
 
-import { syncToSheets, fetchFromSheets } from "./googleSheets";
+import { fetchFromAppsScript, syncToAppsScript } from "./appsScriptBackup";
 
 export interface AppState {
   businesses: Business[];
@@ -82,7 +82,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const handleQuotaError = async (error: any) => {
       console.warn("Firestore error:", error.message);
       try {
-        const sheetData = await fetchFromSheets();
+        const sheetData = await fetchFromAppsScript();
         setState((s) => ({
           ...s,
           businesses: sheetData?.businesses?.length ? sheetData.businesses : s.businesses,
@@ -97,7 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setState((s) => ({
           ...s,
           loading: false,
-          error: "Database daily limit reached! Changes will only sync via Google Sheets. Sign in to sync your device.",
+          error: "Database daily limit reached! Data couldn't be loaded from backup.",
         }));
         localStorage.removeItem("hideErrorBanner");
       }
@@ -240,166 +240,76 @@ export function AppProvider({ children }: { children: ReactNode }) {
       switch (action.type) {
         case "ADD_BUSINESS":
           await setDoc(doc(db, "businesses", action.payload.id), payloadWithTimestamp);
+          syncToAppsScript("ADD", "businesses", action.payload.id, payloadWithTimestamp);
           break;
         case "UPDATE_BUSINESS_STATUS":
           await updateDoc(doc(db, "businesses", action.payload.id), {
             status: action.payload.status,
             updatedAt: serverTimestamp(),
           });
+          syncToAppsScript("UPDATE", "businesses", action.payload.id, { status: action.payload.status });
           break;
         case "UPDATE_BUSINESS":
           await setDoc(doc(db, "businesses", action.payload.id), payloadWithTimestamp);
+          syncToAppsScript("UPDATE", "businesses", action.payload.id, payloadWithTimestamp);
           break;
         case "DELETE_BUSINESS": {
           const bizInvestments = state.investments.filter((i) => i.businessId === action.payload);
-          await Promise.all(bizInvestments.map((inv) => deleteDoc(doc(db, "investments", inv.id))));
+          await Promise.all(bizInvestments.map((inv) => {
+            syncToAppsScript("DELETE", "investments", inv.id);
+            return deleteDoc(doc(db, "investments", inv.id));
+          }));
           await deleteDoc(doc(db, "businesses", action.payload));
+          syncToAppsScript("DELETE", "businesses", action.payload);
           break;
         }
         case "ADD_INVESTOR":
           await setDoc(doc(db, "investors", action.payload.id), payloadWithTimestamp);
+          syncToAppsScript("ADD", "investors", action.payload.id, payloadWithTimestamp);
           break;
         case "UPDATE_INVESTOR":
           await updateDoc(doc(db, "investors", action.payload.id), payloadWithTimestamp);
+          syncToAppsScript("UPDATE", "investors", action.payload.id, payloadWithTimestamp);
           break;
         case "DELETE_INVESTOR": {
           const invInvestments = state.investments.filter((i) => i.investorId === action.payload);
-          await Promise.all(invInvestments.map((inv) => deleteDoc(doc(db, "investments", inv.id))));
+          await Promise.all(invInvestments.map((inv) => {
+            syncToAppsScript("DELETE", "investments", inv.id);
+            return deleteDoc(doc(db, "investments", inv.id));
+          }));
           await deleteDoc(doc(db, "investors", action.payload));
+          syncToAppsScript("DELETE", "investors", action.payload);
           break;
         }
         case "ADD_INVESTMENT":
           await setDoc(doc(db, "investments", action.payload.id), payloadWithTimestamp);
+          syncToAppsScript("ADD", "investments", action.payload.id, payloadWithTimestamp);
           break;
         case "UPDATE_INVESTMENT":
           await setDoc(doc(db, "investments", action.payload.id), payloadWithTimestamp);
+          syncToAppsScript("UPDATE", "investments", action.payload.id, payloadWithTimestamp);
           break;
         case "DELETE_INVESTMENT":
           await deleteDoc(doc(db, "investments", action.payload));
+          syncToAppsScript("DELETE", "investments", action.payload);
           break;
         case "UPDATE_SETTINGS":
           await setDoc(doc(db, "settings", "global"), payloadWithTimestamp);
+          syncToAppsScript("UPDATE", "settings", "global", payloadWithTimestamp);
           break;
         case "SET_CURRENT_USER":
           if (action.payload) {
             await setDoc(doc(db, "users", action.payload.id), action.payload);
+            syncToAppsScript("UPDATE", "users", action.payload.id, action.payload);
           }
           break;
       }
     } catch (err) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
-    } finally {
-      // We set lastLocalUpdate here to trigger the syncToSheets useEffect
-      lastLocalUpdate = Date.now();
     }
   };
 
-  // Sync to sheets when state changes locally
-  useEffect(() => {
-    // Check if the change was recently triggered by a local dispatch
-    if (Date.now() - lastLocalUpdate < 2000 && !state.loading) {
-      clearTimeout(syncTimeout);
-      syncTimeout = setTimeout(() => {
-        syncToSheets(state).catch((e) => console.warn("Sheets sync failed", e));
-      }, 3000);
-    }
-  }, [state]);
 
-  useEffect(() => {
-    const handleGoogleAuthSuccess = async (e: any) => {
-      const action = e.detail?.action;
-      if (action === 'sync') {
-        try {
-          await syncToSheets(state);
-          alert("Successfully synced data to Google Account (Google Sheets backup).");
-        } catch (err: any) {
-          alert(`Failed to sync to Google Account: ${err.message || String(err)}`);
-        }
-      } else if (action === 'restore') {
-        try {
-          const sheetData = await fetchFromSheets();
-          if (sheetData) {
-            dispatch({ type: "RESTORE_STATE", payload: sheetData });
-            alert("Successfully restored data from Google Account.");
-          } else {
-            alert("No backup data found in Google Account.");
-          }
-        } catch (err: any) {
-          alert(`Failed to restore from Google Account: ${err.message || String(err)}`);
-        }
-      }
-    };
-    window.addEventListener('googleAuthSuccess', handleGoogleAuthSuccess);
-    return () => window.removeEventListener('googleAuthSuccess', handleGoogleAuthSuccess);
-  }, [state, dispatch]);
-
-  // Poll Google Sheets if logged in via Google
-  useEffect(() => {
-    let pollingInterval: any;
-    
-    const checkAndFetch = async () => {
-      // Skip if we recently dispatched a local update (wait 15s to allow sync to settle)
-      if (Date.now() - lastLocalUpdate < 15000) return;
-      
-      try {
-        const sheetData = await fetchFromSheets();
-        // Ensure no local updates happened while we were fetching
-        if (sheetData && Date.now() - lastLocalUpdate >= 15000) {
-          setState((s) => {
-            const newBusinesses = sheetData.businesses?.length ? sheetData.businesses : s.businesses;
-            const newInvestors = sheetData.investors?.length ? sheetData.investors : s.investors;
-            const newInvestments = sheetData.investments?.length ? sheetData.investments : s.investments;
-            const newUsers = sheetData.users?.length ? sheetData.users : s.users;
-            const newSettings = sheetData.settings ? sheetData.settings : s.settings;
-            
-            if (
-              JSON.stringify(newBusinesses) === JSON.stringify(s.businesses) &&
-              JSON.stringify(newInvestors) === JSON.stringify(s.investors) &&
-              JSON.stringify(newInvestments) === JSON.stringify(s.investments) &&
-              JSON.stringify(newUsers) === JSON.stringify(s.users) &&
-              JSON.stringify(newSettings) === JSON.stringify(s.settings)
-            ) {
-              return s; // No changes
-            }
-
-            return {
-              ...s,
-              businesses: newBusinesses,
-              investors: newInvestors,
-              investments: newInvestments,
-              users: newUsers,
-              settings: newSettings,
-              loading: false,
-              error: undefined
-            };
-          });
-        }
-      } catch (e: any) {
-        if (e.message?.includes("no access token") || e.message?.includes("Failed to read from sheets")) {
-           setState(s => {
-              if (s.error && (s.error.includes("Database daily limit reached") || s.error.includes("Google Sheets Sync paused"))) {
-                localStorage.removeItem("hideErrorBanner");
-                return {
-                   ...s, 
-                   error: "Google Sheets Sync paused. Sign in to sync your device."
-                };
-              }
-              return s;
-           });
-        }
-      }
-    };
-
-    const unsubAuth = auth.onAuthStateChanged((user) => {
-      checkAndFetch();
-      pollingInterval = setInterval(checkAndFetch, 5000);
-    });
-
-    return () => {
-      unsubAuth();
-      if (pollingInterval) clearInterval(pollingInterval);
-    };
-  }, []);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>

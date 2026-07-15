@@ -82,42 +82,7 @@ export default function AdminPage() {
     window.dispatchEvent(new Event("adminProfileUpdated"));
   };
 
-  const handleGoogleSync = async () => {
-    try {
-      const { getAccessToken, googleSignIn } = await import("../utils/firebase");
-      if (!(await getAccessToken())) {
-        await googleSignIn('sync');
-        return; // Redirect happens
-      }
-      const { syncToSheets } = await import("../utils/googleSheets");
-      await syncToSheets(state);
-      alert("Successfully synced data to Google Account (Google Sheets backup).");
-    } catch (e: any) {
-      console.error(e);
-      alert(`Failed to sync to Google Account: ${e.message || String(e)}`);
-    }
-  };
 
-  const handleGoogleRestore = async () => {
-    try {
-      const { getAccessToken, googleSignIn } = await import("../utils/firebase");
-      if (!(await getAccessToken())) {
-        await googleSignIn('restore');
-        return; // Redirect happens
-      }
-      const { fetchFromSheets } = await import("../utils/googleSheets");
-      const sheetData = await fetchFromSheets();
-      if (sheetData) {
-        dispatch({ type: "RESTORE_STATE", payload: sheetData });
-        alert("Successfully restored data from Google Account.");
-      } else {
-        alert("No backup data found in Google Account.");
-      }
-    } catch (e: any) {
-      console.error(e);
-      alert(`Failed to restore from Google Account: ${e.message || String(e)}`);
-    }
-  };
 
   const onCropComplete = useCallback(
     (croppedArea: any, croppedAreaPixels: any) => {
@@ -355,28 +320,7 @@ export default function AdminPage() {
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Bank details</span>
                     <Building2 className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-                 <button onClick={handleGoogleSync} className="flex flex-col px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-kite-bg transition-colors group w-full text-left">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Google Account Sync (Backup)</span>
-                      <svg className="w-4 h-4 text-kite-text-light mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="currentColor" d="M21.35 11.1H12.18V13.83H18.69C18.36 17.64 15.19 19.27 12.19 19.27C8.36 19.27 5 16.25 5 12C5 7.9 8.2 4.73 12.2 4.73C15.29 4.73 17.1 6.7 17.1 6.7L19 4.72C19 4.72 16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12C2.03 17.05 6.16 22 12.25 22C17.6 22 21.5 18.33 21.5 12.91C21.5 11.76 21.35 11.1 21.35 11.1Z" />
-                      </svg>
-                    </div>
-                    {googleUser && (
-                      <div className="flex items-center mt-2 text-sm text-kite-text-light">
-                        {googleUser.photoURL && (
-                          <img src={googleUser.photoURL} alt="Profile" className="w-5 h-5 rounded-full mr-2" referrerPolicy="no-referrer" />
-                        )}
-                        <span>{googleUser.displayName || googleUser.email || "Signed in"}</span>
-                      </div>
-                    )}
-                 </button>
-                 <button onClick={handleGoogleRestore} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-kite-bg transition-colors group w-full text-left">
-                    <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Restore from Google Account</span>
-                    <svg className="w-4 h-4 text-kite-text-light mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-                    </svg>
-                 </button>
+
                </div>
             </div>
           </div>
