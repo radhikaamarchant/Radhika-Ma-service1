@@ -36,7 +36,14 @@ export default function Investments() {
       const pendingId = sessionStorage.getItem("mobileAddInvestmentBusinessId");
       if (pendingId) {
         setAddModalBusinessId(pendingId);
-        setFormData((prev: any) => ({ ...prev, businessId: pendingId }));
+        
+        const b = state.businesses.find(biz => biz.id === pendingId);
+        const isTrigger = b?.investmentType === 'trigger';
+        const amount = isTrigger && b?.triggerAmount 
+          ? new Intl.NumberFormat("en-IN").format(b.triggerAmount) 
+          : b?.fundingRequired ? b.fundingRequired.toLocaleString("en-IN") : "";
+          
+        setFormData((prev: any) => ({ ...prev, businessId: pendingId, amount }));
         setShowAddForm(true);
         setIsFromAnalysis(true);
         setShowInvestorSelect(false); // Make sure it's false to show the new investment form directly
@@ -136,10 +143,12 @@ export default function Investments() {
   const [payoutFreq, setPayoutFreq] = useState("Monthly");
   const [expectedRoi, setExpectedRoi] = useState("10.5");
   const [showBrokerageROI, setShowBrokerageROI] = useState(false);
+  const [shakeQuantity, setShakeQuantity] = useState(false);
   const [formData, setFormData] = useState(() => ({
     businessId: sessionStorage.getItem("mobileAddInvestmentBusinessId") || "",
     investorId:"",
     amount:"",
+    quantity: 1,
     timePeriodMonths:"12",
     adminCommissionInvestorPct:"2",
     adminCommissionBusinessPct:"2",
@@ -230,6 +239,7 @@ export default function Investments() {
       businessId: formData.businessId,
       investorId: formData.investorId,
       amount: amount,
+      quantity: formData.quantity,
       timePeriodMonths: parseInt(formData.timePeriodMonths),
       interestRate: selectedBusinessInterest,
       startDate: startDate.toISOString().split("T")[0],
@@ -524,21 +534,73 @@ export default function Investments() {
                      </div>
                   </div>
                   
-                  {/* Amount */}
-                  <div className="flex flex-col space-y-6 md:space-y-0">
-                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10">
+                  {/* Amount and Quantity */}
+                  <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:space-x-4">
+                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10 md:flex-1">
                         <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 md:mb-2 uppercase tracking-wider">Investment Amount</p>
                         <div className="relative">
                           <input
                             type="text"
-                            className="w-full bg-transparent px-0 py-0 pb-2 md:pb-0 md:py-1 text-[18px] font-medium text-gray-900 dark:text-[#F1F5F9] outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                            className={`w-full bg-transparent px-0 py-0 pb-2 md:pb-0 md:py-1 text-[18px] font-medium text-gray-900 dark:text-[#F1F5F9] outline-none placeholder-gray-400 dark:placeholder-gray-500 ${selectedBusiness?.investmentType === 'trigger' ? 'opacity-60 cursor-not-allowed' : ''}`}
                             placeholder="₹0"
                             value={formData.amount ? `₹${formData.amount}` : ""}
                             onChange={handleAmountChange}
+                            disabled={selectedBusiness?.investmentType === 'trigger'}
                           />
                         </div>
                      </div>
-                     <div className="hidden md:block w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10">
+                     
+                     {selectedBusiness?.investmentType === 'trigger' && (
+                       <div className="w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10 md:flex-1">
+                          <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 md:mb-2 uppercase tracking-wider">Quantity</p>
+                          <div className="relative">
+                            <motion.input
+                              type="number"
+                              animate={shakeQuantity ? { x: [-10, 10, -10, 10, 0] } : {}}
+                              transition={{ duration: 0.4 }}
+                              className="w-full bg-transparent px-0 py-0 pb-2 md:pb-0 md:py-1 text-[18px] font-medium text-gray-900 dark:text-[#F1F5F9] outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                              placeholder="1"
+                              min={selectedBusiness.triggerMinQuantity || 1}
+                              max={selectedBusiness.triggerMaxQuantity || 9999}
+                              value={formData.quantity}
+                              onChange={(e) => {
+                                const minQty = selectedBusiness.triggerMinQuantity || 1;
+                                const maxQty = selectedBusiness.triggerMaxQuantity || 9999;
+                                const rawVal = e.target.value;
+                                
+                                if (rawVal === '') {
+                                  setFormData({ ...formData, quantity: '' as any, amount: '0' });
+                                  return;
+                                }
+                                
+                                let qty = parseInt(rawVal);
+                                if (isNaN(qty)) return;
+
+                                if (qty > maxQty || qty < minQty) {
+                                  setShakeQuantity(true);
+                                  setTimeout(() => setShakeQuantity(false), 400);
+                                  if (qty > maxQty) qty = maxQty;
+                                }
+                                
+                                const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                                setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
+                              }}
+                              onBlur={() => {
+                                const minQty = selectedBusiness.triggerMinQuantity || 1;
+                                const maxQty = selectedBusiness.triggerMaxQuantity || 9999;
+                                let qty = parseInt(formData.quantity as any);
+                                if (isNaN(qty) || qty < minQty) qty = minQty;
+                                if (qty > maxQty) qty = maxQty;
+                                
+                                const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                                setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
+                              }}
+                            />
+                          </div>
+                       </div>
+                     )}
+                     
+                     <div className="hidden md:block w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10 md:flex-1">
                         <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 md:mb-2 uppercase tracking-wider">Duration (M)</p>
                         <div className="relative">
                           <input
@@ -769,8 +831,12 @@ export default function Investments() {
                               key={`mob_sel_biz_${b.id}_${idx}`}
                              className="px-4 py-3.5 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-[#44546A]"
                              onClick={() => {
-                               const reqFundFormatted = b.fundingRequired ? b.fundingRequired.toLocaleString("en-IN") : "";
-                               setFormData({ ...formData, businessId: b.id, amount: reqFundFormatted });
+                               const isTrigger = b.investmentType === 'trigger';
+                               const minQty = b.triggerMinQuantity || 1;
+                               const amount = isTrigger && b.triggerAmount
+                                 ? new Intl.NumberFormat("en-IN").format(b.triggerAmount * minQty)
+                                 : b.fundingRequired ? b.fundingRequired.toLocaleString("en-IN") : "";
+                               setFormData({ ...formData, businessId: b.id, amount: amount, quantity: minQty });
                                setShowBusinessSelect(false);
                              }}
                            >
@@ -900,7 +966,7 @@ export default function Investments() {
               : overallTrend;
             const isProfit = holdingProfit >= 0;
             // Quantities & Averages
-            const qty = inv.groupedInvestmentsList.length;
+            const qty = inv.groupedInvestmentsList.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
             const avgPrice = inv.amount / qty;
             const currentLTP = curValue / qty;
             const isOverallTrendPositive = overallTrend >= 0;

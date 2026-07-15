@@ -1523,7 +1523,7 @@ export default function Investors() {
                             </tr>
                           ) : (
                             holdings.map((h, i) => {
-                              const qty = (h.invs as Investment[]).length;
+                              const qty = (h.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
                               const avgPrice = h.investedAmount / qty;
                               const ltp = h.currentValue / qty;
                               const pnlPercent =
@@ -1754,7 +1754,7 @@ export default function Investors() {
                           {/* Kite Style List */}
                           <div className="bg-transparent">
                             {holdings.map((h, i) => {
-                              const qty = (h.invs as Investment[]).length;
+                              const qty = (h.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
                               const avgPrice = h.investedAmount / qty;
                               const ltp = h.currentValue / qty;
                               const pnlPercent =
@@ -1963,7 +1963,7 @@ export default function Investors() {
                             </tr>
                           ) : (
                             positions.map((p, i) => {
-                              const qty = (p.invs as Investment[]).length;
+                              const qty = (p.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
                               const avgPrice = p.investedAmount / qty;
                               return (
                                 <tr
@@ -2166,7 +2166,7 @@ export default function Investors() {
                       ) : (
                         <div className="bg-transparent">
                           {positions.map((p, i) => {
-                            const qty = (p.invs as Investment[]).length;
+                            const qty = (p.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
                             const avgPrice = p.investedAmount / qty;
 
                             return (

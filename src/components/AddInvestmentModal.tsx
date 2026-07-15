@@ -30,6 +30,7 @@ export default function AddInvestmentModal({
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const [orderMode, setOrderMode] = useState<"BUY" | "SELL">("BUY");
+  const [shakeQuantity, setShakeQuantity] = useState(false);
   const [formData, setFormData] = useState({
     businessId: initialBusinessId,
     investorId: "",
@@ -53,10 +54,18 @@ export default function AddInvestmentModal({
 
   useEffect(() => {
     if (isOpen) {
+      const initialBusiness = state.businesses.find(b => b.id === initialBusinessId);
+      const isTrigger = initialBusiness?.investmentType === 'trigger';
+      const minQty = initialBusiness?.triggerMinQuantity || 1;
+      const defaultAmount = isTrigger && initialBusiness?.triggerAmount 
+        ? new Intl.NumberFormat('en-IN').format(initialBusiness.triggerAmount * minQty) 
+        : "";
+        
       setFormData({
         businessId: initialBusinessId,
         investorId: initialInvestorId || "",
-        amount: "",
+        amount: defaultAmount,
+        quantity: minQty,
         timePeriodMonths: "12",
         adminCommissionInvestorPct: "2",
         adminCommissionBusinessPct: "2",
@@ -64,7 +73,7 @@ export default function AddInvestmentModal({
       setExpectedRoi("12");
       setOrderMode("BUY");
     }
-  }, [isOpen, initialBusinessId, initialInvestorId]);
+  }, [isOpen, initialBusinessId, initialInvestorId, state.businesses]);
 
   const selectedBusiness = state.businesses.find(
     (b) => b.id === formData.businessId,
@@ -144,6 +153,7 @@ export default function AddInvestmentModal({
       businessId: formData.businessId,
       investorId: formData.investorId,
       amount: amount,
+      quantity: formData.quantity,
       timePeriodMonths: parseInt(formData.timePeriodMonths),
       interestRate: parseFloat(expectedRoi) || selectedBusiness.interestRate,
       startDate: startDate.toISOString().split("T")[0],
@@ -327,9 +337,15 @@ export default function AddInvestmentModal({
                                 <button
                                   key={b.id}
                                   onClick={() => {
+                                    const isTrigger = b.investmentType === 'trigger';
+                                    const amount = isTrigger && b.triggerAmount 
+                                      ? new Intl.NumberFormat('en-IN').format(b.triggerAmount) 
+                                      : "";
+                                      
                                     setFormData({
                                       ...formData,
                                       businessId: b.id,
+                                      amount: amount,
                                     });
                                     setDesktopShowBusinessSelect(false);
                                   }}
@@ -465,16 +481,68 @@ export default function AddInvestmentModal({
                   </div>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[12px] text-gray-500 dark:text-[#8F8F8F]">
-                  Amount (₹)
-                </label>
-                <input
-                  type="text"
-                  value={formData.amount ? `₹${formData.amount}` : ""}
-                  onChange={handleAmountChange}
-                  className="w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors"
-                />
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 space-y-1.5">
+                  <label className="text-[12px] text-gray-500 dark:text-[#8F8F8F]">
+                    Amount (₹)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.amount ? `₹${formData.amount}` : ""}
+                    onChange={handleAmountChange}
+                    disabled={selectedBusiness?.investmentType === 'trigger'}
+                    className={`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors ${selectedBusiness?.investmentType === 'trigger' ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-[#111111]' : ''}`}
+                  />
+                </div>
+                {selectedBusiness?.investmentType === 'trigger' && (
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-[12px] text-gray-500 dark:text-[#8F8F8F]">
+                      Quantity
+                    </label>
+                    <motion.input
+                      type="number"
+                      animate={shakeQuantity ? { x: [-10, 10, -10, 10, 0] } : {}}
+                      transition={{ duration: 0.4 }}
+                      placeholder="1"
+                      min={selectedBusiness.triggerMinQuantity || 1}
+                      max={selectedBusiness.triggerMaxQuantity || 9999}
+                      value={formData.quantity}
+                      onChange={(e) => {
+                        const minQty = selectedBusiness.triggerMinQuantity || 1;
+                        const maxQty = selectedBusiness.triggerMaxQuantity || 9999;
+                        const rawVal = e.target.value;
+                        
+                        if (rawVal === '') {
+                          setFormData({ ...formData, quantity: '' as any, amount: '0' });
+                          return;
+                        }
+                        
+                        let qty = parseInt(rawVal);
+                        if (isNaN(qty)) return;
+
+                        if (qty > maxQty || qty < minQty) {
+                          setShakeQuantity(true);
+                          setTimeout(() => setShakeQuantity(false), 400);
+                          if (qty > maxQty) qty = maxQty;
+                        }
+                        
+                        const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                        setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
+                      }}
+                      onBlur={() => {
+                        const minQty = selectedBusiness.triggerMinQuantity || 1;
+                        const maxQty = selectedBusiness.triggerMaxQuantity || 9999;
+                        let qty = parseInt(formData.quantity as any);
+                        if (isNaN(qty) || qty < minQty) qty = minQty;
+                        if (qty > maxQty) qty = maxQty;
+                        
+                        const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                        setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
+                      }}
+                      className="w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors"
+                    />
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-1.5">

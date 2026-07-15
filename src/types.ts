@@ -28,6 +28,11 @@ export interface Business {
   registrationCommissionPaid: number;
   taxPaid: number;
   status:"pending" |"listed" |"funded";
+  investmentType?: 'manual' | 'trigger';
+  triggerAmount?: number;
+  triggerMinQuantity?: number;
+  triggerMaxQuantity?: number;
+  triggerHistory?: { id: string; amount: number; timestamp: string }[];
 }
 
 export interface Investor {
@@ -61,6 +66,7 @@ export interface Investment {
   businessId: string;
   investorId: string;
   amount: number;
+  quantity?: number;
   timePeriodMonths: number;
   interestRate: number; // applied rate
   startDate: string;

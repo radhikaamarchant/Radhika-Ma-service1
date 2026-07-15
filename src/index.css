@@ -926,3 +926,13 @@ body.is-popping .fixed.inset-0.z-\[110\] {
   html.dark .border-kite-vertical-divider {
     border-color: #2F343C !important;
   }
+
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }

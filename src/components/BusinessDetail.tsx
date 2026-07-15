@@ -8,7 +8,9 @@ import {
   Upload,
   Search,
   ChevronRight,
-  Info
+  Info,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { Business } from "../types";
 import { getVerificationStats } from "../utils/blueTick";
@@ -49,9 +51,11 @@ export default function BusinessDetail({
   const { marketState } = useMarketSimulation();
   const marketTrends = marketState.trends;
   const business = state.businesses.find((b) => b.id === businessId);
-  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration">("menu");
+  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration" | "policy" | "trigger" | "trigger-history">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useMobileBackNavigation(currentView !== "menu", () => setCurrentView("menu"));
 
@@ -67,6 +71,13 @@ export default function BusinessDetail({
     location: business?.location || "",
     photoUrl: business?.photoUrl || "",
     ownerName: business?.ownerName || "",
+  });
+
+  const [triggerConfig, setTriggerConfig] = useState({
+    type: business?.investmentType || 'manual',
+    amount: business?.triggerAmount ? new Intl.NumberFormat('en-IN').format(business.triggerAmount) : "",
+    minQuantity: business?.triggerMinQuantity ? business.triggerMinQuantity.toString() : "",
+    maxQuantity: business?.triggerMaxQuantity ? business.triggerMaxQuantity.toString() : "",
   });
 
   useEffect(() => {
@@ -184,6 +195,40 @@ export default function BusinessDetail({
     setCurrentView("menu");
   };
 
+  const handleSaveTrigger = () => {
+    const amount = parseFloat(triggerConfig.amount.toString().replace(/,/g, '')) || 0;
+    const minQty = parseInt(triggerConfig.minQuantity) || 0;
+    const maxQty = parseInt(triggerConfig.maxQuantity) || 0;
+    
+    // Add to history if it's trigger type and a valid amount
+    const newHistory = [...(business.triggerHistory || [])];
+    if (triggerConfig.type === 'trigger' && amount > 0) {
+      newHistory.push({
+        id: crypto.randomUUID(),
+        amount: amount,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    dispatch({
+      type: "UPDATE_BUSINESS",
+      payload: {
+        ...business,
+        investmentType: triggerConfig.type as 'manual' | 'trigger',
+        triggerAmount: amount,
+        triggerMinQuantity: minQty > 0 ? minQty : undefined,
+        triggerMaxQuantity: maxQty > 0 ? maxQty : undefined,
+        triggerHistory: newHistory
+      },
+    });
+    
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      setCurrentView("menu");
+    }, 1500);
+  };
+
   const handleSaveFunds = () => {
     dispatch({
       type: "UPDATE_BUSINESS",
@@ -238,6 +283,20 @@ export default function BusinessDetail({
     setCropImageUrl(null);
   };
 
+  const handleDeleteBusiness = () => {
+    setIsDeleting(true);
+    setTimeout(() => {
+      dispatch({ type: "DELETE_BUSINESS", payload: businessId });
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      if (onDelete) {
+        onDelete();
+      } else {
+        onBack();
+      }
+    }, 1200);
+  };
+
   return (
     <div className="bg-white dark:bg-kite-surface flex flex-col h-full -mx-3 md:mx-0 px-0 md:px-0 md:rounded-lg animate-slide-in-mobile relative font-sans text-kite-text">
       {/* Header */}
@@ -252,6 +311,9 @@ export default function BusinessDetail({
           {currentView === "investors" && "Investors details"}
           {currentView === "bank" && "Bank details"}
           {currentView === "registration" && "Registration Information"}
+          {currentView === "policy" && "Business Policy"}
+          {currentView === "trigger" && "Trigger Price Set"}
+          {currentView === "trigger-history" && "Trigger Set History"}
         </h1>
       </div>
 
@@ -282,6 +344,10 @@ export default function BusinessDetail({
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Funds</span>
                 <span className="text-kite-text font-normal text-[16px]">₹</span>
               </button>
+              <button onClick={() => setCurrentView("trigger")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Trigger Price Set</span>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
+              </button>
               <button onClick={() => setCurrentView("profile")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Profile</span>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
@@ -296,6 +362,10 @@ export default function BusinessDetail({
               </button>
               <button onClick={() => setCurrentView("registration")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Registration Information</span>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
+              </button>
+              <button onClick={() => setCurrentView("policy")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Business Policy</span>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
               </button>
             </div>
@@ -608,6 +678,210 @@ export default function BusinessDetail({
              <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Setup Revenue</p>
              <p className="text-[15px] md:text-[16px] font-normal text-kite-blue">{formatINR(business.registrationCommissionPaid + business.taxPaid)}</p>
            </div>
+        </div>
+      )}
+
+      {currentView === "policy" && (
+        <div className="bg-white dark:bg-kite-surface flex-1 p-4 md:p-6 flex flex-col h-full relative">
+          {!showDeleteConfirm ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-[16px] font-medium text-kite-text">Danger Zone</h3>
+                <p className="text-[13px] text-kite-text-light mt-1">Actions here can have permanent consequences.</p>
+              </div>
+              <div className="border border-red-200 dark:border-red-900/30 rounded p-4 flex flex-col items-start gap-4 bg-red-50 dark:bg-red-900/10">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+                  <div>
+                    <h4 className="text-[14px] font-medium text-red-800 dark:text-red-400">Permanent Business Delete</h4>
+                    <p className="text-[12px] md:text-[13px] text-red-600/80 dark:text-red-400/80 mt-1 leading-relaxed">
+                      This action will permanently delete this business. Any investors who have invested in this business will have their invested amount refunded to their bank account balance immediately. All records of this business will be permanently destroyed.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 bg-white dark:bg-transparent border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-[13px] font-medium rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  Delete Business
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center animate-fade-in text-center px-4 max-w-sm mx-auto h-full my-auto pb-20">
+              <div className={`w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-6 ${isDeleting ? "animate-pulse" : ""}`}>
+                <Trash2 className={`w-8 h-8 text-red-500 ${isDeleting ? "animate-bounce" : ""}`} />
+              </div>
+              <h3 className="text-[18px] font-medium text-kite-text mb-2">Are you absolutely sure?</h3>
+              <p className="text-[13px] text-kite-text-light mb-8">
+                This will permanently delete <strong>{business.name}</strong>. Investor amounts will be refunded. This cannot be undone.
+              </p>
+              
+              <div className="flex flex-col w-full gap-3">
+                <button
+                  onClick={handleDeleteBusiness}
+                  disabled={isDeleting}
+                  className="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white text-[14px] font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Yes, delete business"
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                  className="w-full py-2.5 bg-transparent border border-kite-border text-kite-text text-[14px] font-medium rounded hover:bg-gray-50 dark:hover:bg-kite-border-soft transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {currentView === "trigger" && (
+        <div className="bg-white dark:bg-kite-surface flex-1 p-4 md:p-6 space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text mb-4">Investment Mode</h3>
+            <div className="flex bg-gray-100 dark:bg-kite-bg p-1 rounded-md">
+              <button 
+                onClick={() => setTriggerConfig({ ...triggerConfig, type: 'manual' })}
+                className={`flex-1 py-1.5 text-[13px] font-medium rounded transition-colors ${triggerConfig.type === 'manual' ? 'bg-white dark:bg-kite-surface text-kite-blue shadow-sm' : 'text-kite-text-light hover:text-kite-text'}`}
+              >
+                Manual Price
+              </button>
+              <button 
+                onClick={() => setTriggerConfig({ ...triggerConfig, type: 'trigger' })}
+                className={`flex-1 py-1.5 text-[13px] font-medium rounded transition-colors ${triggerConfig.type === 'trigger' ? 'bg-white dark:bg-kite-surface text-kite-blue shadow-sm' : 'text-kite-text-light hover:text-kite-text'}`}
+              >
+                Trigger Price
+              </button>
+            </div>
+            
+            {triggerConfig.type === 'trigger' && (
+              <div className="mt-6 pt-4 border-t border-kite-border-soft animate-fade-in space-y-6">
+                <div>
+                  <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Trigger Amount (₹)</label>
+                  <input
+                    type="text"
+                    className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+                    value={triggerConfig.amount}
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/\D/g, "");
+                      if (!rawValue) {
+                        setTriggerConfig({ ...triggerConfig, amount: "" });
+                        return;
+                      }
+                      const numberValue = parseInt(rawValue, 10);
+                      const formattedValue = new Intl.NumberFormat('en-IN').format(numberValue);
+                      setTriggerConfig({ ...triggerConfig, amount: formattedValue });
+                    }}
+                    placeholder="e.g. 10,000"
+                  />
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Min Quantity</label>
+                    <input
+                      type="number"
+                      className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+                      value={triggerConfig.minQuantity}
+                      onChange={(e) => setTriggerConfig({ ...triggerConfig, minQuantity: e.target.value.replace(/\D/g, "") })}
+                      placeholder="e.g. 1"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Max Quantity</label>
+                    <input
+                      type="number"
+                      className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+                      value={triggerConfig.maxQuantity}
+                      onChange={(e) => setTriggerConfig({ ...triggerConfig, maxQuantity: e.target.value.replace(/\D/g, "") })}
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <button 
+            onClick={handleSaveTrigger} 
+            className={`w-full py-3 rounded text-[14px] md:text-[15px] font-normal mt-4 transition-all duration-300 flex items-center justify-center ${showSuccess ? 'bg-kite-blue text-white' : 'bg-[#4CAF50] text-white'}`}
+          >
+            {showSuccess ? (
+              <span className="flex items-center space-x-2 animate-fade-in">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Trigger Settings Saved</span>
+              </span>
+            ) : (
+              "Save Settings"
+            )}
+          </button>
+
+          <div className="pt-6 mt-6 border-t border-kite-border-soft">
+            <button 
+              onClick={() => setCurrentView("trigger-history")}
+              className="w-full py-3 bg-white dark:bg-transparent border border-kite-border-hard text-kite-text hover:bg-gray-50 dark:hover:bg-kite-border-soft transition-colors rounded text-[14px] md:text-[15px] font-normal flex items-center justify-between px-4"
+            >
+              <span>View Trigger Set History</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {currentView === "trigger-history" && (
+        <div className="bg-[#F8F9FA] dark:bg-kite-bg flex-1 p-0 overflow-y-auto">
+          {business.triggerHistory && business.triggerHistory.length > 0 ? (
+            <div className="divide-y divide-kite-border-soft bg-white dark:bg-kite-surface">
+              {business.triggerHistory.slice().reverse().map((history) => {
+                // Find investments that match this trigger amount
+                const matchingInvestments = state.investments.filter(inv => 
+                  inv.businessId === business.id && 
+                  inv.amount === history.amount
+                );
+                
+                return (
+                  <div key={history.id} className="p-4 flex flex-col gap-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[12px] text-kite-text-light">{new Date(history.timestamp).toLocaleString('en-IN')}</span>
+                        <div className="text-[15px] font-medium text-kite-text mt-0.5 flex items-center gap-1.5">
+                          Trigger Set: <span className="text-kite-blue">{formatINR(history.amount)}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[12px] text-kite-text-light uppercase block">Investors</span>
+                        <span className="text-[14px] font-medium text-kite-text">{matchingInvestments.length}</span>
+                      </div>
+                    </div>
+                    {matchingInvestments.length > 0 && (
+                      <div className="mt-2 text-[13px] text-kite-text-light font-mono bg-[#F8F9FA] dark:bg-kite-bg p-2 rounded truncate border border-kite-border-soft">
+                        {matchingInvestments.map(inv => {
+                          const investor = state.investors.find(i => i.id === inv.investorId);
+                          return `${investor?.name || 'Unknown'}: ₹${inv.amount}`;
+                        }).join(' | ')}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-kite-text-light text-[14px]">
+              No trigger history found.
+            </div>
+          )}
         </div>
       )}
 

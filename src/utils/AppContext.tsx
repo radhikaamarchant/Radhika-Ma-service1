@@ -289,15 +289,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
     } finally {
-      if (updatedState) {
-        lastLocalUpdate = Date.now();
-        clearTimeout(syncTimeout);
-        syncTimeout = setTimeout(() => {
-          syncToSheets(updatedState!).catch((e) => console.warn("Sheets sync failed", e));
-        }, 3000);
-      }
+      // We set lastLocalUpdate here to trigger the syncToSheets useEffect
+      lastLocalUpdate = Date.now();
     }
   };
+
+  // Sync to sheets when state changes locally
+  useEffect(() => {
+    // Check if the change was recently triggered by a local dispatch
+    if (Date.now() - lastLocalUpdate < 2000 && !state.loading) {
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => {
+        syncToSheets(state).catch((e) => console.warn("Sheets sync failed", e));
+      }, 3000);
+    }
+  }, [state]);
 
   useEffect(() => {
     const handleGoogleAuthSuccess = async (e: any) => {

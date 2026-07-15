@@ -40,6 +40,8 @@ export default function Businesses() {
   const [ownerMode, setOwnerMode] = useState("existing");
   const [showBankSelect, setShowBankSelect] = useState(false);
   const [bankSearch, setBankSearch] = useState("");
+  const [showInvestorSelect, setShowInvestorSelect] = useState(false);
+  const [investorSearch, setInvestorSearch] = useState("");
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showVerifySuccess, setShowVerifySuccess] = useState(false);
@@ -131,6 +133,24 @@ export default function Businesses() {
   );
 
   const startAddBusiness = () => {
+    setFormData({
+      name: "",
+      shortName: "",
+      ownerName: "",
+      fundingRequired: "",
+      interestRate: "",
+      businessId: generateBusinessId(),
+      description: "",
+      location: "",
+      authorityType: "Business Authorities",
+      rmasSubsidy: "",
+      bankName: "",
+      accountNumber: "",
+      ifscCode: "",
+      accountHolderName: "",
+      registrationFee: ""
+    });
+    setOwnerMode("existing");
     setViewMode("add-step-1");
   };
 
@@ -175,8 +195,22 @@ export default function Businesses() {
     }, 1500);
   };
 
-  const handleExistingOwnerChange = (val) => {};
-  const generateBusinessId = () => "BIZ" + Math.floor(Math.random() * 1000);
+  const handleExistingOwnerChange = (val: any) => {
+    const bizId = val.target.value;
+    const existingBiz = state.businesses.find(b => b.businessId === bizId);
+    if (existingBiz) {
+      setFormData(prev => ({
+        ...prev,
+        businessId: existingBiz.businessId,
+        ownerName: existingBiz.ownerName,
+        bankName: existingBiz.bankDetails?.bankName || "",
+        accountNumber: existingBiz.bankDetails?.accountNumber || "",
+        ifscCode: existingBiz.bankDetails?.ifscCode || "",
+        accountHolderName: existingBiz.bankDetails?.accountHolderName || existingBiz.ownerName,
+      }));
+    }
+  };
+  const generateBusinessId = () => Math.floor(100000 + Math.random() * 900000).toString();
 
   return (
     <div className="w-full space-y-6 print:m-0 print:p-0">
@@ -453,26 +487,26 @@ export default function Businesses() {
               </button>
               <button
                 type="button"
-                onClick={() => setOwnerMode("existing")}
+                onClick={() => {
+                  setOwnerMode("existing");
+                  setFormData(prev => ({
+                    ...prev,
+                    businessId: "",
+                    ownerName: "",
+                    bankName: "",
+                    accountNumber: "",
+                    ifscCode: "",
+                    accountHolderName: "",
+                  }));
+                }}
                 className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105"}`}
               >
                 Already Registered Owner
               </button>
             </div>{" "}
             <form onSubmit={handleNextStep} className="space-y-6">
-              {" "}
-              <AnimatePresence mode="wait">
-                {" "}
-                <motion.div
-                  key={ownerMode}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="space-y-6"
-                >
-                  {" "}
-                  <div className="grid grid-cols-1 gap-2 md:gap-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-2 md:gap-4">
                     {" "}
                     {ownerMode === "existing" && (
                       <div className="relative z-20">
@@ -579,8 +613,7 @@ export default function Businesses() {
                     <div>
                       {" "}
                       <label className="block text-[11px] md:text-[12px] font-medium mb-1 text-kite-text dark:text-kite-text uppercase tracking-wider">
-                        Owner ID Number{" "}
-                        {ownerMode === "new" ? "(Auto-Generated)" : "(Linked)"}
+                        OWNER ID NUMBER
                       </label>{" "}
                       <input
                         type="text"
@@ -625,11 +658,23 @@ export default function Businesses() {
                       />{" "}
                     </div>{" "}
                     {ownerMode === "new" && (
-                      <div>
+                      <div className="relative z-10">
                         {" "}
-                        <label className="block text-[11px] md:text-[12px] font-medium mb-1 text-kite-text dark:text-kite-text uppercase tracking-wider">
-                          Owner Name
-                        </label>{" "}
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="block text-[11px] md:text-[12px] font-medium text-kite-text dark:text-kite-text uppercase tracking-wider">
+                            Owner Name
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowInvestorSelect(!showInvestorSelect);
+                              setInvestorSearch("");
+                            }}
+                            className="text-[11px] md:text-[12px] font-medium text-kite-blue hover:underline focus:outline-none"
+                          >
+                            investor register
+                          </button>
+                        </div>
                         <input
                           required
                           type="text"
@@ -643,6 +688,77 @@ export default function Businesses() {
                           }
                           placeholder="e.g. John Doe"
                         />{" "}
+                        {showInvestorSelect && (
+                          <div className="absolute z-20 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
+                            <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg">
+                              <div className="relative">
+                                <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  placeholder="Search investor..."
+                                  className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                                  value={investorSearch}
+                                  onChange={(e) => setInvestorSearch(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="overflow-y-auto flex-1">
+                              {state.investors
+                                .filter((inv) => inv.name.toLowerCase().includes(investorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(investorSearch.toLowerCase()))
+                                .sort((a, b) => {
+                                  const idA = parseInt(a.investorId?.replace(/\D/g, "") || "0");
+                                  const idB = parseInt(b.investorId?.replace(/\D/g, "") || "0");
+                                  return idB - idA;
+                                })
+                                .map((inv) => (
+                                  <div
+                                    key={inv.id}
+                                    className="px-4 py-3 hover:bg-kite-bg dark:hover:bg-kite-border-soft cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
+                                    onClick={() => {
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        ownerName: inv.name,
+                                        bankName: inv.bankDetails?.bankName || "",
+                                        accountNumber: inv.bankDetails?.accountNumber || "",
+                                        ifscCode: inv.bankDetails?.ifscCode || "",
+                                        accountHolderName: inv.bankDetails?.accountHolderName || inv.name,
+                                      }));
+                                      setShowInvestorSelect(false);
+                                    }}
+                                  >
+                                    <div className="w-8 h-8 rounded-full bg-[#E8F0FE] dark:bg-kite-blue/10 text-kite-blue dark:text-kite-blue flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                      {inv.photoUrl ? (
+                                        <img src={inv.photoUrl} alt={inv.name} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span className="text-[11px] font-normal">
+                                          {(() => {
+                                            const n = (inv.name) || "";
+                                            const parts = n.trim().split(" ");
+                                            if (parts.length > 1 && parts[1].length > 0) {
+                                              return (parts[0][0] + parts[1][0]).toUpperCase();
+                                            }
+                                            return n.substring(0, 2).toUpperCase();
+                                          })()}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="font-normal text-kite-text dark:text-kite-text text-[13px] md:text-[14px] uppercase">{inv.name}</span>
+                                      <span className="text-[11px] md:text-[12px] text-kite-text dark:text-kite-text-light font-mono mt-0.5">
+                                        ID: #{inv.investorId}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              {state.investors.filter((inv) => inv.name.toLowerCase().includes(investorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(investorSearch.toLowerCase())).length === 0 && (
+                                <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
+                                  No investor found.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}{" "}
                     <div>
@@ -829,8 +945,7 @@ export default function Businesses() {
                         </div>
                       )}{" "}
                   </div>{" "}
-                </motion.div>{" "}
-              </AnimatePresence>{" "}
+              </div>{" "}
               <div className="flex justify-between items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border">
                 {" "}
                 <button
