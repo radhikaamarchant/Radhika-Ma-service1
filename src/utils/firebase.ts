@@ -28,7 +28,23 @@ provider.addScope('https://www.googleapis.com/auth/drive.file');
 
 let isSigningIn = false;
 let signInPromise: Promise<{ user: User; accessToken: string } | null> | null = null;
-export let cachedAccessToken: string | null = null;
+export let cachedAccessToken: string | null = localStorage.getItem('googleAccessToken');
+
+const checkTokenExpiry = () => {
+  const expiry = localStorage.getItem('googleAccessTokenExpiry');
+  if (expiry && Date.now() > parseInt(expiry, 10)) {
+    cachedAccessToken = null;
+    localStorage.removeItem('googleAccessToken');
+    localStorage.removeItem('googleAccessTokenExpiry');
+  }
+};
+checkTokenExpiry();
+
+const setCachedToken = (token: string) => {
+  cachedAccessToken = token;
+  localStorage.setItem('googleAccessToken', token);
+  localStorage.setItem('googleAccessTokenExpiry', (Date.now() + 3500 * 1000).toString());
+};
 
 export const googleSignIn = async (pendingAction?: 'sync' | 'restore'): Promise<{ user: User; accessToken: string } | null> => {
   if (signInPromise) {
@@ -63,17 +79,17 @@ export const googleSignIn = async (pendingAction?: 'sync' | 'restore'): Promise<
       if (!credential?.accessToken) {
         throw new Error('Failed to get access token from Firebase Auth');
       }
-      cachedAccessToken = credential.accessToken;
+      setCachedToken(credential.accessToken);
       
       if (pendingAction) {
         window.dispatchEvent(new CustomEvent('googleAuthSuccess', { detail: { action: pendingAction } }));
       }
       
-      return { user: result.user, accessToken: cachedAccessToken };
+      return { user: result.user, accessToken: cachedAccessToken as string };
     } catch (error: any) {
       console.error('Sign in error:', error);
       if (error.code === 'auth/popup-blocked') {
-        alert("Google Sign-In popup was blocked by your browser. Please allow popups for this site, or open the app in a new tab.");
+        alert("Google Sign-In popup was blocked. Please click the 'Open in New Tab' icon (↗️) in the top right corner of AI Studio, or allow popups for this site.");
       } else if (error.code === 'auth/unauthorized-domain') {
         alert(`Error: This domain (${window.location.hostname}) is not authorized. Please add it in Firebase Console -> Authentication -> Settings -> Authorized Domains.`);
       } else if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
@@ -97,7 +113,7 @@ export const initAuth = (
     if (result) {
       const credential = GoogleAuthProvider.credentialFromResult(result);
       if (credential?.accessToken) {
-        cachedAccessToken = credential.accessToken;
+        setCachedToken(credential.accessToken);
       }
       const pendingAction = localStorage.getItem('pendingGoogleAction');
       if (pendingAction) {
@@ -112,6 +128,7 @@ export const initAuth = (
   });
 
   return onAuthStateChanged(auth, async (user: User | null) => {
+    checkTokenExpiry();
     if (user) {
       // Check if it's an anonymous user
       if (user.isAnonymous) {
@@ -132,10 +149,13 @@ export const initAuth = (
 };
 
 export const getAccessToken = async (): Promise<string | null> => {
+  checkTokenExpiry();
   return cachedAccessToken;
 };
 
 export const logout = async () => {
   await auth.signOut();
   cachedAccessToken = null;
+  localStorage.removeItem('googleAccessToken');
+  localStorage.removeItem('googleAccessTokenExpiry');
 };

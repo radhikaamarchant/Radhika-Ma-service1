@@ -109,6 +109,7 @@ export const fetchFromSheets = async (): Promise<Partial<AppState> | null> => {
 
   try {
     const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${id}/values/Sheet1!A2:C`, {
+      cache: 'no-store',
       headers: {
         Authorization: `Bearer ${token}`,
       }
