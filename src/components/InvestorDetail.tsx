@@ -5,7 +5,7 @@ import BioMentionEditor from './BioMentionEditor';
 import BioRenderer from './BioRenderer';
 import InvestorPreviewModal from './InvestorPreviewModal';
 import BusinessPreviewModal from './BusinessPreviewModal';
-import { Investor, Investment } from "../types";
+import { Investor, Investment, Business } from "../types";
 import { formatINR } from "../utils/mockData";
 import { LivePortfolioDetail } from "./LivePortfolioDetail";
 import {

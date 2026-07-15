@@ -11,6 +11,23 @@ export const getOrCreateSpreadsheet = async (): Promise<string | null> => {
   if (id) return id;
 
   try {
+    const query = encodeURIComponent("name='Firebase Fallback Data Backup' and trashed=false");
+    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const searchData = await searchRes.json();
+    if (searchData.files && searchData.files.length > 0) {
+      id = searchData.files[0].id;
+      localStorage.setItem(SPREADSHEET_ID_KEY, id);
+      return id;
+    }
+  } catch (e) {
+    console.warn("Error searching Drive for existing backup:", e);
+  }
+
+  try {
     const res = await fetch("https://sheets.googleapis.com/v4/spreadsheets", {
       method: "POST",
       headers: {
@@ -41,10 +58,10 @@ export const getOrCreateSpreadsheet = async (): Promise<string | null> => {
 
 export const syncToSheets = async (state: AppState) => {
   const token = await getAccessToken();
-  if (!token) return; // User not signed in with Google
+  if (!token) throw new Error("No access token");
 
   const id = await getOrCreateSpreadsheet();
-  if (!id) return;
+  if (!id) throw new Error("Failed to get or create spreadsheet");
 
   const allData = [
     ["collection", "id", "data"],
@@ -77,18 +94,18 @@ export const syncToSheets = async (state: AppState) => {
     });
   } catch (e) {
     console.error("Failed to sync to sheets", e);
+    throw e;
   }
 };
 
 export const fetchFromSheets = async (): Promise<Partial<AppState> | null> => {
   const token = await getAccessToken();
   if (!token) {
-    console.warn("Cannot fetch from sheets, no access token");
-    return null;
+    throw new Error("Cannot fetch from sheets, no access token");
   }
 
   const id = await getOrCreateSpreadsheet();
-  if (!id) return null;
+  if (!id) throw new Error("Failed to get or create spreadsheet");
 
   try {
     const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${id}/values/Sheet1!A2:C`, {
@@ -97,8 +114,7 @@ export const fetchFromSheets = async (): Promise<Partial<AppState> | null> => {
       }
     });
     if (!res.ok) {
-      console.error("Failed to read from sheets", await res.text());
-      return null;
+      throw new Error(`Failed to read from sheets: ${await res.text()}`);
     }
     const result = await res.json();
     const rows = result.values || [];
@@ -125,6 +141,6 @@ export const fetchFromSheets = async (): Promise<Partial<AppState> | null> => {
     return { businesses, investors, investments, users, settings };
   } catch (e) {
     console.error("Failed to fetch from sheets", e);
-    return null;
+    throw e;
   }
 };

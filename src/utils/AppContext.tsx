@@ -3,7 +3,8 @@ import { motion } from "motion/react";
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
-import { MOCK_BUSINESSES, MOCK_INVESTORS, MOCK_INVESTMENTS } from "./mockData";
+
+import { syncToSheets, fetchFromSheets } from "./googleSheets";
 
 export interface AppState {
   businesses: Business[];
@@ -29,7 +30,8 @@ type Action =
   | { type: "DELETE_INVESTMENT"; payload: string }
   | { type: "UPDATE_SETTINGS"; payload: GlobalSettings }
   | { type: "SET_CURRENT_USER"; payload: AppUser | null }
-  | { type: "CLEAR_ERROR" };
+  | { type: "CLEAR_ERROR" }
+  | { type: "RESTORE_STATE"; payload: Partial<AppState> };
 
 const AppContext = createContext<
   | {
@@ -38,6 +40,8 @@ const AppContext = createContext<
     }
   | undefined
 >(undefined);
+
+let syncTimeout: any;
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>({
@@ -74,15 +78,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const handleQuotaError = (error: any) => {
+    const handleQuotaError = async (error: any) => {
       console.warn("Firestore error:", error.message);
+      const sheetData = await fetchFromSheets();
       setState((s) => ({
         ...s,
-        businesses: s.businesses.length ? s.businesses : MOCK_BUSINESSES,
-        investors: s.investors.length ? s.investors : MOCK_INVESTORS,
-        investments: s.investments.length ? s.investments : MOCK_INVESTMENTS,
+        businesses: sheetData?.businesses?.length ? sheetData.businesses : s.businesses,
+        investors: sheetData?.investors?.length ? sheetData.investors : s.investors,
+        investments: sheetData?.investments?.length ? sheetData.investments : s.investments,
+        users: sheetData?.users?.length ? sheetData.users : s.users,
+        settings: sheetData?.settings ? sheetData.settings : s.settings,
         loading: false,
-        error: "Firestore quota exceeded. Switched to offline mock data mode.",
+        error: "Database daily limit reached! Wait until tomorrow for your real data to load, then use 'Google Account Sync' in Admin to back it up.",
       }));
     };
 
@@ -189,6 +196,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         case "CLEAR_ERROR":
           newState.error = undefined;
           break;
+        case "RESTORE_STATE":
+          if (action.payload.businesses) newState.businesses = action.payload.businesses;
+          if (action.payload.investors) newState.investors = action.payload.investors;
+          if (action.payload.investments) newState.investments = action.payload.investments;
+          if (action.payload.users) newState.users = action.payload.users;
+          if (action.payload.settings) newState.settings = action.payload.settings;
+          break;
       }
       updatedState = newState;
       return newState;
@@ -264,8 +278,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
+    } finally {
+      if (updatedState) {
+        clearTimeout(syncTimeout);
+        syncTimeout = setTimeout(() => {
+          syncToSheets(updatedState!).catch((e) => console.error("Sheets sync failed", e));
+        }, 3000);
+      }
     }
   };
+
+  useEffect(() => {
+    const handleGoogleAuthSuccess = async (e: any) => {
+      const action = e.detail?.action;
+      if (action === 'sync') {
+        try {
+          await syncToSheets(state);
+          alert("Successfully synced data to Google Account (Google Sheets backup).");
+        } catch (err: any) {
+          alert(`Failed to sync to Google Account: ${err.message || String(err)}`);
+        }
+      } else if (action === 'restore') {
+        try {
+          const sheetData = await fetchFromSheets();
+          if (sheetData) {
+            dispatch({ type: "RESTORE_STATE", payload: sheetData });
+            alert("Successfully restored data from Google Account.");
+          } else {
+            alert("No backup data found in Google Account.");
+          }
+        } catch (err: any) {
+          alert(`Failed to restore from Google Account: ${err.message || String(err)}`);
+        }
+      }
+    };
+    window.addEventListener('googleAuthSuccess', handleGoogleAuthSuccess);
+    return () => window.removeEventListener('googleAuthSuccess', handleGoogleAuthSuccess);
+  }, [state, dispatch]);
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
