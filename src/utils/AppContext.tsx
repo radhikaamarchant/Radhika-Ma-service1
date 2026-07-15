@@ -3,13 +3,8 @@ import { motion } from "motion/react";
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db, auth, googleSignIn, cachedAccessToken } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
-import { syncToSheets, fetchFromSheets } from "./googleSheets";
-import { io } from "socket.io-client";
 
-// Initialize socket connection
-const socket = io(window.location.origin, {
-  path: "/socket.io", transports: ["websocket"]
-});
+import { syncToSheets, fetchFromSheets } from "./googleSheets";
 
 export interface AppState {
   businesses: Business[];
@@ -22,7 +17,7 @@ export interface AppState {
   currentUser: AppUser | null;
 }
 
-export type Action = (
+type Action =
   | { type: "ADD_BUSINESS"; payload: Business }
   | { type: "UPDATE_BUSINESS_STATUS"; payload: { id: string; status: Business["status"] } }
   | { type: "UPDATE_BUSINESS"; payload: Business }
@@ -36,8 +31,7 @@ export type Action = (
   | { type: "UPDATE_SETTINGS"; payload: GlobalSettings }
   | { type: "SET_CURRENT_USER"; payload: AppUser | null }
   | { type: "CLEAR_ERROR" }
-  | { type: "RESTORE_STATE"; payload: Partial<AppState> }
-) & { fromSocket?: boolean };
+  | { type: "RESTORE_STATE"; payload: Partial<AppState> };
 
 const AppContext = createContext<
   | {
@@ -49,7 +43,6 @@ const AppContext = createContext<
 
 let syncTimeout: any;
 let lastLocalUpdate = 0;
-let lastSocketUpdate = 0;
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>({
@@ -84,41 +77,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     return newList;
   };
-
-  useEffect(() => {
-    const handleSocketAction = (action: Action) => {
-      // Apply the action received from the socket
-      dispatch({ ...action, fromSocket: true });
-    };
-
-    const handleSyncState = (serverState: any) => {
-      setState(s => ({
-        ...s,
-        ...serverState,
-        loading: false,
-        error: undefined
-      }));
-    };
-
-    const handleRequestState = () => {
-      setState(s => {
-        if (!s.loading && s.businesses.length > 0) {
-          socket.emit("provide_full_state", s);
-        }
-        return s;
-      });
-    };
-
-    socket.on("receive_action", handleSocketAction);
-    socket.on("sync_full_state", handleSyncState);
-    socket.on("request_full_state", handleRequestState);
-    
-    return () => {
-      socket.off("receive_action", handleSocketAction);
-      socket.off("sync_full_state", handleSyncState);
-      socket.off("request_full_state", handleRequestState);
-    };
-  }, []);
 
   useEffect(() => {
     const handleQuotaError = async (error: any) => {
@@ -195,17 +153,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const dispatch = async (action: Action) => {
     let updatedState: AppState | null = null;
     
-    // Broadcast action to other clients if it's not from socket
-    if (!action.fromSocket && socket.connected) {
-      socket.emit("dispatch_action", action);
-    }
-
-    if (!action.fromSocket) {
-      lastLocalUpdate = Date.now();
-    } else {
-      lastSocketUpdate = Date.now();
-    }
-    
     // Optimistic Update so the app doesn't freeze/stop if Firebase is down
     setState((prevState) => {
       let newState = { ...prevState };
@@ -272,10 +219,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
 
     try {
-      if (action.fromSocket) {
-        return; // Skip Firebase update if this is a mirrored action from another client
-      }
-
       const cleanObj = (obj: any): any => {
         if (obj === null || typeof obj !== "object") {
           if (typeof obj === "number" && Number.isNaN(obj)) return 0;
@@ -346,7 +289,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
     } finally {
-      // Handled at top of dispatch
+      // We set lastLocalUpdate here to trigger the syncToSheets useEffect
+      lastLocalUpdate = Date.now();
     }
   };
 
@@ -354,9 +298,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check if the change was recently triggered by a local dispatch
     if (Date.now() - lastLocalUpdate < 2000 && !state.loading) {
-      if (socket.connected) {
-         socket.emit("provide_full_state", state);
-      }
       clearTimeout(syncTimeout);
       syncTimeout = setTimeout(() => {
         syncToSheets(state).catch((e) => console.warn("Sheets sync failed", e));
@@ -398,12 +339,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     const checkAndFetch = async () => {
       // Skip if we recently dispatched a local update (wait 15s to allow sync to settle)
-      if (Date.now() - lastLocalUpdate < 15000 || Date.now() - lastSocketUpdate < 15000) return;
+      if (Date.now() - lastLocalUpdate < 15000) return;
       
       try {
         const sheetData = await fetchFromSheets();
-        // Ensure no local or socket updates happened while we were fetching
-        if (sheetData && Date.now() - lastLocalUpdate >= 15000 && Date.now() - lastSocketUpdate >= 15000) {
+        // Ensure no local updates happened while we were fetching
+        if (sheetData && Date.now() - lastLocalUpdate >= 15000) {
           setState((s) => {
             const newBusinesses = sheetData.businesses?.length ? sheetData.businesses : s.businesses;
             const newInvestors = sheetData.investors?.length ? sheetData.investors : s.investors;
@@ -451,7 +392,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const unsubAuth = auth.onAuthStateChanged((user) => {
       checkAndFetch();
-      if (pollingInterval) clearInterval(pollingInterval);
       pollingInterval = setInterval(checkAndFetch, 5000);
     });
 

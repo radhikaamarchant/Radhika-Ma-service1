@@ -31,8 +31,6 @@
     "react-easy-crop": "^6.0.2",
     "react-image-crop": "^11.1.2",
     "recharts": "^3.8.1",
-    "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3",
     "vite": "^6.2.3"
   },
   "devDependencies": {
