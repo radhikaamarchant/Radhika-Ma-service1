@@ -76,8 +76,8 @@ export default function BusinessDetail({
   const [triggerConfig, setTriggerConfig] = useState({
     type: business?.investmentType || 'manual',
     amount: business?.triggerAmount ? new Intl.NumberFormat('en-IN').format(business.triggerAmount) : "",
-    minQuantity: business?.triggerMinQuantity ? business.triggerMinQuantity.toString() : "",
-    maxQuantity: business?.triggerMaxQuantity ? business.triggerMaxQuantity.toString() : "",
+    minQuantity: business?.triggerMinQuantity ? new Intl.NumberFormat('en-IN').format(business.triggerMinQuantity) : "",
+    maxQuantity: business?.triggerMaxQuantity ? new Intl.NumberFormat('en-IN').format(business.triggerMaxQuantity) : "",
   });
 
   useEffect(() => {
@@ -197,8 +197,8 @@ export default function BusinessDetail({
 
   const handleSaveTrigger = () => {
     const amount = parseFloat(triggerConfig.amount.toString().replace(/,/g, '')) || 0;
-    const minQty = parseInt(triggerConfig.minQuantity) || 0;
-    const maxQty = parseInt(triggerConfig.maxQuantity) || 0;
+    const minQty = parseInt(triggerConfig.minQuantity.toString().replace(/,/g, '')) || 0;
+    const maxQty = parseInt(triggerConfig.maxQuantity.toString().replace(/,/g, '')) || 0;
     
     // Add to history if it's trigger type and a valid amount
     const newHistory = [...(business.triggerHistory || [])];
@@ -790,20 +790,38 @@ export default function BusinessDetail({
                   <div className="flex-1">
                     <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Min Quantity</label>
                     <input
-                      type="number"
+                      type="text"
                       className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                       value={triggerConfig.minQuantity}
-                      onChange={(e) => setTriggerConfig({ ...triggerConfig, minQuantity: e.target.value.replace(/\D/g, "") })}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, "");
+                        if (!rawValue) {
+                          setTriggerConfig({ ...triggerConfig, minQuantity: "" });
+                          return;
+                        }
+                        const numberValue = parseInt(rawValue, 10);
+                        const formattedValue = new Intl.NumberFormat('en-IN').format(numberValue);
+                        setTriggerConfig({ ...triggerConfig, minQuantity: formattedValue });
+                      }}
                       placeholder="e.g. 1"
                     />
                   </div>
                   <div className="flex-1">
                     <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Max Quantity</label>
                     <input
-                      type="number"
+                      type="text"
                       className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
                       value={triggerConfig.maxQuantity}
-                      onChange={(e) => setTriggerConfig({ ...triggerConfig, maxQuantity: e.target.value.replace(/\D/g, "") })}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, "");
+                        if (!rawValue) {
+                          setTriggerConfig({ ...triggerConfig, maxQuantity: "" });
+                          return;
+                        }
+                        const numberValue = parseInt(rawValue, 10);
+                        const formattedValue = new Intl.NumberFormat('en-IN').format(numberValue);
+                        setTriggerConfig({ ...triggerConfig, maxQuantity: formattedValue });
+                      }}
                       placeholder="e.g. 10"
                     />
                   </div>
