@@ -74,7 +74,7 @@ export default function AddInvestmentModal({
       setExpectedRoi(liveRoi !== undefined ? liveRoi.toFixed(2) : "12");
       setOrderMode("BUY");
     }
-  }, [isOpen, initialBusinessId, initialInvestorId, state.businesses, marketState.trends]);
+  }, [isOpen, initialBusinessId, initialInvestorId]);
 
   const selectedBusiness = state.businesses.find(
     (b) => b.id === formData.businessId,
