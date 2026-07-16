@@ -805,6 +805,13 @@ export default function BusinessDetail({
                       }}
                       placeholder="e.g. 1"
                     />
+                    {triggerConfig.amount && triggerConfig.minQuantity && (
+                      <div className="mt-1 text-[11px] text-kite-text-light">
+                        ₹{new Intl.NumberFormat('en-IN').format(
+                          (parseInt(triggerConfig.amount.toString().replace(/,/g, '')) || 0) * (parseInt(triggerConfig.minQuantity.toString().replace(/,/g, '')) || 0)
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1">
                     <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Max Quantity</label>
@@ -824,6 +831,13 @@ export default function BusinessDetail({
                       }}
                       placeholder="e.g. 10"
                     />
+                    {triggerConfig.amount && triggerConfig.maxQuantity && (
+                      <div className="mt-1 text-[11px] text-kite-text-light">
+                        ₹{new Intl.NumberFormat('en-IN').format(
+                          (parseInt(triggerConfig.amount.toString().replace(/,/g, '')) || 0) * (parseInt(triggerConfig.maxQuantity.toString().replace(/,/g, '')) || 0)
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
