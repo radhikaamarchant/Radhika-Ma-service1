@@ -50,7 +50,8 @@ export default function ImageCropModal({ imageUrl, onClose, onCrop }: Props) {
     const scaleY = image.naturalHeight / image.height;
     
     // We want a square output since it's a profile picture
-    const size = Math.max(completedCrop.width * scaleX, completedCrop.height * scaleY);
+    const originalSize = Math.max(completedCrop.width * scaleX, completedCrop.height * scaleY);
+    const size = Math.min(originalSize, 800); // limit to 800px to prevent huge base64 strings
     
     canvas.width = size;
     canvas.height = size;
@@ -80,7 +81,7 @@ export default function ImageCropModal({ imageUrl, onClose, onCrop }: Props) {
       size,
     );
     
-    const base64Image = canvas.toDataURL("image/jpeg", 0.9);
+    const base64Image = canvas.toDataURL("image/jpeg", 0.7);
     onCrop(base64Image);
   };
 

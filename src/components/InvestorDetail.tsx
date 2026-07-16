@@ -144,11 +144,9 @@ export default function InvestorDetail({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        setCropImageUrl(reader.result?.toString() || null);
-      });
-      reader.readAsDataURL(e.target.files[0]);
+      const file = e.target.files[0];
+      const objUrl = URL.createObjectURL(file);
+      setCropImageUrl(objUrl);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
