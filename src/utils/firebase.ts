@@ -23,30 +23,12 @@ export const db = initializeFirestore(
 export const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
-provider.addScope('https://www.googleapis.com/auth/spreadsheets');
-provider.addScope('https://www.googleapis.com/auth/drive.file');
+// Removed spreadsheet scopes
 
 let isSigningIn = false;
-let signInPromise: Promise<{ user: User; accessToken: string } | null> | null = null;
-export let cachedAccessToken: string | null = localStorage.getItem('googleAccessToken');
+let signInPromise: Promise<{ user: User } | null> | null = null;
 
-const checkTokenExpiry = () => {
-  const expiry = localStorage.getItem('googleAccessTokenExpiry');
-  if (expiry && Date.now() > parseInt(expiry, 10)) {
-    cachedAccessToken = null;
-    localStorage.removeItem('googleAccessToken');
-    localStorage.removeItem('googleAccessTokenExpiry');
-  }
-};
-checkTokenExpiry();
-
-const setCachedToken = (token: string) => {
-  cachedAccessToken = token;
-  localStorage.setItem('googleAccessToken', token);
-  localStorage.setItem('googleAccessTokenExpiry', (Date.now() + 3500 * 1000).toString());
-};
-
-export const googleSignIn = async (pendingAction?: 'sync' | 'restore'): Promise<{ user: User; accessToken: string } | null> => {
+export const googleSignIn = async (): Promise<{ user: User } | null> => {
   if (signInPromise) {
     return signInPromise;
   }
@@ -67,25 +49,12 @@ export const googleSignIn = async (pendingAction?: 'sync' | 'restore'): Promise<
           result = await signInWithPopup(auth, provider);
         } catch (err: any) {
           console.warn("Popup blocked or failed, falling back to redirect", err);
-          if (pendingAction) {
-            localStorage.setItem('pendingGoogleAction', pendingAction);
-          }
           await signInWithRedirect(auth, provider);
           return null;
         }
       }
-
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (!credential?.accessToken) {
-        throw new Error('Failed to get access token from Firebase Auth');
-      }
-      setCachedToken(credential.accessToken);
       
-      if (pendingAction) {
-        window.dispatchEvent(new CustomEvent('googleAuthSuccess', { detail: { action: pendingAction } }));
-      }
-      
-      return { user: result.user, accessToken: cachedAccessToken as string };
+      return { user: result.user };
     } catch (error: any) {
       console.error('Sign in error:', error);
       if (error.code === 'auth/popup-blocked') {
@@ -111,51 +80,30 @@ export const initAuth = (
   // Check for redirect result in case signInWithRedirect was used
   getRedirectResult(auth).then((result) => {
     if (result) {
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (credential?.accessToken) {
-        setCachedToken(credential.accessToken);
-      }
-      const pendingAction = localStorage.getItem('pendingGoogleAction');
-      if (pendingAction) {
-        localStorage.removeItem('pendingGoogleAction');
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('googleAuthSuccess', { detail: { action: pendingAction } }));
-        }, 1000);
-      }
+      // nothing needed here
     }
   }).catch((err) => {
     console.error("Redirect error", err);
   });
 
   return onAuthStateChanged(auth, async (user: User | null) => {
-    checkTokenExpiry();
     if (user) {
-      // Check if it's an anonymous user
-      if (user.isAnonymous) {
-         if (onAuthSuccess) onAuthSuccess(user);
-      } else {
-         if (onAuthSuccess) onAuthSuccess(user);
-      }
+       if (onAuthSuccess) onAuthSuccess(user);
     } else {
       try {
         if (!isSigningIn) {
+          isSigningIn = true;
           await signInAnonymously(auth);
+          isSigningIn = false;
         }
       } catch (error) {
         console.error("Auth error", error);
+        isSigningIn = false;
       }
     }
   });
 };
 
-export const getAccessToken = async (): Promise<string | null> => {
-  checkTokenExpiry();
-  return cachedAccessToken;
-};
-
 export const logout = async () => {
   await auth.signOut();
-  cachedAccessToken = null;
-  localStorage.removeItem('googleAccessToken');
-  localStorage.removeItem('googleAccessTokenExpiry');
 };

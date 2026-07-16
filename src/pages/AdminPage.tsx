@@ -8,7 +8,8 @@ import {
   Bell,
   User,
   Info,
-  Users
+  Users,
+  Clock
 } from "lucide-react";
 import Cropper from "react-easy-crop";
 import { useAppContext } from "../utils/AppContext";
@@ -17,8 +18,7 @@ import {
   getUnifiedTransactions,
 } from "../utils/bankBalance";
 import { formatINR } from "../utils/mockData";
-import { googleSignIn, cachedAccessToken, auth } from "../utils/firebase";
-import { syncToSheets, fetchFromSheets } from "../utils/googleSheets";
+import { googleSignIn, auth } from "../utils/firebase";
 
 interface AdminProfile {
   name: string;
@@ -30,7 +30,7 @@ interface AdminProfile {
   branch?: string;
 }
 
-type AdminView = "menu" | "funds" | "profile" | "bank" | "statement";
+type AdminView = "menu" | "funds" | "profile" | "bank" | "statement" | "market";
 
 export default function AdminPage() {
   const { state, dispatch } = useAppContext();
@@ -53,6 +53,44 @@ export default function AdminPage() {
   }, []);
 
   const [formData, setFormData] = useState(profile);
+  const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const defaultDay = { isOpen: true, openTime: "09:15", closeTime: "15:30" };
+  const initialDays = daysOfWeek.reduce((acc: any, day: string) => {
+      acc[day] = state.settings?.marketTiming?.days?.[day] || { ...defaultDay };
+      return acc;
+  }, {});
+
+  const [marketTiming, setMarketTiming] = useState<any>({
+    openTime: state.settings?.marketTiming?.openTime || "09:15",
+    closeTime: state.settings?.marketTiming?.closeTime || "15:30",
+    days: initialDays
+  });
+
+  useEffect(() => {
+    if (state.settings?.marketTiming) {
+      const updatedDays = daysOfWeek.reduce((acc: any, day: string) => {
+          acc[day] = state.settings?.marketTiming?.days?.[day] || { ...defaultDay };
+          return acc;
+      }, {});
+      setMarketTiming({
+         openTime: state.settings.marketTiming.openTime || "09:15",
+         closeTime: state.settings.marketTiming.closeTime || "15:30",
+         days: updatedDays
+      });
+    }
+  }, [state.settings?.marketTiming]);
+
+  const handleSaveMarketTiming = () => {
+    if (state.settings) {
+      const updatedSettings = {
+        ...state.settings,
+        marketTiming,
+      };
+      dispatch({ type: "UPDATE_SETTINGS", payload: updatedSettings });
+      setCurrentView("menu");
+    }
+  };
+
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -81,8 +119,6 @@ export default function AdminPage() {
     setCurrentView("menu");
     window.dispatchEvent(new Event("adminProfileUpdated"));
   };
-
-
 
   const onCropComplete = useCallback(
     (croppedArea: any, croppedAreaPixels: any) => {
@@ -253,19 +289,6 @@ export default function AdminPage() {
                                <X className="w-4 h-4" />
                              </button>
                            </div>
-                           {!cachedAccessToken && (
-                             <button 
-                               onClick={() => {
-                                 googleSignIn().then(() => {
-                                    dispatch({ type: "CLEAR_ERROR" } as any);
-                                    setShowNotifications(false);
-                                 }).catch(console.error);
-                               }}
-                               className="bg-kite-blue text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600 transition-colors self-start mt-2"
-                             >
-                               Sign in to Sync
-                             </button>
-                           )}
                         </div>
                       ) : (
                         <p className="text-[13px] text-kite-text-light text-center py-4">No new notifications</p>
@@ -320,7 +343,10 @@ export default function AdminPage() {
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Bank details</span>
                     <Building2 className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-
+                 <button onClick={() => setCurrentView("market")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-kite-bg transition-colors group w-full text-left">
+                    <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Market Time</span>
+                    <Clock className="w-4 h-4 text-kite-text-light mr-1" />
+                 </button>
                </div>
             </div>
           </div>
@@ -485,6 +511,62 @@ export default function AdminPage() {
               <div className="pt-4">
                 <button onClick={handleSave} className="w-full bg-kite-blue text-white py-3 rounded font-normal text-[14px] md:text-[15px] hover:opacity-90 transition-colors">
                   Save Bank Details
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentView === "market" && (
+          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10">
+            <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
+              <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Market Timing</h1>
+            </div>
+            
+            <div className="p-5 md:p-6 space-y-6">
+              <div className="space-y-4">
+                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+                   <div key={day} className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-kite-border py-3 gap-2">
+                      <div className="flex items-center space-x-3 w-32">
+                         <input type="checkbox" checked={marketTiming.days[day].isOpen} onChange={(e) => {
+                             setMarketTiming((prev: any) => ({
+                               ...prev,
+                               days: { ...prev.days, [day]: { ...prev.days[day], isOpen: e.target.checked } }
+                             }));
+                         }} className="w-4 h-4 text-kite-blue border-kite-border rounded focus:ring-kite-blue focus:ring-1" />
+                         <span className="text-[14px] text-kite-text font-medium capitalize">{day}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 flex-1 w-full md:w-auto">
+                         <div className="flex-1">
+                             <input type="time" disabled={!marketTiming.days[day].isOpen}
+                                value={marketTiming.days[day].openTime} 
+                                onChange={(e) => setMarketTiming((prev: any) => ({
+                                   ...prev,
+                                   days: { ...prev.days, [day]: { ...prev.days[day], openTime: e.target.value } }
+                                }))}
+                                className="w-full border-b border-kite-border py-1 bg-transparent text-[14px] font-normal text-kite-text focus:border-kite-blue outline-none transition-colors disabled:opacity-50" />
+                         </div>
+                         <span className="text-kite-text-light text-[12px]">to</span>
+                         <div className="flex-1">
+                             <input type="time" disabled={!marketTiming.days[day].isOpen}
+                                value={marketTiming.days[day].closeTime} 
+                                onChange={(e) => setMarketTiming((prev: any) => ({
+                                   ...prev,
+                                   days: { ...prev.days, [day]: { ...prev.days[day], closeTime: e.target.value } }
+                                }))}
+                                className="w-full border-b border-kite-border py-1 bg-transparent text-[14px] font-normal text-kite-text focus:border-kite-blue outline-none transition-colors disabled:opacity-50" />
+                         </div>
+                      </div>
+                   </div>
+                ))}
+              </div>
+              
+              <div className="pt-4">
+                <button onClick={handleSaveMarketTiming} className="w-full bg-kite-blue text-white py-3 rounded font-normal text-[14px] md:text-[15px] hover:opacity-90 transition-colors">
+                  Save Market Time
                 </button>
               </div>
             </div>

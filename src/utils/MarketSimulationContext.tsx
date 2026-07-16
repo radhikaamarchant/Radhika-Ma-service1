@@ -8,6 +8,7 @@ import React, {
 import { useAppContext } from"./AppContext";
 import { getBaseMarketTrend } from"./marketSimulator";
 import { getBlueTickBusinessIds } from"./blueTick";
+import { getMarketTimeContext } from "./marketTiming";
 
 interface MarketDataPoint {
   value: number;
@@ -51,24 +52,32 @@ export const MarketSimulationProvider: React.FC<{
   const dataRef = useRef({
     businesses: state.businesses || [],
     investments: state.investments || [],
+    settings: state.settings,
   });
   useEffect(() => {
     dataRef.current = {
       businesses: state.businesses || [],
       investments: state.investments || [],
+      settings: state.settings,
     };
-  }, [state.businesses, state.investments]);
+  }, [state.businesses, state.investments, state.settings]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setMarketState((prev) => {
-        const { businesses = [], investments = [] } = dataRef.current;
+        const { businesses = [], investments = [], settings } = dataRef.current;
+        const timeCtx = getMarketTimeContext(settings);
+
+        if (!timeCtx.isOpen && Object.keys(prev.trends).length > 0) {
+          return prev;
+        }
+
         const blueTickIds = getBlueTickBusinessIds(businesses, investments);
         const newTrends: Record<string, number> = {};
         const newHistory = { ...prev.history };
         const newAlerts = [...prev.alerts];
 
-        const rawNow = Date.now();
+        const rawNow = timeCtx.isOpen ? Date.now() : timeCtx.effectiveTimestamp;
         const alignedNow = rawNow - (rawNow % 2000);
 
         businesses.forEach((b) => {

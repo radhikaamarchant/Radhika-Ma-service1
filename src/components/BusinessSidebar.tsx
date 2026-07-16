@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { Search } from "lucide-react";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
+import { getMarketTimeContext } from "../utils/marketTiming";
 import AddInvestmentModal from "./AddInvestmentModal";
-
 
 const formatLargeNumber = (num: number) => {
   if (num === 0) return "0";
@@ -21,12 +21,19 @@ const formatLargeNumber = (num: number) => {
   return (num < 0 ? "-" : "") + formatted;
 };
 
-const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: string; baseAmount: number; roi: number; overallTrend: number }) => {
-  const [currentAmount, setCurrentAmount] = useState(baseAmount);
+const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { name: string; baseAmount: number; roi: number; overallTrend: number; isOpen: boolean }) => {
+  const displayBase = baseAmount || 10000;
+  const [currentAmount, setCurrentAmount] = useState(displayBase);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
   
   useEffect(() => {
-    let current = baseAmount || 10000;
+    if (!isOpen) {
+      setFlash(null);
+      setCurrentAmount(displayBase);
+      return;
+    }
+
+    let current = displayBase;
     const interval = setInterval(() => {
       const change = current * (Math.random() * 0.002 - 0.001); // +/- 0.1% change
       const newAmount = current + change;
@@ -42,10 +49,15 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: strin
     }, 2000 + Math.random() * 3000);
 
     return () => clearInterval(interval);
-  }, [baseAmount]);
+  }, [baseAmount, isOpen]);
 
   // Use the actual overall trend instead of the random fluctuation for percentage
   const isPositive = overallTrend >= roi;
+
+  // If market is closed, set the text color statically based on overall trend.
+  const amountColorClass = !isOpen 
+    ? (isPositive ? "text-kite-green" : "text-kite-red") 
+    : (flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text");
 
   return (
     <div className="grid grid-cols-[1fr_65px_80px] lg:grid-cols-[1fr_75px_90px] gap-2 items-center w-full">
@@ -58,7 +70,7 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: strin
         </span>
       </div>
       <div className="text-right whitespace-nowrap">
-        <span className={`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums ${flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text"}`}>
+        <span className={`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums ${amountColorClass}`}>
           {formatLargeNumber(currentAmount)}
         </span>
       </div>
@@ -69,6 +81,9 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend }: { name: strin
 export default function BusinessSidebar() {
   const { state } = useAppContext();
   const { marketState } = useMarketSimulation();
+  const timeCtx = getMarketTimeContext(state.settings);
+  const isMarketOpen = timeCtx.isOpen;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [showInvestModal, setShowInvestModal] = useState(false);
   const [investBusinessId, setInvestBusinessId] = useState("");
@@ -110,7 +125,7 @@ export default function BusinessSidebar() {
               setShowInvestModal(true);
             }}
           >
-            <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} />
+            <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} isOpen={isMarketOpen} />
           </div>
         )})}
         {filteredBusinesses.length === 0 && (

@@ -111,10 +111,30 @@ export interface CommissionSetting {
   value: number;
 }
 
+export interface DailyMarketTiming {
+  isOpen: boolean;
+  openTime: string;
+  closeTime: string;
+}
+
 export interface GlobalSettings {
   newBusinessRegistration: CommissionSetting;
   newInvestorRegistration: CommissionSetting;
   investmentCommission: CommissionSetting;
   profitCommission: CommissionSetting;
   tax: CommissionSetting;
+  marketTiming?: {
+    openTime: string;
+    closeTime: string;
+    days?: {
+      monday: DailyMarketTiming;
+      tuesday: DailyMarketTiming;
+      wednesday: DailyMarketTiming;
+      thursday: DailyMarketTiming;
+      friday: DailyMarketTiming;
+      saturday: DailyMarketTiming;
+      sunday: DailyMarketTiming;
+      [key: string]: DailyMarketTiming | undefined;
+    };
+  };
 }

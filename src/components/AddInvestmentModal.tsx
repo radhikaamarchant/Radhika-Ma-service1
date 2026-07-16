@@ -70,10 +70,11 @@ export default function AddInvestmentModal({
         adminCommissionInvestorPct: "2",
         adminCommissionBusinessPct: "2",
       });
-      setExpectedRoi("12");
+      const liveRoi = marketState.trends[initialBusinessId];
+      setExpectedRoi(liveRoi !== undefined ? liveRoi.toFixed(2) : "12");
       setOrderMode("BUY");
     }
-  }, [isOpen, initialBusinessId, initialInvestorId, state.businesses]);
+  }, [isOpen, initialBusinessId, initialInvestorId, state.businesses, marketState.trends]);
 
   const selectedBusiness = state.businesses.find(
     (b) => b.id === formData.businessId,
@@ -347,6 +348,8 @@ export default function AddInvestmentModal({
                                       businessId: b.id,
                                       amount: amount,
                                     });
+                                    const liveRoi = marketState.trends[b.id];
+                                    setExpectedRoi(liveRoi !== undefined ? liveRoi.toFixed(2) : "12");
                                     setDesktopShowBusinessSelect(false);
                                   }}
                                   className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] flex items-center justify-between"

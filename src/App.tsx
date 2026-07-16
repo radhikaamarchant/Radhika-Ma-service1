@@ -133,68 +133,7 @@ function MainLayout() {
     }
   }, [currentView]);
 
-  // One-time migration to assign authority types to the 8 specific companies and give them subsidies
-  useEffect(() => {
-    if (!state.loading) {
-      const idsToDelete = ["40001","40002","40003","40004","40005","40006","40007","40008",
-      ];
-      const targetValidIds = ["171633","917487","958675","410714","702034","729230","864541","555918",
-      ];
-
-      state.businesses.forEach((b) => {
-        // Delete the duplicate mock businesses
-        if (idsToDelete.includes(b.businessId)) {
-          dispatch({ type:"DELETE_BUSINESS", payload: b.id });
-        } // Update the requested original businesses
-        else if (targetValidIds.includes(b.businessId)) {
-          let authType = b.authorityType;
-          let newSubsidy = b.rmasSubsidy;
-          let needsUpdate = false;
-
-          const lName = b.name.toLowerCase();
-          if (!authType) {
-            if (lName.includes("trust") || lName.includes("hospital")) {
-              authType ="Trust Authorities";
-            } else if (
-              lName.includes("muncipal") ||
-              lName.includes("corporation")
-            ) {
-              authType ="Government Authorities";
-            } else {
-              authType ="Business Authorities";
-            }
-            needsUpdate = true;
-          }
-
-          // Force update subsidy to 4% (only if they are Trust/Govt, as per user rule, // or if the user wants it on all 8, let's apply it carefully based on authority type.)
-          if (
-            (authType ==="Trust Authorities" ||
-              authType ==="Government Authorities") &&
-            newSubsidy !== 4
-          ) {
-            newSubsidy = 4;
-            needsUpdate = true;
-          } else if (authType ==="Business Authorities" && newSubsidy !== 0) {
-            newSubsidy = 0;
-            needsUpdate = true;
-          }
-
-          if (needsUpdate) {
-            dispatch({
-              type:"UPDATE_BUSINESS",
-              payload: {
-                ...b,
-                authorityType: authType as any,
-                rmasSubsidy: newSubsidy,
-              },
-            });
-          }
-        }
-      });
-    }
-    // Deliberately isolated from state.businesses dependency to prevent refire loops
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.loading]);
+  // Removed one-time migration to prevent unintended repeated Firestore writes and reads on mount.
 
   const renderView = () => {
     switch (currentView) {

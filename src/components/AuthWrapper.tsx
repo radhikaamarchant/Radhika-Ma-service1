@@ -5,7 +5,6 @@ import { User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAppContext } from "../utils/AppContext";
 import { AppUser } from "../types";
-import { fetchFromSheets } from "../utils/googleSheets";
 
 export function AuthWrapper({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -32,7 +31,7 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
               setRoleSelection(true);
               setLoading(false);
             }
-          } catch (error) {
+          } catch (error: any) {
             console.warn("Firestore quota error in auth:", error.message);
             // Graceful fallback to mock user
             dispatch({ 
@@ -40,16 +39,6 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
               payload: { id: user.uid, name: user.displayName || "Mock User", email: user.email || "", role: "CEO", fund: 0 } as AppUser 
             });
             setLoading(false);
-          }
-          
-          // If we are logged in, also try restoring from sheets just in case we are in fallback
-          try {
-            const sheetData = await fetchFromSheets();
-            if (sheetData) {
-              dispatch({ type: "RESTORE_STATE", payload: sheetData });
-            }
-          } catch (err) {
-            console.warn("Failed to fetch from sheets on initAuth:", err);
           }
         } else {
           // It's an anonymous user, we force them to sign in
@@ -81,19 +70,9 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
           } else {
             setRoleSelection(true);
           }
-        } catch (error) {
+        } catch (error: any) {
           console.warn("Firestore quota error in login:", error.message);
           dispatch({ type: "SET_CURRENT_USER", payload: { id: result.user.uid, name: result.user.displayName || "Mock User", email: result.user.email || "", role: "CEO", fund: 0 } as AppUser });
-        }
-        // Try restoring data from sheets if quota is exceeded or to sync up
-        try {
-          const sheetData = await fetchFromSheets();
-          if (sheetData) {
-            dispatch({ type: "RESTORE_STATE", payload: sheetData });
-            dispatch({ type: "CLEAR_ERROR" } as any);
-          }
-        } catch (err) {
-          console.warn("Failed to restore from sheets on login:", err);
         }
       }
     } catch (err) {
@@ -103,6 +82,7 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   };
+
 
   const handleRoleSubmit = async () => {
     if (!authUser || !selectedRole) return;
