@@ -101,18 +101,6 @@ export default function AdminPage() {
     setFormData(profile);
   }, [profile]);
 
-  useEffect(() => {
-    if (state.loading) return;
-    const adminBizId = "admin_business";
-    const adminInvId = "admin_investor";
-    if (state.businesses.find((b) => b.id === adminBizId)) {
-      dispatch({ type: "DELETE_BUSINESS", payload: adminBizId });
-    }
-    if (state.investors.find((i) => i.id === adminInvId)) {
-      dispatch({ type: "DELETE_INVESTOR", payload: adminInvId });
-    }
-  }, [state.loading, state.businesses.length, state.investors.length]);
-
   const handleSave = async () => {
     localStorage.setItem("adminProfile", JSON.stringify(formData));
     setProfile(formData);
