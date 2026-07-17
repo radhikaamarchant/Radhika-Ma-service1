@@ -47,7 +47,7 @@ export default function BusinessPreviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 pb-20 md:p-8 animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 pb-20 md:p-8 animate-fade-in"
       onClick={(e) => {
         e.stopPropagation();
         onClose();
