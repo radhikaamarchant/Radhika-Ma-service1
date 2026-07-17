@@ -35,6 +35,18 @@ export interface Business {
   increaseMarket?: number;
   downMarket?: number;
   triggerHistory?: { id: string; amount: number; timestamp: string }[];
+  companyInfo?: {
+    companyName: string;
+    ownerName: string;
+    since: string;
+    documents: string[];
+    governmentRegIdentifies: string[];
+    companyInformation: string;
+    profitRevenueInvest: string;
+    investmentIdea: string;
+    companyShareHolder: string;
+    companyAddress: string;
+  };
 }
 
 export interface Investor {

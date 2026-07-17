@@ -10,7 +10,10 @@ import {
   ChevronRight,
   Info,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Pencil,
+  CheckCircle2,
+  Plus
 } from "lucide-react";
 import { Business } from "../types";
 import { getVerificationStats } from "../utils/blueTick";
@@ -42,6 +45,20 @@ const formatCompactZerodha = (num: number) => {
   return num.toString();
 };
 
+const VerifiedBadge = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-label="Verified" className="inline-block ml-1 -mt-0.5">
+    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.74 2.746 1.838 3.45-.038.225-.06.456-.06.69 0 2.21 1.71 3.998 3.918 3.998.47 0 .92-.084 1.336-.25.52 1.333 1.828 2.25 3.337 2.25 1.51 0 2.816-.917 3.337-2.25.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.234-.022-.465-.06-.69 1.098-.704 1.838-1.99 1.838-3.45z" fill="#4CAF50"/>
+    <path d="M15.42 8.783L10.33 14.1l-2.45-2.45c-.322-.322-.843-.322-1.165 0-.322.32-.322.84 0 1.16l3.03 3.03c.16.16.37.24.58.24.21 0 .42-.08.58-.24l5.67-6.07c.32-.32.31-.84-.01-1.16-.32-.32-.84-.31-1.16.01z" fill="#FFFFFF"/>
+  </svg>
+);
+
+const BlueVerifiedBadge = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-label="Verified" className="inline-block ml-1 -mt-0.5">
+    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.74 2.746 1.838 3.45-.038.225-.06.456-.06.69 0 2.21 1.71 3.998 3.918 3.998.47 0 .92-.084 1.336-.25.52 1.333 1.828 2.25 3.337 2.25 1.51 0 2.816-.917 3.337-2.25.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.234-.022-.465-.06-.69 1.098-.704 1.838-1.99 1.838-3.45z" fill="#1DA1F2"/>
+    <path d="M15.42 8.783L10.33 14.1l-2.45-2.45c-.322-.322-.843-.322-1.165 0-.322.32-.322.84 0 1.16l3.03 3.03c.16.16.37.24.58.24.21 0 .42-.08.58-.24l5.67-6.07c.32-.32.31-.84-.01-1.16-.32-.32-.84-.31-1.16.01z" fill="#FFFFFF"/>
+  </svg>
+);
+
 export default function BusinessDetail({
   businessId,
   onBack,
@@ -51,13 +68,19 @@ export default function BusinessDetail({
   const { marketState } = useMarketSimulation();
   const marketTrends = marketState.trends;
   const business = state.businesses.find((b) => b.id === businessId);
-  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration" | "policy" | "trigger" | "trigger-history" | "trigger-suggestion">("menu");
+  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration" | "policy" | "trigger" | "trigger-history" | "trigger-suggestion" | "company-info">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSavingTrigger, setIsSavingTrigger] = useState(false);
   const [isSavingMarket, setIsSavingMarket] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [editingFields, setEditingFields] = useState({
+    name: false,
+    ownerName: false,
+    shortName: false
+  });
 
   useMobileBackNavigation(currentView !== "menu", () => setCurrentView("menu"));
 
@@ -74,6 +97,22 @@ export default function BusinessDetail({
     photoUrl: business?.photoUrl || "",
     ownerName: business?.ownerName || "",
   });
+
+  const [companyInfoData, setCompanyInfoData] = useState({
+    companyName: business?.companyInfo?.companyName || "",
+    ownerName: business?.companyInfo?.ownerName || "",
+    since: business?.companyInfo?.since || "",
+    documents: business?.companyInfo?.documents || [],
+    governmentRegIdentifies: business?.companyInfo?.governmentRegIdentifies || [],
+    companyInformation: business?.companyInfo?.companyInformation || "",
+    profitRevenueInvest: business?.companyInfo?.profitRevenueInvest || "",
+    investmentIdea: business?.companyInfo?.investmentIdea || "",
+    companyShareHolder: business?.companyInfo?.companyShareHolder || "",
+    companyAddress: business?.companyInfo?.companyAddress || "",
+  });
+
+  const [newDocument, setNewDocument] = useState("");
+  const [newIdentifier, setNewIdentifier] = useState("");
 
   const [triggerConfig, setTriggerConfig] = useState({
     type: business?.investmentType || 'manual',
@@ -104,6 +143,18 @@ export default function BusinessDetail({
         location: business.location || "",
         photoUrl: business.photoUrl || "",
         ownerName: business.ownerName || "",
+      });
+      setCompanyInfoData({
+        companyName: business.companyInfo?.companyName || "",
+        ownerName: business.companyInfo?.ownerName || "",
+        since: business.companyInfo?.since || "",
+        documents: business.companyInfo?.documents || [],
+        governmentRegIdentifies: business.companyInfo?.governmentRegIdentifies || [],
+        companyInformation: business.companyInfo?.companyInformation || "",
+        profitRevenueInvest: business.companyInfo?.profitRevenueInvest || "",
+        investmentIdea: business.companyInfo?.investmentIdea || "",
+        companyShareHolder: business.companyInfo?.companyShareHolder || "",
+        companyAddress: business.companyInfo?.companyAddress || "",
       });
     }
   }, [business]);
@@ -185,41 +236,67 @@ export default function BusinessDetail({
   const valuePercentage = totalFunded > 0 ? ((valueAmount - totalFunded) / totalFunded) * 100 : 0;
 
   const handleSaveProfile = () => {
-    const updatedOwnerName = formData.ownerName.trim();
-    
-    dispatch({
-      type: "UPDATE_BUSINESS",
-      payload: {
-        ...business,
-        name: formData.name,
-        shortName: formData.shortName ? formData.shortName.toUpperCase() : "",
-        description: formData.description,
-        location: formData.location,
-        photoUrl: formData.photoUrl,
-        ownerName: updatedOwnerName || business.ownerName,
-      },
-    });
-
-    if (updatedOwnerName && updatedOwnerName !== business.ownerName) {
-      state.businesses.forEach(b => {
-        if (b.ownerName === business.ownerName && b.id !== business.id) {
-          dispatch({
-            type: "UPDATE_BUSINESS",
-            payload: { ...b, ownerName: updatedOwnerName }
-          });
-        }
+    setIsSavingProfile(true);
+    setTimeout(() => {
+      const updatedOwnerName = formData.ownerName.trim();
+      
+      dispatch({
+        type: "UPDATE_BUSINESS",
+        payload: {
+          ...business,
+          name: formData.name,
+          shortName: formData.shortName ? formData.shortName.toUpperCase() : "",
+          description: formData.description,
+          location: formData.location,
+          photoUrl: formData.photoUrl,
+          ownerName: updatedOwnerName || business.ownerName,
+        },
       });
-      state.investors.forEach(inv => {
-        if (inv.name === business.ownerName) {
-          dispatch({
-            type: "UPDATE_INVESTOR",
-            payload: { ...inv, name: updatedOwnerName }
-          });
-        }
-      });
-    }
 
-    setCurrentView("menu");
+      if (updatedOwnerName && updatedOwnerName !== business.ownerName) {
+        state.businesses.forEach(b => {
+          if (b.ownerName === business.ownerName && b.id !== business.id) {
+            dispatch({
+              type: "UPDATE_BUSINESS",
+              payload: { ...b, ownerName: updatedOwnerName }
+            });
+          }
+        });
+        state.investors.forEach(inv => {
+          if (inv.name === business.ownerName) {
+            dispatch({
+              type: "UPDATE_INVESTOR",
+              payload: { ...inv, name: updatedOwnerName }
+            });
+          }
+        });
+      }
+
+      setIsSavingProfile(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+      setCurrentView("menu");
+    }, 1000);
+  };
+
+  const [isSavingCompanyInfo, setIsSavingCompanyInfo] = useState(false);
+  const handleSaveCompanyInfo = () => {
+    setIsSavingCompanyInfo(true);
+    setTimeout(() => {
+      dispatch({
+        type: "UPDATE_BUSINESS",
+        payload: {
+          ...business,
+          companyInfo: {
+            ...companyInfoData
+          }
+        },
+      });
+      setIsSavingCompanyInfo(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+      setCurrentView("profile");
+    }, 1000);
   };
 
   const handleSaveTrigger = () => {
@@ -485,44 +562,97 @@ export default function BusinessDetail({
       {currentView === "profile" && (
         <div className="p-4 md:p-6 bg-white dark:bg-kite-surface flex-1 space-y-5">
            <div>
-             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Business Name</label>
-             <input
-               type="text"
-               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
-               value={formData.name}
-               onChange={(e) => setFormData({...formData, name: e.target.value})}
-             />
+             <div className="flex justify-between items-end mb-1">
+               <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">Business Name</label>
+               {editingFields.name && (
+                 <button onClick={() => setEditingFields({...editingFields, name: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] hover:text-[#388E3C] transition-colors border border-[#4CAF50] px-2 py-0.5 rounded">
+                   Verified
+                 </button>
+               )}
+             </div>
+             {!editingFields.name ? (
+               <div className="w-full border-b border-kite-border-hard py-1.5 flex justify-between items-center group">
+                 <div className="text-[14px] md:text-[15px] font-normal text-kite-text uppercase flex items-center gap-1.5">
+                   {formData.name} <VerifiedBadge />
+                 </div>
+                 <button onClick={() => setEditingFields({...editingFields, name: true})} className="text-kite-text-light hover:text-kite-text transition-colors">
+                   <Pencil className="w-3.5 h-3.5" />
+                 </button>
+               </div>
+             ) : (
+               <input
+                 type="text"
+                 className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none uppercase"
+                 value={formData.name}
+                 onChange={(e) => setFormData({...formData, name: e.target.value.toUpperCase()})}
+               />
+             )}
            </div>
            <div>
-             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Business Owner Name</label>
-             <input
-               type="text"
-               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
-               value={formData.ownerName}
-               onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
-               placeholder="Enter owner name"
-             />
+             <div className="flex justify-between items-end mb-1">
+               <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">Business Owner Name</label>
+               {editingFields.ownerName && (
+                 <button onClick={() => setEditingFields({...editingFields, ownerName: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] hover:text-[#388E3C] transition-colors border border-[#4CAF50] px-2 py-0.5 rounded">
+                   Verified
+                 </button>
+               )}
+             </div>
+             {!editingFields.ownerName ? (
+               <div className="w-full border-b border-kite-border-hard py-1.5 flex justify-between items-center group">
+                 <div className="text-[14px] md:text-[15px] font-normal text-kite-text flex items-center gap-1.5">
+                   {formData.ownerName} <VerifiedBadge />
+                 </div>
+                 <button onClick={() => setEditingFields({...editingFields, ownerName: true})} className="text-kite-text-light hover:text-kite-text transition-colors">
+                   <Pencil className="w-3.5 h-3.5" />
+                 </button>
+               </div>
+             ) : (
+               <input
+                 type="text"
+                 className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+                 value={formData.ownerName}
+                 onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
+                 placeholder="Enter owner name"
+               />
+             )}
            </div>
            <div>
-             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Short Business Name</label>
-             <input
-               type="text"
-               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none uppercase"
-               value={formData.shortName}
-               onChange={(e) => setFormData({...formData, shortName: e.target.value})}
-               placeholder="e.g. ACME"
-             />
+             <div className="flex justify-between items-end mb-1">
+               <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">Short Business Name</label>
+               {editingFields.shortName && (
+                 <button onClick={() => setEditingFields({...editingFields, shortName: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] hover:text-[#388E3C] transition-colors border border-[#4CAF50] px-2 py-0.5 rounded">
+                   Verified
+                 </button>
+               )}
+             </div>
+             {!editingFields.shortName ? (
+               <div className="w-full border-b border-kite-border-hard py-1.5 flex justify-between items-center group">
+                 <div className="text-[14px] md:text-[15px] font-normal text-kite-text uppercase flex items-center gap-1.5">
+                   {formData.shortName} <VerifiedBadge />
+                 </div>
+                 <button onClick={() => setEditingFields({...editingFields, shortName: true})} className="text-kite-text-light hover:text-kite-text transition-colors">
+                   <Pencil className="w-3.5 h-3.5" />
+                 </button>
+               </div>
+             ) : (
+               <input
+                 type="text"
+                 className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none uppercase"
+                 value={formData.shortName}
+                 onChange={(e) => setFormData({...formData, shortName: e.target.value.toUpperCase()})}
+                 placeholder="e.g. ACME"
+               />
+             )}
            </div>
            <div>
-             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Description</label>
-             <textarea
-               className={`w-full border-b bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none transition-all duration-200 ${isEditingDescription ? 'border border-kite-border-hard rounded-md p-3 mt-1 resize-y min-h-[150px]' : 'border-kite-border-hard py-1.5 resize-none h-16 overflow-hidden'}`}
-               value={formData.description}
-               onChange={(e) => setFormData({...formData, description: e.target.value})}
-               onFocus={() => setIsEditingDescription(true)}
-               onBlur={() => setIsEditingDescription(false)}
-               placeholder={isEditingDescription ? "Enter detailed description here..." : "No description"}
-             />
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Company info</label>
+             <button
+               onClick={() => setCurrentView("company-info")}
+               className="w-full border border-kite-border-hard py-3 px-4 rounded bg-transparent text-[14px] md:text-[15px] font-normal text-kite-blue hover:bg-kite-border-soft transition-colors flex justify-between items-center"
+             >
+               <span>Information & Legal Docs</span>
+               <ChevronRight className="w-4 h-4" />
+             </button>
            </div>
            <div>
              <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Location</label>
@@ -534,8 +664,18 @@ export default function BusinessDetail({
              />
            </div>
            <div className="pt-4 flex justify-end gap-3">
-             <button onClick={() => setCurrentView("menu")} className="px-5 py-2 text-kite-text border border-kite-border-hard rounded font-normal text-[14px]">Cancel</button>
-             <button onClick={handleSaveProfile} className="px-5 py-2 bg-kite-blue text-white rounded font-normal text-[14px]">Save Changes</button>
+             <button onClick={() => setCurrentView("menu")} disabled={isSavingProfile} className="px-5 py-2 text-kite-text border border-kite-border-hard rounded font-normal text-[14px] disabled:opacity-50">Cancel</button>
+             <button onClick={handleSaveProfile} disabled={isSavingProfile} className="px-5 py-2 min-w-[120px] flex justify-center items-center bg-kite-blue text-white rounded font-normal text-[14px] disabled:opacity-80">
+               {isSavingProfile ? (
+                 <span className="flex items-center space-x-2">
+                   <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                   </svg>
+                   <span>Saving...</span>
+                 </span>
+               ) : "Save info"}
+             </button>
            </div>
            {onDelete && (
              <div className="pt-8 border-t border-kite-border-soft mt-8">
@@ -547,6 +687,212 @@ export default function BusinessDetail({
         </div>
       )}
 
+      {currentView === "company-info" && (
+        <div className="p-4 md:p-6 bg-white dark:bg-kite-surface flex-1 space-y-5">
+           <div>
+             <div className="flex justify-between items-end mb-1">
+               <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">1 COMPANY NAME</label>
+               <button
+                 type="button"
+                 onClick={() => setCompanyInfoData({...companyInfoData, companyName: formData.name})}
+                 className="text-[11px] md:text-[12px] font-medium text-kite-blue hover:text-blue-600 transition-colors"
+               >
+                 Fill Auto
+               </button>
+             </div>
+             <input
+               type="text"
+               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+               value={companyInfoData.companyName}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, companyName: e.target.value})}
+             />
+           </div>
+
+           <div>
+             <div className="flex justify-between items-end mb-1">
+               <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">2 OWNER NAME</label>
+               <button
+                 type="button"
+                 onClick={() => setCompanyInfoData({...companyInfoData, ownerName: formData.ownerName})}
+                 className="text-[11px] md:text-[12px] font-medium text-kite-blue hover:text-blue-600 transition-colors"
+               >
+                 Fill Auto
+               </button>
+             </div>
+             <input
+               type="text"
+               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+               value={companyInfoData.ownerName}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, ownerName: e.target.value})}
+             />
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">3 SINCE</label>
+             <input
+               type="number"
+               className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+               value={companyInfoData.since}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, since: e.target.value})}
+               placeholder="e.g. 2024"
+             />
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">4 DOCUMENTS</label>
+             <div className="flex items-center gap-2 mb-2">
+               <input
+                 type="text"
+                 className="flex-1 border-b border-kite-border-hard py-1 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+                 value={newDocument}
+                 onChange={(e) => setNewDocument(e.target.value)}
+                 placeholder="e.g. permit license : ASDF67687"
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter' && newDocument.trim()) {
+                     setCompanyInfoData({...companyInfoData, documents: [...companyInfoData.documents, newDocument.trim()]});
+                     setNewDocument("");
+                   }
+                 }}
+               />
+               <button
+                 onClick={() => {
+                   if (newDocument.trim()) {
+                     setCompanyInfoData({...companyInfoData, documents: [...companyInfoData.documents, newDocument.trim()]});
+                     setNewDocument("");
+                   }
+                 }}
+                 className="text-kite-blue p-1 rounded hover:bg-kite-blue/10 transition-colors"
+               >
+                 <Plus className="w-5 h-5" />
+               </button>
+             </div>
+             <div className="space-y-2 mt-2">
+               {companyInfoData.documents.map((doc, index) => (
+                 <div key={index} className="flex justify-between items-center bg-[#F8F9FA] dark:bg-kite-bg p-2 px-3 rounded text-[13px] md:text-[14px]">
+                   <span className="flex items-center gap-1.5">{doc} <BlueVerifiedBadge /></span>
+                   <button
+                     onClick={() => {
+                       const newDocs = [...companyInfoData.documents];
+                       newDocs.splice(index, 1);
+                       setCompanyInfoData({...companyInfoData, documents: newDocs});
+                     }}
+                     className="text-[#FF5722] hover:bg-[#FF5722]/10 p-1 rounded transition-colors"
+                   >
+                     <Trash2 className="w-4 h-4" />
+                   </button>
+                 </div>
+               ))}
+             </div>
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">5 GOVERMENT REG IDENTIFIES</label>
+             <div className="flex items-center gap-2 mb-2">
+               <input
+                 type="text"
+                 className="flex-1 border-b border-kite-border-hard py-1 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
+                 value={newIdentifier}
+                 onChange={(e) => setNewIdentifier(e.target.value)}
+                 placeholder="e.g. GST Number, City Tax"
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter' && newIdentifier.trim()) {
+                     setCompanyInfoData({...companyInfoData, governmentRegIdentifies: [...companyInfoData.governmentRegIdentifies, newIdentifier.trim()]});
+                     setNewIdentifier("");
+                   }
+                 }}
+               />
+               <button
+                 onClick={() => {
+                   if (newIdentifier.trim()) {
+                     setCompanyInfoData({...companyInfoData, governmentRegIdentifies: [...companyInfoData.governmentRegIdentifies, newIdentifier.trim()]});
+                     setNewIdentifier("");
+                   }
+                 }}
+                 className="text-kite-blue p-1 rounded hover:bg-kite-blue/10 transition-colors"
+               >
+                 <Plus className="w-5 h-5" />
+               </button>
+             </div>
+             <div className="space-y-2 mt-2">
+               {companyInfoData.governmentRegIdentifies.map((id, index) => (
+                 <div key={index} className="flex justify-between items-center bg-[#F8F9FA] dark:bg-kite-bg p-2 px-3 rounded text-[13px] md:text-[14px]">
+                   <span className="flex items-center gap-1.5">{id} <BlueVerifiedBadge /></span>
+                   <button
+                     onClick={() => {
+                       const newIds = [...companyInfoData.governmentRegIdentifies];
+                       newIds.splice(index, 1);
+                       setCompanyInfoData({...companyInfoData, governmentRegIdentifies: newIds});
+                     }}
+                     className="text-[#FF5722] hover:bg-[#FF5722]/10 p-1 rounded transition-colors"
+                   >
+                     <Trash2 className="w-4 h-4" />
+                   </button>
+                 </div>
+               ))}
+             </div>
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">6 COMPANY INFORMATION</label>
+             <textarea
+               className="w-full border border-kite-border-hard rounded-md p-3 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none resize-y min-h-[100px]"
+               value={companyInfoData.companyInformation}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, companyInformation: e.target.value})}
+             />
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">7 PROFIT REVENUE & INVEST</label>
+             <textarea
+               className="w-full border border-kite-border-hard rounded-md p-3 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none resize-y min-h-[100px]"
+               value={companyInfoData.profitRevenueInvest}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, profitRevenueInvest: e.target.value})}
+             />
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">8 INVESTMENTS IDEA</label>
+             <textarea
+               className="w-full border border-kite-border-hard rounded-md p-3 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none resize-y min-h-[100px]"
+               value={companyInfoData.investmentIdea}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, investmentIdea: e.target.value})}
+             />
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">9 COMPANY SHARE HOLDER</label>
+             <textarea
+               className="w-full border border-kite-border-hard rounded-md p-3 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none resize-y min-h-[100px]"
+               value={companyInfoData.companyShareHolder}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, companyShareHolder: e.target.value})}
+             />
+           </div>
+
+           <div>
+             <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">10 COMPNAY ADDRESS</label>
+             <textarea
+               className="w-full border border-kite-border-hard rounded-md p-3 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none resize-y min-h-[80px]"
+               value={companyInfoData.companyAddress}
+               onChange={(e) => setCompanyInfoData({...companyInfoData, companyAddress: e.target.value})}
+             />
+           </div>
+
+           <div className="pt-4 flex justify-end gap-3">
+             <button onClick={() => setCurrentView("profile")} disabled={isSavingCompanyInfo} className="px-5 py-2 text-kite-text border border-kite-border-hard rounded font-normal text-[14px] disabled:opacity-50">Cancel</button>
+             <button onClick={handleSaveCompanyInfo} disabled={isSavingCompanyInfo} className="px-5 py-2 min-w-[120px] flex justify-center items-center bg-kite-blue text-white rounded font-normal text-[14px] disabled:opacity-80">
+               {isSavingCompanyInfo ? (
+                 <span className="flex items-center space-x-2">
+                   <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                   </svg>
+                   <span>Saving...</span>
+                 </span>
+               ) : "Save"}
+             </button>
+           </div>
+        </div>
+      )}
       {currentView === "investors" && (
         <div className="bg-[#F8F9FA] dark:bg-kite-bg flex-1">
           <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">

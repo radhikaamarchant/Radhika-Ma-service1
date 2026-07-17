@@ -23,6 +23,14 @@ import {
 } from "../utils/blueTick";
 import { INDIAN_BANKS } from "../utils/indianBanks";
 import BusinessDetail from "../components/BusinessDetail";
+import BioRenderer from "../components/BioRenderer";
+
+const BlueVerifiedBadge = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" aria-label="Verified" className="inline-block ml-1 -mt-0.5">
+    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.74 2.746 1.838 3.45-.038.225-.06.456-.06.69 0 2.21 1.71 3.998 3.918 3.998.47 0 .92-.084 1.336-.25.52 1.333 1.828 2.25 3.337 2.25 1.51 0 2.816-.917 3.337-2.25.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.234-.022-.465-.06-.69 1.098-.704 1.838-1.99 1.838-3.45z" fill="#1DA1F2"/>
+    <path d="M15.42 8.783L10.33 14.1l-2.45-2.45c-.322-.322-.843-.322-1.165 0-.322.32-.322.84 0 1.16l3.03 3.03c.16.16.37.24.58.24.21 0 .42-.08.58-.24l5.67-6.07c.32-.32.31-.84-.01-1.16-.32-.32-.84-.31-1.16.01z" fill="#FFFFFF"/>
+  </svg>
+);
 
 export default function Businesses() {
   const { state, dispatch } = useAppContext();
@@ -435,26 +443,103 @@ export default function Businesses() {
                                 }}
                                 className="hidden md:block overflow-hidden bg-[#FAFBFC] dark:bg-[#151515]"
                               >
-                                <div className="px-4 py-3 flex flex-col">
-                                  <div className="grid grid-cols-12 gap-6">
-                                    <div className="col-span-8 flex flex-col">
-                                      <span className="text-kite-text-light text-[11px] font-normal">
-                                        Details
-                                      </span>
-                                      <span className="text-kite-text text-[14px] font-medium mt-0.5 whitespace-pre-wrap">
-                                        {business.description ||
-                                          "No description provided for this business owner."}
-                                      </span>
+                                <div className="px-4 py-4">
+                                  {business.companyInfo ? (
+                                    <div className="space-y-4">
+                                      {business.companyInfo.companyName && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Name</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text">{business.companyInfo.companyName}</p>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.ownerName && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Owner Name</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text">{business.companyInfo.ownerName}</p>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.since && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Since</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text">{business.companyInfo.since}</p>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.documents && business.companyInfo.documents.length > 0 && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Documents</h3>
+                                          <ul className="space-y-1">
+                                            {business.companyInfo.documents.map((doc, idx) => (
+                                              <li key={idx} className="text-[13px] md:text-[14px] text-kite-text flex items-center gap-1.5">
+                                                {doc} <BlueVerifiedBadge />
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Government Reg Identifies</h3>
+                                          <ul className="space-y-1">
+                                            {business.companyInfo.governmentRegIdentifies.map((id, idx) => (
+                                              <li key={idx} className="text-[13px] md:text-[14px] text-kite-text flex items-center gap-1.5">
+                                                {id} <BlueVerifiedBadge />
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.companyInformation && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Information</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.companyInformation} /></p>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.profitRevenueInvest && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Profit Revenue & Invest</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.profitRevenueInvest} /></p>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.investmentIdea && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Investments Idea</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.investmentIdea} /></p>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.companyShareHolder && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Share Holder</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.companyShareHolder} /></p>
+                                        </div>
+                                      )}
+                                      {business.companyInfo.companyAddress && (
+                                        <div>
+                                          <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Address</h3>
+                                          <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.companyAddress} /></p>
+                                        </div>
+                                      )}
                                     </div>
-                                    <div className="col-span-4 flex flex-col border-l border-kite-vertical-divider pl-6">
-                                      <span className="text-kite-text-light text-[11px] font-normal">
-                                        Address
-                                      </span>
-                                      <span className="text-kite-text text-[14px] font-medium mt-0.5">
-                                        {business.location || "Not specified"}
-                                      </span>
+                                  ) : (
+                                    <div className="grid grid-cols-12 gap-6">
+                                      <div className="col-span-8 flex flex-col">
+                                        <span className="text-kite-text-light text-[11px] font-normal">
+                                          Details
+                                        </span>
+                                        <span className="text-kite-text text-[14px] font-medium mt-0.5 whitespace-pre-wrap">
+                                          {business.description ||
+                                            "No description provided for this business owner."}
+                                        </span>
+                                      </div>
+                                      <div className="col-span-4 flex flex-col border-l border-kite-vertical-divider pl-6">
+                                        <span className="text-kite-text-light text-[11px] font-normal">
+                                          Address
+                                        </span>
+                                        <span className="text-kite-text text-[14px] font-medium mt-0.5">
+                                          {business.location || "Not specified"}
+                                        </span>
+                                      </div>
                                     </div>
-                                  </div>
+                                  )}
                                 </div>
                               </motion.div>
                             )}
