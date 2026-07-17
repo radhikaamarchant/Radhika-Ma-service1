@@ -41,6 +41,7 @@ export function getBaseMarketTrend(
   const closedInvs = safeInvestments.filter(
     (i) => i.businessId === business.id && i.status ==="completed",
   );
+
   const withdrawnAmount = closedInvs.reduce((sum, i) => {
     const p = i.payoutDetails;
     return sum + (p ? p.totalCredited : i.amount); // total credited includes profit
@@ -63,7 +64,6 @@ export function getBaseMarketTrend(
 
   // Penalty scaled based on how much was withdrawn.
   const withdrawalPenalty = withdrawalRatio * 15;
-
   // 3. Blue tick business gives a boost
   const blueTickBonus = isBlueTick ? 5 : 0;
   const amplitude = isBlueTick ? 12 : 25; // Blue ticks have tighter noise

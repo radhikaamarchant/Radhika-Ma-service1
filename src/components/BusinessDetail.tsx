@@ -51,7 +51,7 @@ export default function BusinessDetail({
   const { marketState } = useMarketSimulation();
   const marketTrends = marketState.trends;
   const business = state.businesses.find((b) => b.id === businessId);
-  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration" | "policy" | "trigger" | "trigger-history">("menu");
+  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration" | "policy" | "trigger" | "trigger-history" | "trigger-suggestion">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -78,10 +78,20 @@ export default function BusinessDetail({
     amount: business?.triggerAmount ? new Intl.NumberFormat('en-IN').format(business.triggerAmount) : "",
     minQuantity: business?.triggerMinQuantity ? new Intl.NumberFormat('en-IN').format(business.triggerMinQuantity) : "",
     maxQuantity: business?.triggerMaxQuantity ? new Intl.NumberFormat('en-IN').format(business.triggerMaxQuantity) : "",
+    increaseMarket: business?.increaseMarket?.toString() || "",
+    downMarket: business?.downMarket?.toString() || "",
   });
 
   useEffect(() => {
     if (business) {
+      setTriggerConfig({
+        type: business.investmentType || 'manual',
+        amount: business.triggerAmount ? new Intl.NumberFormat('en-IN').format(business.triggerAmount) : "",
+        minQuantity: business.triggerMinQuantity ? new Intl.NumberFormat('en-IN').format(business.triggerMinQuantity) : "",
+        maxQuantity: business.triggerMaxQuantity ? new Intl.NumberFormat('en-IN').format(business.triggerMaxQuantity) : "",
+        increaseMarket: business.increaseMarket?.toString() || "",
+        downMarket: business.downMarket?.toString() || "",
+      });
       setFormData({
         fundingRequired: new Intl.NumberFormat('en-IN').format(business.fundingRequired || 0),
         interestRate: (business.interestRate || 0).toString(),
@@ -119,10 +129,6 @@ export default function BusinessDetail({
     return sum + Math.max(0, liveProfit);
   }, 0);
   
-  const totalProfitPayMobile = activeBusinessInvestments.reduce(
-    (sum, inv) => sum + (inv.amount * (business.interestRate || 0)) / 100,
-    0,
-  );
   
   const [investorSearchQuery, setInvestorSearchQuery] = useState("");
   
@@ -132,7 +138,7 @@ export default function BusinessDetail({
   
   const payout = state.investments
     .filter(i => i.businessId === businessId && i.status === "completed")
-    .reduce((sum, i) => sum + (i.amount + (i.amount * business.interestRate / 100)), 0);
+    .reduce((sum, i) => sum + (i.amount + (i.amount * (i.interestRate || 0) / 100)), 0);
 
   const bankTransactions = getUnifiedTransactions(
     business.ownerName,
@@ -147,7 +153,7 @@ export default function BusinessDetail({
 
   const ownerProfit = state.investments
     .filter((inv) => inv.businessId === businessId)
-    .reduce((sum, inv) => sum + (inv.amount * (business.interestRate || 0)) / 100, 0);
+    .reduce((sum, inv) => sum + (inv.amount * (inv.interestRate || 0)) / 100, 0);
 
   const unifiedBalance = getUnifiedBankBalance(
     business.ownerName,
@@ -156,6 +162,25 @@ export default function BusinessDetail({
     state.investments,
     state.settings,
   );
+
+  const ownerInvestor = state.investors.find((inv) => inv.name === business.ownerName);
+  
+  const allTimeInvestments = state.investments.filter((inv) => inv.businessId === businessId && inv.status !== 'defaulted');
+  const allTimeInvestedAmount = allTimeInvestments.reduce((sum, inv) => sum + inv.amount, 0);
+  
+  const profitTakenOut = allTimeInvestments
+    .filter(inv => inv.status === 'completed')
+    .reduce((sum, inv) => sum + ((inv.payoutDetails?.totalCredited || inv.amount) - inv.amount), 0);
+    
+  const maxInvestment = allTimeInvestments.length > 0 ? Math.max(...allTimeInvestments.map(inv => inv.amount)) : 0;
+  const minInvestment = allTimeInvestments.length > 0 ? Math.min(...allTimeInvestments.map(inv => inv.amount)) : 0;
+  
+  const totalProfitGiven = Math.max(0, profitTakenOut + totalProfitPay); 
+  const suggestedPriceCalc = Math.max(1000, Math.round((allTimeInvestedAmount + totalProfitGiven) * 0.1));
+  const suggestedTriggerPrice = business.fundingRequired ? Math.min(suggestedPriceCalc, business.fundingRequired) : suggestedPriceCalc;
+
+  const valueAmount = totalFunded + totalProfitPay + ownerProfit;
+  const valuePercentage = totalFunded > 0 ? ((valueAmount - totalFunded) / totalFunded) * 100 : 0;
 
   const handleSaveProfile = () => {
     const updatedOwnerName = formData.ownerName.trim();
@@ -218,6 +243,8 @@ export default function BusinessDetail({
         triggerAmount: amount,
         triggerMinQuantity: minQty > 0 ? minQty : undefined,
         triggerMaxQuantity: maxQty > 0 ? maxQty : undefined,
+        increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
+        downMarket: parseFloat(triggerConfig.downMarket) || undefined,
         triggerHistory: newHistory
       },
     });
@@ -301,7 +328,7 @@ export default function BusinessDetail({
     <div className="bg-white dark:bg-kite-surface flex flex-col h-full -mx-3 md:mx-0 px-0 md:px-0 md:rounded-lg animate-slide-in-mobile relative font-sans text-kite-text">
       {/* Header */}
       <div className="bg-white dark:bg-kite-surface px-4 py-3 flex items-center border-b border-kite-border-soft">
-        <button onClick={() => currentView === "menu" ? onBack() : setCurrentView("menu")} className="mr-4 text-kite-text flex items-center justify-center">
+        <button onClick={() => currentView === "menu" ? onBack() : currentView === 'trigger-suggestion' || currentView === 'trigger-history' ? setCurrentView('trigger') : setCurrentView("menu")} className="mr-4 text-kite-text flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-[17px] font-medium tracking-wide">
@@ -313,6 +340,7 @@ export default function BusinessDetail({
           {currentView === "registration" && "Registration Information"}
           {currentView === "policy" && "Business Policy"}
           {currentView === "trigger" && "Trigger Price Set"}
+          {currentView === "trigger-suggestion" && "Value Overview"}
           {currentView === "trigger-history" && "Trigger Set History"}
         </h1>
       </div>
@@ -527,7 +555,7 @@ export default function BusinessDetail({
           </div>
           <div className="md:hidden bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
              <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total profit pay</p>
-             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalProfitPayMobile).replace("₹", "")}</p>
+             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalProfitPay).replace("₹", "")}</p>
           </div>
           <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
              <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Investors</p>
@@ -567,7 +595,7 @@ export default function BusinessDetail({
                      return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
                    }).map((inv, idx) => {
                      const investor = state.investors.find(i => i.id === inv.investorId);
-                     const ownerProfit = (inv.amount * (business.interestRate || 0)) / 100;
+                     const ownerProfit = (inv.amount * (inv.interestRate || 0)) / 100;
                      const trend = marketTrends[businessId] || 0;
                      const isCompleted = inv.status === "completed";
                      const liveProfit = isCompleted ? 0 : inv.amount * (trend / 100);
@@ -604,7 +632,7 @@ export default function BusinessDetail({
                  return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
                }).map((inv, idx) => {
                  const investor = state.investors.find(i => i.id === inv.investorId);
-                 const profit = (inv.amount * (business.interestRate || 0)) / 100;
+                 const profit = (inv.amount * (inv.interestRate || 0)) / 100;
                  return (
                    <div key={`biz_inv_mob_${inv.id}_${idx}`} className="p-4 flex justify-between items-center px-5">
                       <div>
@@ -747,6 +775,25 @@ export default function BusinessDetail({
 
       {currentView === "trigger" && (
         <div className="bg-white dark:bg-kite-surface flex-1 p-4 md:p-6 space-y-6">
+          <div className="space-y-4 mb-6 pb-6 border-b border-kite-border-soft">
+            <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text">Funding Overview</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Total Investments ₹</p>
+                <p className="text-[15px] font-medium text-kite-text">{formatINR(totalFunded)}</p>
+              </div>
+              <div 
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-kite-bg p-2 -m-2 rounded transition-colors"
+                onClick={() => setCurrentView("trigger-suggestion")}
+              >
+                <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1 flex items-center gap-1">Value <ChevronRight className="w-3 h-3"/></p>
+                <p className={`text-[15px] font-medium ${valueAmount >= totalFunded ? "text-kite-green" : "text-kite-red"}`}>
+                  {formatINR(valueAmount)} <span className="text-[12px] font-normal opacity-90">({valuePercentage > 0 ? '+' : ''}{valuePercentage.toFixed(2)}%)</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text mb-4">Investment Mode</h3>
             <div className="flex bg-gray-100 dark:bg-kite-bg p-1 rounded-md">
@@ -914,6 +961,132 @@ export default function BusinessDetail({
               No trigger history found.
             </div>
           )}
+        </div>
+      )}
+
+      {currentView === "trigger-suggestion" && (
+        <div className="bg-white dark:bg-kite-surface flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
+          <div className="flex items-center gap-4 border-b border-kite-border-soft pb-4">
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 dark:bg-kite-bg shrink-0">
+              {business.photoUrl ? (
+                <img src={business.photoUrl} alt={business.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[24px] font-medium text-kite-text-light">
+                  {business.name.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div>
+              <h2 className="text-[18px] md:text-[20px] font-medium text-kite-text">{business.name}</h2>
+              <div className="flex items-center gap-2 mt-1">
+                {ownerInvestor?.photoUrl && (
+                  <img src={ownerInvestor.photoUrl} alt={ownerInvestor.name} className="w-5 h-5 rounded-full object-cover" />
+                )}
+                <span className="text-[13px] text-kite-text-light">Owned by {business.ownerName}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-5 mt-2">
+            <div className="grid grid-cols-2 gap-y-5">
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Total Invested</span>
+                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(allTimeInvestedAmount)}</span>
+              </div>
+              <div className="flex flex-col text-right">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Active Invested</span>
+                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(totalFunded)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Highest Inv.</span>
+                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(maxInvestment)}</span>
+              </div>
+              <div className="flex flex-col text-right">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Lowest Inv.</span>
+                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(minInvestment)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Profit Taken Out</span>
+                <span className="text-[14px] text-kite-green font-mono">
+                  {formatCompactZerodha(profitTakenOut)} 
+                  <span className="text-[11px] text-kite-text-light font-sans ml-1">({allTimeInvestedAmount > 0 ? ((profitTakenOut/allTimeInvestedAmount)*100).toFixed(1) : 0}%)</span>
+                </span>
+              </div>
+              <div className="flex flex-col text-right">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Total Profit Given</span>
+                <span className="text-[14px] text-kite-green font-mono">
+                  {formatCompactZerodha(totalProfitGiven)} 
+                  <span className="text-[11px] text-kite-text-light font-sans ml-1">({allTimeInvestedAmount > 0 ? ((totalProfitGiven/allTimeInvestedAmount)*100).toFixed(1) : 0}%)</span>
+                </span>
+              </div>
+            </div>
+            
+            <div className="mt-2 mb-2">
+              <div className="flex justify-between text-[11px] text-kite-text-light mb-1">
+                <span>Low: {formatCompactZerodha(minInvestment)}</span>
+                <span>High: {formatCompactZerodha(maxInvestment)}</span>
+              </div>
+              <div className="h-1 bg-kite-border-soft rounded-full overflow-hidden flex relative">
+                <div 
+                  className="absolute top-0 bottom-0 left-0 bg-kite-blue opacity-30" 
+                  style={{ width: `${maxInvestment > 0 ? (allTimeInvestedAmount / maxInvestment) * 100 : 0}%`, maxWidth: '100%' }}
+                ></div>
+                <div 
+                  className="absolute top-0 bottom-0 left-0 bg-kite-blue" 
+                  style={{ width: `${maxInvestment > 0 ? (totalFunded / maxInvestment) * 100 : 0}%`, maxWidth: '100%' }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+                    <div className="border border-kite-border-soft rounded mt-4 overflow-hidden">
+            <div className="p-3 border-b border-kite-border-soft flex justify-between items-center bg-gray-50 dark:bg-kite-bg/50">
+               <span className="text-[12px] font-medium text-kite-text uppercase tracking-wide">Market Settings (Per Qty)</span>
+            </div>
+            <div className="p-4 bg-white dark:bg-kite-surface flex flex-col gap-4">
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="text-[11px] text-kite-text-light uppercase tracking-wide mb-1 block">Increase Market (₹)</label>
+                   <input
+                     type="number"
+                     step="0.01"
+                     value={triggerConfig.increaseMarket}
+                     onChange={(e) => setTriggerConfig({ ...triggerConfig, increaseMarket: e.target.value })}
+                     className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] font-mono text-kite-text focus:border-kite-blue transition-colors"
+                     placeholder="e.g. 2.5"
+                   />
+                 </div>
+                 <div>
+                   <label className="text-[11px] text-kite-text-light uppercase tracking-wide mb-1 block">Down Market (₹)</label>
+                   <input
+                     type="number"
+                     step="0.01"
+                     value={triggerConfig.downMarket}
+                     onChange={(e) => setTriggerConfig({ ...triggerConfig, downMarket: e.target.value })}
+                     className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] font-mono text-kite-text focus:border-kite-blue transition-colors"
+                     placeholder="e.g. 4"
+                   />
+                 </div>
+               </div>
+               <button
+                onClick={() => {
+                  dispatch({
+                    type: "UPDATE_BUSINESS",
+                    payload: {
+                      ...business,
+                      increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
+                      downMarket: parseFloat(triggerConfig.downMarket) || undefined,
+                    }
+                  });
+                  setShowSuccess(true);
+                  setTimeout(() => setShowSuccess(false), 2000);
+                }}
+                className="w-full bg-kite-blue text-white px-5 py-2.5 rounded text-[13px] font-medium hover:bg-kite-blue-dark transition-colors uppercase tracking-wide mt-2"
+              >
+                {showSuccess ? "Saved Successfully" : "Save Market Settings"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

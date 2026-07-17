@@ -32,6 +32,8 @@ export interface Business {
   triggerAmount?: number;
   triggerMinQuantity?: number;
   triggerMaxQuantity?: number;
+  increaseMarket?: number;
+  downMarket?: number;
   triggerHistory?: { id: string; amount: number; timestamp: string }[];
 }
 

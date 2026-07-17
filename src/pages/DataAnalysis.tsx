@@ -99,6 +99,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
       liveTotalValue,
       activeTotalInv,
       activeLiveTotalValue,
+      triggerAmount: b.triggerAmount,
       overallTrend,
       totalRet,
       investorCount,
@@ -467,13 +468,11 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
     );
   };
   const renderLiveAmount = (b: any, defaultClass: string ="") => {
-    if (b.totalInv === 0)
-      return <span className={defaultClass}>{formatINR(b.totalInv)}</span>;
     const isUp = b.overallTrend >= b.interestRate;
     const colorClass = isUp ?"text-kite-green" :"text-kite-red";
     return (
       <span className={`${colorClass} ${defaultClass}`}>
-        {formatINR(b.liveTotalValue)}
+        {b.triggerAmount ? formatINR(b.triggerAmount) : '-'}
       </span>
     );
   };
@@ -519,7 +518,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                 </div>
                 <div className="flex flex-col items-end">
                   <span className={`font-medium text-[13px] ${trendColor}`}>
-                    {b.activeTotalInv === 0 ? formatINR(0) : formatINR(b.activeLiveTotalValue)}
+                    {b.triggerAmount ? formatINR(b.triggerAmount) : '-'}
                   </span>
                   <span className={`text-[10px] font-medium mt-0.5 ${trendColor}`}>
                     {b.overallTrend > 0 ? "+" : ""}{b.overallTrend.toFixed(2)}%

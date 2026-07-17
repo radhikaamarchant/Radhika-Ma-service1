@@ -113,8 +113,30 @@ export default function BusinessSidebar() {
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {filteredBusinesses.map((business, index) => {
-          const totalInvested = state.investments.filter(i => i.businessId === business.id).reduce((sum, inv) => sum + inv.amount, 0);
           const overallTrend = marketState.trends[business.id] ?? business.interestRate;
+          
+          let displayAmount = 0;
+          if (business.triggerAmount) {
+            const activeInvs = state.investments.filter(i => i.businessId === business.id && i.status === "active");
+            const closedInvs = state.investments.filter(i => i.businessId === business.id && i.status === "completed");
+
+            let totalQtyActive = 0;
+            activeInvs.forEach(i => {
+              totalQtyActive += (i.quantity || Math.floor(i.amount / (business.triggerAmount || 1)));
+            });
+
+            let totalQtyClosed = 0;
+            closedInvs.forEach(i => {
+              totalQtyClosed += (i.quantity || Math.floor(i.amount / (business.triggerAmount || 1)));
+            });
+
+            const increaseAmt = totalQtyActive * (business.increaseMarket || 0);
+            const downAmt = totalQtyClosed * (business.downMarket || 0);
+            displayAmount = business.triggerAmount + increaseAmt - downAmt;
+            if(displayAmount < 0) displayAmount = 0;
+          } else {
+            displayAmount = state.investments.filter(i => i.businessId === business.id).reduce((sum, inv) => sum + inv.amount, 0);
+          }
           
           return (
           <div
@@ -125,7 +147,7 @@ export default function BusinessSidebar() {
               setShowInvestModal(true);
             }}
           >
-            <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={totalInvested} roi={business.interestRate} overallTrend={overallTrend} isOpen={isMarketOpen} />
+            <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={displayAmount} roi={business.interestRate} overallTrend={overallTrend} isOpen={isMarketOpen} />
           </div>
         )})}
         {filteredBusinesses.length === 0 && (

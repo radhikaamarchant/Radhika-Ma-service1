@@ -305,7 +305,7 @@ export default function Businesses() {
                     ROI
                   </div>
                   <div className="w-[14%] text-right py-2 text-[12px] text-kite-text pl-5 border-l border-kite-vertical-divider">
-                    FUND
+                    TRIGGER
                   </div>
                 </div>
               </div>
@@ -361,7 +361,7 @@ export default function Businesses() {
                               <div className="flex flex-col items-end">
                                 {" "}
                                 <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
-                                  {formatINR(business.fundingRequired)}
+                                  {business.triggerAmount ? formatINR(business.triggerAmount) : '-'}
                                 </span>{" "}
                                 <span className="text-[11px] md:text-[12px] font-normal mt-0.5 text-kite-green">
                                   {" "}
@@ -412,7 +412,7 @@ export default function Businesses() {
                               {business.interestRate}%
                             </div>
                             <div className="w-[14%] text-right py-3 text-[13px] font-normal text-kite-text pl-5 border-l border-kite-vertical-divider truncate">
-                              {`₹${formatLargeNumber(totalInvested)}`}
+                              {business.triggerAmount ? formatINR(business.triggerAmount) : '-'}
                             </div>
                           </div>
 
