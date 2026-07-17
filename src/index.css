@@ -86,7 +86,7 @@
   --white-color: #FFFFFF;
 }
 
-.dark button:disabled, 
+ 
 .dark input:disabled,
 .dark .disabled\:opacity-70:disabled {
   background-color: #404040 !important;
@@ -181,7 +181,7 @@
   
 
   
-  .dark button:disabled, 
+   
   .dark input:disabled,
   .dark .disabled\:opacity-70:disabled {
     background-color: #404040 !important;
@@ -413,7 +413,7 @@ body.is-popping .fixed.inset-0.z-\[110\] {
 }
 
   @media (min-width: 768px) {
-    .dark button:disabled, 
+     
     .dark input:disabled,
     .dark .disabled\:opacity-70:disabled {
       background-color: #2A2A2A !important;
@@ -936,3 +936,26 @@ body.is-popping .fixed.inset-0.z-\[110\] {
   input[type='number'] {
     -moz-appearance: textfield;
   }
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+.animate-progress-indeterminate {
+  animation: progress-indeterminate 1.5s infinite linear;
+}
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+.animate-dot-1 {
+  animation: dot-pulse 1.4s infinite ease-in-out both;
+}
+.animate-dot-2 {
+  animation: dot-pulse 1.4s infinite ease-in-out both;
+  animation-delay: 0.2s;
+}
+.animate-dot-3 {
+  animation: dot-pulse 1.4s infinite ease-in-out both;
+  animation-delay: 0.4s;
+}

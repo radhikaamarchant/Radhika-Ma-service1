@@ -54,6 +54,8 @@ export default function BusinessDetail({
   const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration" | "policy" | "trigger" | "trigger-history" | "trigger-suggestion">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSavingTrigger, setIsSavingTrigger] = useState(false);
+  const [isSavingMarket, setIsSavingMarket] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -235,25 +237,27 @@ export default function BusinessDetail({
       });
     }
 
-    dispatch({
-      type: "UPDATE_BUSINESS",
-      payload: {
-        ...business,
-        investmentType: triggerConfig.type as 'manual' | 'trigger',
-        triggerAmount: amount,
-        triggerMinQuantity: minQty > 0 ? minQty : undefined,
-        triggerMaxQuantity: maxQty > 0 ? maxQty : undefined,
-        increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
-        downMarket: parseFloat(triggerConfig.downMarket) || undefined,
-        triggerHistory: newHistory
-      },
-    });
-    
-    setShowSuccess(true);
+    setIsSavingTrigger(true);
     setTimeout(() => {
-      setShowSuccess(false);
-      setCurrentView("menu");
-    }, 1500);
+      dispatch({
+        type: "UPDATE_BUSINESS",
+        payload: {
+          ...business,
+          investmentType: triggerConfig.type as 'manual' | 'trigger',
+          triggerAmount: amount,
+          triggerMinQuantity: minQty > 0 ? minQty : undefined,
+          triggerMaxQuantity: maxQty > 0 ? maxQty : undefined,
+          increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
+          downMarket: parseFloat(triggerConfig.downMarket) || undefined,
+          triggerHistory: newHistory
+        },
+      });
+      setIsSavingTrigger(false);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+    }, 1000);
   };
 
   const handleSaveFunds = () => {
@@ -814,7 +818,7 @@ export default function BusinessDetail({
             {triggerConfig.type === 'trigger' && (
               <div className="mt-6 pt-4 border-t border-kite-border-soft animate-fade-in space-y-6">
                 <div>
-                  <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Trigger Amount (₹)</label>
+                  <label className="block text-[10px] md:text-[11px] font-normal mb-1 text-kite-text-light uppercase">per share price ₹</label>
                   <input
                     type="text"
                     className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
@@ -835,7 +839,7 @@ export default function BusinessDetail({
                 
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Min Quantity</label>
+                    <label className="block text-[10px] md:text-[11px] font-normal mb-1 text-kite-text-light uppercase">Min Qty</label>
                     <input
                       type="text"
                       className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
@@ -861,7 +865,7 @@ export default function BusinessDetail({
                     )}
                   </div>
                   <div className="flex-1">
-                    <label className="block text-[11px] md:text-[12px] font-normal mb-1 text-kite-text-light uppercase">Max Quantity</label>
+                    <label className="block text-[10px] md:text-[11px] font-normal mb-1 text-kite-text-light uppercase">Max Qty</label>
                     <input
                       type="text"
                       className="w-full border-b border-kite-border-hard py-1.5 bg-transparent text-[14px] md:text-[15px] font-normal text-kite-text focus:border-kite-blue outline-none"
@@ -893,17 +897,25 @@ export default function BusinessDetail({
           
           <button 
             onClick={handleSaveTrigger} 
-            className={`w-full py-3 rounded text-[14px] md:text-[15px] font-normal mt-4 transition-all duration-300 flex items-center justify-center ${showSuccess ? 'bg-kite-blue text-white' : 'bg-[#4CAF50] text-white'}`}
+            className={`w-full py-3 rounded text-[14px] md:text-[15px] font-medium mt-4 transition-all duration-300 flex items-center justify-center bg-kite-blue text-white hover:bg-kite-blue-dark`}
           >
-            {showSuccess ? (
+            {isSavingTrigger ? (
+              <span className="flex items-center space-x-2">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Confirming...</span>
+              </span>
+            ) : showSuccess ? (
               <span className="flex items-center space-x-2 animate-fade-in">
                 <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Trigger Settings Saved</span>
+                <span>verifed value</span>
               </span>
             ) : (
-              "Save Settings"
+              "Confirm"
             )}
           </button>
 
@@ -1041,12 +1053,12 @@ export default function BusinessDetail({
 
                     <div className="border border-kite-border-soft rounded mt-4 overflow-hidden">
             <div className="p-3 border-b border-kite-border-soft flex justify-between items-center bg-gray-50 dark:bg-kite-bg/50">
-               <span className="text-[12px] font-medium text-kite-text uppercase tracking-wide">Market Settings (Per Qty)</span>
+               <span className="text-[12px] font-medium text-kite-text uppercase tracking-wide">Mange market cap Per Qty</span>
             </div>
             <div className="p-4 bg-white dark:bg-kite-surface flex flex-col gap-4">
                <div className="grid grid-cols-2 gap-4">
                  <div>
-                   <label className="text-[11px] text-kite-text-light uppercase tracking-wide mb-1 block">Increase Market (₹)</label>
+                   <label className="text-[11px] text-kite-text-light uppercase tracking-wide mb-1 block">Value Market %</label>
                    <input
                      type="number"
                      step="0.01"
@@ -1057,7 +1069,7 @@ export default function BusinessDetail({
                    />
                  </div>
                  <div>
-                   <label className="text-[11px] text-kite-text-light uppercase tracking-wide mb-1 block">Down Market (₹)</label>
+                   <label className="text-[11px] text-kite-text-light uppercase tracking-wide mb-1 block">down value market %</label>
                    <input
                      type="number"
                      step="0.01"
@@ -1070,20 +1082,32 @@ export default function BusinessDetail({
                </div>
                <button
                 onClick={() => {
-                  dispatch({
-                    type: "UPDATE_BUSINESS",
-                    payload: {
-                      ...business,
-                      increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
-                      downMarket: parseFloat(triggerConfig.downMarket) || undefined,
-                    }
-                  });
-                  setShowSuccess(true);
-                  setTimeout(() => setShowSuccess(false), 2000);
+                  setIsSavingMarket(true);
+                  setTimeout(() => {
+                    dispatch({
+                      type: "UPDATE_BUSINESS",
+                      payload: {
+                        ...business,
+                        increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
+                        downMarket: parseFloat(triggerConfig.downMarket) || undefined,
+                      }
+                    });
+                    setIsSavingMarket(false);
+                    setShowSuccess(true);
+                    setTimeout(() => setShowSuccess(false), 2000);
+                  }, 1000);
                 }}
-                className="w-full bg-kite-blue text-white px-5 py-2.5 rounded text-[13px] font-medium hover:bg-kite-blue-dark transition-colors uppercase tracking-wide mt-2"
+                className="w-full bg-kite-blue !text-white dark:text-white px-5 py-2.5 rounded text-[13px] font-medium hover:bg-kite-blue-dark transition-colors uppercase tracking-wide mt-2"
               >
-                {showSuccess ? "Saved Successfully" : "Save Market Settings"}
+                {isSavingMarket ? (
+                  <span className="flex items-center justify-center space-x-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Saving...</span>
+                  </span>
+                ) : showSuccess ? "verifed value" : "confrim market cap"}
               </button>
             </div>
           </div>

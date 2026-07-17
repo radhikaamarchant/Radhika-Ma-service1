@@ -37,13 +37,14 @@ export default function Businesses() {
 
   const [showOwnerSelect, setShowOwnerSelect] = useState(false);
   const [ownerSearch, setOwnerSearch] = useState("");
-  const [ownerMode, setOwnerMode] = useState("existing");
+  const [ownerMode, setOwnerMode] = useState("new");
   const [showBankSelect, setShowBankSelect] = useState(false);
   const [bankSearch, setBankSearch] = useState("");
   const [showInvestorSelect, setShowInvestorSelect] = useState(false);
   const [investorSearch, setInvestorSearch] = useState("");
   const [showInterestCalculation, setShowInterestCalculation] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isNextLoading, setIsNextLoading] = useState(false);
   const [showVerifySuccess, setShowVerifySuccess] = useState(false);
 
   // Scroll preservation
@@ -150,13 +151,18 @@ export default function Businesses() {
       accountHolderName: "",
       registrationFee: ""
     });
-    setOwnerMode("existing");
+    setOwnerMode("new");
     setViewMode("add-step-1");
   };
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    setViewMode("add-step-2");
+    setIsNextLoading(true);
+    setFormData(prev => ({ ...prev, accountHolderName: prev.ownerName.toUpperCase() }));
+    setTimeout(() => {
+      setIsNextLoading(false);
+      setViewMode("add-step-2");
+    }, 1000);
   };
 
   const handleVerifiedSave = (e: React.FormEvent) => {
@@ -468,7 +474,7 @@ export default function Businesses() {
           </>
         )}{" "}
         {viewMode === "add-step-1" && (
-          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
+          <div className="w-full max-w-xl md:max-w-full mx-auto md:mx-0 bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
             {" "}
             <div className="flex flex-col md:flex-row gap-3 mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
               <button
@@ -631,12 +637,12 @@ export default function Businesses() {
                         required
                         type="text"
                         autoFocus
-                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
+                        className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none uppercase"
                         value={formData.name}
                         onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
+                          setFormData({ ...formData, name: e.target.value.toUpperCase() })
                         }
-                        placeholder="e.g. Acme Corp"
+                        placeholder="Example : Encore Health Private Limited"
                       />{" "}
                     </div>{" "}
                     <div>
@@ -651,10 +657,10 @@ export default function Businesses() {
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            shortName: e.target.value,
+                            shortName: e.target.value.toUpperCase(),
                           })
                         }
-                        placeholder="e.g. ACME"
+                        placeholder="Example : ENCOREHPL"
                       />{" "}
                     </div>{" "}
                     {ownerMode === "new" && (
@@ -678,15 +684,15 @@ export default function Businesses() {
                         <input
                           required
                           type="text"
-                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none"
+                          className="w-full border-0 border-b border-kite-border dark:border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text dark:text-kite-text focus:ring-0 focus:border-kite-blue transition-colors placeholder-gray-400 dark:placeholder-kite-text-light outline-none uppercase"
                           value={formData.ownerName}
                           onChange={(e) =>
                             setFormData({
                               ...formData,
-                              ownerName: e.target.value,
+                              ownerName: e.target.value.toUpperCase(),
                             })
                           }
-                          placeholder="e.g. John Doe"
+                          placeholder="Example : Radhika Marchant"
                         />{" "}
                         {showInvestorSelect && (
                           <div className="absolute z-20 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
@@ -946,29 +952,43 @@ export default function Businesses() {
                       )}{" "}
                   </div>{" "}
               </div>{" "}
-              <div className="flex justify-between items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border">
+              <div className="flex flex-col items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border space-y-4">
                 {" "}
                 <button
-                  type="button"
-                  onClick={() => setViewMode("list")}
-                  className="font-medium text-kite-text-light hover:text-gray-700"
-                >
-                  Cancel
-                </button>{" "}
-                <button
                   type="submit"
-                  className="font-medium flex items-center bg-kite-blue text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                  disabled={isNextLoading}
+                  className="w-full md:w-auto min-w-[200px] font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors disabled:opacity-100 disabled:cursor-not-allowed"
                 >
                   {" "}
-                  <span>Next Step</span>{" "}
-                  <ArrowRight className="w-4 h-4 ml-2" />{" "}
+                  {isNextLoading ? (
+                    <span className="flex items-center space-x-2">
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Loading...</span>
+                    </span>
+                  ) : (
+                    <>
+                      <span>Next Step</span>{" "}
+                      <ArrowRight className="w-4 h-4 ml-2" />{" "}
+                    </>
+                  )}
+                </button>{" "}
+                <button
+                  type="button"
+                  disabled={isNextLoading}
+                  onClick={() => setViewMode("list")}
+                  className="w-full md:w-auto min-w-[200px] font-medium text-kite-text hover:text-kite-blue py-2 transition-colors disabled:opacity-50"
+                >
+                  Cancel
                 </button>{" "}
               </div>{" "}
             </form>{" "}
           </div>
         )}{" "}
         {viewMode === "add-step-2" && (
-          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
+          <div className="w-full max-w-xl md:max-w-full mx-auto md:mx-0 bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
             <div className="flex items-center mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
               <button
                 type="button"
@@ -1125,7 +1145,7 @@ export default function Businesses() {
                   )}
                 </div>
               </div>
-              <div className="border-t border-kite-border dark:border-kite-border pt-6 mt-2">
+              <div className="pt-2 mt-2">
                 <label className="block text-[11px] md:text-[12px] font-medium mb-1 text-kite-text dark:text-kite-text uppercase tracking-wider">
                   Registration Fee (₹)
                 </label>
@@ -1152,19 +1172,31 @@ export default function Businesses() {
                   placeholder="e.g. 10,000"
                 />
               </div>
-              <div className="flex justify-between items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("add-step-1")}
-                  className="font-medium text-kite-text hover:text-kite-blue transition-colors text-[13px] md:text-[14px]"
-                >
-                  ← Back
-                </button>
+              <div className="flex flex-col items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border space-y-4">
                 <button
                   type="submit"
-                  className="font-medium bg-kite-blue text-white px-4 py-2 rounded text-[13px] md:text-[14px] hover:bg-opacity-90 transition-colors"
+                  disabled={isVerifying}
+                  className="w-full md:w-auto min-w-[200px] font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors disabled:opacity-100 disabled:cursor-not-allowed"
                 >
-                  ✓ Verify & Register
+                  {isVerifying ? (
+                    <span className="flex items-center space-x-2">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Verifying...</span>
+                    </span>
+                  ) : (
+                    "✓ Verify & Register"
+                  )}
+                </button>
+                <button
+                  type="button"
+                  disabled={isVerifying}
+                  onClick={() => setViewMode("add-step-1")}
+                  className="w-full md:w-auto min-w-[200px] font-medium text-kite-text hover:text-kite-blue py-2 transition-colors disabled:opacity-50"
+                >
+                  ← Back
                 </button>
               </div>
             </form>

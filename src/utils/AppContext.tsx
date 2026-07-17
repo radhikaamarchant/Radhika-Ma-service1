@@ -290,31 +290,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{ state, dispatch }}>
       {state.loading ? (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="fixed inset-0 flex h-full w-full items-center justify-center bg-white dark:bg-kite-bg z-50"
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex items-center gap-3 md:gap-5"
-          >
-            <motion.img 
-              src="/logo.svg" 
-              alt="Radhika" 
-              className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-sm"
-              animate={{ opacity: [1, 0.7, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-black dark:text-white">
-              Radhika
-            </h1>
-          </motion.div>
-        </motion.div>
+        <div className="fixed inset-0 flex h-full w-full items-center justify-center bg-white dark:bg-kite-bg z-50">
+          <div className="flex flex-col items-center justify-center gap-6 md:gap-8">
+            <div className="flex items-center gap-3 md:gap-5">
+              <img 
+                src="/logo.svg" 
+                alt="Radhika" 
+                className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-sm"
+              />
+              <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-black dark:text-white">
+                Radhika
+              </h1>
+            </div>
+            
+            {/* Mobile Progress Bar (hidden on md) */}
+            <div className="md:hidden w-40 h-[2px] bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+              <div className="h-full bg-kite-blue w-full origin-left animate-progress-indeterminate"></div>
+            </div>
+
+            {/* Desktop Dots (hidden on sm) */}
+            <div className="hidden md:flex items-center justify-center space-x-2.5">
+              <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-1"></div>
+              <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-2"></div>
+              <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-3"></div>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           {children}
