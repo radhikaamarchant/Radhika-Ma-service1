@@ -9,10 +9,12 @@ import {
   Search,
   RefreshCw,
   X,
+  ArrowUpDown,
 } from "lucide-react";
 import { useAppContext } from "../utils/AppContext";
 import { Investment } from "../types";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
+import { getCurrentMarketPrice } from "../utils/marketSimulator";
 
 export default function AddInvestmentModal({
   isOpen,
@@ -27,14 +29,22 @@ export default function AddInvestmentModal({
 }) {
   const { state, dispatch } = useAppContext();
   const { marketState } = useMarketSimulation();
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [orderMode, setOrderMode] = useState<"BUY" | "SELL">("BUY");
+  const [inputMode, setInputMode] = useState<"AMOUNT" | "QTY">("AMOUNT");
   const [shakeQuantity, setShakeQuantity] = useState(false);
   const [formData, setFormData] = useState({
     businessId: initialBusinessId,
-    investorId: "",
+    investorIds: [] as string[],
     amount: "",
+    quantity: "" as any,
     timePeriodMonths: "12",
     adminCommissionInvestorPct: "2",
     adminCommissionBusinessPct: "2",
@@ -58,12 +68,12 @@ export default function AddInvestmentModal({
       const isTrigger = initialBusiness?.investmentType === 'trigger';
       const minQty = initialBusiness?.triggerMinQuantity || 1;
       const defaultAmount = isTrigger && initialBusiness?.triggerAmount 
-        ? new Intl.NumberFormat('en-IN').format(initialBusiness.triggerAmount * minQty) 
+        ? new Intl.NumberFormat('en-IN').format(getCurrentMarketPrice(initialBusiness, state.investments) * minQty) 
         : "";
         
       setFormData({
         businessId: initialBusinessId,
-        investorId: initialInvestorId || "",
+        investorIds: initialInvestorId ? [initialInvestorId] : [],
         amount: defaultAmount,
         quantity: minQty,
         timePeriodMonths: "12",
@@ -80,8 +90,8 @@ export default function AddInvestmentModal({
     (b) => b.id === formData.businessId,
   );
 
-  const selectedInvestor = state.investors.find(
-    (i) => i.id === formData.investorId,
+  const selectedInvestors = state.investors.filter(
+    (i) => formData.investorIds.includes(i.id),
   );
 
   const getRawAmount = (formattedValue: string) => {
@@ -114,19 +124,19 @@ export default function AddInvestmentModal({
   useKeyboardShortcuts(
     {
       enter: (e) => {
-        if (!isBooking && selectedBusiness && selectedInvestor) {
+        if (!isBooking && selectedBusiness && selectedInvestors.length > 0) {
           e.preventDefault();
           handleAddSubmit(e as any);
         }
       },
       "shift+enter": (e) => {
-        if (!isBooking && selectedBusiness && selectedInvestor) {
+        if (!isBooking && selectedBusiness && selectedInvestors.length > 0) {
           e.preventDefault();
           handleAddSubmit(e as any);
         }
       },
       shift: (e) => {
-        if (!isBooking && selectedBusiness && selectedInvestor) {
+        if (!isBooking && selectedBusiness && selectedInvestors.length > 0) {
           e.preventDefault();
           handleAddSubmit(e as any);
         }
@@ -137,8 +147,8 @@ export default function AddInvestmentModal({
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBusiness || !formData.investorId) {
-      alert("Please select both a business and an investor.");
+    if (!selectedBusiness || formData.investorIds.length === 0) {
+      alert("Please select both a business and at least one investor.");
       return;
     }
     const amount = getRawAmount(formData.amount);
@@ -149,24 +159,27 @@ export default function AddInvestmentModal({
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + parseInt(formData.timePeriodMonths));
 
-    const newInvestment: Investment = {
-      id: `inv${Date.now()}`,
-      businessId: formData.businessId,
-      investorId: formData.investorId,
-      amount: amount,
-      quantity: formData.quantity,
-      timePeriodMonths: parseInt(formData.timePeriodMonths),
-      interestRate: parseFloat(expectedRoi) || selectedBusiness.interestRate,
-      startDate: startDate.toISOString().split("T")[0],
-      endDate: endDate.toISOString().split("T")[0],
-      adminCommissionInvestor: comms.fromInvestor,
-      adminCommissionBusiness: comms.fromBusiness,
-      status: "active",
-    };
+    
 
     setIsBooking(true);
     setTimeout(() => {
-      dispatch({ type: "ADD_INVESTMENT", payload: newInvestment });
+      formData.investorIds.forEach((invId, idx) => {
+        const newInvestment: Investment = {
+          id: `inv${Date.now()}_${idx}`,
+          businessId: formData.businessId,
+          investorId: invId,
+          amount: amount,
+          quantity: formData.quantity,
+          timePeriodMonths: parseInt(formData.timePeriodMonths),
+          interestRate: parseFloat(expectedRoi) || selectedBusiness.interestRate,
+          startDate: startDate.toISOString().split("T")[0],
+          endDate: endDate.toISOString().split("T")[0],
+          adminCommissionInvestor: comms.fromInvestor,
+          adminCommissionBusiness: comms.fromBusiness,
+          status: "active",
+        };
+        dispatch({ type: "ADD_INVESTMENT", payload: newInvestment });
+      });
       if (amount >= selectedBusiness.fundingRequired) {
         dispatch({
           type: "UPDATE_BUSINESS_STATUS",
@@ -229,7 +242,7 @@ export default function AddInvestmentModal({
                   <button
                     onClick={() => {
                       setOrderMode("BUY");
-                      setFormData({ ...formData, investorId: "" });
+                      setFormData({ ...formData, investorIds: [] });
                     }}
                     className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "BUY" ? "bg-[#4184F3] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"}`}
                   >
@@ -238,7 +251,7 @@ export default function AddInvestmentModal({
                   <button
                     onClick={() => {
                       setOrderMode("SELL");
-                      setFormData({ ...formData, investorId: "" });
+                      setFormData({ ...formData, investorIds: [] });
                     }}
                     className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "SELL" ? "bg-[#FF5722] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"}`}
                   >
@@ -340,7 +353,7 @@ export default function AddInvestmentModal({
                                   onClick={() => {
                                     const isTrigger = b.investmentType === 'trigger';
                                     const amount = isTrigger && b.triggerAmount 
-                                      ? new Intl.NumberFormat('en-IN').format(b.triggerAmount) 
+                                      ? new Intl.NumberFormat('en-IN').format(getCurrentMarketPrice(b, state.investments)) 
                                       : "";
                                       
                                     setFormData({
@@ -384,8 +397,10 @@ export default function AddInvestmentModal({
                       className={`w-full flex items-center justify-between bg-white dark:bg-[#1B1B1B] border rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] transition-colors ${desktopShowInvestorSelect ? "border-[#4184F3]" : "border-gray-200 dark:border-[#2A2A2A] hover:border-[#4184F3]"}`}
                     >
                       <span className="truncate">
-                        {selectedInvestor
-                          ? selectedInvestor.name.toUpperCase()
+                        {selectedInvestors.length > 0
+                          ? selectedInvestors.length === 1
+                            ? selectedInvestors[0].name.toUpperCase()
+                            : `${selectedInvestors.length} Investors Selected`
                           : "Select Investor"}
                       </span>
                       <ChevronDown
@@ -402,13 +417,13 @@ export default function AddInvestmentModal({
                           className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] shadow-lg z-[60] flex flex-col overflow-hidden max-h-[250px]"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="p-2 border-b border-gray-100 dark:border-[#2A2A2A] shrink-0">
+                          <div className="p-2 border-b border-gray-100 dark:border-[#2A2A2A] shrink-0 flex flex-col gap-2">
                             <div className="relative">
                               <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-gray-400 dark:text-[#8F8F8F]" />
                               <input
                                 type="text"
                                 autoFocus
-                                placeholder="Search..."
+                                placeholder="Search by name or ID..."
                                 className="w-full pl-8 pr-3 py-1 bg-gray-50 dark:bg-[#111111] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3]"
                                 value={investorSearch}
                                 onChange={(e) =>
@@ -416,14 +431,48 @@ export default function AddInvestmentModal({
                                 }
                               />
                             </div>
+                            <div className="flex justify-end">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const filteredIds = sortedInvestors.filter((i) => {
+                                    if (
+                                      !i.name.toLowerCase().includes(investorSearch.toLowerCase()) &&
+                                      !i.investorId?.toLowerCase().includes(investorSearch.toLowerCase())
+                                    )
+                                      return false;
+                                    if (!isMobile && orderMode === "SELL" && selectedBusiness) {
+                                      const hasActive = state.investments.some(
+                                        (inv: any) =>
+                                          inv.investorId === i.id &&
+                                          inv.businessId === selectedBusiness.id &&
+                                          inv.status === "active",
+                                      );
+                                      if (!hasActive) return false;
+                                    }
+                                    return true;
+                                  }).map(i => i.id);
+
+                                  if (filteredIds.every(id => formData.investorIds.includes(id)) && filteredIds.length > 0) {
+                                    setFormData({ ...formData, investorIds: formData.investorIds.filter(id => !filteredIds.includes(id)) });
+                                  } else {
+                                    const newSet = new Set([...formData.investorIds, ...filteredIds]);
+                                    setFormData({ ...formData, investorIds: Array.from(newSet) });
+                                  }
+                                }}
+                                className="text-[12px] text-[#4184F3] hover:underline font-medium"
+                              >
+                                Select All
+                              </button>
+                            </div>
                           </div>
                           <div className="flex-1 overflow-y-auto">
                             {sortedInvestors
                               .filter((i) => {
                                 if (
-                                  !i.name
-                                    .toLowerCase()
-                                    .includes(investorSearch.toLowerCase())
+                                  !i.name.toLowerCase().includes(investorSearch.toLowerCase()) &&
+                                  !i.investorId?.toLowerCase().includes(investorSearch.toLowerCase())
                                 )
                                   return false;
                                 if (
@@ -454,29 +503,46 @@ export default function AddInvestmentModal({
                                 return (
                                   <button
                                     key={i.id}
-                                    onClick={() => {
-                                      setFormData({
-                                        ...formData,
-                                        investorId: i.id,
-                                      });
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setFormData({ ...formData, investorIds: [i.id] });
                                       setDesktopShowInvestorSelect(false);
+                                      setInvestorSearch("");
                                     }}
-                                    className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] flex items-center justify-between"
+                                    className={`w-full text-left px-3 py-2 text-[13px] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#E3E3E3]"}`}
                                   >
-                                    <div className="flex items-center gap-2">
-                                      <span>{i.name.toUpperCase()}</span>
-                                      {activeCount > 0 && (
-                                        <div className="bg-[#4184F3] text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center justify-center min-w-[16px] h-[16px]">
+                                    <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                      {i.photoUrl ? (
+                                        <img src={i.photoUrl} alt={i.name} className="w-5 h-5 rounded-full object-cover shrink-0" />
+                                      ) : (
+                                        <div className="w-5 h-5 rounded-full bg-[#E8F0FE] dark:bg-[#4184F3]/20 flex items-center justify-center text-[#4184F3] text-[10px] font-bold shrink-0">
+                                          {i.name.charAt(0).toUpperCase()}
+                                        </div>
+                                      )}
+                                      <span className="truncate">{i.name.toUpperCase()}</span>
+                                                                            {activeCount > 0 && (
+                                        <div className="bg-[#4184F3] text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center justify-center min-w-[16px] h-[16px] shrink-0">
                                           {activeCount}
                                         </div>
                                       )}
                                     </div>
-                                    {formData.investorId === i.id && (
-                                      <CheckCircle className="w-3.5 h-3.5 text-[#4184F3]" />
-                                    )}
+                                    <div className="flex items-center shrink-0 ml-2">
+                                      {formData.investorIds.includes(i.id) && (
+                                        <CheckCircle className="w-4 h-4 text-[#4184F3]" />
+                                      )}
+                                    </div>
                                   </button>
                                 );
                               })}
+                            {sortedInvestors.filter((i) =>
+                                i.name.toLowerCase().includes(investorSearch.toLowerCase()) ||
+                                i.investorId?.toLowerCase().includes(investorSearch.toLowerCase())
+                            ).length === 0 && (
+                              <div className="px-3 py-4 text-center text-[12px] text-gray-500 dark:text-[#8F8F8F]">
+                                No investors found
+                              </div>
+                            )}
                           </div>
                         </motion.div>
                       )}
@@ -487,18 +553,66 @@ export default function AddInvestmentModal({
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 space-y-1.5">
                   <label className="text-[12px] text-gray-500 dark:text-[#8F8F8F]">
-                    Amount (₹)
+                    {selectedBusiness?.investmentType === 'trigger' && isMobile 
+                      ? (inputMode === 'AMOUNT' ? 'Amount' : 'Quantity') 
+                      : 'Amount'}
                   </label>
-                  <input
-                    type="text"
-                    value={formData.amount ? `₹${formData.amount}` : ""}
-                    onChange={handleAmountChange}
-                    disabled={selectedBusiness?.investmentType === 'trigger'}
-                    className={`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors ${selectedBusiness?.investmentType === 'trigger' ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-[#111111]' : ''}`}
-                  />
+                  {selectedBusiness?.investmentType === 'trigger' && isMobile ? (
+                    <div className="flex items-center bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] overflow-hidden focus-within:border-[#4184F3] transition-colors w-full">
+                      <input
+                        type="text"
+                        value={inputMode === 'AMOUNT' ? (formData.amount ? `₹${formData.amount}` : "") : formData.quantity}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, "");
+                          const numericValue = raw ? Number(raw) : 0;
+                          
+                          if (inputMode === "AMOUNT") {
+                            const formatted = raw ? numericValue.toLocaleString("en-IN") : "";
+                            let calculatedQty = formData.quantity;
+                            if (selectedBusiness.triggerAmount) {
+                               calculatedQty = Math.floor(numericValue / getCurrentMarketPrice(selectedBusiness, state.investments));
+                            }
+                            setFormData({ ...formData, amount: formatted, quantity: calculatedQty || 0 });
+                          } else {
+                            let qty = numericValue;
+                            if (raw === "") qty = "" as any;
+                            let calculatedAmount = formData.amount;
+                            if (selectedBusiness.triggerAmount && raw !== "") {
+                               calculatedAmount = (qty * getCurrentMarketPrice(selectedBusiness, state.investments)).toLocaleString("en-IN");
+                            }
+                            setFormData({ ...formData, quantity: qty, amount: raw === "" ? "" : calculatedAmount });
+                          }
+                        }}
+                        className="flex-1 px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none bg-transparent w-full min-w-0"
+                      />
+                      <div className="flex items-center gap-2 pr-3 shrink-0">
+                        <span className="text-[12px] text-gray-400 dark:text-[#8F8F8F]">
+                          {inputMode === 'AMOUNT' ? `${formData.quantity || 0} Qty` : `₹${formData.amount || 0}`}
+                        </span>
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setInputMode(inputMode === 'AMOUNT' ? 'QTY' : 'AMOUNT');
+                          }}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-[#2A2A2A] rounded text-[#4184F3]"
+                        >
+                          <ArrowUpDown className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={formData.amount ? `₹${formData.amount}` : ""}
+                      onChange={handleAmountChange}
+                      disabled={selectedBusiness?.investmentType === 'trigger'}
+                      className={`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors ${selectedBusiness?.investmentType === 'trigger' ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-[#111111]' : ''}`}
+                    />
+                  )}
                 </div>
                 {selectedBusiness?.investmentType === 'trigger' && (
-                  <div className="flex-1 space-y-1.5">
+                  <div className={`${isMobile ? 'hidden' : 'flex-1 space-y-1.5'}`}>
                     <label className="text-[12px] text-gray-500 dark:text-[#8F8F8F]">
                       Quantity
                     </label>
@@ -529,7 +643,7 @@ export default function AddInvestmentModal({
                           if (qty > maxQty) qty = maxQty;
                         }
                         
-                        const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                        const newAmount = qty * (selectedBusiness.triggerAmount ? getCurrentMarketPrice(selectedBusiness, state.investments) : 0);
                         setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
                       }}
                       onBlur={() => {
@@ -539,7 +653,7 @@ export default function AddInvestmentModal({
                         if (isNaN(qty) || qty < minQty) qty = minQty;
                         if (qty > maxQty) qty = maxQty;
                         
-                        const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                        const newAmount = qty * (selectedBusiness.triggerAmount ? getCurrentMarketPrice(selectedBusiness, state.investments) : 0);
                         setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
                       }}
                       className="w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors"
@@ -634,7 +748,7 @@ export default function AddInvestmentModal({
               </button>
               <button
                 onClick={handleAddSubmit}
-                disabled={isBooking || !selectedBusiness || !selectedInvestor}
+                disabled={isBooking || !selectedBusiness || selectedInvestors.length === 0}
                 className="w-full md:w-auto px-8 py-3 md:py-2 rounded-[4px] text-[15px] md:text-[14px] font-medium text-white bg-[#4184F3] hover:bg-[#3367D6] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
                 {isBooking ? (

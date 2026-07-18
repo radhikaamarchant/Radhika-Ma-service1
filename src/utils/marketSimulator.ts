@@ -76,3 +76,41 @@ export function getBaseMarketTrend(
 
   return calculatedTrend;
 }
+
+export function getCurrentMarketPrice(business: Business | undefined, investments: Investment[]): number {
+  if (!business) return 0;
+  let displayAmount = 0;
+  if (business.triggerAmount) {
+    const activeInvs = investments.filter(i => i.businessId === business.id && i.status === "active");
+    const closedInvs = investments.filter(i => i.businessId === business.id && i.status === "completed");
+
+    let totalQtyActive = 0;
+    activeInvs.forEach(i => {
+      totalQtyActive += (i.quantity || Math.floor(i.amount / (business.triggerAmount || 1)));
+    });
+
+    let totalQtyClosed = 0;
+    closedInvs.forEach(i => {
+      totalQtyClosed += (i.quantity || Math.floor(i.amount / (business.triggerAmount || 1)));
+    });
+
+    const calculateScaledQty = (qty: number) => {
+      if (qty <= 0) return 0;
+      return Math.log10(qty + 1) * 5 + Math.pow(qty, 0.25);
+    };
+
+    const increasePct = (business.increaseMarket || 0) / 100;
+    const downPct = (business.downMarket || 0) / 100;
+
+    const increaseAmt = business.triggerAmount * increasePct * calculateScaledQty(totalQtyActive);
+    const downAmt = business.triggerAmount * downPct * calculateScaledQty(totalQtyClosed);
+    
+    displayAmount = business.triggerAmount + increaseAmt - downAmt;
+    if(displayAmount < 0.05) displayAmount = 0.05;
+  } else {
+    const activeInvs = investments.filter(i => i.businessId === business.id && i.status === "active");
+    const totalInv = activeInvs.reduce((sum, inv) => sum + inv.amount, 0);
+    displayAmount = 100 + (totalInv / 100000); // 1 Rs increase per 1 Lakh invested
+  }
+  return displayAmount;
+}

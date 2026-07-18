@@ -2,23 +2,15 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { Search } from "lucide-react";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
+import { getBaseMarketTrend, getCurrentMarketPrice } from "../utils/marketSimulator";
 import { getMarketTimeContext } from "../utils/marketTiming";
 import AddInvestmentModal from "./AddInvestmentModal";
 
-const formatLargeNumber = (num: number) => {
-  if (num === 0) return "0";
-  const absNum = Math.abs(num);
-  let formatted = '';
-  if (absNum >= 10000000) {
-    formatted = (absNum / 10000000).toFixed(2).replace(/\.00$/, '') + ' CR';
-  } else if (absNum >= 100000) {
-    formatted = (absNum / 100000).toFixed(2).replace(/\.00$/, '') + ' LK';
-  } else if (absNum >= 1000) {
-    formatted = (absNum / 1000).toFixed(2).replace(/\.00$/, '') + ' K';
-  } else {
-    formatted = absNum.toFixed(2).replace(/\.00$/, '');
-  }
-  return (num < 0 ? "-" : "") + formatted;
+const formatPrice = (num: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(num);
 };
 
 const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { name: string; baseAmount: number; roi: number; overallTrend: number; isOpen: boolean }) => {
@@ -32,7 +24,6 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { nam
       setCurrentAmount(displayBase);
       return;
     }
-
     let current = displayBase;
     const interval = setInterval(() => {
       const change = current * (Math.random() * 0.002 - 0.001); // +/- 0.1% change
@@ -71,7 +62,7 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { nam
       </div>
       <div className="text-right whitespace-nowrap">
         <span className={`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums ${amountColorClass}`}>
-          {formatLargeNumber(currentAmount)}
+          {formatPrice(currentAmount)}
         </span>
       </div>
     </div>
@@ -115,28 +106,7 @@ export default function BusinessSidebar() {
         {filteredBusinesses.map((business, index) => {
           const overallTrend = marketState.trends[business.id] ?? business.interestRate;
           
-          let displayAmount = 0;
-          if (business.triggerAmount) {
-            const activeInvs = state.investments.filter(i => i.businessId === business.id && i.status === "active");
-            const closedInvs = state.investments.filter(i => i.businessId === business.id && i.status === "completed");
-
-            let totalQtyActive = 0;
-            activeInvs.forEach(i => {
-              totalQtyActive += (i.quantity || Math.floor(i.amount / (business.triggerAmount || 1)));
-            });
-
-            let totalQtyClosed = 0;
-            closedInvs.forEach(i => {
-              totalQtyClosed += (i.quantity || Math.floor(i.amount / (business.triggerAmount || 1)));
-            });
-
-            const increaseAmt = totalQtyActive * (business.increaseMarket || 0);
-            const downAmt = totalQtyClosed * (business.downMarket || 0);
-            displayAmount = business.triggerAmount + increaseAmt - downAmt;
-            if(displayAmount < 0) displayAmount = 0;
-          } else {
-            displayAmount = state.investments.filter(i => i.businessId === business.id).reduce((sum, inv) => sum + inv.amount, 0);
-          }
+          const displayAmount = getCurrentMarketPrice(business, state.investments);
           
           return (
           <div

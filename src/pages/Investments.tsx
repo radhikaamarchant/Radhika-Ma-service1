@@ -1,9 +1,10 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-import React, { useState, useRef, useEffect, useLayoutEffect } from"react";
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from"react";
 import { useAppContext } from"../utils/AppContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import AddInvestmentModal from "../components/AddInvestmentModal";
 import { formatINR } from"../utils/mockData";
+import { getCurrentMarketPrice } from "../utils/marketSimulator";
 import {
   Plus,
   ReceiptIndianRupee,
@@ -13,8 +14,10 @@ import {
   Wallet,
   BadgeCheck,
   ChevronDown,
+  ChevronLeft,
   ArrowLeft,
   ArrowRight,
+  ArrowRightLeft,
   Calculator,
   MoreVertical,
   Minus,
@@ -28,7 +31,22 @@ import { calculateLiveProfit as globalCalculateLiveProfit } from"../utils/profit
 import { motion, AnimatePresence } from"motion/react";
 import { MobilePortfolioSummary } from"../components/MobilePortfolioSummary";
 import { SwipeButton } from"../components/SwipeButton";
+
+export function formatCompactINR(number: number): string {
+  if (number >= 10000000) {
+    return '₹' + (number / 10000000).toFixed(1).replace(/\.0$/, '') + 'CR';
+  }
+  if (number >= 100000) {
+    return '₹' + (number / 100000).toFixed(1).replace(/\.0$/, '') + 'LK';
+  }
+  if (number >= 1000) {
+    return '₹' + (number / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  return '₹' + number.toString();
+}
+
 export default function Investments() {
+
   const { state, dispatch } = useAppContext();
 
   useEffect(() => {
@@ -40,7 +58,7 @@ export default function Investments() {
         const b = state.businesses.find(biz => biz.id === pendingId);
         const isTrigger = b?.investmentType === 'trigger';
         const amount = isTrigger && b?.triggerAmount 
-          ? new Intl.NumberFormat("en-IN").format(b.triggerAmount) 
+          ? new Intl.NumberFormat("en-IN").format(getCurrentMarketPrice(b, state.investments)) 
           : b?.fundingRequired ? b.fundingRequired.toLocaleString("en-IN") : "";
           
         setFormData((prev: any) => ({ ...prev, businessId: pendingId, amount }));
@@ -69,6 +87,7 @@ export default function Investments() {
   const [addModalBusinessId, setAddModalBusinessId] = useState(() => sessionStorage.getItem("mobileAddInvestmentBusinessId") || "");
   const [addModalInvestorId, setAddModalInvestorId] = useState("");
   const [orderMode, setOrderMode] = useState<"BUY" | "SELL">("BUY");
+  const [inputMode, setInputMode] = useState<"AMOUNT" | "QTY">("AMOUNT");
   const [isBuyFlow, setIsBuyFlow] = useState(false);
   const [showTradeOptions, setShowTradeOptions] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -298,12 +317,12 @@ export default function Investments() {
   useMobileBackNavigation(showBusinessSelect, () => setShowBusinessSelect(false));
   useMobileBackNavigation(showInvestorSelect, () => setShowInvestorSelect(false));
   useMobileBackNavigation(!!selectedInvestment, () => setSelectedInvestment(null));
-  const uniqueInvestments = Array.from(
+  const uniqueInvestments = useMemo(() => Array.from(
     new Map<string, Investment>(
       state.investments.map((inv) => [inv.id, inv]),
     ).values(),
-  );
-  const allGroupedInvestments = Object.values(
+  ), [state.investments]);
+  const allGroupedInvestments = useMemo(() => Object.values(
     uniqueInvestments.reduce(
       (acc, inv) => {
         const key = `${inv.businessId}_${inv.investorId}_${inv.status}`;
@@ -324,12 +343,12 @@ export default function Investments() {
       },
       {} as Record<string, any>,
     ),
-  );
-  const holdingGroupedCount = allGroupedInvestments.filter(
+  ), [uniqueInvestments]);
+  const holdingGroupedCount = useMemo(() => allGroupedInvestments.filter(
     (inv: any) => inv.status ==="active",
-  ).length;
+  ).length, [allGroupedInvestments]);
   // Dynamic position count: Count only grouped investments currently in profit
-  const positionsGroupedCount = allGroupedInvestments.filter((inv: any) => {
+  const positionsGroupedCount = useMemo(() => allGroupedInvestments.filter((inv: any) => {
     if (inv.status ==="completed") {
       const actualProfit = inv.payoutDetails
         ? inv.payoutDetails.totalCredited +
@@ -346,8 +365,8 @@ export default function Investments() {
       state.settings,
     );
     return liveProfit > 0;
-  }).length;
-  const groupedInvestments = allGroupedInvestments
+  }).length, [allGroupedInvestments, marketState.trends, state.settings]);
+  const groupedInvestments = useMemo(() => allGroupedInvestments
     .filter((inv) => {
       const business = state.businesses.find((b) => b.id === inv.businessId);
       const investor = state.investors.find((i) => i.id === inv.investorId);
@@ -361,13 +380,233 @@ export default function Investments() {
           : inv.status ==="completed";
       return searchMatch && tabMatch;
     })
-    .sort((a, b) => getTime(b.id) - getTime(a.id));
-  const activeBusinesses = state.businesses
+    .sort((a, b) => getTime(b.id) - getTime(a.id)), [allGroupedInvestments, state.businesses, state.investors, searchTerm, activeTab]);
+  const activeBusinesses = useMemo(() => state.businesses
     .slice()
-    .sort((a, b) => getTime(b.id) - getTime(a.id));
-  const sortedInvestors = state.investors
+    .sort((a, b) => getTime(b.id) - getTime(a.id)), [state.businesses]);
+  const sortedInvestors = useMemo(() => state.investors
     .slice()
-    .sort((a, b) => new Date(b.joinDate || 0).getTime() - new Date(a.joinDate || 0).getTime());
+    .sort((a, b) => new Date(b.joinDate || 0).getTime() - new Date(a.joinDate || 0).getTime()), [state.investors]);
+  const renderedList = useMemo(() => {
+    return (
+      <>
+        <div className="flex flex-col pb-16">
+          {""}
+          {groupedInvestments.map((inv, idx) => {
+            const business = state.businesses.find(
+              (b) => b.id === inv.businessId,
+            );
+            const investor = state.investors.find(
+              (i) => i.id === inv.investorId,
+            );
+            const overallTrend = marketState.trends[inv.businessId] || 0;
+            const isCompleted = inv.status ==="completed";
+            const actualProfit =
+              isCompleted && inv.payoutDetails
+                ? inv.payoutDetails.totalCredited +
+                  (inv.payoutDetails.rmasCommission || 0) +
+                  (inv.payoutDetails.happyIncomeTax || 0) -
+                  inv.amount
+                : 0;
+            let liveProf = 0;
+            let currentVal = inv.amount;
+            if (!isCompleted) {
+              const { liveProfit, currentValue } = globalCalculateLiveProfit(
+                [inv],
+                inv.businessId,
+                marketState.trends,
+                state.settings,
+              );
+              liveProf = liveProfit;
+              currentVal = currentValue;
+            }
+            const holdingProfit = isCompleted ? actualProfit : liveProf;
+            const curValue = isCompleted
+              ? inv.amount + holdingProfit
+              : currentVal;
+            const pnlPercentage = isCompleted
+              ? (holdingProfit / inv.amount) * 100
+              : overallTrend;
+            const isProfit = holdingProfit >= 0;
+            // Quantities & Averages
+            const qty = inv.groupedInvestmentsList.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            const avgPrice = inv.amount / qty;
+            const currentLTP = curValue / qty;
+            const isOverallTrendPositive = overallTrend >= 0;
+            
+            return (
+              <div
+                key={`grouped_${inv.key}_${idx}`}
+                className="w-full flex flex-col md:flex-row md:items-stretch px-4 py-3 md:py-0 hover:bg-gray-50 dark:hover:bg-[#202020] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
+                onClick={() => {
+                  setSelectedInvestment(inv);
+                  setSelectedInvestmentIds(
+                    inv.groupedInvestmentsList.map((i) => i.id),
+                  );
+                  setWithdrawStep(0);
+                }}
+              >
+                {/* MOBILE VIEW */}
+                <div className="md:hidden flex flex-col w-full">
+                  {/* Line 1: Metrics Row (Qty & Avg) */}
+                  <div className="flex justify-between items-center mb-1.5 leading-tight">
+                    <div className="flex items-center text-[11px] md:text-[12px]">
+                       <span className="text-kite-text-light font-normal mr-1">Qty.</span>
+                       <span className="text-kite-text font-normal tracking-wide">{qty}</span>
+                       <span className="text-kite-text-light mx-1.5">•</span>
+                       <span className="text-kite-text-light font-normal mr-1">Avg.</span>
+                       <span className="text-kite-text font-normal tracking-wide">{formatINR(avgPrice).replace("₹", "")}</span>
+                    </div>
+                    <div className={`text-[11px] md:text-[12px] font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                      {isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%
+                    </div>
+                  </div>
+                  {/* Line 2: Core Business Name & Absolute P&L Row */}
+                  <div className="flex justify-between items-center mb-1.5 leading-tight">
+                     <div className="flex items-center gap-1.5">
+                        <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
+                           {business?.shortName ? business.shortName.toUpperCase() : (business?.name?.toUpperCase() || "UNKNOWN BUSINESS")}
+                        </h3>
+                        {business && blueTickBusinessIds.has(business.id) && (
+                          <BadgeCheck
+                            className="w-3.5 h-3.5 text-white fill-kite-blue shrink-0"
+                            title="RMAS Verified"
+                          />
+                        )}
+                     </div>
+                     <div className={`text-[13px] md:text-[14px] font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                       {isProfit && holdingProfit >= 0 ? "+" : ""}
+                       {formatINR(holdingProfit).replace("₹", "")}
+                     </div>
+                  </div>
+                  {/* Line 3: Footer Row (Investor Info & LTP) */}
+                  <div className="flex justify-between items-center leading-tight">
+                     <div className="flex items-center text-[10px] md:text-[11px]">
+                       <span className="text-kite-text-light font-normal mr-1">Investor:</span>
+                       <span className="text-kite-text font-normal uppercase tracking-wide">{investor?.name?.toUpperCase()}</span>
+                     </div>
+                     <div className="flex items-center text-[11px] md:text-[12px]">
+                       <span className="text-kite-text-light font-normal mr-1">LTP</span>
+                       <span className="text-kite-text font-normal tracking-wide">{formatINR(currentLTP).replace("₹", "")}</span>
+                     </div>
+                  </div>
+                </div>
+                {/* DESKTOP VIEW */}
+                <div className="hidden md:flex flex-row items-stretch justify-between w-full text-[13px]">
+                   <div className="w-4/12 flex flex-col gap-[2px] justify-center py-3">
+                      <div className="flex items-center gap-1.5 text-kite-text font-normal text-[13px] leading-[18px] uppercase tracking-wide desktop-business-name">
+                        {business?.shortName ? business.shortName.toUpperCase() : (business?.name?.toUpperCase() || "UNKNOWN BUSINESS")}
+                        {business && blueTickBusinessIds.has(business.id) && (
+                          <BadgeCheck className="w-3.5 h-3.5 text-white fill-kite-blue shrink-0" title="RMAS Verified" />
+                        )}
+                      </div>
+                      <span className="text-kite-text-light font-normal text-[12px] leading-[18px] uppercase tracking-wide desktop-investor-name">
+                        {investor?.name?.toUpperCase()}
+                      </span>
+                   </div>
+                   <div className="w-1/12 text-right text-kite-text-light flex flex-col justify-center py-3">{qty}</div>
+                   <div className="w-2/12 text-right text-kite-text-light flex flex-col justify-center py-3">{formatINR(avgPrice).replace("₹", "")}</div>
+                   <div className="w-2/12 text-right text-kite-text-light pr-5 flex flex-col justify-center py-3">{formatINR(curValue).replace("₹", "")}</div>
+                   <div className={`w-2/12 text-right font-normal text-[12px] leading-[16px] desktop-pnl pl-5 border-l border-kite-vertical-divider flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                      <div className="block">{isProfit && holdingProfit >= 0 ? "+" : ""}{formatINR(holdingProfit).replace("₹", "")}</div>
+                   </div>
+                   <div className={`w-1/12 text-right font-normal text-[12px] leading-[16px] desktop-net-chg flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                      <div className="block">{isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%</div>
+                   </div>
+                </div>
+              </div>
+            );
+          })}
+          {""}
+          {groupedInvestments.length === 0 && (
+            <div className="py-12 text-center flex flex-col items-center justify-center">
+              {""}
+              <p className="text-kite-text-muted text-[13px] md:text-[14px] font-light">
+                {""}
+                No investments found.
+                {""}
+              </p>
+              {""}
+            </div>
+          )}
+          {""}
+        </div>
+        {""}
+        {/* Sticky Bottom Summary Bar */}
+        {""}
+        {groupedInvestments.length > 0 && (
+          <div className="fixed bottom-0 left-0 right-0 md:relative bg-kite-surface border-t border-kite-border px-4 py-3 flex justify-between items-center shadow-[0_-4px_10px_-2px_rgba(0,0,0,0.02)] z-30">
+            {""}
+            <span className="text-[11px] md:text-[12px] font-medium text-kite-text-light tracking-wide">
+              {""}
+              Day's P&L
+              {""}
+            </span>
+            {""}
+            {(() => {
+              const totalInvested = groupedInvestments.reduce(
+                (sum, inv) => sum + inv.amount,
+                0,
+              );
+              const totalLiveProfit = groupedInvestments.reduce((sum, inv) => {
+                const isCompleted = inv.status ==="completed";
+                if (isCompleted) {
+                  return (
+                    sum +
+                    (inv.payoutDetails
+                      ? inv.payoutDetails.totalCredited +
+                        (inv.payoutDetails.rmasCommission || 0) +
+                        (inv.payoutDetails.happyIncomeTax || 0) -
+                        inv.amount
+                      : 0)
+                  );
+                }
+                return (
+                  sum +
+                  globalCalculateLiveProfit(
+                    [inv],
+                    inv.businessId,
+                    marketState.trends,
+                    state.settings,
+                  ).liveProfit
+                );
+              }, 0);
+              const totalPnlPercentage =
+                totalInvested > 0 ? (totalLiveProfit / totalInvested) * 100 : 0;
+              const isTotalProfit = totalLiveProfit >= 0;
+              return (
+                <div className="flex items-center gap-2">
+                  {""}
+                  <span
+                    className={`text-[13px] md:text-[14px] font-normal ${isTotalProfit ?"text-[#16A34A]" :"text-[#DC2626]"}`}
+                    style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif' }}
+                  >
+                    {""}
+                    {isTotalProfit && totalLiveProfit > 0 ?"+" :""}
+                    {""}
+                    {formatINR(totalLiveProfit)}
+                    {""}
+                  </span>
+                  {""}
+                  <span
+                    className={`text-[11px] md:text-[12px] font-normal ${isTotalProfit ?"text-[#16A34A]" :"text-[#DC2626]"}`}
+                  >
+                    {""}
+                    {isTotalProfit ?"+" :""} {totalPnlPercentage.toFixed(2)}
+                    %
+                    {""}
+                  </span>
+                  {""}
+                </div>
+              );
+            })()}
+            {""}
+          </div>
+        )}
+      </>
+    );
+  }, [groupedInvestments, state.businesses, state.investors, marketState.trends, state.settings, blueTickBusinessIds]);
+
   return (
     <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent">
       {""}
@@ -490,53 +729,196 @@ export default function Investments() {
             className="md:hidden fixed inset-0 z-[110] bg-white dark:bg-[#1E2938] flex flex-col font-sans"
           >
             {/* Header */}
-            <div className="flex items-center px-4 pb-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
-              <button
-                onClick={() => { setShowAddForm(false); setIsFromAnalysis(false); }}
-                className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="ml-2 flex-1 mt-0.5">
-                <h2 className="text-[17px] font-normal text-gray-900 dark:text-[#F1F5F9] leading-tight">
-                  {selectedBusiness ? selectedBusiness.name.toUpperCase() : "New Investment"}
-                </h2>
-                <p className="text-[12px] text-gray-500 dark:text-[#7A7A7A] mt-0.5 font-normal">
-                  FND {selectedBusiness ? formatINR(selectedBusiness.fundingRequired || 0) : "₹0"} • INC {selectedBusiness ? formatINR(state.investments.filter((inv: any) => inv.businessId === selectedBusiness.id).reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0)) : "₹0"}
-                </p>
+            <div className="flex flex-col bg-[#F3F4F6] dark:bg-[#1E2938] shrink-0 z-10 mobile-header-safe pt-2">
+              <div className="flex items-center px-4 py-3">
+                <button
+                  onClick={() => { setShowAddForm(false); setIsFromAnalysis(false); }}
+                  className="text-gray-700 dark:text-[#F1F5F9] -ml-2 p-1 mr-3 flex items-center justify-center"
+                >
+                  <ChevronLeft className="w-6 h-6" strokeWidth={1.5} />
+                </button>
+                <div className="flex-1 mt-0.5">
+                  <h2 className="text-[20px] font-normal text-gray-900 dark:text-[#F1F5F9] leading-tight tracking-wide">
+                    {selectedBusiness ? (selectedBusiness.shortName || selectedBusiness.name).toUpperCase() : "NEW INVESTMENT"}
+                  </h2>
+                </div>
               </div>
+
+              {selectedBusiness && (
+                <div className="px-4 pb-4">
+                  <div className="flex items-center px-4 py-1.5 bg-white dark:bg-[#2B3648] overflow-x-auto hide-scrollbar">
+                    <div className="flex items-center space-x-5 text-[13px] whitespace-nowrap">
+                      {selectedBusiness.investmentType === 'trigger' && selectedBusiness.triggerAmount && (
+                        <span className="text-gray-500 dark:text-[#A3ACB8] font-normal">LTP <span className="font-light text-[#444444] dark:text-[#F1F5F9] ml-1">₹{getCurrentMarketPrice(selectedBusiness, state.investments).toFixed(2)}</span></span>
+                      )}
+                      <span className="text-gray-500 dark:text-[#A3ACB8] font-normal">FND <span className="font-light text-[#444444] dark:text-[#F1F5F9] ml-1">{formatCompactINR(selectedBusiness.fundingRequired || 0)}</span></span>
+                      <span className="text-gray-500 dark:text-[#A3ACB8] font-normal">INC <span className="font-light text-[#444444] dark:text-[#F1F5F9] ml-1">{formatCompactINR(state.investments.filter((inv: any) => inv.businessId === selectedBusiness.id).reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0))}</span></span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto pb-[200px] bg-white dark:bg-[#1E2938]">
                 {/* Main Inputs */}
-                <div className="bg-white dark:bg-transparent overflow-hidden relative">
+                <div className="bg-white dark:bg-transparent relative">
                   {/* Business & Investor Select */}
                   <div className="flex flex-col">
                      {!isFromAnalysis && (
                      <div className="w-full border-b border-gray-200 dark:border-[#44546A] p-4 relative z-10" onClick={() => setShowBusinessSelect(true)}>
-                        <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 uppercase tracking-wider">Business</p>
+                        <p className="text-[11px] text-[#7A7A7A] dark:text-[#A3ACB8] font-normal mb-1 uppercase tracking-wider">Business</p>
                         <div className="flex justify-between items-center">
-                          <p className="text-[15px] font-medium text-gray-900 dark:text-[#F1F5F9] truncate pr-2">
+                          <p className="text-[15px] font-light text-[#444444] dark:text-[#F1F5F9] truncate pr-2">
                             {selectedBusiness ? selectedBusiness.name.toUpperCase() : "Select Business"}
                           </p>
                           <ChevronDown className="w-4 h-4 text-[#4184F3]" />
                         </div>
                      </div>
                      )}
-                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] p-4 relative z-10" onClick={() => setShowInvestorSelect(true)}>
-                        <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 uppercase tracking-wider">Investor</p>
-                        <div className="flex justify-between items-center">
-                          <p className="text-[15px] font-medium text-gray-900 dark:text-[#F1F5F9] truncate pr-2">
-                            {selectedInvestor ? selectedInvestor.name.toUpperCase() : "Select Investor"}
-                          </p>
-                          <ChevronDown className="w-4 h-4 text-[#4184F3]" />
+                     {/* Investor Select Trigger & Expansion */}
+                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] relative z-20">
+                        <div className="p-4 cursor-pointer" onClick={() => setShowInvestorSelect(!showInvestorSelect)}>
+                          <p className="text-[11px] text-[#7A7A7A] dark:text-[#A3ACB8] font-normal mb-1 uppercase tracking-wider">Investor</p>
+                          <div className="flex justify-between items-center">
+                            <p className="text-[15px] font-normal text-[#444444] dark:text-[#F1F5F9] truncate pr-2">
+                              {selectedInvestor ? selectedInvestor.name.toUpperCase() : "Select Investor"}
+                            </p>
+                            <ChevronDown className={`w-4 h-4 text-[#4184F3] transition-transform ${showInvestorSelect ? 'rotate-180' : ''}`} />
+                          </div>
                         </div>
+                        {showInvestorSelect && (
+                            <div
+                               className="absolute top-full left-0 right-0 z-[100] overflow-hidden bg-gray-50 dark:bg-[#2B3648] border-b border-x border-gray-200 dark:border-[#44546A] shadow-2xl rounded-b-[8px] origin-top"
+                               style={{ animation: '0.1s ease-out forwards slideDown' }}
+                            >
+                               <div className="p-3 border-b border-gray-200 dark:border-[#44546A]">
+                                 <div className="relative">
+                                   <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400 dark:text-[#A3ACB8]" />
+                                   <input
+                                     type="text" autoFocus placeholder="Search investors or ID..."
+                                     className="w-full pl-9 pr-4 py-2 bg-transparent border border-gray-200 dark:border-[#44546A] rounded-[4px] text-[14px] font-normal text-[#444444] dark:text-[#F1F5F9] outline-none focus:border-[#4184F3] focus:ring-1 focus:ring-[#4184F3]/20 transition-all"
+                                     value={investorSearch} onChange={(e) => setInvestorSearch(e.target.value)}
+                                   />
+                                 </div>
+                               </div>
+                               <div className="max-h-[60vh] overflow-y-auto hide-scrollbar">
+                                 {sortedInvestors
+                                   .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
+                                   .map((i, idx) => {
+                                      const activeCount = selectedBusiness ? state.investments.filter(inv => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active").length : 0;
+                                      return (
+                                      <div
+                                        key={`mob_sel_inv_in_${i.id}_${idx}`}
+                                        className="px-4 py-3 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-[#39475B] active:bg-gray-100 dark:active:bg-[#39475B]"
+                                        onClick={() => {
+                                          setFormData({ ...formData, investorId: i.id });
+                                          setShowInvestorSelect(false);
+                                          setInvestorSearch("");
+                                        }}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          {i.photoUrl ? (
+                                            <img src={i.photoUrl} alt={i.name} className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-[#44546A]" />
+                                          ) : (
+                                            <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-[#1E3A5F] flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold text-[14px] shrink-0 border border-blue-100 dark:border-blue-800">
+                                              {i.name.charAt(0).toUpperCase()}
+                                            </div>
+                                          )}
+                                          <div>
+                                            <span className="font-normal text-[13px] text-[#444444] dark:text-[#F1F5F9] uppercase">{i.name}</span>
+                                            <span className="text-[11px] text-gray-500 dark:text-[#A3ACB8] block mt-0.5">ID: {i.investorId}</span>
+                                          </div>
+                                        </div>
+                                        {activeCount > 0 && (
+                                          <div className="bg-[#4184F3] text-white text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center justify-center min-w-[18px] h-[18px]">
+                                            {activeCount}
+                                          </div>
+                                        )}
+                                      </div>
+                                      );
+                                   })}
+                               </div>
+                            </div>
+                          )}
                      </div>
                   </div>
                   
                   {/* Amount and Quantity */}
                   <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:space-x-4">
-                     <div className="w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10 md:flex-1">
+                     {/* MOBILE VIEW */}
+                     <div className="md:hidden w-full border-b border-gray-200 dark:border-[#44546A] pt-4 px-4 pb-4 relative z-10">
+                        {selectedBusiness?.investmentType === 'trigger' ? (
+                          <div className="flex flex-col gap-2">
+                             <div className="flex justify-between items-center px-1">
+                                <p className="text-[14px] text-gray-800 dark:text-[#E3E3E3] font-semibold">
+                                  {inputMode === 'AMOUNT' ? 'Amount' : 'Quantity'}
+                                </p>
+                                <span className="text-[14px] text-gray-500 dark:text-[#8F8F8F]">
+                                  {inputMode === 'AMOUNT' ? `${formData.quantity || 0} Qty.` : `₹${formData.amount || 0}`}
+                                </span>
+                             </div>
+                             <div className="flex items-center border border-gray-200 dark:border-[#44546A] rounded-[4px] overflow-hidden bg-transparent focus-within:border-[#4184F3] transition-colors">
+                               <input
+                                 type="text"
+                                 className="flex-1 bg-transparent px-3 py-3 text-[16px] font-light text-[#444444] dark:text-[#F1F5F9] outline-none placeholder-[#A0A0A0] min-w-0"
+                                 placeholder={inputMode === 'AMOUNT' ? "0" : "1"}
+                                 value={inputMode === 'AMOUNT' ? (formData.amount ? `₹${formData.amount}` : "") : formData.quantity}
+                                 onChange={(e) => {
+                                   const raw = e.target.value.replace(/\D/g, "");
+                                   const numericValue = raw ? Number(raw) : 0;
+                                   
+                                   if (inputMode === "AMOUNT") {
+                                     const formatted = raw ? numericValue.toLocaleString("en-IN") : "";
+                                     let calculatedQty = formData.quantity;
+                                     if (selectedBusiness.triggerAmount) {
+                                        calculatedQty = Math.floor(numericValue / getCurrentMarketPrice(selectedBusiness, state.investments));
+                                     }
+                                     setFormData({ ...formData, amount: formatted, quantity: calculatedQty || 0 });
+                                   } else {
+                                     let qty: string | number = numericValue;
+                                     if (raw === "") qty = "";
+                                     let calculatedAmount = formData.amount;
+                                     if (selectedBusiness.triggerAmount && raw !== "") {
+                                        calculatedAmount = (Number(qty) * getCurrentMarketPrice(selectedBusiness, state.investments)).toLocaleString("en-IN");
+                                     }
+                                     setFormData({ ...formData, quantity: qty, amount: raw === "" ? "" : calculatedAmount });
+                                   }
+                                 }}
+                               />
+                               <div className="flex items-center border-l border-gray-200 dark:border-[#44546A]">
+                                 <button 
+                                   type="button"
+                                   onClick={(e) => {
+                                     e.preventDefault();
+                                     setInputMode(inputMode === 'AMOUNT' ? 'QTY' : 'AMOUNT');
+                                   }}
+                                   className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] text-[#4184F3] transition-colors"
+                                 >
+                                   <ArrowRightLeft className="w-5 h-5" />
+                                 </button>
+                               </div>
+                             </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2">
+                             <div className="px-1">
+                               <p className="text-[14px] text-[#444444] dark:text-[#E3E3E3] font-light">Amount</p>
+                             </div>
+                             <div className="flex items-center border border-gray-200 dark:border-[#44546A] rounded-[4px] overflow-hidden bg-transparent focus-within:border-[#4184F3] transition-colors">
+                               <input
+                                 type="text"
+                                 className="w-full bg-transparent px-3 py-3 text-[16px] font-light text-[#444444] dark:text-[#F1F5F9] outline-none placeholder-[#A0A0A0]"
+                                 placeholder="₹0"
+                                 value={formData.amount ? `₹${formData.amount}` : ""}
+                                 onChange={handleAmountChange}
+                               />
+                             </div>
+                          </div>
+                        )}
+                     </div>
+
+                     {/* DESKTOP VIEW */}
+                     <div className="hidden md:block w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10 md:flex-1">
                         <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 md:mb-2 uppercase tracking-wider">Investment Amount</p>
                         <div className="relative">
                           <input
@@ -551,7 +933,7 @@ export default function Investments() {
                      </div>
                      
                      {selectedBusiness?.investmentType === 'trigger' && (
-                       <div className="w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10 md:flex-1">
+                       <div className="hidden md:block w-full border-b border-gray-200 dark:border-[#44546A] pt-2 px-4 pb-2.5 md:p-4 relative z-10 md:flex-1">
                           <p className="text-[11px] text-gray-500 dark:text-[#A3ACB8] font-medium mb-1 md:mb-2 uppercase tracking-wider">Quantity</p>
                           <div className="relative">
                             <motion.input
@@ -582,7 +964,7 @@ export default function Investments() {
                                   if (qty > maxQty) qty = maxQty;
                                 }
                                 
-                                const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                                const newAmount = qty * (selectedBusiness.triggerAmount ? getCurrentMarketPrice(selectedBusiness, state.investments) : 0);
                                 setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
                               }}
                               onBlur={() => {
@@ -592,7 +974,7 @@ export default function Investments() {
                                 if (isNaN(qty) || qty < minQty) qty = minQty;
                                 if (qty > maxQty) qty = maxQty;
                                 
-                                const newAmount = qty * (selectedBusiness.triggerAmount || 0);
+                                const newAmount = qty * (selectedBusiness.triggerAmount ? getCurrentMarketPrice(selectedBusiness, state.investments) : 0);
                                 setFormData({ ...formData, quantity: qty, amount: new Intl.NumberFormat('en-IN').format(newAmount) });
                               }}
                             />
@@ -673,7 +1055,7 @@ export default function Investments() {
                 </div>
 
                 {/* Secondary Toggles Card */}
-                <div className="hidden md:block bg-white dark:bg-transparent overflow-hidden relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
+                <div className="hidden md:block bg-white dark:bg-transparent relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
                   <div className="flex justify-between items-center relative z-10">
                     <div className="flex items-center space-x-2">
                        <span className="text-[14px] text-gray-900 dark:text-[#F1F5F9] font-medium">Brokerage ROI</span>
@@ -834,7 +1216,7 @@ export default function Investments() {
                                const isTrigger = b.investmentType === 'trigger';
                                const minQty = b.triggerMinQuantity || 1;
                                const amount = isTrigger && b.triggerAmount
-                                 ? new Intl.NumberFormat("en-IN").format(b.triggerAmount * minQty)
+                                 ? new Intl.NumberFormat("en-IN").format(getCurrentMarketPrice(b, state.investments) * minQty)
                                  : b.fundingRequired ? b.fundingRequired.toLocaleString("en-IN") : "";
                                setFormData({ ...formData, businessId: b.id, amount: amount, quantity: minQty });
                                setShowBusinessSelect(false);
@@ -852,62 +1234,7 @@ export default function Investments() {
                )}
             </AnimatePresence>
 
-            {/* Investor Select Overlay */}
-            <AnimatePresence>
-               {showInvestorSelect && (
-                 <>
-                   <motion.div
-                     initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-                     transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
-                     className="absolute inset-0 bg-white dark:bg-[#1E2938] z-50 flex flex-col"
-                   >
-                     <div className="flex items-center px-4 py-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
-                       <button onClick={() => setShowInvestorSelect(false)} className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center">
-                         <ArrowLeft className="w-5 h-5" />
-                       </button>
-                       <h3 className="ml-3 text-[16px] font-medium text-gray-900 dark:text-[#F1F5F9] tracking-wide">Select Investor</h3>
-                     </div>
-                     <div className="p-4 shrink-0 border-b border-gray-200 dark:border-[#44546A]">
-                       <div className="relative">
-                         <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400 dark:text-[#A3ACB8]" />
-                         <input
-                           type="text" autoFocus placeholder="Search investors or Investor ID..."
-                           className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-[#39475B] border border-gray-200 dark:border-[#44546A] rounded-[4px] text-[15px] text-gray-900 dark:text-[#F1F5F9] outline-none focus:border-[#4184F3] focus:ring-1 focus:ring-[#4184F3]/20 transition-all"
-                           value={investorSearch} onChange={(e) => setInvestorSearch(e.target.value)}
-                         />
-                       </div>
-                     </div>
-                     <div className="overflow-y-auto flex-1 hide-scrollbar">
-                       {sortedInvestors
-                         .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
-                         .map((i, idx) => {
-                            const activeCount = selectedBusiness ? state.investments.filter(inv => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active").length : 0;
-                            return (
-                            <div
-                              key={`mob_sel_inv_${i.id}_${idx}`}
-                             className="px-4 py-3.5 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-[#44546A]"
-                             onClick={() => {
-                               setFormData({ ...formData, investorId: i.id });
-                               setShowInvestorSelect(false);
-                             }}
-                           >
-                             <div>
-                               <span className="font-medium text-[14px] text-gray-900 dark:text-[#F1F5F9] uppercase">{i.name}</span>
-                               <span className="text-[12px] text-gray-500 dark:text-[#A3ACB8] block mt-0.5">ID: {i.investorId} {i.email ? `• ${i.email}` : ''}</span>
-                             </div>
-                             {activeCount > 0 && (
-                               <div className="bg-[#4184F3] text-white text-[12px] font-medium px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-[20px]">
-                                 {activeCount}
-                               </div>
-                             )}
-                           </div>
-                           );
-                         })}
-                     </div>
-                   </motion.div>
-                 </>
-               )}
-            </AnimatePresence>
+
           </motion.div>
         )}
         <AddInvestmentModal 
@@ -926,207 +1253,7 @@ export default function Investments() {
         className={`w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden ${showAddForm ?"hidden md:block" :"block"}`}
       >
         {""}
-        <div className="flex flex-col pb-16">
-          
-          {""}
-          {groupedInvestments.map((inv: any, idx: number) => {
-            const business = state.businesses.find(
-              (b) => b.id === inv.businessId,
-            );
-            const investor = state.investors.find(
-              (i) => i.id === inv.investorId,
-            );
-            const overallTrend = marketState.trends[inv.businessId] || 0;
-            const isCompleted = inv.status ==="completed";
-            const actualProfit =
-              isCompleted && inv.payoutDetails
-                ? inv.payoutDetails.totalCredited +
-                  (inv.payoutDetails.rmasCommission || 0) +
-                  (inv.payoutDetails.happyIncomeTax || 0) -
-                  inv.amount
-                : 0;
-            let liveProf = 0;
-            let currentVal = inv.amount;
-            if (!isCompleted) {
-              const { liveProfit, currentValue } = globalCalculateLiveProfit(
-                [inv],
-                inv.businessId,
-                marketState.trends,
-                state.settings,
-              );
-              liveProf = liveProfit;
-              currentVal = currentValue;
-            }
-            const holdingProfit = isCompleted ? actualProfit : liveProf;
-            const curValue = isCompleted
-              ? inv.amount + holdingProfit
-              : currentVal;
-            const pnlPercentage = isCompleted
-              ? (holdingProfit / inv.amount) * 100
-              : overallTrend;
-            const isProfit = holdingProfit >= 0;
-            // Quantities & Averages
-            const qty = inv.groupedInvestmentsList.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
-            const avgPrice = inv.amount / qty;
-            const currentLTP = curValue / qty;
-            const isOverallTrendPositive = overallTrend >= 0;
-            
-            return (
-              <div
-                key={`grouped_${inv.key}_${idx}`}
-                className="w-full flex flex-col md:flex-row md:items-stretch px-4 py-3 md:py-0 hover:bg-gray-50 dark:hover:bg-[#202020] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
-                onClick={() => {
-                  setSelectedInvestment(inv);
-                  setSelectedInvestmentIds(
-                    inv.groupedInvestmentsList.map((i: any) => i.id),
-                  );
-                  setWithdrawStep(0);
-                }}
-              >
-                {/* MOBILE VIEW */}
-                <div className="md:hidden flex flex-col w-full">
-                  {/* Line 1: Metrics Row (Qty & Avg) */}
-                  <div className="flex justify-between items-center mb-1.5 leading-tight">
-                    <div className="flex items-center text-[11px] md:text-[12px]">
-                       <span className="text-kite-text-light font-normal mr-1">Qty.</span>
-                       <span className="text-kite-text font-normal tracking-wide">{qty}</span>
-                       <span className="text-kite-text-light mx-1.5">•</span>
-                       <span className="text-kite-text-light font-normal mr-1">Avg.</span>
-                       <span className="text-kite-text font-normal tracking-wide">{formatINR(avgPrice).replace("₹", "")}</span>
-                    </div>
-                    <div className={`text-[11px] md:text-[12px] font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
-                      {isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%
-                    </div>
-                  </div>
-                  {/* Line 2: Core Business Name & Absolute P&L Row */}
-                  <div className="flex justify-between items-center mb-1.5 leading-tight">
-                     <div className="flex items-center gap-1.5">
-                        <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
-                           {business?.shortName ? business.shortName.toUpperCase() : (business?.name?.toUpperCase() || "UNKNOWN BUSINESS")}
-                        </h3>
-                        {business && blueTickBusinessIds.has(business.id) && (
-                          <BadgeCheck
-                            className="w-3.5 h-3.5 text-white fill-kite-blue shrink-0"
-                            title="RMAS Verified"
-                          />
-                        )}
-                     </div>
-                     <div className={`text-[13px] md:text-[14px] font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
-                       {isProfit && holdingProfit >= 0 ? "+" : ""}
-                       {formatINR(holdingProfit).replace("₹", "")}
-                     </div>
-                  </div>
-                  {/* Line 3: Footer Row (Investor Info & LTP) */}
-                  <div className="flex justify-between items-center leading-tight">
-                     <div className="flex items-center text-[10px] md:text-[11px]">
-                       <span className="text-kite-text-light font-normal mr-1">Investor:</span>
-                       <span className="text-kite-text font-normal uppercase tracking-wide">{investor?.name?.toUpperCase()}</span>
-                     </div>
-                     <div className="flex items-center text-[11px] md:text-[12px]">
-                       <span className="text-kite-text-light font-normal mr-1">LTP</span>
-                       <span className="text-kite-text font-normal tracking-wide">{formatINR(currentLTP).replace("₹", "")}</span>
-                     </div>
-                  </div>
-                </div>
-
-                {/* DESKTOP VIEW */}
-                <div className="hidden md:flex flex-row items-stretch justify-between w-full text-[13px]">
-                   <div className="w-4/12 flex flex-col gap-[2px] justify-center py-3">
-                      <div className="flex items-center gap-1.5 text-kite-text font-normal text-[13px] leading-[18px] uppercase tracking-wide desktop-business-name">
-                        {business?.shortName ? business.shortName.toUpperCase() : (business?.name?.toUpperCase() || "UNKNOWN BUSINESS")}
-                        {business && blueTickBusinessIds.has(business.id) && (
-                          <BadgeCheck className="w-3.5 h-3.5 text-white fill-kite-blue shrink-0" title="RMAS Verified" />
-                        )}
-                      </div>
-                      <span className="text-kite-text-light font-normal text-[12px] leading-[18px] uppercase tracking-wide desktop-investor-name">
-                        {investor?.name?.toUpperCase()}
-                      </span>
-                   </div>
-                   <div className="w-1/12 text-right text-kite-text-light flex flex-col justify-center py-3">{qty}</div>
-                   <div className="w-2/12 text-right text-kite-text-light flex flex-col justify-center py-3">{formatINR(avgPrice).replace("₹", "")}</div>
-                   <div className="w-2/12 text-right text-kite-text-light pr-5 flex flex-col justify-center py-3">{formatINR(curValue).replace("₹", "")}</div>
-                   <div className={`w-2/12 text-right font-normal text-[12px] leading-[16px] desktop-pnl pl-5 border-l border-kite-vertical-divider flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
-                      <div className="block">{isProfit && holdingProfit >= 0 ? "+" : ""}{formatINR(holdingProfit).replace("₹", "")}</div>
-                   </div>
-                   <div className={`w-1/12 text-right font-normal text-[12px] leading-[16px] desktop-net-chg flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
-                      <div className="block">{isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%</div>
-                   </div>
-                </div>
-              </div>
-            );
-          })}{""}
-          {groupedInvestments.length === 0 && (
-            <div className="py-12 text-center flex flex-col items-center justify-center">
-              {""}
-              <p className="text-kite-text-muted text-[13px] md:text-[14px] font-light">
-                {""}
-                No investments found.{""}
-              </p>{""}
-            </div>
-          )}{""}
-        </div>{""}
-        {/* Sticky Bottom Summary Bar */}{""}
-        {groupedInvestments.length > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 md:relative bg-kite-surface border-t border-kite-border px-4 py-3 flex justify-between items-center shadow-[0_-4px_10px_-2px_rgba(0,0,0,0.02)] z-30">
-            {""}
-            <span className="text-[11px] md:text-[12px] font-medium text-kite-text-light tracking-wide">
-              {""}
-              Day's P&L{""}
-            </span>{""}
-            {(() => {
-              const totalInvested = groupedInvestments.reduce(
-                (sum, inv) => sum + inv.amount,
-                0,
-              );
-              const totalLiveProfit = groupedInvestments.reduce((sum, inv) => {
-                const isCompleted = inv.status ==="completed";
-                if (isCompleted) {
-                  return (
-                    sum +
-                    (inv.payoutDetails
-                      ? inv.payoutDetails.totalCredited +
-                        (inv.payoutDetails.rmasCommission || 0) +
-                        (inv.payoutDetails.happyIncomeTax || 0) -
-                        inv.amount
-                      : 0)
-                  );
-                }
-                return (
-                  sum +
-                  globalCalculateLiveProfit(
-                    [inv],
-                    inv.businessId,
-                    marketState.trends,
-                    state.settings,
-                  ).liveProfit
-                );
-              }, 0);
-              const totalPnlPercentage =
-                totalInvested > 0 ? (totalLiveProfit / totalInvested) * 100 : 0;
-              const isTotalProfit = totalLiveProfit >= 0;
-              return (
-                <div className="flex items-center gap-2">
-                  {""}
-                  <span
-                    className={`text-[13px] md:text-[14px] font-normal ${isTotalProfit ?"text-[#16A34A]" :"text-[#DC2626]"}`}
-                    style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif' }}
-                  >
-                    {""}
-                    {isTotalProfit && totalLiveProfit > 0 ?"+" :""}{""}
-                    {formatINR(totalLiveProfit)}{""}
-                  </span>{""}
-                  <span
-                    className={`text-[11px] md:text-[12px] font-normal ${isTotalProfit ?"text-[#16A34A]" :"text-[#DC2626]"}`}
-                  >
-                    {""}
-                    {isTotalProfit ?"+" :""} {totalPnlPercentage.toFixed(2)}
-                    %{""}
-                  </span>{""}
-                </div>
-              );
-            })()}{""}
-          </div>
-        )}{""}
+        {renderedList}
       </div>{""}
       <AnimatePresence>
       {/* Details Modal */}
