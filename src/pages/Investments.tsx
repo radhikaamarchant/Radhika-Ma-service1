@@ -781,8 +781,8 @@ export default function Investments() {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1E2938]" style={{ paddingBottom: "200px" }}>
-                {/* Main Inputs */}
+            {/* Fixed Business & Investor Select */}
+            <div className="bg-white dark:bg-[#1E2938] shrink-0 z-20">
                 <div className="bg-white dark:bg-transparent relative">
                   {/* Business & Investor Select */}
                   <div className="flex flex-col">
@@ -810,7 +810,7 @@ export default function Investments() {
                         </div>
                         {showInvestorSelect && (
                             <div
-                               className="absolute top-full left-0 right-0 z-[100] overflow-hidden bg-[#F3F4F6] dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] origin-top"
+                               className="w-full overflow-hidden bg-[#F3F4F6] dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] origin-top"
                                style={{ animation: '0.1s ease-out forwards slideDown' }}
                             >
                                <div className="p-3 border-b border-gray-200 dark:border-[#44546A]">
@@ -823,7 +823,7 @@ export default function Investments() {
                                    />
                                  </div>
                                </div>
-                               <div className="overflow-y-auto hide-scrollbar pb-2" style={{ height: 'calc(100dvh - 390px)' }}>
+                               <div className="overflow-y-auto hide-scrollbar pb-2" style={{ maxHeight: viewportHeight ? `${viewportHeight - 160}px` : 'calc(100dvh - 200px)' }}>
                                  {sortedInvestors
                                    .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
                                    .map((i, idx) => {
@@ -864,6 +864,11 @@ export default function Investments() {
                           )}
                      </div>
                   </div>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1E2938]" style={{ paddingBottom: "200px" }}>
+                <div className="bg-white dark:bg-transparent relative">
                   
                   {/* Amount and Quantity */}
                   <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:space-x-4">
@@ -1160,7 +1165,7 @@ export default function Investments() {
 
             {/* Mobile Bottom Section */}
             <div 
-              className="md:hidden shrink-0 bg-white dark:bg-[#223042] border-t border-gray-200 dark:border-[#44546A] z-50 p-4 transition-all duration-100 ease-out"
+              className={`md:hidden shrink-0 bg-white dark:bg-[#223042] border-t border-gray-200 dark:border-[#44546A] z-50 p-4 transition-all duration-100 ease-out ${(showInvestorSelect || showBusinessSelect) ? 'hidden' : 'block'}`}
               style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>

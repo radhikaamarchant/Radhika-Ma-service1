@@ -1,0 +1,90 @@
+            </div>
+
+            {/* Business & Investor Select (Fixed) */}
+            <div className="bg-white dark:bg-transparent relative shrink-0 z-20">
+              <div className="flex flex-col">
+                 {!isFromAnalysis && (
+                 <div className="w-full border-b border-gray-200 dark:border-[#44546A] p-4 relative z-10" onClick={() => setShowBusinessSelect(true)}>
+                    <p className="text-[11px] text-[#7A7A7A] dark:text-[#A3ACB8] font-normal mb-1 uppercase tracking-wider">Business</p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-[15px] font-light text-[#444444] dark:text-[#F1F5F9] truncate pr-2">
+                        {selectedBusiness ? selectedBusiness.name.toUpperCase() : "Select Business"}
+                      </p>
+                      <ChevronDown className="w-4 h-4 text-[#4184F3]" />
+                    </div>
+                 </div>
+                 )}
+                 {/* Investor Select Trigger & Expansion */}
+                 <div className="w-full border-b border-gray-200 dark:border-[#44546A] relative z-20">
+                    <div className="p-4 cursor-pointer" onClick={() => setShowInvestorSelect(!showInvestorSelect)}>
+                      <p className="text-[11px] text-[#7A7A7A] dark:text-[#A3ACB8] font-normal mb-1 uppercase tracking-wider">Investor</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-[15px] font-normal text-[#444444] dark:text-[#F1F5F9] truncate pr-2">
+                          {selectedInvestor ? selectedInvestor.name.toUpperCase() : "Select Investor"}
+                        </p>
+                        <ChevronDown className={`w-4 h-4 text-[#4184F3] transition-transform ${showInvestorSelect ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
+                    {showInvestorSelect && (
+                        <div 
+                           className="absolute top-full left-0 right-0 z-[100] overflow-hidden bg-[#F3F4F6] dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] origin-top"
+                           style={{ animation: '0.1s ease-out forwards slideDown' }}
+                        >
+                           <div className="p-3 border-b border-gray-200 dark:border-[#44546A]">
+                             <div className="relative">
+                               <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400 dark:text-[#A3ACB8]" />
+                               <input 
+                                 type="text" autoFocus placeholder="Search investors or ID..."
+                                 className="w-full pl-9 pr-4 py-2 bg-transparent border border-gray-200 dark:border-[#44546A] rounded-[4px] text-[14px] font-normal text-[#444444] dark:text-[#F1F5F9] outline-none focus:border-[#4184F3] focus:ring-1 focus:ring-[#4184F3]/20 transition-all"
+                                 value={investorSearch} onChange={(e) => setInvestorSearch(e.target.value)}
+                               />
+                             </div>
+                           </div>
+                           <div className="overflow-y-auto hide-scrollbar pb-2" style={{ maxHeight: viewportHeight ? `${viewportHeight - 160}px` : 'calc(100dvh - 200px)' }}>
+                             {sortedInvestors
+                               .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
+                               .map((i, idx) => {
+                                  const activeCount = selectedBusiness ? state.investments.filter(inv => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active").length : 0;
+                                  return (
+                                  <div 
+                                    key={`mob_sel_inv_in_${i.id}_${idx}`}
+                                    className="px-4 py-3 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-[#39475B] active:bg-gray-100 dark:active:bg-[#39475B]"
+                                    onClick={() => {
+                                      setFormData({ ...formData, investorId: i.id });
+                                      setShowInvestorSelect(false);
+                                      setInvestorSearch("");
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      {i.photoUrl ? (
+                                        <img src={i.photoUrl} alt={i.name} className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-[#44546A]" />
+                                      ) : (
+                                        <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-[#1E3A5F] flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold text-[14px] shrink-0 border border-blue-100 dark:border-blue-800">
+                                          {i.name.charAt(0).toUpperCase()}
+                                        </div>
+                                      )}
+                                      <div>
+                                        <span className="font-normal text-[13px] text-[#444444] dark:text-[#F1F5F9] uppercase">{i.name}</span>
+                                        <span className="text-[11px] text-gray-500 dark:text-[#A3ACB8] block mt-0.5">ID: {i.investorId}</span>
+                                      </div>
+                                    </div>
+                                    {activeCount > 0 && (
+                                      <div className="bg-[#4184F3] text-white text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center justify-center min-w-[18px] h-[18px]">
+                                        {activeCount}
+                                      </div>
+                                    )}
+                                  </div>
+                                  );
+                               })}
+                           </div>
+                        </div>
+                      )}
+                 </div>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1E2938]" style={{ paddingBottom: "100px" }}>
+                {/* Main Inputs */}
+                <div className="bg-white dark:bg-transparent relative">
+                  
+                  {/* Amount and Quantity */}
