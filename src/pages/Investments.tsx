@@ -823,7 +823,7 @@ export default function Investments() {
                                    />
                                  </div>
                                </div>
-                               <div className="overflow-y-auto hide-scrollbar pb-2" style={{ maxHeight: viewportHeight ? `${viewportHeight - 160}px` : 'calc(100dvh - 200px)' }}>
+                               <div className="overflow-y-auto hide-scrollbar pb-32" style={{ maxHeight: viewportHeight ? `${viewportHeight - 160}px` : 'calc(100dvh - 200px)' }}>
                                  {sortedInvestors
                                    .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
                                    .map((i, idx) => {
@@ -1233,7 +1233,7 @@ export default function Investments() {
                          />
                        </div>
                      </div>
-                     <div className="overflow-y-auto flex-1 hide-scrollbar">
+                     <div className="overflow-y-auto flex-1 hide-scrollbar pb-32">
                        {activeBusinesses
                          .filter(b => b.name.toLowerCase().includes(businessSearch.toLowerCase()) || b.businessId.toLowerCase().includes(businessSearch.toLowerCase()))
                          .map((b, idx) => (
