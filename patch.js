@@ -1,5 +1,10 @@
 const fs = require('fs');
-let content = fs.readFileSync('src/components/AddInvestmentModal.tsx', 'utf-8');
+const content = fs.readFileSync('src/components/AddInvestmentModal.tsx', 'utf-8');
+
+const desktopCode = `
+          {isMobile ? (
+            <motion.div
+`;
 
 const desktopCodeEnd = `
           ) : (
@@ -180,7 +185,7 @@ const desktopCodeEnd = `
                             type="radio" 
                             checked={inputMode === "QTY"} 
                             onChange={() => handleInputModeChange("QTY")}
-                            className={orderMode === 'BUY' ? 'accent-[#4184F3]' : 'accent-[#FF5722]'} 
+                            className={\`accent-\${orderMode === 'BUY' ? '[#4184F3]' : '[#FF5722]'}\`} 
                           />
                           <span className="text-[12px] text-gray-700 dark:text-[#C4C4C4]">Qty</span>
                         </label>
@@ -189,7 +194,7 @@ const desktopCodeEnd = `
                             type="radio" 
                             checked={inputMode === "AMOUNT"} 
                             onChange={() => handleInputModeChange("AMOUNT")}
-                            className={orderMode === 'BUY' ? 'accent-[#4184F3]' : 'accent-[#FF5722]'} 
+                            className={\`accent-\${orderMode === 'BUY' ? '[#4184F3]' : '[#FF5722]'}\`} 
                           />
                           <span className="text-[12px] text-gray-700 dark:text-[#C4C4C4]">Amount</span>
                         </label>
@@ -198,7 +203,7 @@ const desktopCodeEnd = `
                         type="text"
                         value={desktopInputValue}
                         onChange={handleDesktopInputChange}
-                        className={\`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors \${orderMode === 'BUY' ? 'focus:border-[#4184F3]' : 'focus:border-[#FF5722]'}\`}
+                        className={\`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors focus:border-\${orderMode === 'BUY' ? '[#4184F3]' : '[#FF5722]'}\`}
                       />
                     </div>
                   </div>
@@ -211,7 +216,7 @@ const desktopCodeEnd = `
                             type="radio" 
                             checked={priceType === "MARKET"} 
                             onChange={() => handlePriceTypeChange("MARKET")}
-                            className={orderMode === 'BUY' ? 'accent-[#4184F3]' : 'accent-[#FF5722]'} 
+                            className={\`accent-\${orderMode === 'BUY' ? '[#4184F3]' : '[#FF5722]'}\`} 
                           />
                           <span className="text-[12px] text-gray-700 dark:text-[#C4C4C4]">Market</span>
                         </label>
@@ -220,7 +225,7 @@ const desktopCodeEnd = `
                             type="radio" 
                             checked={priceType === "LIMIT"} 
                             onChange={() => handlePriceTypeChange("LIMIT")}
-                            className={orderMode === 'BUY' ? 'accent-[#4184F3]' : 'accent-[#FF5722]'} 
+                            className={\`accent-\${orderMode === 'BUY' ? '[#4184F3]' : '[#FF5722]'}\`} 
                           />
                           <span className="text-[12px] text-gray-700 dark:text-[#C4C4C4]">Limit</span>
                         </label>
@@ -230,7 +235,7 @@ const desktopCodeEnd = `
                         disabled={priceType === "MARKET"}
                         value={priceType === "MARKET" ? currentMarketPrice : manualPrice}
                         onChange={handleManualPriceChange}
-                        className={\`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors disabled:bg-gray-50 dark:disabled:bg-[#111111] disabled:text-gray-500 \${orderMode === 'BUY' ? 'focus:border-[#4184F3]' : 'focus:border-[#FF5722]'}\`}
+                        className={\`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors focus:border-\${orderMode === 'BUY' ? '[#4184F3]' : '[#FF5722]'} disabled:bg-gray-50 dark:disabled:bg-[#111111] disabled:text-gray-500\`}
                       />
                     </div>
                   </div>
@@ -319,9 +324,14 @@ const desktopCodeEnd = `
           )}
 `;
 
-content = content.replace(
-  /<\/motion\.div>\s*\n\s*<\/motion\.div>\s*\n\s*\)}/m,
-  match => `</motion.div>\n` + desktopCodeEnd + `\n        </motion.div>\n      )}`
+let newContent = content.replace(
+  /<motion\.div\n\s*className="w-full h-full md:h-auto max-w-\[600px\].*?>/,
+  match => desktopCode + match
 );
 
-fs.writeFileSync('src/components/AddInvestmentModal.tsx', content);
+newContent = newContent.replace(
+  /<\/motion\.div>\n\s*<\/motion\.div>\n\s*<\/AnimatePresence>/,
+  match => `</motion.div>` + desktopCodeEnd + `\n        </motion.div>\n      )} \n    </AnimatePresence>`
+);
+
+fs.writeFileSync('src/components/AddInvestmentModal.tsx', newContent);

@@ -1,8 +1,10 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-import React, { useState } from"react";
+import React, { useState, useEffect } from"react";
 import { useAppContext } from"../utils/AppContext";
 import { useMarketSimulation } from"../utils/MarketSimulationContext";
 import { formatINR } from"../utils/mockData";
+import { getCurrentMarketPrice } from "../utils/marketSimulator";
+import { getMarketTimeContext } from "../utils/marketTiming";
 import {
   AlertCircle,
   Lightbulb,
@@ -35,9 +37,55 @@ import { MarketTrendCell } from"../components/MarketTrendCell";
 import { calculateLiveProfit } from"../utils/profitCalculator";
 import AddInvestmentModal from "../components/AddInvestmentModal";
 
+const LiveMobileValue = ({ baseAmount, isOpen, isUp }: { baseAmount: number, isOpen: boolean, isUp: boolean }) => {
+  const displayBase = baseAmount || 0;
+  const [currentAmount, setCurrentAmount] = useState(displayBase);
+  const [flash, setFlash] = useState<"up" | "down" | null>(null);
+  
+  useEffect(() => {
+    if (!isOpen) {
+      setFlash(null);
+      setCurrentAmount(displayBase);
+      return;
+    }
+
+    let current = displayBase;
+    const interval = setInterval(() => {
+      const change = current * (Math.random() * 0.002 - 0.001); // +/- 0.1% change
+      const newAmount = current + change;
+      
+      setCurrentAmount(newAmount);
+      
+      if (newAmount > current) setFlash("up");
+      else if (newAmount < current) setFlash("down");
+      
+      current = newAmount;
+      
+      setTimeout(() => setFlash(null), 300);
+    }, 2000 + Math.random() * 3000);
+
+    return () => clearInterval(interval);
+  }, [baseAmount, isOpen]);
+
+  const amountColorClass = !isOpen 
+    ? (isUp ? "text-kite-green" : "text-kite-red") 
+    : (flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text");
+
+  return (
+    <span className={`transition-colors duration-300 ${amountColorClass}`}>
+      ₹{new Intl.NumberFormat('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(currentAmount)}
+    </span>
+  );
+};
+
 export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) => void }) {
   const { state } = useAppContext();
   const { marketState } = useMarketSimulation();
+  const timeCtx = getMarketTimeContext(state.settings);
+  const isMarketOpen = timeCtx.isOpen;
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(
     null,
   );
@@ -469,11 +517,14 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
   };
   const renderLiveAmount = (b: any, defaultClass: string ="") => {
     const isUp = b.overallTrend >= b.interestRate;
-    const colorClass = isUp ?"text-kite-green" :"text-kite-red";
     return (
-      <span className={`${colorClass} ${defaultClass}`}>
-        {b.triggerAmount ? formatINR(b.triggerAmount) : '-'}
-      </span>
+      <div className={`font-medium ${defaultClass}`}>
+        {b.triggerAmount ? (
+          <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} />
+        ) : (
+          <span className="text-kite-text">-</span>
+        )}
+      </div>
     );
   };
   return (
@@ -517,9 +568,13 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                   <span className="text-[10px] text-kite-text/60 mt-0.5 uppercase tracking-wider">{b.ownerName}</span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className={`font-medium text-[13px] ${trendColor}`}>
-                    {b.triggerAmount ? formatINR(b.triggerAmount) : '-'}
-                  </span>
+                  <div className="font-medium text-[13px]">
+                    {b.triggerAmount ? (
+                      <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} />
+                    ) : (
+                      <span className="text-kite-text">-</span>
+                    )}
+                  </div>
                   <span className={`text-[10px] font-medium mt-0.5 ${trendColor}`}>
                     {b.overallTrend > 0 ? "+" : ""}{b.overallTrend.toFixed(2)}%
                   </span>

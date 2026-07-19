@@ -136,6 +136,27 @@ export default function Investments() {
       }
     }
   }, [showAddForm, selectedInvestment]);
+  const [viewportHeight, setViewportHeight] = useState(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        setViewportHeight(window.visualViewport.height);
+      }
+    };
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      window.visualViewport.addEventListener("scroll", handleResize);
+      handleResize();
+    }
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+        window.visualViewport.removeEventListener("scroll", handleResize);
+      }
+    };
+  }, []);
+
   const [withdrawFormData, setWithdrawFormData] = useState({
     completedMonths:"12",
     rmasCommission:"",
@@ -726,7 +747,8 @@ export default function Investments() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
-            className="md:hidden fixed inset-0 z-[110] bg-white dark:bg-[#1E2938] flex flex-col font-sans"
+            className="md:hidden fixed top-0 left-0 right-0 z-[110] bg-white dark:bg-[#1E2938] flex flex-col font-sans"
+            style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
           >
             {/* Header */}
             <div className="flex flex-col bg-[#F3F4F6] dark:bg-[#1E2938] shrink-0 z-10 mobile-header-safe pt-2">
@@ -759,7 +781,7 @@ export default function Investments() {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto pb-[200px] bg-white dark:bg-[#1E2938]">
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1E2938]" style={{ paddingBottom: "200px" }}>
                 {/* Main Inputs */}
                 <div className="bg-white dark:bg-transparent relative">
                   {/* Business & Investor Select */}
@@ -788,7 +810,7 @@ export default function Investments() {
                         </div>
                         {showInvestorSelect && (
                             <div
-                               className="absolute top-full left-0 right-0 z-[100] overflow-hidden bg-gray-50 dark:bg-[#2B3648] border-b border-x border-gray-200 dark:border-[#44546A] shadow-2xl rounded-b-[8px] origin-top"
+                               className="absolute top-full left-0 right-0 z-[100] overflow-hidden bg-[#F3F4F6] dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] origin-top"
                                style={{ animation: '0.1s ease-out forwards slideDown' }}
                             >
                                <div className="p-3 border-b border-gray-200 dark:border-[#44546A]">
@@ -801,7 +823,7 @@ export default function Investments() {
                                    />
                                  </div>
                                </div>
-                               <div className="max-h-[60vh] overflow-y-auto hide-scrollbar">
+                               <div className="overflow-y-auto hide-scrollbar pb-2" style={{ height: 'calc(100dvh - 390px)' }}>
                                  {sortedInvestors
                                    .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
                                    .map((i, idx) => {
@@ -1138,7 +1160,8 @@ export default function Investments() {
 
             {/* Mobile Bottom Section */}
             <div 
-              className="md:hidden absolute bottom-0 left-0 right-0 bg-white dark:bg-[#223042] border-t border-gray-200 dark:border-[#44546A] z-50 p-4 mobile-safe-pb"
+              className="md:hidden shrink-0 bg-white dark:bg-[#223042] border-t border-gray-200 dark:border-[#44546A] z-50 p-4 transition-all duration-100 ease-out"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 {(() => {
