@@ -65,6 +65,7 @@ export default function AddInvestmentModal({
   const [businessSearch, setBusinessSearch] = useState("");
   const [investorSearch, setInvestorSearch] = useState("");
   const [isBooking, setIsBooking] = useState(false);
+  const [isInvestorMultiSelect, setIsInvestorMultiSelect] = useState(false);
 
   useMobileBackNavigation(isOpen, onClose);
 
@@ -95,6 +96,7 @@ export default function AddInvestmentModal({
       const liveRoi = marketState.trends[initialBusinessId];
       setExpectedRoi(liveRoi !== undefined ? liveRoi.toFixed(2) : "12");
       setOrderMode("BUY");
+      setIsInvestorMultiSelect(false);
     }
   }, [isOpen, initialBusinessId, initialInvestorId]);
 
@@ -114,6 +116,32 @@ export default function AddInvestmentModal({
     const raw = e.target.value.replace(/\D/g, "");
     const formatted = raw ? Number(raw).toLocaleString("en-IN") : "";
     setFormData({ ...formData, amount: formatted });
+  };
+
+  
+  const calculateSellStats = () => {
+    let totalCap = 0;
+    let totalProfit = 0;
+    const qty = parseInt(formData.quantity) || 0;
+    if (qty > 0 && selectedBusiness && formData.investorIds.length > 0) {
+      // Split qty evenly among selected investors (or just use average price across all their active)
+      let overallActiveAmount = 0;
+      let overallActiveQty = 0;
+      formData.investorIds.forEach(invId => {
+        const activeInvs = state.investments.filter((inv: any) => inv.investorId === invId && inv.businessId === selectedBusiness.id && inv.status === "active");
+        activeInvs.forEach((inv: any) => {
+          overallActiveAmount += inv.amount;
+          overallActiveQty += (Number(inv.quantity) || (selectedBusiness.triggerAmount ? Math.floor(inv.amount / selectedBusiness.triggerAmount) : Math.floor(inv.amount / 100)) || 1);
+        });
+      });
+      if (overallActiveQty > 0) {
+        const avgPrice = overallActiveAmount / overallActiveQty;
+        totalCap = avgPrice * qty;
+        const trend = marketState?.trends?.[selectedBusiness.id] || 0;
+        totalProfit = totalCap * (trend / 100);
+      }
+    }
+    return { capUsed: totalCap, profit: totalProfit };
   };
 
   const calculateCommissions = () => {
@@ -173,35 +201,112 @@ export default function AddInvestmentModal({
 
     setIsBooking(true);
     setTimeout(() => {
-      formData.investorIds.forEach((invId, idx) => {
-        const newInvestment: Investment = {
-          id: `inv${Date.now()}_${idx}`,
-          businessId: formData.businessId,
-          investorId: invId,
-          amount: amount,
-          quantity: formData.quantity,
-          timePeriodMonths: parseInt(formData.timePeriodMonths),
-          interestRate:
-            parseFloat(expectedRoi) || selectedBusiness.interestRate,
-          startDate: startDate.toISOString().split("T")[0],
-          endDate: endDate.toISOString().split("T")[0],
-          adminCommissionInvestor: comms.fromInvestor,
-          adminCommissionBusiness: comms.fromBusiness,
-          status: "active",
-        };
-        dispatch({ type: "ADD_INVESTMENT", payload: newInvestment });
-      });
-      if (amount >= selectedBusiness.fundingRequired) {
-        dispatch({
-          type: "UPDATE_BUSINESS_STATUS",
-          payload: { id: formData.businessId, status: "funded" },
+      
+      if (orderMode === "SELL") {
+        formData.investorIds.forEach((invId) => {
+          let remainingQtyToSell = parseInt(formData.quantity) || 0;
+          const activeInvs = state.investments.filter(
+            (inv: any) => inv.investorId === invId && inv.businessId === selectedBusiness.id && inv.status === "active"
+          ).sort((a: any, b: any) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+          for (const inv of activeInvs) {
+            if (remainingQtyToSell <= 0) break;
+            const invQty = Number(inv.quantity) || (selectedBusiness.triggerAmount ? Math.floor(inv.amount / selectedBusiness.triggerAmount) : Math.floor(inv.amount / 100)) || 1;
+            if (invQty <= 0) continue;
+
+            const ratio = Math.min(invQty, remainingQtyToSell) / (parseInt(formData.quantity) || 1);
+            const rmasFee = comms.fromInvestor * ratio;
+            const happyTax = comms.fromBusiness * ratio;
+            
+            if (invQty <= remainingQtyToSell) {
+               remainingQtyToSell -= invQty;
+               const trend = marketState?.trends?.[selectedBusiness.id] || 0;
+               const grossPayout = inv.amount + (inv.amount * (trend / 100));
+               dispatch({
+                 type: "UPDATE_INVESTMENT",
+                 payload: {
+                   ...inv,
+                   status: "completed",
+                   payoutDetails: {
+                     rmasCommission: rmasFee,
+                     happyIncomeTax: happyTax,
+                     totalCredited: grossPayout - rmasFee - happyTax,
+                     payoutDate: new Date().toISOString().split("T")[0],
+                     rmasMarketCover: 0
+                   }
+                 }
+               });
+            } else {
+               const sellQty = remainingQtyToSell;
+               const keepQty = invQty - sellQty;
+               const avgPrice = inv.amount / invQty;
+               const trend = marketState?.trends?.[selectedBusiness.id] || 0;
+               const capUsed = avgPrice * sellQty;
+               const profit = capUsed * (trend / 100);
+               const grossPayout = capUsed + profit;
+               
+               dispatch({
+                 type: "UPDATE_INVESTMENT",
+                 payload: {
+                   ...inv,
+                   quantity: keepQty,
+                   amount: avgPrice * keepQty
+                 }
+               });
+               
+               dispatch({
+                 type: "ADD_INVESTMENT",
+                 payload: {
+                   ...inv,
+                   id: `inv${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                   quantity: sellQty,
+                   amount: avgPrice * sellQty,
+                   status: "completed",
+                   payoutDetails: {
+                     rmasCommission: rmasFee,
+                     happyIncomeTax: happyTax,
+                     totalCredited: grossPayout - rmasFee - happyTax,
+                     payoutDate: new Date().toISOString().split("T")[0],
+                     rmasMarketCover: 0
+                   }
+                 }
+               });
+               
+               remainingQtyToSell = 0;
+            }
+          }
         });
+      } else {
+        formData.investorIds.forEach((invId, idx) => {
+          const newInvestment: Investment = {
+            id: `inv${Date.now()}_${idx}`,
+            businessId: formData.businessId,
+            investorId: invId,
+            amount: amount,
+            quantity: formData.quantity,
+            timePeriodMonths: parseInt(formData.timePeriodMonths),
+            interestRate: parseFloat(expectedRoi) || selectedBusiness.interestRate,
+            startDate: startDate.toISOString().split("T")[0],
+            endDate: endDate.toISOString().split("T")[0],
+            adminCommissionInvestor: comms.fromInvestor,
+            adminCommissionBusiness: comms.fromBusiness,
+            status: "active",
+          };
+          dispatch({ type: "ADD_INVESTMENT", payload: newInvestment });
+        });
+        if (amount >= selectedBusiness.fundingRequired) {
+          dispatch({
+            type: "UPDATE_BUSINESS_STATUS",
+            payload: { id: formData.businessId, status: "funded" },
+          });
+        }
       }
       setIsBooking(false);
       onClose();
     }, 600);
   };
 
+  
   const formatINR = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -214,6 +319,7 @@ export default function AddInvestmentModal({
   const currentMarketPrice = selectedBusiness
     ? getCurrentMarketPrice(selectedBusiness, state.investments)
     : 0;
+
   const effectivePrice =
     priceType === "MARKET"
       ? currentMarketPrice
@@ -344,7 +450,7 @@ export default function AddInvestmentModal({
                         setOrderMode("BUY");
                         setFormData({ ...formData, investorIds: [] });
                       }}
-                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "BUY" ? "bg-[#4184F3] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"}`}
+                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "BUY" ? "bg-[#4184F3] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:md:hover:bg-[#131415]"}`}
                     >
                       BUY
                     </button>
@@ -353,7 +459,7 @@ export default function AddInvestmentModal({
                         setOrderMode("SELL");
                         setFormData({ ...formData, investorIds: [] });
                       }}
-                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "SELL" ? "bg-[#FF5722] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"}`}
+                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "SELL" ? "bg-[#DF514C] dark:bg-[#E25F5B] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:md:hover:bg-[#131415]"}`}
                     >
                       SELL
                     </button>
@@ -478,7 +584,7 @@ export default function AddInvestmentModal({
                                       );
                                       setDesktopShowBusinessSelect(false);
                                     }}
-                                    className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] flex items-center justify-between"
+                                    className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:md:hover:bg-[#131415] flex items-center justify-between"
                                   >
                                     {b.shortName
                                       ? b.shortName.toUpperCase()
@@ -548,8 +654,12 @@ export default function AddInvestmentModal({
                                 <button
                                   type="button"
                                   onClick={(e) => {
-                                    e.stopPropagation();
-                                    const filteredIds = sortedInvestors
+    e.stopPropagation();
+    if (!isInvestorMultiSelect) {
+      setIsInvestorMultiSelect(true);
+      return;
+    }
+    const filteredIds = sortedInvestors
                                       .filter((i) => {
                                         if (
                                           !i.name
@@ -609,8 +719,8 @@ export default function AddInvestmentModal({
                                   }}
                                   className="text-[12px] text-[#4184F3] hover:underline font-medium"
                                 >
-                                  Select All
-                                </button>
+  {isInvestorMultiSelect ? "Choose All" : "Choose"}
+</button>
                               </div>
                             </div>
                             <div className="flex-1 overflow-y-auto">
@@ -642,29 +752,33 @@ export default function AddInvestmentModal({
                                   return true;
                                 })
                                 .map((i) => {
-                                  const activeCount = selectedBusiness
-                                    ? state.investments.filter(
-                                        (inv: any) =>
-                                          inv.investorId === i.id &&
-                                          inv.businessId ===
-                                            selectedBusiness.id &&
-                                          inv.status === "active",
-                                      ).length
-                                    : 0;
+                                  const activeInvs = selectedBusiness ? state.investments.filter((inv: any) => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active") : [];
+  const activeCount = activeInvs.length;
+  const totalQty = activeInvs.reduce((sum, inv: any) => sum + (Number(inv.quantity) || (selectedBusiness?.triggerAmount ? Math.floor(inv.amount / selectedBusiness.triggerAmount) : Math.floor(inv.amount / 100)) || 1), 0);
                                   return (
                                     <button
                                       key={i.id}
                                       type="button"
                                       onClick={(e) => {
-                                        e.stopPropagation();
-                                        setFormData({
-                                          ...formData,
-                                          investorIds: [i.id],
-                                        });
-                                        setDesktopShowInvestorSelect(false);
-                                        setInvestorSearch("");
-                                      }}
-                                      className={`w-full text-left px-3 py-2 text-[13px] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#E3E3E3]"}`}
+    e.stopPropagation();
+    if (isInvestorMultiSelect) {
+      const isSelected = formData.investorIds.includes(i.id);
+      setFormData({
+        ...formData,
+        investorIds: isSelected
+          ? formData.investorIds.filter((id) => id !== i.id)
+          : [...formData.investorIds, i.id],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        investorIds: [i.id],
+      });
+      setDesktopShowInvestorSelect(false);
+      setInvestorSearch("");
+    }
+  }}
+                                      className={`w-full text-left px-3 py-2 text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#E3E3E3]"}`}
                                     >
                                       <div className="flex items-center gap-2 overflow-hidden flex-1">
                                         {i.photoUrl ? (
@@ -682,10 +796,10 @@ export default function AddInvestmentModal({
                                           {i.name.toUpperCase()}
                                         </span>
                                         {activeCount > 0 && (
-                                          <div className="bg-[#4184F3] text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center justify-center min-w-[16px] h-[16px] shrink-0">
-                                            {activeCount}
-                                          </div>
-                                        )}
+    <div className="bg-[#4184F3] text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center justify-center shrink-0">
+      {orderMode === "SELL" ? `${totalQty} Qty` : activeCount}
+    </div>
+  )}
                                       </div>
                                       <div className="flex items-center shrink-0 ml-2">
                                         {formData.investorIds.includes(
@@ -793,7 +907,7 @@ export default function AddInvestmentModal({
                               ? `${formData.quantity || 0} Qty`
                               : `₹${formData.amount || 0}`}
                           </span>
-                          <button
+                          {orderMode === "BUY" && (<button
                             type="button"
                             onClick={(e) => {
                               e.preventDefault();
@@ -801,10 +915,10 @@ export default function AddInvestmentModal({
                                 inputMode === "AMOUNT" ? "QTY" : "AMOUNT",
                               );
                             }}
-                            className="p-1 hover:bg-gray-100 dark:hover:bg-[#2A2A2A] rounded text-[#4184F3]"
+                            className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded text-[#4184F3]"
                           >
                             <ArrowUpDown className="w-4 h-4" />
-                          </button>
+                          </button>)}
                         </div>
                       </div>
                     ) : (
@@ -937,7 +1051,7 @@ export default function AddInvestmentModal({
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[12px] text-gray-500 dark:text-[#8F8F8F] flex justify-between">
-                      <span>BSE Brokrage</span>
+                      <span>{orderMode === "SELL" && orderTab === "CAP" ? "HPG Tax" : "BSE Brokrage"}</span>
                       {formData.amount &&
                         formData.adminCommissionBusinessPct &&
                         getRawAmount(formData.amount) > 0 &&
@@ -965,7 +1079,7 @@ export default function AddInvestmentModal({
                           adminCommissionBusinessPct: e.target.value,
                         })
                       }
-                      disabled={orderMode === "SELL"}
+                      
                       className={`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors ${orderMode === "SELL" ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-[#111111]" : ""}`}
                     />
                   </div>
@@ -999,7 +1113,7 @@ export default function AddInvestmentModal({
                           adminCommissionInvestorPct: e.target.value,
                         })
                       }
-                      disabled={orderMode === "SELL"}
+                      
                       className={`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[14px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors ${orderMode === "SELL" ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-[#111111]" : ""}`}
                     />
                   </div>
@@ -1010,7 +1124,7 @@ export default function AddInvestmentModal({
               <div className="px-4 md:px-6 py-4 flex justify-between items-center border-t border-gray-100 dark:border-[#2A2A2A]/30 mt-auto shrink-0 bg-white dark:bg-[#111111]">
                 <button
                   onClick={onClose}
-                  className="hidden md:block w-full md:w-auto px-6 py-2 rounded-[4px] text-[14px] font-medium text-gray-700 dark:text-[#C4C4C4] border border-gray-200 dark:border-[#2A2A2A] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] transition-colors"
+                  className="hidden md:block w-full md:w-auto px-6 py-2 rounded-[4px] text-[14px] font-medium text-gray-700 dark:text-[#C4C4C4] border border-gray-200 dark:border-[#2A2A2A] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors"
                 >
                   Cancel
                 </button>
@@ -1085,7 +1199,9 @@ export default function AddInvestmentModal({
                   className="relative inline-flex h-4 w-[34px] shrink-0 items-center rounded-full cursor-pointer transition-colors border border-white/20 hover:border-white/40 bg-black/10"
                   style={{ backgroundColor: "rgba(0,0,0,0.15)" }}
                   onClick={() => {
-                    setOrderMode(orderMode === "BUY" ? "SELL" : "BUY");
+                    const newMode = orderMode === "BUY" ? "SELL" : "BUY";
+  setOrderMode(newMode);
+  if (newMode === "SELL") setInputMode("QTY");
                     setFormData({ ...formData, investorIds: [] });
                   }}
                 >
@@ -1165,8 +1281,12 @@ export default function AddInvestmentModal({
                                     <button
                                       type="button"
                                       onClick={(e) => {
-                                        e.stopPropagation();
-                                        const filteredIds = sortedInvestors
+    e.stopPropagation();
+    if (!isInvestorMultiSelect) {
+      setIsInvestorMultiSelect(true);
+      return;
+    }
+    const filteredIds = sortedInvestors
                                           .filter((i) => {
                                             if (
                                               !i.name
@@ -1227,8 +1347,8 @@ export default function AddInvestmentModal({
                                       }}
                                       className="text-[12px] text-[#4184F3] hover:underline font-medium"
                                     >
-                                      Select All
-                                    </button>
+  {isInvestorMultiSelect ? "Choose All" : "Choose"}
+</button>
                                   </div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto">
@@ -1265,29 +1385,33 @@ export default function AddInvestmentModal({
                                       return true;
                                     })
                                     .map((i) => {
-                                      const activeCount = selectedBusiness
-                                        ? state.investments.filter(
-                                            (inv) =>
-                                              inv.investorId === i.id &&
-                                              inv.businessId ===
-                                                selectedBusiness.id &&
-                                              inv.status === "active",
-                                          ).length
-                                        : 0;
+                                      const activeInvs = selectedBusiness ? state.investments.filter((inv: any) => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active") : [];
+  const activeCount = activeInvs.length;
+  const totalQty = activeInvs.reduce((sum, inv: any) => sum + (Number(inv.quantity) || (selectedBusiness?.triggerAmount ? Math.floor(inv.amount / selectedBusiness.triggerAmount) : Math.floor(inv.amount / 100)) || 1), 0);
                                       return (
                                         <button
                                           key={i.id}
                                           type="button"
                                           onClick={(e) => {
-                                            e.stopPropagation();
-                                            setFormData({
-                                              ...formData,
-                                              investorIds: [i.id],
-                                            });
-                                            setDesktopShowInvestorSelect(false);
-                                            setInvestorSearch("");
-                                          }}
-                                          className={`w-full text-left px-3 py-2 text-[13px] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#E3E3E3]"}`}
+    e.stopPropagation();
+    if (isInvestorMultiSelect) {
+      const isSelected = formData.investorIds.includes(i.id);
+      setFormData({
+        ...formData,
+        investorIds: isSelected
+          ? formData.investorIds.filter((id) => id !== i.id)
+          : [...formData.investorIds, i.id],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        investorIds: [i.id],
+      });
+      setDesktopShowInvestorSelect(false);
+      setInvestorSearch("");
+    }
+  }}
+                                          className={`w-full text-left px-3 py-2 text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#E3E3E3]"}`}
                                         >
                                           <div className="flex items-center gap-2 overflow-hidden flex-1">
                                             {i.photoUrl ? (
@@ -1305,10 +1429,10 @@ export default function AddInvestmentModal({
                                               {i.name.toUpperCase()}
                                             </span>
                                             {activeCount > 0 && (
-                                              <div className="bg-[#4184F3] text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center justify-center min-w-[16px] h-[16px] shrink-0">
-                                                {activeCount}
-                                              </div>
-                                            )}
+    <div className="bg-[#4184F3] text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center justify-center shrink-0">
+      {orderMode === "SELL" ? `${totalQty} Qty` : activeCount}
+    </div>
+  )}
                                           </div>
                                           <div className="flex items-center shrink-0 ml-2">
                                             {formData.investorIds.includes(
@@ -1353,7 +1477,7 @@ export default function AddInvestmentModal({
                             onChange={handleDesktopInputChange}
                             className={`w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] pl-3 pr-10 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors ${orderMode === "BUY" ? "focus:border-[#4184F3]" : "focus:border-[#FF5722]"}`}
                           />
-                          <button
+                          {orderMode === "BUY" && (<button
                             type="button"
                             onClick={() =>
                               handleInputModeChange(
@@ -1382,7 +1506,7 @@ export default function AddInvestmentModal({
                                 ₹
                               </span>
                             )}
-                          </button>
+                          </button>)}
                         </div>
                         <div className="text-[11px] text-gray-500 dark:text-[#8F8F8F] mt-1">
                           {inputMode === "AMOUNT"
@@ -1466,13 +1590,13 @@ export default function AddInvestmentModal({
                         type="number"
                         value={expectedRoi}
                         onChange={(e) => setExpectedRoi(e.target.value)}
-                        disabled={orderMode === "SELL"}
+                        
                         className="w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors focus:border-[#4184F3] disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-[#111111] disabled:bg-gray-50 dark:disabled:bg-[#111111] disabled:bg-gray-50 dark:disabled:bg-[#111111]"
                       />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[12px] text-gray-700 dark:text-[#C4C4C4] flex justify-between mb-1">
-                        <span>BSE Brokrage</span>
+                        <span>{orderMode === "SELL" && orderTab === "CAP" ? "HPG Tax" : "BSE Brokrage"}</span>
                         {formData.amount &&
                           formData.adminCommissionBusinessPct &&
                           getRawAmount(formData.amount) > 0 &&
@@ -1500,7 +1624,7 @@ export default function AddInvestmentModal({
                             adminCommissionBusinessPct: e.target.value,
                           })
                         }
-                        disabled={orderMode === "SELL"}
+                        
                         className="w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors focus:border-[#4184F3] disabled:opacity-50"
                       />
                     </div>
@@ -1534,7 +1658,7 @@ export default function AddInvestmentModal({
                             adminCommissionInvestorPct: e.target.value,
                           })
                         }
-                        disabled={orderMode === "SELL"}
+                        
                         className="w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] px-3 py-2 text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors focus:border-[#4184F3] disabled:opacity-50"
                       />
                     </div>
@@ -1544,9 +1668,17 @@ export default function AddInvestmentModal({
 
               <div className="h-[64px] bg-gray-50/50 dark:bg-[#141414] px-6 border-t border-gray-100 dark:border-[#2A2A2A]/50 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1 text-[13px] text-gray-700 dark:text-[#C4C4C4]">
-                  <span>Required</span>
+                  <span>{orderMode === "SELL" ? "Cap" : "Required"}</span>
                   <span className="font-medium text-[#4184F3]">
-                    ₹{getRawAmount(formData.amount).toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {calculateCommissions().totalAdmin.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                    {orderMode === "SELL" ? (
+                      <>
+                        ₹{calculateSellStats().capUsed.toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {calculateCommissions().totalAdmin.toLocaleString("en-IN", { maximumFractionDigits: 2 })} <span className="text-[#4CAF50] dark:text-[#5B9A5D] ml-2">Profit: ₹{calculateSellStats().profit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                      </>
+                    ) : (
+                      <>
+                        ₹{getRawAmount(formData.amount).toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {calculateCommissions().totalAdmin.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                      </>
+                    )}
                   </span>
                   <button 
                     className="ml-1 text-gray-400 hover:text-gray-600 transition-colors"
@@ -1579,7 +1711,7 @@ export default function AddInvestmentModal({
                   </button>
                   <button
                     onClick={onClose}
-                    className="px-6 py-2 rounded-[4px] border border-gray-200 dark:border-[#2A2A2A] text-[13px] font-medium text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:hover:bg-[#2A2A2A] transition-colors"
+                    className="px-6 py-2 rounded-[4px] border border-gray-200 dark:border-[#2A2A2A] text-[13px] font-medium text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors"
                   >
                     Cancel
                   </button>

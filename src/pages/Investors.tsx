@@ -564,7 +564,7 @@ export default function Investors() {
     );
   };
   return (
-    <div className="w-full space-y-3 sm:space-y-6 print:m-0 print:p-0">
+    <div className="w-full space-y-3 sm:space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
       {" "}
       {/* --- Hide this whole container during print --- */}{" "}
       <div className="print:hidden space-y-3 sm:space-y-6">
@@ -592,10 +592,10 @@ export default function Investors() {
         )}{" "}
         {viewMode === "list" && (
           <div className="w-full">
-            <div className="sticky top-0 z-30 bg-white dark:bg-kite-bg w-full">
+            <div className="sticky top-0 z-30 bg-white dark:bg-kite-bg dark:md:bg-[#181818] w-full">
               
                 {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-kite-bg w-full md:hidden pt-3 px-4 pb-3">
+                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-kite-bg dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
                   <div className="bg-white dark:bg-kite-surface rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-kite-border">
                     <Search className="w-5 h-5 text-gray-400 dark:text-[#A3ACB8]" />
                     <input 
@@ -646,7 +646,7 @@ export default function Investors() {
                           <Search className="w-[18px] h-[18px] text-kite-blue" />
                         </button>
                       ) : (
-                        <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white dark:bg-kite-surface md:bg-gray-100 md:dark:bg-[#161616] rounded-sm h-[36px]">
+                        <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white dark:bg-kite-surface md:bg-gray-100 md:dark:bg-transparent rounded-sm h-[36px]">
                           <button
                             onClick={() => {
                               setIsSearchExpanded(false);
@@ -680,21 +680,21 @@ export default function Investors() {
               </div>
 
               {/* DESKTOP HEADER */}
-              <div className="hidden md:flex items-stretch px-4 bg-white dark:bg-[#1a1a1a] border-b border-kite-border w-full">
-                <div className="w-[30%] flex items-center text-left py-2 text-[12px] text-kite-text">
-                  INVESTOR NAME
+              <div className="hidden md:flex items-stretch px-4 bg-white dark:bg-kite-surface dark:md:bg-[#181818] border-y border-kite-border w-full">
+                <div className="w-[30%] flex items-center text-left py-2 text-[14px] text-kite-text">
+                  Investor Name
                 </div>
-                <div className="w-[14%] flex items-center text-left py-2 text-[12px] text-kite-text border-l border-kite-border pl-4">
-                  ID
+                <div className="w-[14%] flex items-center text-left py-2 text-[14px] text-kite-text pl-4">
+                  Account Num
                 </div>
-                <div className="w-[18%] flex items-center justify-end py-2 text-[12px] text-kite-text border-l border-kite-border pr-4">
-                  INVEST AMOUNT
+                <div className="w-[16%] flex items-center justify-start py-2 text-[14px] text-kite-text pl-4 pr-4">
+                  Belong
                 </div>
-                <div className="w-[16%] flex items-center justify-end py-2 text-[12px] text-kite-text border-l border-kite-border pr-4">
-                  PERCENTAGE
+                <div className="w-[18%] flex items-center justify-end py-2 text-[14px] text-kite-text border-l border-kite-border pr-4">
+                  Equity (₹)
                 </div>
-                <div className="w-[22%] flex items-center justify-end py-2 text-[12px] text-kite-text border-l border-kite-border pl-5">
-                  TOTAL PROFIT
+                <div className="w-[22%] flex items-center justify-end py-2 text-[14px] text-kite-text border-l border-kite-border pl-5">
+                  Margine (₹)
                 </div>
               </div>
             </div>
@@ -761,7 +761,7 @@ export default function Investors() {
                           setSelectedInvestor(investor);
                           setViewMode("investor-detail");
                         }}
-                        className="flex flex-col bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] cursor-pointer transition-colors min-h-[50px] group"
+                        className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
                       >
                         {/* Mobile View */}
                         <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
@@ -815,7 +815,7 @@ export default function Investors() {
                               </span>{" "}
                               {totalAmountInvested > 0 && (
                                 <span
-                                  className={`text-[11px] md:text-[12px] font-normal mt-0.5 ${returnPercentage >= 0 ? "text-kite-green" : "text-kite-red"}`}
+                                  className={`text-[11px] md:text-[12px] font-normal mt-0.5 ${returnPercentage >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
                                 >
                                   {" "}
                                   {returnPercentage >= 0 ? "+" : ""}
@@ -854,46 +854,36 @@ export default function Investors() {
                                 </span>
                               </div>
                             )}
-                            <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
-                              {investor.name?.toUpperCase()}
+                            <span className="font-normal text-kite-text text-[14px] group-hover:text-kite-blue transition-colors capitalize leading-tight tracking-wide truncate">
+                              {investor.name?.toLowerCase()}
                             </span>
                             {investor.id === "admin_investor" && (
                               <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
                             )}
                           </div>
-                          <div className="w-[14%] flex items-center text-left py-3 text-[12px] text-kite-text font-mono truncate pl-4 border-l border-kite-border">
+                          <div className="w-[14%] flex items-center text-left py-3 text-[14px] text-kite-text font-mono truncate pl-4">
                             {investor.investorId}
                           </div>
-                          <div className="w-[18%] flex items-center justify-end py-3 text-[13px] font-normal text-kite-text pr-4 border-l border-kite-border truncate">
+                          <div className="w-[16%] flex items-center justify-start py-3 text-[12px] pl-4 pr-4 truncate text-kite-text">
+                            {investor.address?.city || investor.address?.state ? 
+                              [
+                                investor.address?.city ? investor.address.city.charAt(0).toUpperCase() + investor.address.city.slice(1).toLowerCase() : null,
+                                investor.address?.state ? investor.address.state.charAt(0).toUpperCase() + investor.address.state.slice(1).toLowerCase() : null
+                              ].filter(Boolean).join("-")
+                              : "-"}
+                          </div>
+                          <div className="w-[18%] flex items-center justify-end py-3 text-[14px] font-normal text-kite-text pr-4 border-l border-kite-border truncate">
                             {totalAmountInvested > 0
                               ? `₹${formatLargeNumber(totalAmountInvested)}`
-                              : "NOT INVESTED"}
+                              : "Not Invested"}
                           </div>
-                          <div className="w-[16%] flex items-center justify-end py-3 text-[13px] pr-4 border-l border-kite-border truncate">
-                            {totalAmountInvested > 0 ? (
-                              <span
-                                className={
-                                  returnPercentage >= 0
-                                    ? "text-kite-green"
-                                    : "text-kite-red"
-                                }
-                              >
-                                {returnPercentage >= 0 ? "+" : ""}
-                                {returnPercentage.toFixed(2)}%
-                              </span>
-                            ) : (
-                              <span className="text-kite-text-light">
-                                NOT INVESTED
-                              </span>
-                            )}
-                          </div>
-                          <div className="w-[22%] flex items-center justify-end py-3 text-[13px] font-normal pl-5 border-l border-kite-border truncate">
+                          <div className="w-[22%] flex items-center justify-end py-3 text-[14px] font-normal pl-5 border-l border-kite-border truncate">
                             {totalAmountInvested > 0 ? (
                               <span
                                 className={
                                   totalLiveProfit >= 0
-                                    ? "text-kite-green"
-                                    : "text-kite-red"
+                                    ? "text-[#4CAF50] dark:text-[#5B9A5D]"
+                                    : "text-[#DF514C] dark:text-[#E25F5B]"
                                 }
                               >
                                 {totalLiveProfit >= 0 ? "+" : ""}₹
@@ -901,7 +891,7 @@ export default function Investors() {
                               </span>
                             ) : (
                               <span className="text-kite-text-light">
-                                NOT INVESTED
+                                Not Invested
                               </span>
                             )}
                           </div>
@@ -948,7 +938,7 @@ export default function Investors() {
             <div className="flex flex-col md:flex-row gap-3 mb-6 border-b border-kite-border pb-4">
               <button
                 type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
                 onClick={() => {
                   setOwnerMode("new");
                   setFormData({
@@ -966,7 +956,7 @@ export default function Investors() {
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
                 onClick={() => setOwnerMode("existing")}
               >
                 Already Registered Owner
@@ -1019,7 +1009,7 @@ export default function Investors() {
                         .map((name, idx) => (
                           <div
                             key={idx}
-                            className="p-3 hover:bg-gray-50 dark:hover:bg-[#202020] cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
+                            className="p-3 hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
                             onClick={() => {
                               const ownerBiz = state.businesses.find(
                                 (b) => b.ownerName === name,
@@ -1182,7 +1172,7 @@ export default function Investors() {
                         ).map((bank) => (
                           <div
                             key={bank}
-                            className="px-4 py-2 hover:bg-kite-bg cursor-pointer border-b border-kite-border last:border-0 text-[13px] text-kite-text"
+                            className="px-4 py-2 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer border-b border-kite-border last:border-0 text-[13px] text-kite-text"
                             onClick={() => {
                               setFormData({ ...formData, bankName: bank });
                               setShowBankSelect(false);
@@ -1438,9 +1428,9 @@ export default function Investors() {
             const isProfit = curValue - activeTotalInvested >= 0;
 
             return (
-              <div className="w-full bg-white dark:bg-kite-bg md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile">
+              <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile">
                 {/* Header and Tabs */}
-                <div className="bg-white dark:bg-kite-bg pt-4 px-4 md:px-6 relative z-10 border-b border-kite-border md:border-none">
+                <div className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] pt-4 px-4 md:px-6 relative z-10 border-b border-kite-border md:border-none">
                   <div className="flex items-center mb-6">
                     <button
                       onClick={() => setViewMode("investor-detail")}
@@ -1560,7 +1550,7 @@ export default function Investors() {
                               return (
                                 <tr
                                   key={`desk_inv_h_${h.bizId}_${i}`}
-                                  className="hover:bg-gray-50/50 dark:hover:bg-[#202020] transition-colors cursor-pointer group"
+                                  className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedPortfolioInvestment({
@@ -1588,38 +1578,38 @@ export default function Investors() {
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
-                                    style={{ fontFamily: sfProFont }}
+                                   
                                   >
                                     {qty}
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
-                                    style={{ fontFamily: sfProFont }}
+                                   
                                   >
                                     {avgPrice.toFixed(2)}
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
-                                    style={{ fontFamily: sfProFont }}
+                                   
                                   >
                                     {ltp.toFixed(2)}
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
-                                    style={{ fontFamily: sfProFont }}
+                                   
                                   >
                                     {formatINR(h.currentValue)}
                                   </td>
                                   <td
-                                    className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-kite-green" : "text-kite-red"}`}
-                                    style={{ fontFamily: sfProFont }}
+                                    className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
+                                   
                                   >
                                     {h.liveProfit >= 0 ? "+" : ""}
                                     {formatINR(h.liveProfit)}
                                   </td>
                                   <td
-                                    className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-kite-green" : "text-kite-red"}`}
-                                    style={{ fontFamily: sfProFont }}
+                                    className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
+                                   
                                   >
                                     {h.liveProfit >= 0 ? "+" : ""}
                                     {pnlPercent.toFixed(2)}%
@@ -1633,7 +1623,7 @@ export default function Investors() {
 
                       {/* Desktop Holdings Summary */}
                       {holdings.length > 0 && (
-                        <div className="hidden md:flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-kite-bg border-t border-kite-border">
+                        <div className="hidden md:flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-kite-bg dark:md:bg-[#181818] border-t border-kite-border">
                           <div className="flex space-x-16">
                             <div>
                               <p className="text-[12px] text-kite-text mb-1 uppercase tracking-wider">
@@ -1641,7 +1631,7 @@ export default function Investors() {
                               </p>
                               <p
                                 className="text-[16px] text-kite-text font-normal"
-                                style={{ fontFamily: sfProFont }}
+                               
                               >
                                 {formatINR(activeTotalInvested)}
                               </p>
@@ -1652,7 +1642,7 @@ export default function Investors() {
                               </p>
                               <p
                                 className="text-[16px] text-kite-text font-normal"
-                                style={{ fontFamily: sfProFont }}
+                               
                               >
                                 {formatINR(curValue)}
                               </p>
@@ -1664,15 +1654,15 @@ export default function Investors() {
                             </p>
                             <div className="flex items-center justify-end space-x-2">
                               <span
-                                className={`text-[16px] font-medium ${isProfit ? "text-kite-green" : "text-kite-red"}`}
-                                style={{ fontFamily: sfProFont }}
+                                className={`text-[16px] font-medium ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
+                               
                               >
                                 {isProfit ? "+" : ""}
                                 {formatINR(activeTotalLiveProfit)}
                               </span>
                               <span
-                                className={`text-[12px] font-medium px-2 py-0.5 rounded-sm ${isProfit ? "bg-kite-green/10 text-kite-green" : "bg-kite-red/10 text-kite-red"}`}
-                                style={{ fontFamily: sfProFont }}
+                                className={`text-[12px] font-medium px-2 py-0.5 rounded-sm ${isProfit ? "bg-kite-green/10 text-[#4CAF50] dark:text-[#5B9A5D]" : "bg-kite-red/10 text-[#DF514C] dark:text-[#E25F5B]"}`}
+                               
                               >
                                 {isProfit ? "+" : ""}
                                 {activeTotalInvested > 0
@@ -1723,7 +1713,7 @@ export default function Investors() {
                                 </p>
                                 <p
                                   className="text-[18px] text-kite-text font-normal"
-                                  style={{ fontFamily: sfProFont }}
+                                 
                                 >
                                   {formatINR(activeTotalInvested).replace(
                                     "₹",
@@ -1737,7 +1727,7 @@ export default function Investors() {
                                 </p>
                                 <p
                                   className="text-[18px] text-kite-text font-normal"
-                                  style={{ fontFamily: sfProFont }}
+                                 
                                 >
                                   {formatINR(curValue).replace("₹", "")}
                                 </p>
@@ -1750,8 +1740,8 @@ export default function Investors() {
                               </p>
                               <div className="flex items-center space-x-2">
                                 <span
-                                  className={`text-[16px] font-normal ${isProfit ? "text-kite-green" : "text-kite-red"}`}
-                                  style={{ fontFamily: sfProFont }}
+                                  className={`text-[16px] font-normal ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
+                                 
                                 >
                                   {isProfit ? "+" : ""}
                                   {formatINR(activeTotalLiveProfit).replace(
@@ -1760,8 +1750,8 @@ export default function Investors() {
                                   )}
                                 </span>
                                 <span
-                                  className={`text-[11px] px-1.5 py-0.5 rounded-sm ${isProfit ? "bg-kite-green/10 text-kite-green" : "bg-kite-red/10 text-kite-red"}`}
-                                  style={{ fontFamily: sfProFont }}
+                                  className={`text-[11px] px-1.5 py-0.5 rounded-sm ${isProfit ? "bg-kite-green/10 text-[#4CAF50] dark:text-[#5B9A5D]" : "bg-kite-red/10 text-[#DF514C] dark:text-[#E25F5B]"}`}
+                                 
                                 >
                                   {isProfit ? "+" : ""}
                                   {activeTotalInvested > 0
@@ -1791,7 +1781,7 @@ export default function Investors() {
                               return (
                                 <div
                                   key={`mob_inv_h_${h.bizId}_${i}`}
-                                  className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#202020] transition-colors cursor-pointer"
+                                  className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedPortfolioInvestment({
@@ -1833,7 +1823,7 @@ export default function Investors() {
                                       </span>
                                     </div>
                                     <div
-                                      className={`text-[11px] md:text-[12px] font-normal ${pnlPercent >= 0 ? "text-[#4CAF50]" : "text-[#FF5722]"}`}
+                                      className={`text-[11px] md:text-[12px] font-normal ${pnlPercent >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
                                     >
                                       {pnlPercent >= 0 ? "+" : ""}{" "}
                                       {pnlPercent.toFixed(2)}%
@@ -1849,7 +1839,7 @@ export default function Investors() {
                                       </h3>
                                     </div>
                                     <div
-                                      className={`text-[13px] md:text-[14px] font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50]" : "text-[#FF5722]"}`}
+                                      className={`text-[13px] md:text-[14px] font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
                                     >
                                       {h.liveProfit >= 0 ? "+" : ""}
                                       {formatINR(
@@ -1879,7 +1869,7 @@ export default function Investors() {
                                         {ltp.toFixed(2)}
                                       </span>
                                       <span
-                                        className={`ml-1 ${h.liveTrendPercentage >= 0 ? "text-[#4CAF50]" : "text-[#FF5722]"}`}
+                                        className={`ml-1 ${h.liveTrendPercentage >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
                                       >
                                         ({h.liveTrendPercentage >= 0 ? "+" : ""}
                                         {h.liveTrendPercentage.toFixed(2)}%)
@@ -1994,7 +1984,7 @@ export default function Investors() {
                               return (
                                 <tr
                                   key={`desk_inv_p_${p.bizId}_${i}`}
-                                  className="hover:bg-gray-50/50 dark:hover:bg-[#202020] transition-colors cursor-pointer group"
+                                  className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedPortfolioInvestment({
@@ -2022,19 +2012,19 @@ export default function Investors() {
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
-                                    style={{ fontFamily: sfProFont }}
+                                   
                                   >
                                     {qty}
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
-                                    style={{ fontFamily: sfProFont }}
+                                   
                                   >
                                     {avgPrice.toFixed(2)}
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
-                                    style={{ fontFamily: sfProFont }}
+                                   
                                   >
                                     {formatINR(p.investedAmount)}
                                   </td>
@@ -2083,7 +2073,7 @@ export default function Investors() {
                               return (
                                 <tr
                                   key={app.id}
-                                  className="border-b border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]"
+                                  className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"
                                 >
                                   <td className="py-3 px-4 md:px-6">
                                     <div className="flex items-center gap-2">
@@ -2101,7 +2091,7 @@ export default function Investors() {
                                   </td>
                                   <td className="py-3 px-4 md:px-6 text-right font-normal">
                                     <span
-                                      className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#FF5722]/10 text-[#FF5722]" : "bg-kite-blue/10 text-kite-blue"}`}
+                                      className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#DF514C] dark:bg-[#E25F5B]/10 text-[#DF514C] dark:text-[#E25F5B]" : "bg-kite-blue/10 text-kite-blue"}`}
                                     >
                                       {displayStatus}
                                     </span>
@@ -2138,7 +2128,7 @@ export default function Investors() {
                               return (
                                 <tr
                                   key={app.id}
-                                  className="border-b border-kite-border hover:bg-gray-50 dark:hover:bg-[#202020]"
+                                  className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"
                                 >
                                   <td className="py-3 px-4 md:px-6">
                                     <div className="flex items-center gap-2">
@@ -2198,7 +2188,7 @@ export default function Investors() {
                             return (
                               <div
                                 key={`mob_inv_p_${p.bizId}_${i}`}
-                                className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#202020] transition-colors cursor-pointer"
+                                className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedPortfolioInvestment({
@@ -2239,7 +2229,7 @@ export default function Investors() {
                                       {avgPrice.toFixed(2)}
                                     </span>
                                   </div>
-                                  <div className="text-[11px] text-[#4CAF50] bg-[#4CAF50]/10 px-1.5 py-0.5 rounded tracking-wide uppercase font-medium">
+                                  <div className="text-[11px] text-[#4CAF50] dark:text-[#5B9A5D] bg-[#4CAF50] dark:bg-[#5B9A5D]/10 px-1.5 py-0.5 rounded tracking-wide uppercase font-medium">
                                     Closed
                                   </div>
                                 </div>
@@ -2307,7 +2297,7 @@ export default function Investors() {
                                     </h3>
                                   </div>
                                   <div
-                                    className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#FF5722]/10 text-[#FF5722]" : "bg-kite-blue/10 text-kite-blue"}`}
+                                    className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#DF514C] dark:bg-[#E25F5B]/10 text-[#DF514C] dark:text-[#E25F5B]" : "bg-kite-blue/10 text-kite-blue"}`}
                                   >
                                     {displayStatus}
                                   </div>
@@ -2451,7 +2441,7 @@ export default function Investors() {
                         <p className="text-[11px] md:text-[12px] text-gray-600 uppercase tracking-widest">
                           Credited
                         </p>
-                        <p className="font-normal text-[13px] md:text-[14px] text-kite-green">
+                        <p className="font-normal text-[13px] md:text-[14px] text-[#4CAF50] dark:text-[#5B9A5D]">
                           {formatINR(payout?.totalCredited || 0)}
                         </p>
                       </div>
@@ -2487,7 +2477,7 @@ export default function Investors() {
               {" "}
               <h3 className="font-normal text-[11px] md:text-[12px] text-kite-text flex items-center space-x-2">
                 {" "}
-                <CheckCircle className="text-kite-green" />{" "}
+                <CheckCircle className="text-[#4CAF50] dark:text-[#5B9A5D]" />{" "}
                 <span>Withdrawal Successful & Profit Slip Generated</span>{" "}
               </h3>{" "}
               <div className="flex items-center space-x-3">
@@ -2907,7 +2897,7 @@ function ProfitSlipContent({
             >
               {" "}
               <td
-                className={`p-2 sm:p-4 py-1.5 md:py-2 font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-red-800" : "text-green-800"}`}
+                className={`p-2 sm:p-4 py-1.5 md:py-2 font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-[#DF514C] dark:text-[#E25F5B]" : "text-[#4CAF50] dark:text-[#5B9A5D]"}`}
               >
                 {" "}
                 {(payout?.totalCredited || 0) +
@@ -2920,7 +2910,7 @@ function ProfitSlipContent({
                   : "Total Profit & Interest"}{" "}
               </td>{" "}
               <td
-                className={`p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-red-800" : "text-green-800"}`}
+                className={`p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-[#DF514C] dark:text-[#E25F5B]" : "text-[#4CAF50] dark:text-[#5B9A5D]"}`}
               >
                 {" "}
                 {(payout?.totalCredited || 0) +
@@ -2975,10 +2965,10 @@ function ProfitSlipContent({
             {(payout?.rmasPrematurePenalty || 0) > 0 ? (
               <tr>
                 {" "}
-                <td className="p-2 sm:p-4 py-1.5 md:py-2 text-kite-red font-normal">
+                <td className="p-2 sm:p-4 py-1.5 md:py-2 text-[#DF514C] dark:text-[#E25F5B] font-normal">
                   Less: RMAS Premature Penalty
                 </td>{" "}
-                <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-kite-red font-normal">
+                <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-[#DF514C] dark:text-[#E25F5B] font-normal">
                   -{formatINR(payout?.rmasPrematurePenalty || 0)}
                 </td>{" "}
               </tr>
@@ -2994,10 +2984,10 @@ function ProfitSlipContent({
             </tr>{" "}
             <tr className="border-b-[3px] border-black">
               {" "}
-              <td className="p-2 sm:p-4 py-1.5 md:py-2 text-kite-red font-normal">
+              <td className="p-2 sm:p-4 py-1.5 md:py-2 text-[#DF514C] dark:text-[#E25F5B] font-normal">
                 Less: Happy Muslim Income Tax
               </td>{" "}
-              <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-kite-red font-normal">
+              <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-[#DF514C] dark:text-[#E25F5B] font-normal">
                 -{formatINR(payout?.happyIncomeTax || 0)}
               </td>{" "}
             </tr>{" "}

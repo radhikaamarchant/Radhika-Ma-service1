@@ -82,7 +82,7 @@ export function MobilePortfolioSummary({
             style={{
               fontSize:"11px",
               fontWeight: 500,
-              color: isProfit ?"#00A86B" :"#D94B4B",
+              color: isProfit ?"#4CAF50" :"#DF514C",
               whiteSpace:"nowrap",
             }}
           >

@@ -181,7 +181,7 @@ export function LivePortfolioDetail({
               {""}
               <button
                 onClick={() => setSelectedInvestment(null)}
-                className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:hover:bg-[#202020] rounded-full transition-colors"
+                className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors"
               >
                 {""}
                 <ArrowLeft className="w-[24px] h-[24px]" />
@@ -202,7 +202,7 @@ export function LivePortfolioDetail({
                   {""}
                   <button
                     onClick={() => setShowTradeOptions(!showTradeOptions)}
-                    className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:hover:bg-[#202020] rounded-full transition-colors outline-none"
+                    className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors outline-none"
                   >
                     {""}
                     <MoreVertical className="w-[24px] h-[24px]" />
@@ -254,7 +254,7 @@ export function LivePortfolioDetail({
     });
     setWithdrawStep(1);
   }}
-                      className="px-4 py-1.5 bg-[#D94B4B] hover:bg-[#C93B3B] text-white text-[13px] font-medium rounded transition-colors outline-none"
+                      className="px-4 py-1.5 bg-[#DF514C] dark:bg-[#E25F5B] hover:bg-[#C93B3B] text-white text-[13px] font-medium rounded transition-colors outline-none"
                     >
                       SELL
                     </button>
@@ -279,7 +279,7 @@ export function LivePortfolioDetail({
                         >
                           {""}
                           <button
-                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors"
+                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors"
                             onClick={() => {
                               setShowTradeOptions(false);
                               if (onBuyClick) onBuyClick(selectedInvestment);
@@ -290,7 +290,7 @@ export function LivePortfolioDetail({
                           </button>
                           {""}
                           <button
-                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#D94B4B] hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors border-t border-kite-border"
+                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border"
                             onClick={() => {
     setShowTradeOptions(false);
     let defaultComm = 0;
@@ -359,8 +359,8 @@ export function LivePortfolioDetail({
                         <span
                           className={"inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] md:text-[11px] font-medium" +
                             (overallTrend >= 0
-                              ?"bg-[#E6F6ED] dark:bg-[#00A86B]/20 text-[#00A86B] dark:text-[#00A86B]"
-                              :"bg-[#FCEBEB] dark:bg-[#D94B4B]/20 text-[#D94B4B] dark:text-[#D94B4B]")
+                              ?"bg-[#E6F6ED] dark:bg-[#5B9A5D]/$1 text-[#4CAF50] dark:text-[#5B9A5D]"
+                              :"bg-[#FCEBEB] dark:bg-[#E25F5B]/$1 text-[#DF514C] dark:text-[#E25F5B]")
                           }
                         >
                           {""}
@@ -404,8 +404,8 @@ export function LivePortfolioDetail({
                             (isProfit
                               ? selectedInvestment.status ==="completed"
                                 ?"text-kite-blue"
-                                :"text-[#00A86B]"
-                              :"text-[#D94B4B]")
+                                :"text-[#4CAF50] dark:text-[#5B9A5D]"
+                              :"text-[#DF514C] dark:text-[#E25F5B]")
                           }
                         >
                           {""}
@@ -577,7 +577,7 @@ export function LivePortfolioDetail({
                                           </span>{""}
                                         </div>{""}
                                         <span
-                                          className={`text-[11px] md:text-[12px] font-normal ${unitIsProfit ? (selectedInvestment.status ==="completed" ?"text-kite-blue" :"text-[#00A86B]") :"text-[#D94B4B]"}`}
+                                          className={`text-[11px] md:text-[12px] font-normal ${unitIsProfit ? (selectedInvestment.status ==="completed" ?"text-kite-blue" :"text-[#4CAF50] dark:text-[#5B9A5D]") :"text-[#DF514C] dark:text-[#E25F5B]"}`}
                                         >
                                           {""}
                                           {unitIsProfit ?"+" :""}
@@ -596,7 +596,7 @@ export function LivePortfolioDetail({
                       withdrawStep === 1 && (
                         <div className="mt-4 pt-4 border-t border-kite-border/50">
                           {""}
-                          <h4 className="text-kite-red font-medium text-[11px] md:text-[12px] tracking-wider mb-4">
+                          <h4 className="text-[#DF514C] dark:text-[#E25F5B] font-medium text-[11px] md:text-[12px] tracking-wider mb-4">
                             {""}
                             SELL DETAILS{""}
                           </h4>{""}
@@ -646,7 +646,7 @@ export function LivePortfolioDetail({
                               </label>{""}
                               <input
                                 type="number"
-                                className="w-full border-b border-kite-border py-1.5 text-[13px] md:text-[14px] outline-none font-medium bg-transparent focus:border-kite-red text-kite-red"
+                                className="w-full border-b border-kite-border py-1.5 text-[13px] md:text-[14px] outline-none font-medium bg-transparent focus:border-kite-red text-[#DF514C] dark:text-[#E25F5B]"
                                 value={withdrawFormData.happyIncomeTax}
                                 onChange={(e) =>
                                   setWithdrawFormData({
@@ -665,8 +665,8 @@ export function LivePortfolioDetail({
                               <span
                                 className={
                                   calculateLiveProfit().totalProfit >= 0
-                                    ?"text-kite-green font-medium"
-                                    :"text-kite-red font-medium"
+                                    ?"text-[#4CAF50] dark:text-[#5B9A5D] font-medium"
+                                    :"text-[#DF514C] dark:text-[#E25F5B] font-medium"
                                 }
                               >
                                 {""}
@@ -687,8 +687,8 @@ export function LivePortfolioDetail({
                               <span
                                 className={
                                   calculateLiveProfit().totalProfit < 0
-                                    ?"text-kite-red font-medium"
-                                    :"text-kite-green font-medium"
+                                    ?"text-[#DF514C] dark:text-[#E25F5B] font-medium"
+                                    :"text-[#4CAF50] dark:text-[#5B9A5D] font-medium"
                                 }
                               >
                                 {""}
@@ -709,12 +709,12 @@ export function LivePortfolioDetail({
                       ) && (
                         <div className="p-4 bg-kite-green/5 border border-kite-green/20 rounded-sm">
                           {""}
-                          <h4 className="font-medium text-kite-green flex items-center space-x-2 mb-4">
+                          <h4 className="font-medium text-[#4CAF50] dark:text-[#5B9A5D] flex items-center space-x-2 mb-4">
                             {""}
                             <CheckCircle className="w-4 h-4" />{""}
                             <span>Completed Settlement Breakdown</span>{""}
                           </h4>{""}
-                          <div className="space-y-2 text-[13px] md:text-[14px] text-green-900">
+                          <div className="space-y-2 text-[13px] md:text-[14px] text-[#4CAF50] dark:text-[#5B9A5D]">
                             {""}
                             <div className="flex justify-between">
                               {""}
@@ -736,7 +736,7 @@ export function LivePortfolioDetail({
                             <div className="flex justify-between text-[11px] md:text-[12px]">
                               {""}
                               <span>RMAS Commission Deducted</span>{""}
-                              <span className="text-kite-red">
+                              <span className="text-[#DF514C] dark:text-[#E25F5B]">
                                 {""}
                                 -{""}
                                 {formatINR(
@@ -752,7 +752,7 @@ export function LivePortfolioDetail({
                             <div className="flex justify-between text-[11px] md:text-[12px]">
                               {""}
                               <span>Income Tax Deducted</span>{""}
-                              <span className="text-kite-red">
+                              <span className="text-[#DF514C] dark:text-[#E25F5B]">
                                 {""}
                                 -{""}
                                 {formatINR(
@@ -861,7 +861,7 @@ export function LivePortfolioDetail({
                       Sell{""}
                     </span>
                     {""}
-                    <span className="text-[13px] md:text-[14px] font-medium text-kite-red">
+                    <span className="text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B]">
                       {""}
                       {formatINR(
                         Math.max(
@@ -901,7 +901,7 @@ export function LivePortfolioDetail({
                     Sell Final Amt:{""}
                   </span>
                   {""}
-                  <span className="text-[13px] md:text-[14px] font-medium text-kite-red">
+                  <span className="text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B]">
                     {""}
                     {formatINR(
                       Math.max(
@@ -919,7 +919,7 @@ export function LivePortfolioDetail({
                 {""}
                 <button
                   onClick={handleConfirmWithdraw}
-                  className="w-full py-3 bg-[#D94B4B] hover:bg-[#C93B3B] text-white font-medium rounded transition-colors uppercase tracking-wider text-[13px] md:text-[14px]"
+                  className="w-full py-3 bg-[#DF514C] dark:bg-[#E25F5B] hover:bg-[#C93B3B] text-white font-medium rounded transition-colors uppercase tracking-wider text-[13px] md:text-[14px]"
                 >
                   {""}
                   CONFIRM SELL{""}

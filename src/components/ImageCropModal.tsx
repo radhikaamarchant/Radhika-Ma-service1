@@ -100,7 +100,7 @@ export default function ImageCropModal({ imageUrl, onClose, onCrop }: Props) {
         <div className="hidden md:flex justify-between items-center p-4 border-b border-kite-border bg-white dark:bg-kite-surface text-kite-text shrink-0">
           <span className="font-medium text-[16px]">Crop Image</span>
           <div className="flex space-x-3">
-            <button onClick={onClose} className="px-4 py-1.5 font-medium text-kite-text-light hover:bg-gray-100 dark:hover:bg-[#202020] rounded transition-colors text-[14px]">
+            <button onClick={onClose} className="px-4 py-1.5 font-medium text-kite-text-light hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded transition-colors text-[14px]">
               Cancel
             </button>
             <button onClick={handleSave} className="px-4 py-1.5 bg-[#4184F3] hover:bg-[#387ED1] text-white font-medium rounded transition-colors text-[14px]">

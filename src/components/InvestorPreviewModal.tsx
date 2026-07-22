@@ -44,7 +44,7 @@ export default function InvestorPreviewModal({
         </button>
         
         {/* Left side - Image */}
-        <div className="w-full md:w-1/2 bg-gray-100 dark:bg-[#1a1a1a] flex items-center justify-center min-h-[300px] md:min-h-0 md:h-auto relative shrink-0 border-b md:border-b-0 md:border-r border-kite-border">
+        <div className="w-full md:w-1/2 bg-gray-100 dark:bg-kite-surface flex items-center justify-center min-h-[300px] md:min-h-0 md:h-auto relative shrink-0 border-b md:border-b-0 md:border-r border-kite-border">
           {investor.photoUrl ? (
             <img
               src={investor.photoUrl}
@@ -61,7 +61,7 @@ export default function InvestorPreviewModal({
         {/* Right side - Information */}
         <div className="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto bg-white dark:bg-kite-bg flex-1">
           <h2 className="text-[18px] md:text-[22px] font-medium text-kite-text mb-1">{investor.name?.toUpperCase()}</h2>
-          <p className="text-[12px] md:text-[13px] text-kite-text-light mb-6 tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
+          <p className="text-[12px] md:text-[13px] text-kite-text-light mb-6 tracking-wide">
             #{investor.investorId}
           </p>
           
@@ -99,7 +99,7 @@ export default function InvestorPreviewModal({
                   investments,
                   settings,
                 );
-                return balance >= 0 ? "text-kite-blue" : "text-kite-red";
+                return balance >= 0 ? "text-kite-blue" : "text-[#DF514C] dark:text-[#E25F5B]";
               })())}>
                 {(() => {
                   const balance = getUnifiedBankBalance(

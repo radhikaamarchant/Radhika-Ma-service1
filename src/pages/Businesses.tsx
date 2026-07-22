@@ -229,7 +229,7 @@ export default function Businesses() {
   const generateBusinessId = () => Math.floor(100000 + Math.random() * 900000).toString();
 
   return (
-    <div className="w-full space-y-6 print:m-0 print:p-0">
+    <div className="w-full space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
       <div className="print:hidden space-y-6">
         {selectedBusinessId ? (
           <BusinessDetail
@@ -239,11 +239,11 @@ export default function Businesses() {
         ) : viewMode === "list" && (
           <>
             <div className="w-full">
-              <div className="sticky top-0 z-30 bg-white dark:bg-kite-bg w-full">
+              <div className="sticky top-0 z-30 bg-white dark:bg-kite-bg dark:md:bg-[#181818] w-full">
                 {/* Header Section */}
                 
                 {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-kite-bg w-full md:hidden pt-3 px-4 pb-3">
+                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-kite-bg dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
                   <div className="bg-white dark:bg-kite-surface rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-kite-border">
                     <Search className="w-5 h-5 text-gray-400 dark:text-[#A3ACB8]" />
                     <input 
@@ -266,7 +266,7 @@ export default function Businesses() {
                   </div>
                 </div>
 
-                <div className="hidden md:flex px-4 pt-4 pb-4 flex-row justify-between items-center relative mb-0 bg-white dark:bg-kite-bg">
+                <div className="hidden md:flex px-4 pt-4 pb-4 flex-row justify-between items-center relative mb-0 bg-white dark:bg-kite-bg dark:md:bg-[#181818]">
                   <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
                     <div className="hidden md:block">
                       <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
@@ -286,7 +286,7 @@ export default function Businesses() {
                       {/* Search Container */}
                       <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
                         <div
-                          className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface md:dark:bg-[#161616] rounded-sm shadow-sm" : "bg-transparent"}`}
+                          className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface md:dark:bg-transparent rounded-sm shadow-sm" : "bg-transparent"}`}
                         >
                           {!isSearchExpanded && (
                             <button
@@ -332,22 +332,12 @@ export default function Businesses() {
                 </div>
 
                 {/* DESKTOP HEADER */}
-                <div className="hidden md:flex items-center px-4 bg-white dark:bg-[#1a1a1a] border-b border-kite-border w-full">
-                  <div className="w-[30%] text-left py-2 text-[12px] text-kite-text">
-                    BUSINESS NAME
-                  </div>
-                  <div className="w-[28%] text-left py-2 text-[12px] text-kite-text border-l border-kite-vertical-divider pl-4">
-                    OWNER NAME
-                  </div>
-                  <div className="w-[14%] text-left py-2 text-[12px] text-kite-text border-l border-kite-vertical-divider pl-4">
-                    ID
-                  </div>
-                  <div className="w-[14%] text-right py-2 text-[12px] text-kite-text border-l border-kite-vertical-divider pr-4">
-                    ROI
-                  </div>
-                  <div className="w-[14%] text-right py-2 text-[12px] text-kite-text pl-5 border-l border-kite-vertical-divider">
-                    TRIGGER
-                  </div>
+                <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr] px-4 py-3 border-b border-kite-border dark:border-[#2b2b2b] text-[12px] font-semibold text-[#9b9b9b] dark:text-[#9b9b9b] uppercase tracking-wider bg-white dark:bg-kite-surface dark:md:bg-[#181818]">
+                  <div>Business Name</div>
+                  <div>Owner Name</div>
+                  <div>ID</div>
+                  <div>ROI</div>
+                  <div className="text-right">Trigger</div>
                 </div>
               </div>
               <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none md:overflow-visible overflow-hidden z-10 md:mt-0">
@@ -369,7 +359,7 @@ export default function Businesses() {
                         <div
                           key={`inv_${business.id}_${idx}`}
                           onClick={() => setSelectedBusinessId(business.id)}
-                          className="flex flex-col bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] cursor-pointer transition-colors min-h-[50px] group"
+                          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
                         >
                           {/* Mobile View */}
                           <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
@@ -404,7 +394,7 @@ export default function Businesses() {
                                 <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
                                   {business.triggerAmount ? formatINR(getCurrentMarketPrice(business, state.investments)) : '-'}
                                 </span>{" "}
-                                <span className="text-[11px] md:text-[12px] font-normal mt-0.5 text-kite-green">
+                                <span className="text-[11px] md:text-[12px] font-normal mt-0.5 text-[#4CAF50] dark:text-[#5B9A5D]">
                                   {" "}
                                   {business.interestRate}% ROI{" "}
                                 </span>{" "}
@@ -412,13 +402,12 @@ export default function Businesses() {
                             </div>{" "}
                           </div>
                           {/* Desktop View */}
-                          <div className="hidden md:flex items-center w-full px-4 border-b border-kite-border">
-                            <div className="w-[30%] text-left py-3 flex items-center justify-between overflow-hidden pr-4">
-                              <div className="flex items-center overflow-hidden flex-1">
-                                <span className="font-normal text-kite-text text-[13px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide truncate">
-                                  {business.shortName
-                                    ? business.shortName.toUpperCase()
-                                    : business.name?.toUpperCase()}
+                          <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr] px-4 py-[10px] items-center border-b border-kite-border dark:border-[#2b2b2b]">
+                            {/* 1. BUSINESS NAME: Short name uppercase, Full name Capitalized words */}
+                            <div className="flex flex-col justify-center overflow-hidden pr-4">
+                              <div className="flex items-center">
+                                <span className="text-[14px] font-medium text-[#444444] dark:text-[#e0e0e0] uppercase truncate">
+                                  {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
                                 </span>
                                 {isBlueTick(business.id) && (
                                   <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
@@ -427,33 +416,40 @@ export default function Businesses() {
                                   <Clock className="w-3 h-3 text-kite-text flex-shrink-0 ml-1.5" />
                                 )}
                               </div>
+                              <span className="text-[12px] font-medium text-[#9b9b9b] dark:text-[#9b9b9b] capitalize truncate">
+                                {business.name?.toLowerCase()}
+                              </span>
+                            </div>
+
+                            {/* 2. OWNER NAME (Capitalized words) */}
+                            <div className="text-[14px] font-medium text-[#444444] dark:text-[#e0e0e0] capitalize truncate">
+                              {business.ownerName?.toLowerCase()}
+                            </div>
+
+                            {/* 3. ID */}
+                            <div className="text-[14px] font-medium text-[#444444] dark:text-[#e0e0e0]">
+                              {business.businessId}
+                            </div>
+
+                            {/* 4. ROI */}
+                            <div className="text-[14px] text-[#53b987] font-medium">
+                              {business.interestRate}%
+                            </div>
+
+                            {/* 5. TRIGGER AMOUNT & APPLY BUTTON */}
+                            <div className="flex items-center justify-end gap-3">
+                              <span className="text-[14px] font-medium text-[#444444] dark:text-[#e0e0e0]">
+                                {business.triggerAmount ? formatINR(getCurrentMarketPrice(business, state.investments)) : '-'}
+                              </span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setExpandedBusinessId(
-                                    expandedBusinessId === business.id
-                                      ? null
-                                      : business.id,
-                                  );
+                                  setSelectedBusinessId(business.id);
                                 }}
-                                className={`ml-4 focus:outline-none flex-shrink-0 flex items-center justify-center p-0.5 rounded transition-all hover:bg-gray-100 dark:hover:bg-[#202020] ${expandedBusinessId === business.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                                className="bg-[#387ed1] hover:bg-[#185ea5] text-white text-[12px] px-3 py-1 rounded font-medium transition-colors shadow-sm focus:outline-none flex-shrink-0"
                               >
-                                <ChevronDown
-                                  className={`w-[17px] h-[17px] text-kite-text-light transition-transform duration-300 ${expandedBusinessId === business.id ? "rotate-180" : ""}`}
-                                />
+                                Apply
                               </button>
-                            </div>
-                            <div className="w-[28%] text-left py-3 text-[13px] text-kite-text-light truncate pl-4 border-l border-kite-vertical-divider">
-                              {business.ownerName}
-                            </div>
-                            <div className="w-[14%] text-left py-3 text-[12px] text-kite-text font-mono truncate pl-4 border-l border-kite-vertical-divider">
-                              {business.businessId}
-                            </div>
-                            <div className="w-[14%] text-right py-3 text-[13px] text-kite-green pr-4 border-l border-kite-vertical-divider truncate">
-                              {business.interestRate}%
-                            </div>
-                            <div className="w-[14%] text-right py-3 text-[13px] font-normal text-kite-text pl-5 border-l border-kite-vertical-divider truncate">
-                              {business.triggerAmount ? formatINR(getCurrentMarketPrice(business, state.investments)) : '-'}
                             </div>
                           </div>
 
@@ -599,7 +595,7 @@ export default function Businesses() {
                     ownerName: "",
                   });
                 }}
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415] hover:brightness-105"}`}
               >
                 New Business Owner
               </button>
@@ -617,7 +613,7 @@ export default function Businesses() {
                     accountHolderName: "",
                   }));
                 }}
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:hover:bg-kite-border-soft hover:brightness-105"}`}
+                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415] hover:brightness-105"}`}
               >
                 Already Registered Owner
               </button>
@@ -660,7 +656,7 @@ export default function Businesses() {
                         {showOwnerSelect && (
                           <div className="absolute z-10 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
                             {" "}
-                            <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg">
+                            <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
                               {" "}
                               <div className="relative">
                                 {" "}
@@ -693,7 +689,7 @@ export default function Businesses() {
                                 .map((b) => (
                                   <div
                                     key={`opt_${b.id}`}
-                                    className="px-4 py-3 hover:bg-kite-bg dark:hover:bg-kite-border-soft cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                                    className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
                                     onClick={() => {
                                       handleExistingOwnerChange({
                                         target: { value: b.businessId },
@@ -808,7 +804,7 @@ export default function Businesses() {
                         />{" "}
                         {showInvestorSelect && (
                           <div className="absolute z-20 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
-                            <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg">
+                            <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
                               <div className="relative">
                                 <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
                                 <input
@@ -832,7 +828,7 @@ export default function Businesses() {
                                 .map((inv) => (
                                   <div
                                     key={inv.id}
-                                    className="px-4 py-3 hover:bg-kite-bg dark:hover:bg-kite-border-soft cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
+                                    className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
                                     onClick={() => {
                                       setFormData(prev => ({
                                         ...prev,
@@ -1000,7 +996,7 @@ export default function Businesses() {
                                 !showInterestCalculation,
                               )
                             }
-                            className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
+                            className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
                           >
                             {" "}
                             <span className="truncate">
@@ -1020,7 +1016,7 @@ export default function Businesses() {
                                 </p>{" "}
                                 <p className="text-[11px] md:text-[12px] text-kite-text mt-0.5">
                                   Based on{" "}
-                                  <span className="font-normal text-kite-green">
+                                  <span className="font-normal text-[#4CAF50] dark:text-[#5B9A5D]">
                                     {formData.interestRate}%
                                   </span>{" "}
                                   interest rate applied on{" "}
@@ -1034,7 +1030,7 @@ export default function Businesses() {
                               </div>{" "}
                               <div className="text-left flex flex-col gap-2 min-w-0">
                                 {" "}
-                                <p className="text-[13px] md:text-[14px] font-normal text-kite-text-light dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg px-3 py-1.5 rounded-sm break-words whitespace-normal">
+                                <p className="text-[13px] md:text-[14px] font-normal text-kite-text-light dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818] px-3 py-1.5 rounded-sm break-words whitespace-normal">
                                   {" "}
                                   Monthly Return:{" "}
                                   <span className="font-normal font-mono text-kite-text dark:text-kite-text break-all">
@@ -1046,10 +1042,10 @@ export default function Businesses() {
                                     )}
                                   </span>{" "}
                                 </p>{" "}
-                                <p className="text-[13px] md:text-[14px] font-normal text-green-800 dark:text-green-400 border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-sm break-words whitespace-normal">
+                                <p className="text-[13px] md:text-[14px] font-normal text-[#4CAF50] dark:text-[#5B9A5D] border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-sm break-words whitespace-normal">
                                   {" "}
                                   Yearly Return:{" "}
-                                  <span className="font-normal font-mono text-green-900 dark:text-green-300 break-all">
+                                  <span className="font-normal font-mono text-[#4CAF50] dark:text-[#5B9A5D] break-all">
                                     {formatINR(
                                       (Number(formData.fundingRequired) *
                                         Number(formData.interestRate)) /
@@ -1153,7 +1149,7 @@ export default function Businesses() {
                           ).map((bank) => (
                             <div
                               key={bank}
-                              className="px-4 py-2 hover:bg-kite-bg cursor-pointer border-b border-kite-border last:border-0 text-[13px] text-kite-text"
+                              className="px-4 py-2 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer border-b border-kite-border last:border-0 text-[13px] text-kite-text"
                               onClick={() => {
                                 setFormData({ ...formData, bankName: bank });
                                 setShowBankSelect(false);

@@ -47,7 +47,7 @@ const formatCompactZerodha = (num: number) => {
 
 const VerifiedBadge = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" aria-label="Verified" className="inline-block ml-1 -mt-0.5">
-    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.74 2.746 1.838 3.45-.038.225-.06.456-.06.69 0 2.21 1.71 3.998 3.918 3.998.47 0 .92-.084 1.336-.25.52 1.333 1.828 2.25 3.337 2.25 1.51 0 2.816-.917 3.337-2.25.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.234-.022-.465-.06-.69 1.098-.704 1.838-1.99 1.838-3.45z" fill="#4CAF50"/>
+    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.74 2.746 1.838 3.45-.038.225-.06.456-.06.69 0 2.21 1.71 3.998 3.918 3.998.47 0 .92-.084 1.336-.25.52 1.333 1.828 2.25 3.337 2.25 1.51 0 2.816-.917 3.337-2.25.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.234-.022-.465-.06-.69 1.098-.704 1.838-1.99 1.838-3.45z" fill="currentColor" className="text-[#4CAF50] dark:text-[#5B9A5D]"/>
     <path d="M15.42 8.783L10.33 14.1l-2.45-2.45c-.322-.322-.843-.322-1.165 0-.322.32-.322.84 0 1.16l3.03 3.03c.16.16.37.24.58.24.21 0 .42-.08.58-.24l5.67-6.07c.32-.32.31-.84-.01-1.16-.32-.32-.84-.31-1.16.01z" fill="#FFFFFF"/>
   </svg>
 );
@@ -517,7 +517,7 @@ export default function BusinessDetail({
                   </div>
                   <button 
                     onClick={handleSaveFunds} 
-                    className={`w-full py-3 rounded text-[14px] md:text-[15px] font-normal mt-2 transition-all duration-300 flex items-center justify-center ${showSuccess ? 'bg-kite-blue text-white' : 'bg-[#4CAF50] text-white'}`}
+                    className={`w-full py-3 rounded text-[14px] md:text-[15px] font-normal mt-2 transition-all duration-300 flex items-center justify-center ${showSuccess ? 'bg-kite-blue text-white' : 'bg-[#4CAF50] dark:bg-[#5B9A5D] text-white'}`}
                   >
                     {showSuccess ? (
                       <span className="flex items-center space-x-2 animate-fade-in">
@@ -565,7 +565,7 @@ export default function BusinessDetail({
              <div className="flex justify-between items-end mb-1">
                <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">Business Name</label>
                {editingFields.name && (
-                 <button onClick={() => setEditingFields({...editingFields, name: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] hover:text-[#388E3C] transition-colors border border-[#4CAF50] px-2 py-0.5 rounded">
+                 <button onClick={() => setEditingFields({...editingFields, name: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] dark:text-[#5B9A5D] hover:text-[#388E3C] transition-colors border border-[#4CAF50] dark:border-[#5B9A5D] px-2 py-0.5 rounded">
                    Verified
                  </button>
                )}
@@ -592,7 +592,7 @@ export default function BusinessDetail({
              <div className="flex justify-between items-end mb-1">
                <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">Business Owner Name</label>
                {editingFields.ownerName && (
-                 <button onClick={() => setEditingFields({...editingFields, ownerName: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] hover:text-[#388E3C] transition-colors border border-[#4CAF50] px-2 py-0.5 rounded">
+                 <button onClick={() => setEditingFields({...editingFields, ownerName: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] dark:text-[#5B9A5D] hover:text-[#388E3C] transition-colors border border-[#4CAF50] dark:border-[#5B9A5D] px-2 py-0.5 rounded">
                    Verified
                  </button>
                )}
@@ -620,7 +620,7 @@ export default function BusinessDetail({
              <div className="flex justify-between items-end mb-1">
                <label className="block text-[11px] md:text-[12px] font-normal text-kite-text-light uppercase">Short Business Name</label>
                {editingFields.shortName && (
-                 <button onClick={() => setEditingFields({...editingFields, shortName: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] hover:text-[#388E3C] transition-colors border border-[#4CAF50] px-2 py-0.5 rounded">
+                 <button onClick={() => setEditingFields({...editingFields, shortName: false})} className="text-[11px] md:text-[12px] font-medium text-[#4CAF50] dark:text-[#5B9A5D] hover:text-[#388E3C] transition-colors border border-[#4CAF50] dark:border-[#5B9A5D] px-2 py-0.5 rounded">
                    Verified
                  </button>
                )}
@@ -679,7 +679,7 @@ export default function BusinessDetail({
            </div>
            {onDelete && (
              <div className="pt-8 border-t border-kite-border-soft mt-8">
-               <button onClick={onDelete} className="w-full text-center text-[#FF5722] border border-[#FF5722] hover:bg-[#FF5722]/5 rounded py-3 font-normal text-[14px] transition-colors">
+               <button onClick={onDelete} className="w-full text-center text-[#DF514C] dark:text-[#E25F5B] border border-[#DF514C] dark:border-[#E25F5B] hover:bg-[#DF514C]/$1 dark:hover:bg-[#E25F5B]/$1 rounded py-3 font-normal text-[14px] transition-colors">
                  Delete Business
                </button>
              </div>
@@ -776,7 +776,7 @@ export default function BusinessDetail({
                        newDocs.splice(index, 1);
                        setCompanyInfoData({...companyInfoData, documents: newDocs});
                      }}
-                     className="text-[#FF5722] hover:bg-[#FF5722]/10 p-1 rounded transition-colors"
+                     className="text-[#DF514C] dark:text-[#E25F5B] hover:bg-[#DF514C]/$1 dark:hover:bg-[#E25F5B]/$1 p-1 rounded transition-colors"
                    >
                      <Trash2 className="w-4 h-4" />
                    </button>
@@ -823,7 +823,7 @@ export default function BusinessDetail({
                        newIds.splice(index, 1);
                        setCompanyInfoData({...companyInfoData, governmentRegIdentifies: newIds});
                      }}
-                     className="text-[#FF5722] hover:bg-[#FF5722]/10 p-1 rounded transition-colors"
+                     className="text-[#DF514C] dark:text-[#E25F5B] hover:bg-[#DF514C]/$1 dark:hover:bg-[#E25F5B]/$1 p-1 rounded transition-colors"
                    >
                      <Trash2 className="w-4 h-4" />
                    </button>
@@ -954,12 +954,12 @@ export default function BusinessDetail({
                          <td className="py-4 pl-5 pr-4 text-kite-text font-medium whitespace-nowrap uppercase">{investor?.name?.toUpperCase() || "UNKNOWN"}</td>
                          <td className={`py-4 px-4 text-right font-mono font-medium ${isCompleted ? 'text-kite-blue' : 'text-kite-text'}`}>{formatCompactZerodha(inv.amount)}</td>
                          <td className="py-4 px-4 text-right font-mono font-medium text-kite-text-light">{formatCompactZerodha(ownerProfit)}</td>
-                         <td className="py-4 px-4 text-right font-mono font-medium text-[#4CAF50]">
+                         <td className="py-4 px-4 text-right font-mono font-medium text-[#4CAF50] dark:text-[#5B9A5D]">
                            {isCompleted ? "-" : `${liveProfit >= 0 ? "+" : ""}${formatCompactZerodha(liveProfit)}`}
                          </td>
                          <td className="py-4 px-4 text-center text-kite-text-light">{inv.timePeriodMonths} Months</td>
                          <td className="py-4 pr-5 pl-4 text-right">
-                           <span className={inv.status === "active" ? "text-[#4CAF50] uppercase text-[11px] font-medium tracking-wider" : "text-kite-text-light uppercase text-[11px] font-medium tracking-wider"}>
+                           <span className={inv.status === "active" ? "text-[#4CAF50] dark:text-[#5B9A5D] uppercase text-[11px] font-medium tracking-wider" : "text-kite-text-light uppercase text-[11px] font-medium tracking-wider"}>
                              {inv.status}
                            </span>
                          </td>
@@ -987,11 +987,11 @@ export default function BusinessDetail({
                    <div key={`biz_inv_mob_${inv.id}_${idx}`} className="p-4 flex justify-between items-center px-5">
                       <div>
                         <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{investor?.name || "Unknown"}</p>
-                        <p className="text-[12px] md:text-[13px] text-kite-text-light mt-0.5">{inv.timePeriodMonths} Months • <span className={inv.status === "active" ? "text-[#4CAF50]" : "text-kite-text-light"}>{inv.status}</span></p>
+                        <p className="text-[12px] md:text-[13px] text-kite-text-light mt-0.5">{inv.timePeriodMonths} Months • <span className={inv.status === "active" ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-kite-text-light"}>{inv.status}</span></p>
                       </div>
                       <div className="text-right">
                         <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{formatINR(inv.amount).replace("₹", "")}</p>
-                        <p className="text-[12px] md:text-[13px] font-medium text-[#4CAF50] mt-0.5">+{formatINR(profit).replace("₹", "")}</p>
+                        <p className="text-[12px] md:text-[13px] font-medium text-[#4CAF50] dark:text-[#5B9A5D] mt-0.5">+{formatINR(profit).replace("₹", "")}</p>
                       </div>
                    </div>
                  )
@@ -1069,17 +1069,17 @@ export default function BusinessDetail({
               </div>
               <div className="border border-red-200 dark:border-red-900/30 rounded p-4 flex flex-col items-start gap-4 bg-red-50 dark:bg-red-900/10">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+                  <AlertTriangle className="w-5 h-5 text-[#DF514C] dark:text-[#E25F5B] mt-0.5 shrink-0" />
                   <div>
-                    <h4 className="text-[14px] font-medium text-red-800 dark:text-red-400">Permanent Business Delete</h4>
-                    <p className="text-[12px] md:text-[13px] text-red-600/80 dark:text-red-400/80 mt-1 leading-relaxed">
+                    <h4 className="text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B]">Permanent Business Delete</h4>
+                    <p className="text-[12px] md:text-[13px] text-[#DF514C] dark:text-[#E25F5B]/80 dark:text-[#E25F5B]/80 mt-1 leading-relaxed">
                       This action will permanently delete this business. Any investors who have invested in this business will have their invested amount refunded to their bank account balance immediately. All records of this business will be permanently destroyed.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="px-4 py-2 bg-white dark:bg-transparent border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-[13px] font-medium rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="px-4 py-2 bg-white dark:bg-transparent border border-red-200 dark:border-red-800 text-[#DF514C] dark:text-[#E25F5B] text-[13px] font-medium rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   Delete Business
                 </button>
@@ -1088,7 +1088,7 @@ export default function BusinessDetail({
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center animate-fade-in text-center px-4 max-w-sm mx-auto h-full my-auto pb-20">
               <div className={`w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-6 ${isDeleting ? "animate-pulse" : ""}`}>
-                <Trash2 className={`w-8 h-8 text-red-500 ${isDeleting ? "animate-bounce" : ""}`} />
+                <Trash2 className={`w-8 h-8 text-[#DF514C] dark:text-[#E25F5B] ${isDeleting ? "animate-bounce" : ""}`} />
               </div>
               <h3 className="text-[18px] font-medium text-kite-text mb-2">Are you absolutely sure?</h3>
               <p className="text-[13px] text-kite-text-light mb-8">
@@ -1113,7 +1113,7 @@ export default function BusinessDetail({
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  className="w-full py-2.5 bg-transparent border border-kite-border text-kite-text text-[14px] font-medium rounded hover:bg-gray-50 dark:hover:bg-kite-border-soft transition-colors disabled:opacity-50"
+                  className="w-full py-2.5 bg-transparent border border-kite-border text-kite-text text-[14px] font-medium rounded hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1133,11 +1133,11 @@ export default function BusinessDetail({
                 <p className="text-[15px] font-medium text-kite-text">{formatINR(totalFunded)}</p>
               </div>
               <div 
-                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-kite-bg p-2 -m-2 rounded transition-colors"
+                className="cursor-pointer hover:bg-gray-50 dark:md:hover:bg-[#131415] p-2 -m-2 rounded transition-colors"
                 onClick={() => setCurrentView("trigger-suggestion")}
               >
                 <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1 flex items-center gap-1">Value <ChevronRight className="w-3 h-3"/></p>
-                <p className={`text-[15px] font-medium ${valueAmount >= totalFunded ? "text-kite-green" : "text-kite-red"}`}>
+                <p className={`text-[15px] font-medium ${valueAmount >= totalFunded ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
                   {formatINR(valueAmount)} <span className="text-[12px] font-normal opacity-90">({valuePercentage > 0 ? '+' : ''}{valuePercentage.toFixed(2)}%)</span>
                 </p>
               </div>
@@ -1268,7 +1268,7 @@ export default function BusinessDetail({
           <div className="pt-6 mt-6 border-t border-kite-border-soft">
             <button 
               onClick={() => setCurrentView("trigger-history")}
-              className="w-full py-3 bg-white dark:bg-transparent border border-kite-border-hard text-kite-text hover:bg-gray-50 dark:hover:bg-kite-border-soft transition-colors rounded text-[14px] md:text-[15px] font-normal flex items-center justify-between px-4"
+              className="w-full py-3 bg-white dark:bg-transparent border border-kite-border-hard text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors rounded text-[14px] md:text-[15px] font-normal flex items-center justify-between px-4"
             >
               <span>View Trigger Set History</span>
               <ChevronRight className="w-4 h-4" />
@@ -1365,14 +1365,14 @@ export default function BusinessDetail({
               </div>
               <div className="flex flex-col">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Profit Taken Out</span>
-                <span className="text-[14px] text-kite-green font-mono">
+                <span className="text-[14px] text-[#4CAF50] dark:text-[#5B9A5D] font-mono">
                   {formatCompactZerodha(profitTakenOut)} 
                   <span className="text-[11px] text-kite-text-light font-sans ml-1">({allTimeInvestedAmount > 0 ? ((profitTakenOut/allTimeInvestedAmount)*100).toFixed(1) : 0}%)</span>
                 </span>
               </div>
               <div className="flex flex-col text-right">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Total Profit Given</span>
-                <span className="text-[14px] text-kite-green font-mono">
+                <span className="text-[14px] text-[#4CAF50] dark:text-[#5B9A5D] font-mono">
                   {formatCompactZerodha(totalProfitGiven)} 
                   <span className="text-[11px] text-kite-text-light font-sans ml-1">({allTimeInvestedAmount > 0 ? ((totalProfitGiven/allTimeInvestedAmount)*100).toFixed(1) : 0}%)</span>
                 </span>

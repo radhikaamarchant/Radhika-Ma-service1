@@ -37,7 +37,7 @@ import { MarketTrendCell } from"../components/MarketTrendCell";
 import { calculateLiveProfit } from"../utils/profitCalculator";
 import AddInvestmentModal from "../components/AddInvestmentModal";
 
-const LiveMobileValue = ({ baseAmount, isOpen, isUp }: { baseAmount: number, isOpen: boolean, isUp: boolean }) => {
+const LiveMobileValue = ({ baseAmount, isOpen, isUp, baseColorClass = "text-kite-text" }: { baseAmount: number, isOpen: boolean, isUp: boolean, baseColorClass?: string }) => {
   const displayBase = baseAmount || 0;
   const [currentAmount, setCurrentAmount] = useState(displayBase);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
@@ -68,8 +68,8 @@ const LiveMobileValue = ({ baseAmount, isOpen, isUp }: { baseAmount: number, isO
   }, [baseAmount, isOpen]);
 
   const amountColorClass = !isOpen 
-    ? (isUp ? "text-kite-green" : "text-kite-red") 
-    : (flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text");
+    ? (isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]") 
+    : (flash === "up" ? "text-[#4CAF50] dark:text-[#5B9A5D]" : flash === "down" ? "text-[#DF514C] dark:text-[#E25F5B]" : baseColorClass);
 
   return (
     <span className={`transition-colors duration-300 ${amountColorClass}`}>
@@ -314,13 +314,13 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                 </p>
               </div>
               <div className="bg-kite-green/10 p-2 md:p-4 rounded-sm border border-kite-green/30 flex flex-col justify-center">
-                <p className="text-[10px] md:text-[11px] ] font-medium text-kite-green uppercase tracking-widest mb-0.5 md:mb-1">
+                <p className="text-[10px] md:text-[11px] ] font-medium text-[#4CAF50] dark:text-[#5B9A5D] uppercase tracking-widest mb-0.5 md:mb-1">
                   Profited
                 </p>
-                <p className="text-[13px] md:text-[14px] font-medium text-kite-green leading-tight">
+                <p className="text-[13px] md:text-[14px] font-medium text-[#4CAF50] dark:text-[#5B9A5D] leading-tight">
                   {bizStats?.profitedInvestorsCount || 0}
                 </p>
-                <p className="text-[10px] md:text-[11px] ] text-kite-green mt-0.5 md:mt-1 leading-tight">
+                <p className="text-[10px] md:text-[11px] ] text-[#4CAF50] dark:text-[#5B9A5D] mt-0.5 md:mt-1 leading-tight">
                   Paid out
                 </p>
               </div>
@@ -530,7 +530,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
   return (
     <>
       <div className="w-full md:hidden pb-4">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-kite-border/50 bg-white dark:bg-kite-bg sticky top-0 z-10">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-kite-border/50 bg-white dark:bg-kite-bg dark:md:bg-[#181818] sticky top-0 z-10">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 md:dark:text-[#7A7A7A] dark:text-[#8F8F8F]" />
             <input 
@@ -538,7 +538,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
               placeholder="Search Eg: Radhika Kite Trade"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 md:dark:bg-[#161616] dark:bg-[#111111] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors font-sans"
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 md:dark:bg-transparent dark:bg-transparent border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors font-sans"
             />
           </div>
         </div>
@@ -550,7 +550,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
             )
             .map((b) => {
             const isUp = b.overallTrend >= b.interestRate;
-            const trendColor = isUp ? "text-kite-green" : "text-kite-red";
+            const trendColor = isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]";
+            const absoluteDiff = (getCurrentMarketPrice(b, state.investments) * b.overallTrend) / 100;
             return (
               <div 
                 key={b.id}
@@ -561,7 +562,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                     onNavigate("investments");
                   }
                 }}
-                className="bg-white dark:bg-kite-bg border-b border-kite-border/40 py-3 px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
+                className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-3 px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
               >
                 <div className="flex flex-col">
                   <span className="font-medium text-[13px] text-kite-text">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</span>
@@ -570,13 +571,13 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                 <div className="flex flex-col items-end">
                   <div className="font-medium text-[13px]">
                     {b.triggerAmount ? (
-                      <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} />
+                      <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} baseColorClass={trendColor} />
                     ) : (
-                      <span className="text-kite-text">-</span>
+                      <span className={trendColor}>-</span>
                     )}
                   </div>
-                  <span className={`text-[10px] font-medium mt-0.5 ${trendColor}`}>
-                    {b.overallTrend > 0 ? "+" : ""}{b.overallTrend.toFixed(2)}%
+                  <span className="text-[10px] font-medium mt-0.5 text-gray-500 dark:text-gray-400">
+                    {absoluteDiff > 0 ? "+" : ""}{absoluteDiff.toFixed(2)} ({b.overallTrend > 0 ? "+" : ""}{b.overallTrend.toFixed(2)}%)
                   </span>
                 </div>
               </div>
@@ -593,7 +594,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
           </div>
         </div>
 
-        <div className="sticky top-0 z-40 bg-white dark:bg-kite-bg pt-2 pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="sticky top-0 z-40 bg-white dark:bg-kite-bg dark:md:bg-[#181818] pt-2 pb-0 -mx-4 px-4 md:mx-0 md:px-0">
           <div className="flex overflow-x-auto no-scrollbar border-b border-kite-border/50 items-center whitespace-nowrap">
             {[
               { id:"best-market", label:"Best Market", type:"scroll" },
@@ -656,7 +657,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                     </div>
                     <div className="flex flex-col items-end">
                       {renderLiveAmount(b, "font-medium text-[15px]")}
-                      <span className={`text-[12px] font-medium ${b.overallTrend >= b.interestRate ? 'text-kite-green' : 'text-kite-red'}`}>
+                      <span className={`text-[12px] font-medium ${b.overallTrend >= b.interestRate ? 'text-[#4CAF50] dark:text-[#5B9A5D]' : 'text-[#DF514C] dark:text-[#E25F5B]'}`}>
                         {b.overallTrend >= b.interestRate ? "+" : ""}{b.overallTrend.toFixed(2)}%
                       </span>
                     </div>

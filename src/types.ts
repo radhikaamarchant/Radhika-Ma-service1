@@ -100,7 +100,9 @@ export interface Investment {
 }
 
 export interface AppUser {
-  id: string; // Firebase Auth UID
+  id: string; // Firebase Auth UID or custom ID
+  userId?: string; // e.g., RMAS109
+  password?: string;
   name: string;
   shortName?: string;
   photoUrl?: string;

@@ -69,7 +69,7 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
   ];
 
   return (
-    <header className="hidden md:flex h-[55px] border-b border-kite-border bg-[#F8F9FA] dark:bg-kite-bg items-center justify-between px-6 shrink-0 z-[110]">
+    <header className="hidden md:flex h-[55px] border-b border-kite-border bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] items-center justify-between px-6 shrink-0 z-[110]">
       <div className="flex items-center space-x-2">
         <div className="flex flex-col cursor-pointer" onClick={() => onNavigate("admin")}>
           <Logo />
@@ -85,8 +85,8 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
               onClick={() => onNavigate(item.id)}
               className={`flex items-center space-x-1.5 h-full border-b-2 transition-colors ${
                 isActive
-                  ? "border-kite-blue text-kite-blue lg:border-[#FF6D2D] lg:text-[#FF6D2D]"
-                  : "border-transparent text-kite-text hover:text-kite-text dark:hover:text-white lg:hover:text-[#FF8148]"
+                  ? "border-kite-blue text-kite-blue lg:border-[#FF6D2D] lg:text-[#FF6D2D] dark:border-[#387ed1] dark:text-white dark:lg:border-[#387ed1] dark:lg:text-white"
+                  : "border-transparent text-kite-text hover:text-kite-text dark:text-[#9b9b9b] dark:hover:text-white lg:hover:text-[var(--accent-hover)] dark:lg:hover:text-white"
               }`}
             >
               <span className="text-[13px] font-medium tracking-wide">{item.label}</span>

@@ -83,7 +83,7 @@ export default function BusinessPreviewModal({
               </div>
               <div className="pt-2 pr-8 md:pr-0">
                 <h2 className="text-[18px] md:text-[22px] font-medium text-kite-text mb-1 leading-tight">{business.name?.toUpperCase()}</h2>
-                <p className="text-[12px] md:text-[13px] text-kite-text-light tracking-wide" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
+                <p className="text-[12px] md:text-[13px] text-kite-text-light tracking-wide">
                   #{business.businessId}
                 </p>
               </div>

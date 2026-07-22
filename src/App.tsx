@@ -21,6 +21,7 @@ import Bids from "./pages/Bids";
 import { Menu, X, WifiOff, Sun, Moon, Laptop } from"lucide-react";
 import { useTheme } from"./utils/ThemeContext";
 import { Logo } from "./components/Logo";
+import Login from "./components/Login";
 
 import { useAppContext } from"./utils/AppContext";
 import { MOCK_BUSINESSES } from"./utils/mockData";
@@ -39,7 +40,7 @@ function GlobalMarketAlerts() {
           key={alert.id}
           className={`pointer-events-auto flex items-start gap-1.5 md:p-3 p-2 md:p-4 rounded-sm border w-80 translate-x-0 transition-transform ${
             alert.type ==="shock"
-              ?"bg-red-900/90 text-red-50 border-red-700/50 backdrop-blur-md"
+              ?"bg-red-900/90 text-[#DF514C] dark:text-[#E25F5B]-50 border-red-700/50 backdrop-blur-md"
               :"bg-emerald-900/90 text-emerald-50 border-emerald-700/50 backdrop-blur-md"
           }`}
         >
@@ -159,8 +160,8 @@ function MainLayout() {
   };
 
   return (
-    <div className="h-screen bg-gray-100 dark:bg-black text-kite-text flex flex-col overflow-hidden main-content-pb md:pb-0 font-sans">
-      <div className="w-full h-full flex flex-col bg-white dark:bg-kite-bg relative overflow-hidden">
+    <div className="h-screen bg-gray-100 dark:bg-kite-bg dark:md:bg-[#181818] text-kite-text flex flex-col overflow-hidden main-content-pb md:pb-0 font-sans">
+      <div className="w-full h-full flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] relative overflow-hidden">
         <TopNav currentView={currentView} onNavigate={handleNavigate} />
 
         {/* Mobile Header - Kite Style */}
@@ -258,7 +259,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-kite-red/10 flex items-center justify-center font-sans text-kite-text p-4">
         <div className="bg-white dark:bg-kite-surface p-2 md:p-4 md:p-8 rounded-sm md:rounded max-w-md w-full text-center border-t-8 border-red-500">
-          <WifiOff className="w-10 h-10 md:w-16 md:h-16 mx-auto text-kite-red mb-3 md:mb-6" />
+          <WifiOff className="w-10 h-10 md:w-16 md:h-16 mx-auto text-[#DF514C] dark:text-[#E25F5B] mb-3 md:mb-6" />
           <h1 className="text-xs md:text-base font-medium text-kite-text mb-4 tracking-tight">
             No Internet Connection
           </h1>
@@ -266,7 +267,7 @@ export default function App() {
             This system requires an active WiFi or internet connection to
             function. Please reconnect to access the module.
           </p>
-          <div className="flex items-center justify-center space-x-2 text-sm font-medium text-kite-red bg-kite-red/10 py-3 rounded-sm">
+          <div className="flex items-center justify-center space-x-2 text-sm font-medium text-[#DF514C] dark:text-[#E25F5B] bg-kite-red/10 py-3 rounded-sm">
             <span className="w-2 h-2 rounded-full bg-kite-red animate-pulse"></span>
             <span>Waiting for connection...</span>
           </div>
@@ -278,8 +279,118 @@ export default function App() {
   return (
     <AppProvider>
       <MarketSimulationProvider>
-        <MainLayout />
+        <AuthWrapper />
       </MarketSimulationProvider>
     </AppProvider>
   );
+}
+
+function AuthWrapper() {
+  const { state, dispatch } = useAppContext();
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    // Immediate check for saved ID to avoid flicker if possible
+    const savedUserId = localStorage.getItem("loggedInUserId");
+    const lastLoginTime = localStorage.getItem("lastLoginTime");
+    const isDesktop = window.innerWidth >= 768;
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    
+    if (savedUserId === "admin" && !state.currentUser) {
+       if (isDesktop && (!lastLoginTime || now - parseInt(lastLoginTime) > twentyFourHours)) {
+          // Do not auto-login
+       } else {
+          dispatch({ type: "SET_CURRENT_USER", payload: { id: "admin", userId: "admin", name: "Admin", email: "admin@app", role: "CEO" } as any });
+       }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!state.loading && state.usersLoaded) {
+       const savedUserId = localStorage.getItem("loggedInUserId");
+       const lastLoginTime = localStorage.getItem("lastLoginTime");
+       if (savedUserId && savedUserId !== "admin") {
+         const user = state.users.find(u => u.id === savedUserId || u.userId === savedUserId);
+         if (user) {
+           const isDesktop = window.innerWidth >= 768;
+           const now = Date.now();
+           const twentyFourHours = 24 * 60 * 60 * 1000;
+           
+           if (isDesktop && (!lastLoginTime || now - parseInt(lastLoginTime) > twentyFourHours)) {
+              // Needs 2FA. Do not auto login. Let Login page handle it.
+           } else {
+             dispatch({ type: "SET_CURRENT_USER", payload: user });
+           }
+         } else {
+           localStorage.removeItem("loggedInUserId");
+           localStorage.removeItem("lastLoginTime");
+           if (state.currentUser && state.currentUser.id !== "admin") {
+             dispatch({ type: "SET_CURRENT_USER", payload: null });
+           }
+         }
+       } else if (savedUserId === "admin") {
+           const isDesktop = window.innerWidth >= 768;
+           const now = Date.now();
+           const twentyFourHours = 24 * 60 * 60 * 1000;
+           if (isDesktop && (!lastLoginTime || now - parseInt(lastLoginTime) > twentyFourHours)) {
+              // Needs 2FA.
+              if (state.currentUser) {
+                  dispatch({ type: "SET_CURRENT_USER", payload: null });
+              }
+           } else {
+              // Checked by immediate effect usually, but just in case
+           }
+       }
+       setIsChecking(false);
+    }
+  }, [state.loading, state.usersLoaded, state.users]);
+
+  const handleLogin = (userId: string) => {
+    localStorage.setItem("loggedInUserId", userId);
+    localStorage.setItem("lastLoginTime", Date.now().toString());
+    if (userId === "admin") {
+      dispatch({ type: "SET_CURRENT_USER", payload: { id: "admin", userId: "admin", name: "Admin", email: "admin@app", role: "CEO" } as any });
+    } else {
+      const user = state.users.find(u => u.id === userId || u.userId === userId);
+      if (user) dispatch({ type: "SET_CURRENT_USER", payload: user });
+    }
+  };
+
+  if (state.loading || isChecking) {
+    return (
+      <div className="fixed inset-0 flex h-full w-full items-center justify-center bg-white dark:bg-kite-bg z-50">
+        <div className="flex flex-col items-center justify-center gap-6 md:gap-8">
+          <div className="flex items-center gap-3 md:gap-5">
+            <img 
+              src="/logo.svg" 
+              alt="Radhika" 
+              className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-sm"
+            />
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-black dark:text-white">
+              Radhika
+            </h1>
+          </div>
+          
+          {/* Mobile Progress Bar (hidden on md) */}
+          <div className="md:hidden w-40 h-[2px] bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+            <div className="h-full bg-kite-blue w-full origin-left animate-progress-indeterminate"></div>
+          </div>
+
+          {/* Desktop Dots (hidden on sm) */}
+          <div className="hidden md:flex items-center justify-center space-x-2.5">
+            <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-1"></div>
+            <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-2"></div>
+            <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-3"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!state.currentUser) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  return <MainLayout />;
 }

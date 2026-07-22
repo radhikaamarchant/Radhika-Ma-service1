@@ -76,7 +76,7 @@ let expectedProfitToPay = 0; let actualProfitPaid = 0; bizInvestments.forEach(in
 // A simple way: Profit paid to investor is just the gross profit before deductions, since that's what the business paid!
  const grossPayout = payout.totalCredited + payout.rmasCommission + payout.happyIncomeTax; actualProfitPaid += (grossPayout - inv.amount); } else { 
 // fallback
-actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 100); } } else { const { liveProfit } = calculateLiveProfit([inv], business.id, marketState.trends, state.settings); expectedProfitToPay += liveProfit; } }); const fundingData = [ { name: 'Invested', value: totalInvested, color: '#4caf50' }, 
+actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 100); } } else { const { liveProfit } = calculateLiveProfit([inv], business.id, marketState.trends, state.settings); expectedProfitToPay += liveProfit; } }); const fundingData = [ { name: 'Invested', value: totalInvested, color: '#4CAF50' }, 
 // Green
 { name: 'Remaining', value: fundingRemaining, color: '#eeeeee' } 
 // Gray
@@ -145,7 +145,7 @@ return (
                    </div>
                    <div className="text-right">
                      <p className="font-medium text-[13px] md:text-[14px] text-kite-text">{formatINR(inv.amount)}</p>
-                     <p className="text-[11px] md:text-[12px] text-kite-green font-medium">{inv.interestRate}% Int.</p>
+                     <p className="text-[11px] md:text-[12px] text-[#4CAF50] dark:text-[#5B9A5D] font-medium">{inv.interestRate}% Int.</p>
                    </div>
                 </div>
               )

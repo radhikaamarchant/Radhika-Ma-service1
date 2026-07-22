@@ -103,13 +103,13 @@ export default function BioMentionEditor({ value, onChange }: BioMentionEditorPr
       />
       
       {showDropdown && suggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1a1a1a] border border-kite-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-kite-surface border border-kite-border rounded-md shadow-lg max-h-60 overflow-y-auto">
           {suggestions.map((suggestion, index) => (
             <div
               key={`${suggestion.type}-${suggestion.id}`}
               onClick={() => insertMention(suggestion.name)}
               className={`flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors ${
-                index === selectedIndex ? 'bg-gray-100 dark:bg-[#2a2a2a]' : 'hover:bg-gray-50 dark:hover:bg-[#202020]'
+                index === selectedIndex ? 'bg-gray-100 dark:bg-kite-surface' : 'hover:bg-gray-50 dark:md:hover:bg-[#131415]'
               }`}
             >
               {suggestion.type === 'investor' && suggestion.data.photoUrl ? (

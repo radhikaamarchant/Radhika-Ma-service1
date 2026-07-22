@@ -458,7 +458,7 @@ export default function Investments() {
             return (
               <div
                 key={`grouped_${inv.key}_${idx}`}
-                className="w-full flex flex-col md:flex-row md:items-stretch px-4 py-3 md:py-0 hover:bg-gray-50 dark:hover:bg-[#202020] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
+                className="w-full flex flex-col md:flex-row md:items-stretch px-4 py-3 md:py-0 hover:bg-gray-50 dark:md:hover:bg-[#131415] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
                 onClick={() => {
                   setSelectedInvestment(inv);
                   setSelectedInvestmentIds(
@@ -478,7 +478,7 @@ export default function Investments() {
                        <span className="text-kite-text-light font-normal mr-1">Avg.</span>
                        <span className="text-kite-text font-normal tracking-wide">{formatINR(avgPrice).replace("₹", "")}</span>
                     </div>
-                    <div className={`text-[11px] md:text-[12px] font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                    <div className={`text-[11px] md:text-[12px] font-normal ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
                       {isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%
                     </div>
                   </div>
@@ -495,7 +495,7 @@ export default function Investments() {
                           />
                         )}
                      </div>
-                     <div className={`text-[13px] md:text-[14px] font-normal ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                     <div className={`text-[13px] md:text-[14px] font-normal ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
                        {isProfit && holdingProfit >= 0 ? "+" : ""}
                        {formatINR(holdingProfit).replace("₹", "")}
                      </div>
@@ -528,10 +528,10 @@ export default function Investments() {
                    <div className="w-1/12 text-right text-kite-text-light flex flex-col justify-center py-3">{qty}</div>
                    <div className="w-2/12 text-right text-kite-text-light flex flex-col justify-center py-3">{formatINR(avgPrice).replace("₹", "")}</div>
                    <div className="w-2/12 text-right text-kite-text-light pr-5 flex flex-col justify-center py-3">{formatINR(curValue).replace("₹", "")}</div>
-                   <div className={`w-2/12 text-right font-normal text-[12px] leading-[16px] desktop-pnl pl-5 border-l border-kite-vertical-divider flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                   <div className={`w-2/12 text-right font-normal text-[12px] leading-[16px] desktop-pnl pl-5 border-l border-kite-vertical-divider flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
                       <div className="block">{isProfit && holdingProfit >= 0 ? "+" : ""}{formatINR(holdingProfit).replace("₹", "")}</div>
                    </div>
-                   <div className={`w-1/12 text-right font-normal text-[12px] leading-[16px] desktop-net-chg flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50]" : "text-[#FF5722]"}`}>
+                   <div className={`w-1/12 text-right font-normal text-[12px] leading-[16px] desktop-net-chg flex flex-col justify-center py-3 ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
                       <div className="block">{isProfit ? "+" : ""} {pnlPercentage.toFixed(2)}%</div>
                    </div>
                 </div>
@@ -599,8 +599,8 @@ export default function Investments() {
                 <div className="flex items-center gap-2">
                   {""}
                   <span
-                    className={`text-[13px] md:text-[14px] font-normal ${isTotalProfit ?"text-[#16A34A]" :"text-[#DC2626]"}`}
-                    style={{ fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif' }}
+                    className={`text-[13px] md:text-[14px] font-normal ${isTotalProfit ?"text-[#4CAF50] dark:text-[#5B9A5D]" :"text-[#DF514C] dark:text-[#E25F5B]"}`}
+                   
                   >
                     {""}
                     {isTotalProfit && totalLiveProfit > 0 ?"+" :""}
@@ -610,7 +610,7 @@ export default function Investments() {
                   </span>
                   {""}
                   <span
-                    className={`text-[11px] md:text-[12px] font-normal ${isTotalProfit ?"text-[#16A34A]" :"text-[#DC2626]"}`}
+                    className={`text-[11px] md:text-[12px] font-normal ${isTotalProfit ?"text-[#4CAF50] dark:text-[#5B9A5D]" :"text-[#DF514C] dark:text-[#E25F5B]"}`}
                   >
                     {""}
                     {isTotalProfit ?"+" :""} {totalPnlPercentage.toFixed(2)}
@@ -629,10 +629,10 @@ export default function Investments() {
   }, [groupedInvestments, state.businesses, state.investors, marketState.trends, state.settings, blueTickBusinessIds]);
 
   return (
-    <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent">
+    <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent dark:md:bg-[#181818]">
       {""}
       <div
-        className={`flex flex-col w-full bg-kite-surface dark:bg-transparent pt-2 border-b border-kite-border ${showAddForm ?"hidden md:flex" :"flex"}`}
+        className={`flex flex-col w-full bg-kite-surface dark:bg-transparent dark:md:bg-[#181818] pt-2 border-b border-kite-border ${showAddForm ?"hidden md:flex" :"flex"}`}
       >
         {""}
         {/* Full width tabs */}{""}
@@ -666,7 +666,7 @@ export default function Investments() {
           </button>{""}
         </div>{""}
       </div>{""}
-      <div className="md:sticky md:top-0 z-30 bg-white dark:bg-kite-bg shadow-sm w-full">
+      <div className="md:sticky md:top-0 z-30 bg-white dark:bg-kite-bg dark:md:bg-[#181818] shadow-sm w-full">
 <div
         className={`flex items-center justify-between w-full py-3 px-4 w-full ${showAddForm ?"hidden md:flex" :"flex"}`}
       >
@@ -692,18 +692,18 @@ export default function Investments() {
           {!isSearchExpanded ? (
             <button
               onClick={() => setIsSearchExpanded(true)}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-kite-border-soft rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
+              className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
             >
               <Search className="w-[18px] h-[18px] text-kite-blue" />
             </button>
           ) : (
-            <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-kite-surface md:bg-gray-100 md:dark:bg-[#161616] rounded-sm h-[36px]">
+            <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-kite-surface md:bg-gray-100 md:dark:bg-transparent rounded-sm h-[36px]">
               <button
                 onClick={() => {
                   setIsSearchExpanded(false);
                   setSearchTerm("");
                 }}
-                className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-kite-border-soft rounded-full mr-1 transition-colors flex-shrink-0 flex items-center justify-center"
+                className="p-2 -ml-2 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded-full mr-1 transition-colors flex-shrink-0 flex items-center justify-center"
               >
                 <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />
               </button>
@@ -747,11 +747,11 @@ export default function Investments() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
-            className="md:hidden fixed top-0 left-0 right-0 z-[110] bg-white dark:bg-[#1E2938] flex flex-col font-sans"
+            className="md:hidden fixed top-0 left-0 right-0 z-[110] bg-white dark:bg-kite-bg dark:md:bg-[#181818] flex flex-col font-sans"
             style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
           >
             {/* Header */}
-            <div className="flex flex-col bg-[#F3F4F6] dark:bg-[#1E2938] shrink-0 z-10 mobile-header-safe pt-2">
+            <div className="flex flex-col bg-[#F3F4F6] dark:bg-kite-bg dark:md:bg-[#181818] shrink-0 z-10 mobile-header-safe pt-2">
               <div className="flex items-center px-4 py-3">
                 <button
                   onClick={() => { setShowAddForm(false); setIsFromAnalysis(false); }}
@@ -782,8 +782,8 @@ export default function Investments() {
             </div>
 
             {/* Fixed Business & Investor Select */}
-            <div className="bg-white dark:bg-[#1E2938] shrink-0 z-20">
-                <div className="bg-white dark:bg-transparent relative">
+            <div className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] shrink-0 z-20">
+                <div className="bg-white dark:bg-transparent dark:md:bg-[#181818] relative">
                   {/* Business & Investor Select */}
                   <div className="flex flex-col">
                      {!isFromAnalysis && (
@@ -859,6 +859,7 @@ export default function Investments() {
                                       </div>
                                       );
                                    })}
+                                   <div className="h-40 w-full shrink-0" />
                                </div>
                             </div>
                           )}
@@ -867,8 +868,8 @@ export default function Investments() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1E2938]" style={{ paddingBottom: "200px" }}>
-                <div className="bg-white dark:bg-transparent relative">
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-kite-bg dark:md:bg-[#181818]" style={{ paddingBottom: "200px" }}>
+                <div className="bg-white dark:bg-transparent dark:md:bg-[#181818] relative">
                   
                   {/* Amount and Quantity */}
                   <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:space-x-4">
@@ -919,7 +920,7 @@ export default function Investments() {
                                      e.preventDefault();
                                      setInputMode(inputMode === 'AMOUNT' ? 'QTY' : 'AMOUNT');
                                    }}
-                                   className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] text-[#4184F3] transition-colors"
+                                   className="px-4 py-3 hover:bg-gray-50 dark:md:hover:bg-[#131415] text-[#4184F3] transition-colors"
                                  >
                                    <ArrowRightLeft className="w-5 h-5" />
                                  </button>
@@ -1082,7 +1083,7 @@ export default function Investments() {
                 </div>
 
                 {/* Secondary Toggles Card */}
-                <div className="hidden md:block bg-white dark:bg-transparent relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
+                <div className="hidden md:block bg-white dark:bg-transparent dark:md:bg-[#181818] relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
                   <div className="flex justify-between items-center relative z-10">
                     <div className="flex items-center space-x-2">
                        <span className="text-[14px] text-gray-900 dark:text-[#F1F5F9] font-medium">Brokerage ROI</span>
@@ -1215,7 +1216,7 @@ export default function Investments() {
                    <motion.div
                      initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
                      transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
-                     className="absolute inset-0 bg-white dark:bg-[#1E2938] z-50 flex flex-col"
+                     className="absolute inset-0 bg-white dark:bg-kite-bg dark:md:bg-[#181818] z-50 flex flex-col"
                    >
                      <div className="flex items-center px-4 py-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
                        <button onClick={() => setShowBusinessSelect(false)} className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center">
@@ -1412,7 +1413,7 @@ export default function Investments() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="absolute inset-0 max-md:bg-kite-bg max-md:dark:bg-kite-bg md:bg-black/40 dark:md:bg-black/70" onClick={() => setSelectedInvestment(null)}></motion.div>
+                className="absolute inset-0 max-md:bg-kite-bg max-md:dark:bg-kite-bg dark:md:bg-[#181818] md:bg-black/40 dark:md:bg-black/70" onClick={() => setSelectedInvestment(null)}></motion.div>
               {""}
               <motion.div 
                 initial={{ x: "100%" }}
@@ -1427,7 +1428,7 @@ export default function Investments() {
                     {""}
                     <button
                       onClick={() => setSelectedInvestment(null)}
-                      className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:hover:bg-[#202020] rounded-full transition-colors outline-none focus:outline-none focus:ring-0 active:outline-none flex items-center justify-center"
+                      className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors outline-none focus:outline-none focus:ring-0 active:outline-none flex items-center justify-center"
                     >
                       {""}
                       <ArrowLeft className="w-[24px] h-[24px]" />{""}
@@ -1444,7 +1445,7 @@ export default function Investments() {
                         {""}
                         <button
                           onClick={() => setShowTradeOptions(!showTradeOptions)}
-                          className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:hover:bg-kite-border-soft rounded-full transition-colors outline-none"
+                          className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors outline-none"
                         >
                           {""}
                           <MoreVertical className="w-[24px] h-[24px]" />{""}
@@ -1528,7 +1529,7 @@ export default function Investments() {
                                });
                                setWithdrawStep(1);
                              }}
-                             className="px-4 py-1.5 bg-[#D94B4B] hover:bg-[#C93B3B] text-white text-[13px] font-medium rounded transition-colors"
+                             className="px-4 py-1.5 bg-[#DF514C] dark:bg-[#E25F5B] hover:bg-[#C93B3B] text-white text-[13px] font-medium rounded transition-colors"
                            >
                              SELL
                            </button>
@@ -1551,7 +1552,7 @@ export default function Investments() {
                               >
                                 {""}
                                 <button
-                                  className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:hover:bg-kite-border-soft transition-colors outline-none"
+                                  className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors outline-none"
                                   onClick={() => {
                                     setShowTradeOptions(false);
                                     setFormData({
@@ -1576,7 +1577,7 @@ export default function Investments() {
                                   BUY{""}
                                 </button>{""}
                                 <button
-                                  className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#D94B4B] hover:bg-kite-bg dark:hover:bg-kite-border-soft transition-colors border-t border-kite-border outline-none"
+                                  className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border outline-none"
                                   onClick={() => {
                                     setShowTradeOptions(false);
                                     let defaultComm = 0;
@@ -1664,8 +1665,8 @@ export default function Investments() {
                         <span
                           className={"inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[10px] md:text-[11px] font-medium" +
                             (overallTrend >= 0
-                              ?"bg-[#E6F6ED] dark:bg-[#00A86B]/20 text-[#00A86B] dark:text-[#00A86B]"
-                              :"bg-[#FCEBEB] dark:bg-[#D94B4B]/20 text-[#D94B4B] dark:text-[#D94B4B]")
+                              ?"bg-[#E6F6ED] dark:bg-[#5B9A5D]/$1 text-[#4CAF50] dark:text-[#5B9A5D]"
+                              :"bg-[#FCEBEB] dark:bg-[#E25F5B]/$1 text-[#DF514C] dark:text-[#E25F5B]")
                           }
                         >
                           {""}
@@ -1709,8 +1710,8 @@ export default function Investments() {
                             (isProfit
                               ? selectedInvestment.status ==="completed"
                                 ?"text-kite-blue"
-                                :"text-[#00A86B]"
-                              :"text-[#D94B4B]")
+                                :"text-[#4CAF50] dark:text-[#5B9A5D]"
+                              :"text-[#DF514C] dark:text-[#E25F5B]")
                           }
                         >
                           {""}
@@ -1882,7 +1883,7 @@ export default function Investments() {
                                           </span>{""}
                                         </div>{""}
                                         <span
-                                          className={`text-[11px] md:text-[12px] font-normal ${unitIsProfit ? (selectedInvestment.status ==="completed" ?"text-kite-blue" :"text-[#00A86B]") :"text-[#D94B4B]"}`}
+                                          className={`text-[11px] md:text-[12px] font-normal ${unitIsProfit ? (selectedInvestment.status ==="completed" ?"text-kite-blue" :"text-[#4CAF50] dark:text-[#5B9A5D]") :"text-[#DF514C] dark:text-[#E25F5B]"}`}
                                         >
                                           {""}
                                           {unitIsProfit ?"+" :""}
@@ -1901,7 +1902,7 @@ export default function Investments() {
                       withdrawStep === 1 && (
                         <div className="mt-4 pt-4 border-t border-kite-border/50">
                           {""}
-                          <h4 className="text-kite-red font-medium text-[11px] md:text-[12px] tracking-wider mb-4">
+                          <h4 className="text-[#DF514C] dark:text-[#E25F5B] font-medium text-[11px] md:text-[12px] tracking-wider mb-4">
                             {""}
                             SELL DETAILS{""}
                           </h4>{""}
@@ -1951,7 +1952,7 @@ export default function Investments() {
                               </label>{""}
                               <input
                                 type="number"
-                                className="w-full border-b border-kite-border py-1.5 text-[13px] md:text-[14px] outline-none font-medium bg-transparent focus:border-kite-red text-kite-red"
+                                className="w-full border-b border-kite-border py-1.5 text-[13px] md:text-[14px] outline-none font-medium bg-transparent focus:border-kite-red text-[#DF514C] dark:text-[#E25F5B]"
                                 value={withdrawFormData.happyIncomeTax}
                                 onChange={(e) =>
                                   setWithdrawFormData({
@@ -1970,8 +1971,8 @@ export default function Investments() {
                               <span
                                 className={
                                   calculateLiveProfit().totalProfit >= 0
-                                    ?"text-kite-green font-medium"
-                                    :"text-kite-red font-medium"
+                                    ?"text-[#4CAF50] dark:text-[#5B9A5D] font-medium"
+                                    :"text-[#DF514C] dark:text-[#E25F5B] font-medium"
                                 }
                               >
                                 {""}
@@ -1992,8 +1993,8 @@ export default function Investments() {
                               <span
                                 className={
                                   calculateLiveProfit().totalProfit < 0
-                                    ?"text-kite-red font-medium"
-                                    :"text-kite-green font-medium"
+                                    ?"text-[#DF514C] dark:text-[#E25F5B] font-medium"
+                                    :"text-[#4CAF50] dark:text-[#5B9A5D] font-medium"
                                 }
                               >
                                 {""}
@@ -2014,12 +2015,12 @@ export default function Investments() {
                       ) && (
                         <div className="p-4 bg-kite-green/5 border border-kite-green/20 rounded-sm">
                           {""}
-                          <h4 className="font-medium text-kite-green flex items-center space-x-2 mb-4">
+                          <h4 className="font-medium text-[#4CAF50] dark:text-[#5B9A5D] flex items-center space-x-2 mb-4">
                             {""}
                             <CheckCircle className="w-4 h-4" />{""}
                             <span>Completed Settlement Breakdown</span>{""}
                           </h4>{""}
-                          <div className="space-y-2 text-[13px] md:text-[14px] text-green-900">
+                          <div className="space-y-2 text-[13px] md:text-[14px] text-[#4CAF50] dark:text-[#5B9A5D]">
                             {""}
                             <div className="flex justify-between">
                               {""}
@@ -2041,7 +2042,7 @@ export default function Investments() {
                             <div className="flex justify-between text-[11px] md:text-[12px]">
                               {""}
                               <span>RMAS Commission Deducted</span>{""}
-                              <span className="text-kite-red">
+                              <span className="text-[#DF514C] dark:text-[#E25F5B]">
                                 {""}
                                 -{""}
                                 {formatINR(
@@ -2057,7 +2058,7 @@ export default function Investments() {
                             <div className="flex justify-between text-[11px] md:text-[12px]">
                               {""}
                               <span>Income Tax Deducted</span>{""}
-                              <span className="text-kite-red">
+                              <span className="text-[#DF514C] dark:text-[#E25F5B]">
                                 {""}
                                 -{""}
                                 {formatINR(
@@ -2165,7 +2166,7 @@ export default function Investments() {
                             {""}
                             Sell{""}
                           </span>{""}
-                          <span className="text-[13px] md:text-[14px] font-medium text-kite-red">
+                          <span className="text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B]">
                             {""}
                             {formatINR(
                               Math.max(
@@ -2199,7 +2200,7 @@ export default function Investments() {
                           {""}
                           Sell Final Amt:{""}
                         </span>{""}
-                        <span className="text-[13px] md:text-[14px] font-medium text-kite-red">
+                        <span className="text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B]">
                           {""}
                           {formatINR(
                             Math.max(
@@ -2214,7 +2215,7 @@ export default function Investments() {
                       </div>{""}
                       <button
                         onClick={handleConfirmWithdraw}
-                        className="w-full py-3 bg-[#D94B4B] hover:bg-[#C93B3B] text-white font-medium rounded transition-colors uppercase tracking-wider text-[13px] md:text-[14px]"
+                        className="w-full py-3 bg-[#DF514C] dark:bg-[#E25F5B] hover:bg-[#C93B3B] text-white font-medium rounded transition-colors uppercase tracking-wider text-[13px] md:text-[14px]"
                       >
                         {""}
                         CONFIRM SELL{""}

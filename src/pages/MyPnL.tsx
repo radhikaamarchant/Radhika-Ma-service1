@@ -388,7 +388,7 @@ export default function MyPnL() {
                   filteredStatement.map((row) => (
                     <tr
                       key={`pnl_desk_${row.id}`}
-                      className="hover:bg-kite-bg transition-colors group"
+                      className="hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors group"
                     >
                       <td className="py-4 px-6 text-kite-text-light whitespace-nowrap">
                         {new Date(row.date).toLocaleDateString("en-IN")}

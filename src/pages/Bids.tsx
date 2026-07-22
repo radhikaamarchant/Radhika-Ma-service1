@@ -178,7 +178,7 @@ export default function Bids() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white dark:bg-kite-bg text-kite-text font-sans relative">
+    <div className="flex flex-col h-full w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] text-kite-text font-sans relative">
       <div className="flex items-center justify-between px-4 md:px-6 py-4 md:py-5 border-b border-kite-border-soft shrink-0">
         <h1 className="text-[17px] md:text-[18px] font-medium text-kite-text uppercase">Bids</h1>
         <button 
@@ -265,8 +265,8 @@ export default function Bids() {
                   filteredIpos.map(ipo => {
                     const hasApplied = applications.some((app: any) => app.ipoId === ipo.id);
                     return (
-                    <div key={ipo.id} className="flex items-center px-6 py-3 text-[13px] border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-[#202020] transition-colors group">
-                      <div className="w-[18%] font-medium text-kite-text truncate pr-2">{ipo.companyName} {hasApplied && <span className="ml-2 px-1.5 py-0.5 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 rounded text-[9px] uppercase tracking-wider">Applied</span>}</div>
+                    <div key={ipo.id} className="flex items-center px-6 py-3 text-[13px] border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group">
+                      <div className="w-[18%] font-medium text-kite-text truncate pr-2">{ipo.companyName} {hasApplied && <span className="ml-2 px-1.5 py-0.5 bg-green-50 text-[#4CAF50] dark:text-[#5B9A5D] dark:bg-green-900/20 rounded text-[9px] uppercase tracking-wider">Applied</span>}</div>
                       <div className="w-[12%] text-right text-kite-text-light">₹{ipo.priceBandMin} - ₹{ipo.priceBandMax}</div>
                       <div className="w-[8%] text-right text-kite-text-light">{ipo.lotSize}</div>
                       <div className="w-[12%] text-right text-kite-text-light">{formatINR(ipo.minInvestment)}</div>
@@ -282,7 +282,7 @@ export default function Bids() {
                           <button onClick={() => handleApply(ipo)} className="bg-kite-blue text-white px-3 py-1 rounded-sm text-[12px] hover:bg-blue-600">Apply</button>
                         )}
                         {hasApplied && (
-                          <span className="text-[11px] text-green-600 dark:text-green-400 font-medium">Applied</span>
+                          <span className="text-[11px] text-[#4CAF50] dark:text-[#5B9A5D] font-medium">Applied</span>
                         )}
                       </div>
                     </div>
@@ -413,12 +413,12 @@ function AdminBidsView({ ipos, saveIpos, commissions, saveCommissions, applicati
   };
 
   return (
-    <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-[#121212]">
+    <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-[#121212] dark:md:bg-[#181818]">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-[15px] font-medium text-kite-text">Admin IPO Management</h2>
         <div className="flex gap-2">
            <button onClick={() => setIsCreating(true)} className="flex items-center gap-1 bg-kite-blue text-white px-3 py-1.5 rounded-sm text-[12px]"><Plus className="w-3.5 h-3.5"/> Create IPO</button>
-           <button onClick={onClose} className="px-3 py-1.5 border border-kite-border-soft rounded-sm text-[12px] text-kite-text hover:bg-gray-100 dark:hover:bg-[#202020]">Back to Bids</button>
+           <button onClick={onClose} className="px-3 py-1.5 border border-kite-border-soft rounded-sm text-[12px] text-kite-text hover:bg-gray-100 dark:md:hover:bg-[#131415]">Back to Bids</button>
         </div>
       </div>
 
@@ -465,7 +465,7 @@ function AdminBidsView({ ipos, saveIpos, commissions, saveCommissions, applicati
              <input type="text" className="w-full border border-kite-border-soft rounded-sm p-1.5 bg-transparent" value={(editingIpo as any).rmasListingCharge ? Number((editingIpo as any).rmasListingCharge).toLocaleString('en-IN') : ''} onChange={e => { const raw = e.target.value.replace(/[^0-9]/g, ''); setEditingIpo({...editingIpo, rmasListingCharge: raw ? parseInt(raw, 10) : ('' as any)} as any); }} />
           </div>
           <div className="col-span-3 flex justify-end gap-2 mt-2">
-            <button onClick={() => setIsCreating(false)} className="px-4 py-1.5 border border-kite-border-soft rounded-sm hover:bg-gray-50 dark:hover:bg-[#202020]">Cancel</button>
+            <button onClick={() => setIsCreating(false)} className="px-4 py-1.5 border border-kite-border-soft rounded-sm hover:bg-gray-50 dark:md:hover:bg-[#131415]">Cancel</button>
             <button onClick={handleSave} className="px-4 py-1.5 bg-kite-green text-white rounded-sm">Save</button>
           </div>
         </div>
@@ -481,7 +481,7 @@ function AdminBidsView({ ipos, saveIpos, commissions, saveCommissions, applicati
           <div className="w-[20%] text-right">Actions</div>
         </div>
         {ipos.map((ipo: any) => (
-          <div key={ipo.id} className="flex items-center px-4 py-3 border-b border-kite-border-soft text-[13px] hover:bg-gray-50 dark:hover:bg-[#202020]">
+          <div key={ipo.id} className="flex items-center px-4 py-3 border-b border-kite-border-soft text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415]">
              <div className="w-[20%] font-medium text-kite-text">{ipo.companyName}</div>
              <div className="w-[15%] text-kite-text-light">{ipo.status}</div>
              <div className="w-[15%] text-right text-kite-text-light">₹{ipo.priceBandMin} - ₹{ipo.priceBandMax}</div>
@@ -489,7 +489,7 @@ function AdminBidsView({ ipos, saveIpos, commissions, saveCommissions, applicati
              <div className="w-[15%] text-right text-kite-text-light">₹{ipo.minInvestment}</div>
              <div className="w-[20%] flex justify-end gap-3">
                <button onClick={() => { setEditingIpo(ipo); setIsCreating(true); }} className="text-kite-blue hover:underline">Edit</button>
-               <button onClick={() => saveIpos(ipos.filter((i: any) => i.id !== ipo.id))} className="text-kite-red hover:underline">Delete</button>
+               <button onClick={() => saveIpos(ipos.filter((i: any) => i.id !== ipo.id))} className="text-[#DF514C] dark:text-[#E25F5B] hover:underline">Delete</button>
              </div>
           </div>
         ))}
@@ -503,12 +503,12 @@ function AdminBidsView({ ipos, saveIpos, commissions, saveCommissions, applicati
                {commissions.map((c: any) => (
                  <div key={c.id} className="flex justify-between py-1 border-b border-kite-border-soft last:border-0">
                    <span className="text-kite-text-light">{new Date(c.date).toLocaleDateString()} - {c.type}</span>
-                   <span className="text-kite-green font-medium">+ ₹{c.amount.toFixed(2)}</span>
+                   <span className="text-[#4CAF50] dark:text-[#5B9A5D] font-medium">+ ₹{c.amount.toFixed(2)}</span>
                  </div>
                ))}
                <div className="flex justify-between pt-2 mt-2 border-t border-kite-border-soft font-medium">
                   <span>Total Earned:</span>
-                  <span className="text-kite-green">₹{commissions.reduce((acc: number, c: any) => acc + c.amount, 0).toFixed(2)}</span>
+                  <span className="text-[#4CAF50] dark:text-[#5B9A5D]">₹{commissions.reduce((acc: number, c: any) => acc + c.amount, 0).toFixed(2)}</span>
                </div>
              </div>
            )}
@@ -523,13 +523,13 @@ function DetailsModal({ ipo, onClose, onApply, applications, saveApplications, c
   
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4">
-      <div className="bg-white dark:bg-kite-bg w-full max-w-2xl rounded-sm shadow-xl flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] w-full max-w-2xl rounded-sm shadow-xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-4 border-b border-kite-border-soft">
            <div>
              <h2 className="text-[18px] font-medium text-kite-text">{ipo.companyName}</h2>
              <p className="text-[12px] text-kite-text-light">{ipo.exchange} • {ipo.status}</p>
            </div>
-           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-[#202020] rounded"><X className="w-5 h-5 text-kite-text-light" /></button>
+           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded"><X className="w-5 h-5 text-kite-text-light" /></button>
         </div>
         <div className="p-6 overflow-y-auto flex-1 text-[13px]">
            
@@ -641,7 +641,7 @@ function DetailsModal({ ipo, onClose, onApply, applications, saveApplications, c
                          <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded">
                            <div className="flex justify-between mb-1">
                              <span className="text-kite-text-light">Refund Status</span>
-                             <span className="text-kite-green font-medium">Refund Completed</span>
+                             <span className="text-[#4CAF50] dark:text-[#5B9A5D] font-medium">Refund Completed</span>
                            </div>
                            <div className="flex justify-between mb-1">
                              <span className="text-kite-text-light">Refund Amount</span>
@@ -681,7 +681,7 @@ function DetailsModal({ ipo, onClose, onApply, applications, saveApplications, c
 ₹${myApp.appliedAmount.toLocaleString('en-IN')} has been unlocked and returned to your Available Balance.
 Platform Commission is non-refundable.`);
                             }} 
-                             className="w-full mt-2 border border-kite-red text-kite-red px-3 py-2 rounded-sm text-[12px] hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors font-medium"
+                             className="w-full mt-2 border border-kite-red text-[#DF514C] dark:text-[#E25F5B] px-3 py-2 rounded-sm text-[12px] hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors font-medium"
                           >
                             Cancel Application
                           </button>
@@ -710,11 +710,11 @@ Platform Commission is non-refundable.`);
         </div>
         <div className="p-4 border-t border-kite-border-soft flex justify-end gap-3 bg-gray-50 dark:bg-kite-surface shrink-0">
            {ipo.prospectusPdf && (
-              <a href={ipo.prospectusPdf} target="_blank" rel="noreferrer" className="px-5 py-2 border border-kite-border-soft rounded-sm text-[13px] hover:bg-white dark:hover:bg-[#202020] text-kite-blue flex items-center gap-2">
+              <a href={ipo.prospectusPdf} target="_blank" rel="noreferrer" className="px-5 py-2 border border-kite-border-soft rounded-sm text-[13px] hover:bg-white dark:md:hover:bg-[#131415] text-kite-blue flex items-center gap-2">
                 <FileText className="w-4 h-4" /> View Prospectus
               </a>
            )}
-           <button onClick={onClose} className="px-5 py-2 border border-kite-border-soft rounded-sm text-[13px] hover:bg-white dark:hover:bg-[#202020]">Close</button>
+           <button onClick={onClose} className="px-5 py-2 border border-kite-border-soft rounded-sm text-[13px] hover:bg-white dark:md:hover:bg-[#131415]">Close</button>
            {(ipo.status === 'Listed') && (
              <button onClick={onApply} className="px-5 py-2 bg-kite-blue text-white rounded-sm text-[13px] font-medium hover:bg-blue-600">Apply for IPO</button>
            )}
@@ -806,10 +806,10 @@ function ApplyModal({ ipo, ipos, saveIpos, onClose, applications, saveApplicatio
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4">
-      <div className="bg-white dark:bg-kite-bg w-full max-w-md rounded-sm shadow-xl">
+      <div className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] w-full max-w-md rounded-sm shadow-xl">
         <div className="flex items-center justify-between p-4 border-b border-kite-border-soft">
            <h2 className="text-[16px] font-medium text-kite-text">Apply for {ipo.companyName}</h2>
-           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-[#202020] rounded"><X className="w-5 h-5 text-kite-text-light" /></button>
+           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded"><X className="w-5 h-5 text-kite-text-light" /></button>
         </div>
         <div className="p-5 text-[13px]">
            <div className="mb-5">
@@ -857,7 +857,7 @@ function ApplyModal({ ipo, ipos, saveIpos, onClose, applications, saveApplicatio
            </div>
         </div>
         <div className="p-4 border-t border-kite-border-soft flex justify-end gap-3">
-           <button onClick={onClose} className="px-5 py-2 border border-kite-border-soft rounded-sm text-[13px] hover:bg-gray-50 dark:hover:bg-[#202020]">Cancel</button>
+           <button onClick={onClose} className="px-5 py-2 border border-kite-border-soft rounded-sm text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415]">Cancel</button>
            <button onClick={handleApply} disabled={!selectedInvestorId} className="px-5 py-2 bg-kite-blue text-white rounded-sm text-[13px] font-medium hover:bg-blue-600 disabled:opacity-50">Confirm Application</button>
         </div>
       </div>

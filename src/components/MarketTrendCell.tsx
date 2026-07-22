@@ -21,7 +21,7 @@ export function MarketTrendCell({
   const isPositive = trend >= business.interestRate;
   return (
     <div
-      className={`flex items-center space-x-2 font-medium flex-nowrap ${isPositive ?"text-kite-green" :"text-kite-red"} ${align ==="right" ?"justify-end" : align ==="center" ?"justify-center" :"justify-start"}`}
+      className={`flex items-center space-x-2 font-medium flex-nowrap ${isPositive ?"text-[#4CAF50] dark:text-[#5B9A5D]" :"text-[#DF514C] dark:text-[#E25F5B]"} ${align ==="right" ?"justify-end" : align ==="center" ?"justify-center" :"justify-start"}`}
     >
       {""}
       {showIcon &&

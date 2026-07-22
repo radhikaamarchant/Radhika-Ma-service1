@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "../utils/AppContext";
-import { Search } from "lucide-react";
+import { useTheme } from "../utils/ThemeContext";
+import { Search, ChevronUp, ChevronDown } from "lucide-react";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import { getBaseMarketTrend, getCurrentMarketPrice } from "../utils/marketSimulator";
 import { getMarketTimeContext } from "../utils/marketTiming";
@@ -14,6 +15,7 @@ const formatPrice = (num: number) => {
 };
 
 const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { name: string; baseAmount: number; roi: number; overallTrend: number; isOpen: boolean }) => {
+  const { isDark } = useTheme();
   const displayBase = baseAmount || 10000;
   const [currentAmount, setCurrentAmount] = useState(displayBase);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
@@ -43,28 +45,41 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { nam
   }, [baseAmount, isOpen]);
 
   // Use the actual overall trend instead of the random fluctuation for percentage
-  const isPositive = overallTrend >= roi;
+  const isPositive = overallTrend > 0;
+  const isNegative = overallTrend < 0;
 
-  // If market is closed, set the text color statically based on overall trend.
-  const amountColorClass = !isOpen 
-    ? (isPositive ? "text-kite-green" : "text-kite-red") 
-    : (flash === "up" ? "text-kite-green" : flash === "down" ? "text-kite-red" : "text-kite-text");
+  const absoluteChange = (displayBase * overallTrend) / 100;
+  
+  const getTrendColorClass = (flashState: "up" | "down" | null, isMarketOpen: boolean) => {
+    if (isMarketOpen && flashState === "up") return "text-[#4CAF50] dark:text-[#5B9A5D]";
+    if (isMarketOpen && flashState === "down") return "text-[#DF514C] dark:text-[#E25F5B]";
+    return overallTrend > 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : overallTrend < 0 ? "text-[#DF514C] dark:text-[#E25F5B]" : "text-kite-text dark:text-[#e0e0e0]";
+  };
+
+  const trendColorClass = getTrendColorClass(flash, isOpen);
+
+  const formatValue = (val: number) => {
+    return val.toFixed(2);
+  };
 
   return (
-    <div className="grid grid-cols-[1fr_65px_80px] lg:grid-cols-[1fr_75px_90px] gap-2 items-center w-full">
-      <div className="min-w-0 pr-1 text-left">
-        <span className="text-[12px] lg:text-[13px] font-medium text-kite-text truncate block uppercase">{name}</span>
-      </div>
-      <div className="text-right whitespace-nowrap">
-        <span className={`text-[11px] lg:text-[12px] tabular-nums ${isPositive ? "text-kite-green" : "text-kite-red"}`}>
-          {isPositive ? "+" : ""}{overallTrend.toFixed(2)}%
-        </span>
-      </div>
-      <div className="text-right whitespace-nowrap">
-        <span className={`font-medium text-[12px] lg:text-[13px] transition-colors duration-300 tabular-nums ${amountColorClass}`}>
-          {formatPrice(currentAmount)}
-        </span>
-      </div>
+    <div className="grid grid-cols-[minmax(0,1fr)_55px_60px_65px] gap-x-[8px] items-center w-full">
+      <span 
+        className={`text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis uppercase ${trendColorClass}`}
+      >
+        {name}
+      </span>
+      <span className="text-right text-[13px] font-medium text-[#9B9B9B] dark:text-[#666666]">
+        {formatValue(absoluteChange)}
+      </span>
+      <span className="text-right text-[13px] font-medium text-[#444444D9] dark:text-[#BBBBBBD9]">
+        {formatValue(overallTrend)}%
+      </span>
+      <span 
+        className={`text-right text-[13px] font-medium tabular-nums ${trendColorClass}`}
+      >
+        {formatPrice(currentAmount)}
+      </span>
     </div>
   );
 };
@@ -86,15 +101,15 @@ export default function BusinessSidebar() {
   );
 
   return (
-    <div className="w-full h-full flex flex-col bg-kite-bg relative">
+    <div className="w-full h-full flex flex-col bg-white dark:bg-kite-surface dark:md:bg-[#181818] relative">
       {/* Search Bar */}
-      <div className="p-3 border-b border-kite-border bg-gray-50/50 dark:bg-kite-bg">
+      <div className="p-3 border-b border-kite-border dark:border-[#2b2b2b] bg-gray-50/50 dark:bg-kite-surface dark:md:bg-[#181818]">
         <div className="relative flex items-center">
-          <Search className="w-4 h-4 absolute left-3 text-kite-text-light" />
+          <Search className="w-4 h-4 absolute left-3 text-kite-text-light dark:text-[#9b9b9b]" />
           <input
             type="text"
             placeholder="Search companies (eg. RIL, TCS)"
-            className="w-full pl-9 pr-3 py-2 text-[13px] bg-kite-surface border border-kite-border rounded-sm focus:outline-none focus:border-kite-blue focus:ring-1 focus:ring-kite-blue transition-all dark:text-kite-text placeholder:text-kite-text-light"
+            className="w-full pl-9 pr-3 py-2 text-[13px] bg-white dark:bg-kite-surface dark:md:bg-[#181818] border border-kite-border dark:border-[#2b2b2b] rounded-sm focus:outline-none focus:border-kite-blue focus:ring-1 focus:ring-kite-blue transition-all text-kite-text dark:text-[#e0e0e0] placeholder:text-kite-text-light dark:placeholder:text-[#9b9b9b]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -111,7 +126,7 @@ export default function BusinessSidebar() {
           return (
           <div
             key={business.id}
-            className="px-4 py-[12px] cursor-pointer border-b border-kite-border hover:bg-gray-50 dark:hover:bg-kite-surface transition-colors group bg-kite-bg"
+            style={{ padding: "10px 12px" }} className="cursor-pointer border-b border-kite-border dark:border-[#2b2b2b] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group bg-white dark:bg-kite-surface dark:md:bg-[#181818]"
             onClick={() => {
               setInvestBusinessId(business.id);
               setShowInvestModal(true);
@@ -121,7 +136,7 @@ export default function BusinessSidebar() {
           </div>
         )})}
         {filteredBusinesses.length === 0 && (
-          <div className="p-8 text-center text-[12px] text-kite-text-light">
+          <div className="p-8 text-center text-[12px] text-kite-text-light dark:text-[#9b9b9b]">
             No businesses found.
           </div>
         )}

@@ -280,21 +280,21 @@ export default function InvestorDetail({
                 <div className="absolute top-full left-0 md:left-1/2 md:-translate-x-1/2 mt-2 w-40 bg-white dark:bg-kite-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5">
                   <button 
                     onClick={() => { setShowPhotoMenu(false); setShowPhotoPreview(true); }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors"
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors"
                   >
                     <Eye className="w-[18px] h-[18px] text-kite-text-light" />
                     <span>View Photo</span>
                   </button>
                   <button 
                     onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click(); }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors border-t border-kite-border"
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border"
                   >
                     <Camera className="w-[18px] h-[18px] text-kite-text-light" />
                     <span>Upload New</span>
                   </button>
                   <button 
                     onClick={handleDeletePhoto}
-                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-[#D94B4B] hover:bg-kite-bg dark:hover:bg-[#202020] transition-colors border-t border-kite-border"
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border"
                   >
                     <Trash2 className="w-[18px] h-[18px]" />
                     <span>Remove</span>
@@ -312,10 +312,6 @@ export default function InvestorDetail({
                 </h2>
                 <span
                   className="text-[11px] md:text-[12px] text-kite-text-light tracking-wide"
-                  style={{
-                    fontFamily:
-                      '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-                  }}
                 >
                   #{investor.investorId}
                 </span>
@@ -491,7 +487,7 @@ export default function InvestorDetail({
               <input
                 type="text"
                 disabled
-                className="w-full border border-kite-border rounded-sm px-3 py-2 bg-kite-bg dark:bg-[#1a1a1a] text-[13px] md:text-[14px] font-medium text-kite-text outline-none cursor-not-allowed opacity-70"
+                className="w-full border border-kite-border rounded-sm px-3 py-2 bg-kite-bg dark:bg-kite-surface text-[13px] md:text-[14px] font-medium text-kite-text outline-none cursor-not-allowed opacity-70"
                 value={formData.address.state}
               />
             </div>
@@ -559,7 +555,7 @@ export default function InvestorDetail({
           <div className="mt-8 border-t border-kite-border pt-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <button
               onClick={handleDeleteInvestor}
-              className="w-full sm:w-auto bg-white dark:bg-kite-surface text-kite-red border border-red-200 hover:bg-red-50 hover:border-red-300 font-medium text-[13px] md:text-[14px] px-4 py-2 rounded-sm transition-colors text-center"
+              className="w-full sm:w-auto bg-white dark:bg-kite-surface text-[#DF514C] dark:text-[#E25F5B] border border-red-200 hover:bg-red-50 hover:border-red-300 font-medium text-[13px] md:text-[14px] px-4 py-2 rounded-sm transition-colors text-center"
             >
               {""}
               Delete Investor{""}
@@ -630,7 +626,7 @@ export default function InvestorDetail({
               <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase tracking-wider mb-1">
                 Returns Earned
               </p>
-              <p className="text-[13px] md:text-[14px] font-medium text-kite-green">
+              <p className="text-[13px] md:text-[14px] font-medium text-[#4CAF50] dark:text-[#5B9A5D]">
                 +{formatINR(returnsEarned)}
               </p>
             </div>
@@ -639,7 +635,7 @@ export default function InvestorDetail({
                 Available Balance
               </p>
               <p
-                className={`text-[13px] md:text-[14px] font-medium ${unifiedBalance >= 0 ? "text-kite-blue" : "text-kite-red"}`}
+                className={`text-[13px] md:text-[14px] font-medium ${unifiedBalance >= 0 ? "text-kite-blue" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
               >
                 {""}
                 {unifiedBalance >= 0 ? "" : "-"}
@@ -802,12 +798,12 @@ export default function InvestorDetail({
                         <td className="p-3 text-kite-text-light text-center">
                           {duration} Days
                         </td>
-                        <td className="p-3 font-medium text-kite-green text-right">
+                        <td className="p-3 font-medium text-[#4CAF50] dark:text-[#5B9A5D] text-right">
                           {inv.interestRate}%
                         </td>
                         <td className="p-3 text-center">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-kite-green" : inv.status === "completed" ? "bg-kite-blue/10 text-kite-blue" : "bg-kite-border text-kite-text-light"}`}
+                            className={`px-2 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-[#4CAF50] dark:text-[#5B9A5D]" : inv.status === "completed" ? "bg-kite-blue/10 text-kite-blue" : "bg-kite-border text-kite-text-light"}`}
                           >
                             {""}
                             {inv.status}
@@ -871,7 +867,7 @@ export default function InvestorDetail({
                         {business?.name?.toUpperCase() || "UNKNOWN"}
                       </span>
                       <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-kite-green" : inv.status === "completed" ? "bg-kite-blue/10 text-kite-blue" : "bg-kite-border text-kite-text-light"}`}
+                        className={`px-1.5 py-0.5 rounded text-[10px] md:text-[11px] font-medium uppercase tracking-wider ${inv.status === "active" ? "bg-kite-green/10 text-[#4CAF50] dark:text-[#5B9A5D]" : inv.status === "completed" ? "bg-kite-blue/10 text-kite-blue" : "bg-kite-border text-kite-text-light"}`}
                       >
                         {""}
                         {inv.status}
@@ -893,7 +889,7 @@ export default function InvestorDetail({
                       </div>
                       <div className="flex flex-col text-right">
                         <span className="text-kite-text-light">ROI</span>
-                        <span className="font-medium text-kite-green">
+                        <span className="font-medium text-[#4CAF50] dark:text-[#5B9A5D]">
                           {inv.interestRate}%
                         </span>
                       </div>
@@ -931,7 +927,7 @@ export default function InvestorDetail({
           <div className="flex-1 md:flex-initial md:bg-white md:dark:bg-kite-surface md:rounded-lg md:overflow-hidden md:flex md:flex-col md:w-full md:max-w-xl md:shadow-2xl flex flex-col w-full h-full md:h-auto">
             <div className="hidden md:flex justify-between items-center p-4 border-b border-kite-border bg-white dark:bg-kite-surface text-kite-text shrink-0">
               <span className="font-medium text-[16px]">Profile Photo</span>
-              <button onClick={() => setShowPhotoPreview(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-[#202020] rounded-full transition-colors">
+              <button onClick={() => setShowPhotoPreview(false)} className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded-full transition-colors">
                 <X className="w-5 h-5 text-kite-text-light" />
               </button>
             </div>

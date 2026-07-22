@@ -5,6 +5,7 @@ import { db, auth } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
 
 export interface AppState {
+  usersLoaded: boolean;
   businesses: Business[];
   investors: Investor[];
   investments: Investment[];
@@ -23,6 +24,9 @@ type Action =
   | { type: "ADD_INVESTOR"; payload: Investor }
   | { type: "UPDATE_INVESTOR"; payload: Investor }
   | { type: "DELETE_INVESTOR"; payload: string }
+  | { type: "ADD_USER"; payload: AppUser }
+  | { type: "UPDATE_USER"; payload: AppUser }
+  | { type: "DELETE_USER"; payload: string }
   | { type: "ADD_INVESTMENT"; payload: Investment }
   | { type: "UPDATE_INVESTMENT"; payload: Investment }
   | { type: "DELETE_INVESTMENT"; payload: string }
@@ -46,6 +50,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     users: [],
     settings: null,
     loading: true,
+    usersLoaded: false,
     currentUser: null,
   });
 
@@ -95,6 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setState((s) => ({
           ...s,
           loading: false,
+          usersLoaded: true,
           error: "Database daily limit reached! Please try again tomorrow.",
         }));
       }
@@ -134,6 +140,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
     }, handleQuotaError);
 
+    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
+      if (!isMounted) return;
+      setState((s) => {
+        const newUsers = applyChanges(s.users, snap.docChanges());
+        if (s.users !== newUsers || !s.usersLoaded) {
+          return { ...s, users: newUsers, usersLoaded: true };
+        }
+        return s;
+      });
+    }, handleQuotaError);
+
     const unsubSettings = onSnapshot(doc(db, "settings", "global"), (docSnap) => {
       if (!isMounted) return;
       if (docSnap.exists()) {
@@ -152,6 +169,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unsubBusinesses();
       unsubInvestors();
       unsubInvestments();
+      unsubUsers();
       unsubSettings();
     };
   }, []); // Only run once on mount
@@ -200,6 +218,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
           break;
         case "DELETE_INVESTMENT":
           newState.investments = newState.investments.filter((i) => i.id !== action.payload);
+          break;
+        case "ADD_USER":
+          if (!newState.users.find((u) => u.id === action.payload.id)) {
+            newState.users.push(action.payload);
+          }
+          break;
+        case "UPDATE_USER":
+          newState.users = newState.users.map((u) =>
+            u.id === action.payload.id ? action.payload : u
+          );
+          break;
+        case "DELETE_USER":
+          newState.users = newState.users.filter((u) => u.id !== action.payload);
           break;
         case "UPDATE_SETTINGS":
           newState.settings = action.payload;
@@ -273,6 +304,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         case "DELETE_INVESTMENT":
           await deleteDoc(doc(db, "investments", action.payload));
           break;
+        case "ADD_USER":
+        case "UPDATE_USER":
+          await setDoc(doc(db, "users", action.payload.id), action.payload);
+          break;
+        case "DELETE_USER":
+          await deleteDoc(doc(db, "users", action.payload));
+          break;
         case "UPDATE_SETTINGS":
           await setDoc(doc(db, "settings", "global"), payloadWithTimestamp);
           break;
@@ -289,38 +327,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
-      {state.loading ? (
-        <div className="fixed inset-0 flex h-full w-full items-center justify-center bg-white dark:bg-kite-bg z-50">
-          <div className="flex flex-col items-center justify-center gap-6 md:gap-8">
-            <div className="flex items-center gap-3 md:gap-5">
-              <img 
-                src="/logo.svg" 
-                alt="Radhika" 
-                className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-sm"
-              />
-              <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-black dark:text-white">
-                Radhika
-              </h1>
-            </div>
-            
-            {/* Mobile Progress Bar (hidden on md) */}
-            <div className="md:hidden w-40 h-[2px] bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
-              <div className="h-full bg-kite-blue w-full origin-left animate-progress-indeterminate"></div>
-            </div>
-
-            {/* Desktop Dots (hidden on sm) */}
-            <div className="hidden md:flex items-center justify-center space-x-2.5">
-              <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-1"></div>
-              <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-2"></div>
-              <div className="w-2.5 h-2.5 bg-kite-text dark:bg-kite-text-light rounded-full animate-dot-3"></div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          {children}
-        </>
-      )}
+      {children}
     </AppContext.Provider>
   );
 }

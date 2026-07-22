@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
-
+@import url("https://fonts.cdnfonts.com/css/sf-pro-display");
+@import "./user-dark-theme.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -10,8 +10,8 @@
   /* Zerodha Kite Color Palette */
   --color-kite-blue: #387DFF;
   --color-kite-blue-dark: #2F6FEA;
-  --color-kite-green: #16a34a;
-  --color-kite-red: #df514c;
+  --color-kite-green: #4CAF50;
+  --color-kite-red: #DF514C;
   
   --color-kite-text: var(--text-color);
   --color-kite-text-light: var(--text-light-color);
@@ -72,7 +72,7 @@
   --text-muted-color: #707070;
   
   --body-bg: #181818;
-  --surface-color: #202020;
+  --surface-color: #181818;
   --bg-color-alt: #282828;
   --bg-hover: #242424;
   --bg-selected: #2C2C2C;
@@ -96,26 +96,26 @@
 
 /* Force Zerodha Kite Dark Theme */
   :root.dark {
-    --text-color: #FFFFFF;
-    --text-light-color: #B8B8B8;
+    --text-color: #e0e0e0;
+    --text-light-color: #9b9b9b;
     --text-muted-color: #707070;
     
     --body-bg: #181818;
-    --surface-color: #202020;
-    --bg-color-alt: #282828;
+    --surface-color: #181818;
+    --bg-color-alt: #181818;
     --header-bg: #181818;
     --sidebar-bg: #181818;
     
-    --bg-hover: #242424;
-    --bg-selected: #2C2C2C;
+    --bg-hover: #131415;
+    --bg-selected: #131415;
     
-    --border-color: #303030;
-    --border-color-soft: #303030;
-    --border-color-hard: #303030;
+    --border-color: #2b2b2b;
+    --border-color-soft: #2b2b2b;
+    --border-color-hard: #2b2b2b;
     
     --color-kite-blue: #4A8DF7;
-    --color-kite-green: #4CAF50;
-    --color-kite-red: #E53935;
+    --color-kite-green: #5B9A5D;
+    --color-kite-red: #E25F5B;
     
     --accent-orange: #FF6D2D;
     --accent-hover: #FF8148;
@@ -126,11 +126,11 @@
 
   @media (max-width: 767px) {
     :root.dark {
-      --body-bg: #1E2938;
-      --bg-color-alt: #18222F;
-      --surface-color: #1A2431;
-      --header-bg: #18222F;
-      --sidebar-bg: #18222F;
+      --body-bg: #14212B;
+      --bg-color-alt: #14212B;
+      --surface-color: #14212B;
+      --header-bg: #1C2A37;
+      --sidebar-bg: #14212B;
       
       --border-color: #334155;
       --border-color-soft: #334155;
@@ -146,25 +146,25 @@
 
   @media (min-width: 768px) {
     :root.dark {
-      --body-bg: #171717;
-      --sidebar-bg: #171717;
-      --surface-color: #1A1A1A;
-      --header-bg: #171717;
-      --bg-color-alt: #1C1C1C;
+      --body-bg: #181818;
+      --sidebar-bg: #181818;
+      --surface-color: #181818;
+      --header-bg: #181818;
+      --bg-color-alt: #181818;
       
-      --bg-hover: #202020;
+      --bg-hover: #131415;
       
-      --border-color: #303030;
-      --border-color-soft: #2A2A2A;
-      --border-color-hard: #303030;
+      --border-color: #2b2b2b;
+      --border-color-soft: #2b2b2b;
+      --border-color-hard: #2b2b2b;
       
-      --text-color: #E3E3E3;
-      --text-light-color: #BDBDBD;
+      --text-color: #e0e0e0;
+      --text-light-color: #9b9b9b;
       --text-muted-color: #8A8A8A;
       
       --color-kite-blue: #387ED1;
-      --color-kite-green: #4CAF50;
-      --color-kite-red: #EF5350;
+      --color-kite-green: #53b987;
+      --color-kite-red: #eb5b3c;
       
       --accent-orange: #FF6D2D;
       
@@ -218,11 +218,11 @@
     color: var(--text-muted-color) !important;
   }
 
-  .dark .text-green-500, .dark .text-green-600, .dark .text-green-400, .dark .text-kite-green, .dark .text-emerald-500 {
+  .dark .text-green, .dark .text-green, .dark .text-green, .dark .text-kite-green, .dark .text-emerald-500 {
     color: var(--color-kite-green) !important;
   }
 
-  .dark .text-red-500, .dark .text-red-600, .dark .text-red-400, .dark .text-kite-red {
+  .dark .text-red, .dark .text-red, .dark .text-red, .dark .text-kite-red {
     color: var(--color-kite-red) !important;
   }
 
@@ -258,13 +258,13 @@
 
 
 :root.dark .bg-green-50, :root.dark .bg-green-50\/50 { background-color: rgba(34, 197, 94, 0.1) !important; }
-:root.dark .text-green-700, :root.dark .text-green-800, :root.dark .text-green-900 { color: #22c55e !important; }
+:root.dark .text-green, :root.dark .text-green, :root.dark .text-green { color: #22c55e !important; }
 
 :root.dark .text-blue-800 { color: #93c5fd !important; }
 :root.dark .text-blue-900 { color: #bfdbfe !important; }
 :root.dark .border-blue-300 { border-color: #387ed1 !important; }
 
-:root.dark .text-red-800, :root.dark .text-red-900 { color: #ef4444 !important; }
+:root.dark .text-red, :root.dark .text-red { color: #ef4444 !important; }
 :root.dark .bg-red-50\/50, :root.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.1) !important; }
 
 :root.dark input:not([class*="dark:text-"]), :root.dark select:not([class*="dark:text-"]), :root.dark textarea:not([class*="dark:text-"]) {
@@ -300,8 +300,16 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
   border-radius: 4px;
 }
 
-*, body, .font-mono, .font-sans {
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif !important;
+/* માત્ર ડેસ્કટોપ યુઝર્સ માટે Open Sans ફૉન્ટ લૉક કરવા (Universal Selector સાથે) */
+@media (min-width: 1024px) {
+  * {
+    font-family: 'Open Sans', sans-serif !important;
+  }
+  body {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.6 !important;
+  }
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-light-color); 
@@ -435,488 +443,10 @@ body.is-popping .fixed.inset-0.z-\[110\] {
 
 
 
-/* --- USER REQUESTED TYPOGRAPHY FOR DESKTOP DARK MODE --- */
-@media (min-width: 768px) {
-  /* Dashboard Heading (32px, 400, #E3E3E3, 40px) */
-  .dark h1.uppercase, 
-  .dark h2.uppercase.tracking-tight {
-    font-size: 32px !important;
-    font-weight: 400 !important;
-    color: #E3E3E3 !important;
-    line-height: 40px !important;
-  }
-
-  /* Section Heading (Holdings, Positions) (16px, 500, #E3E3E3, 24px) */
-  .dark h2:not(.uppercase),
-  .dark h1.tracking-widest,
-  .dark h2.tracking-widest,
-  .dark h2.tracking-wider,
-  .dark h1.uppercase.tracking-tighter,
-  .dark .text-\[15px\].font-medium.tracking-tight,
-  .dark .text-\[15px\].md\:text-\[16px\].font-medium {
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    color: #E3E3E3 !important;
-    line-height: 24px !important;
-  }
-
-  /* Card Title (13px, 400, #BDBDBD, 20px) */
-  .dark p.text-kite-text-light.uppercase,
-  .dark p.text-kite-text-light.mb-1,
-  .dark p.text-kite-text-light.mb-2,
-  .dark p.text-gray-500.uppercase {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #BDBDBD !important;
-    line-height: 20px !important;
-  }
-
-  /* Big Amount (18px, 400, #E3E3E3, 28px) */
-  .dark p.font-medium.text-kite-text,
-  .dark p.text-kite-text[style*="font-family"],
-  .dark p.text-\[20px\],
-  .dark p.md\:text-\[22px\],
-  .dark p.text-\[18px\],
-  .dark p.md\:text-\[18px\] {
-    font-size: 18px !important;
-    font-weight: 400 !important;
-    color: #E3E3E3 !important;
-    line-height: 28px !important;
-  }
-
-  /* Table Header (13px, 400, #BDBDBD, 20px) */
-  .dark th,
-  .dark .hidden.md\:flex.text-\[11px\].text-kite-text-light.bg-kite-surface div {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #BDBDBD !important;
-    line-height: 20px !important;
-  }
-
-  /* Primary Row Title (Business Name / Company Name / Investor Name) (15px, 400, #E3E3E3, 22px) */
-  /* For Businesses list */
-  .dark .flex-1 .flex.items-center span.uppercase.text-kite-text,
-  /* For Investments list */
-  .dark .w-4\/12 .flex.items-center.text-kite-text.uppercase,
-  .dark td:first-child .font-medium,
-  .dark td:first-child p.font-medium,
-  .dark td:first-child span.font-medium {
-    font-size: 15px !important;
-    font-weight: 400 !important;
-    color: #E3E3E3 !important;
-    line-height: 22px !important;
-  }
-
-  /* Secondary Row Text (Owner Name / Investor Name Subtitle / ID / Mobile) (13px, 400, #8A8A8A, 18px) */
-  /* For Businesses list (ownerName) */
-  .dark .flex-1 > span.text-kite-text-light,
-  /* For Investments list (investor name under business) */
-  .dark .w-4\/12 > span.text-kite-text-light,
-  /* General subtitle in tables */
-  .dark td:first-child .text-kite-text-light,
-  .dark td:first-child p.text-kite-text-light {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #8A8A8A !important;
-    line-height: 18px !important;
-  }
-
-  /* Table Values (15px, 400, #D8D8D8, 22px) */
-  /* Right side of Businesses */
-  .dark .text-right .flex-col span.text-kite-text:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  /* Right side of Investments desktop */
-  .dark .hidden.md\:flex .text-right span:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  /* Tables */
-  .dark td:not(:first-child) span:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  .dark td:not(:first-child) div:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  .dark td:not(:first-child) p:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]) {
-    font-size: 15px !important;
-    font-weight: 400 !important;
-    color: #D8D8D8 !important;
-    line-height: 22px !important;
-  }
-  
-  /* Sidebar Company (15px, 400, #D8D8D8, 22px) */
-  .dark .w-4\/12 .uppercase:not(.text-kite-text-light):not(.text-kite-text),
-  /* Investor list in Investors.tsx */
-  .dark .flex-1 .uppercase:not(.text-kite-text) {
-    font-size: 15px !important;
-    font-weight: 400 !important;
-    color: #D8D8D8 !important;
-    line-height: 22px !important;
-  }
-
-  /* Profit / Loss & Sidebar % (15px, 500, #4CAF50 / #EF5350, 22px) */
-  .dark .text-\[\#4CAF50\],
-  .dark .text-kite-green,
-  .dark .text-green-500 {
-    font-size: 15px !important;
-    font-weight: 500 !important;
-    color: #4CAF50 !important;
-    line-height: 22px !important;
-  }
-  .dark .text-\[\#EF5350\],
-  .dark .text-\[\#FF5722\],
-  .dark .text-\[\#D94B4B\],
-  .dark .text-kite-red,
-  .dark .text-red-500 {
-    font-size: 15px !important;
-    font-weight: 500 !important;
-    color: #EF5350 !important;
-    line-height: 22px !important;
-  }
-  
-  /* Required/ROI labels in Businesses row */
-  .dark .text-right .flex-col span.text-kite-text-light {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #BDBDBD !important;
-    line-height: 20px !important;
-  }
-
-  /* Search Placeholder (14px, 400, #7A7A7A, 20px) */
-  .dark input::placeholder,
-  .dark textarea::placeholder {
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    color: #7A7A7A !important;
-    line-height: 20px !important;
-  }
-
-  /* Top Navigation (14px, 400, #BDBDBD, 20px) */
-  .dark header nav button span {
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    color: #BDBDBD !important;
-    line-height: 20px !important;
-  }
-
-  /* Active Navigation (14px, 500, #E3E3E3, 20px) */
-  .dark header nav button.border-kite-blue span,
-  .dark header nav button.text-kite-blue span,
-  .dark header nav button.lg\:border-\[\#FF6D2D\] span,
-  .dark header nav button.lg\:text-\[\#FF6D2D\] span {
-    font-weight: 500 !important;
-    color: #E3E3E3 !important;
-  }
-}
-/* --- END USER REQUESTED TYPOGRAPHY FOR DESKTOP DARK MODE --- */
-
-/* --- USER REQUESTED TYPOGRAPHY FOR DESKTOP LIGHT MODE --- */
-@media (min-width: 768px) {
-  /* Dashboard Heading (32px, 400, #424242, 40px) */
-  html:not(.dark) h1.uppercase, 
-  html:not(.dark) h2.uppercase.tracking-tight {
-    font-size: 32px !important;
-    font-weight: 400 !important;
-    color: #424242 !important;
-    line-height: 40px !important;
-  }
-
-  /* Section Heading (Holdings, Positions) (16px, 500, #424242, 24px) */
-  html:not(.dark) h2:not(.uppercase),
-  html:not(.dark) h1.tracking-widest,
-  html:not(.dark) h2.tracking-widest,
-  html:not(.dark) h2.tracking-wider,
-  html:not(.dark) h1.uppercase.tracking-tighter,
-  html:not(.dark) .text-\[15px\].font-medium.tracking-tight,
-  html:not(.dark) .text-\[15px\].md\:text-\[16px\].font-medium {
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    color: #424242 !important;
-    line-height: 24px !important;
-  }
-
-  /* Card Title (13px, 400, #757575, 20px) */
-  html:not(.dark) p.text-kite-text-light.uppercase,
-  html:not(.dark) p.text-kite-text-light.mb-1,
-  html:not(.dark) p.text-kite-text-light.mb-2,
-  html:not(.dark) p.text-gray-500.uppercase {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #757575 !important;
-    line-height: 20px !important;
-  }
-
-  /* Big Amount (18px, 400, #424242, 28px) */
-  html:not(.dark) p.font-medium.text-kite-text,
-  html:not(.dark) p.text-kite-text[style*="font-family"],
-  html:not(.dark) p.text-\[20px\],
-  html:not(.dark) p.md\:text-\[22px\],
-  html:not(.dark) p.text-\[18px\],
-  html:not(.dark) p.md\:text-\[18px\] {
-    font-size: 18px !important;
-    font-weight: 400 !important;
-    color: #424242 !important;
-    line-height: 28px !important;
-  }
-
-  /* Table Header (13px, 400, #757575, 20px) */
-  html:not(.dark) th,
-  html:not(.dark) .hidden.md\:flex.text-\[11px\].text-kite-text-light.bg-kite-surface div {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #757575 !important;
-    line-height: 20px !important;
-  }
-
-  /* Primary Row Title (Business Name / Company Name / Investor Name) (15px, 400, #424242, 22px) */
-  /* For Businesses list */
-  html:not(.dark) .flex-1 .flex.items-center span.uppercase.text-kite-text,
-  /* For Investments list */
-  html:not(.dark) .w-4\/12 .flex.items-center.text-kite-text.uppercase,
-  html:not(.dark) td:first-child .font-medium,
-  html:not(.dark) td:first-child p.font-medium,
-  html:not(.dark) td:first-child span.font-medium {
-    font-size: 15px !important;
-    font-weight: 400 !important;
-    color: #424242 !important;
-    line-height: 22px !important;
-  }
-
-  /* Secondary Row Text (Owner Name / Investor Name Subtitle / ID / Mobile) (13px, 400, #757575, 18px) */
-  /* For Businesses list (ownerName) */
-  html:not(.dark) .flex-1 > span.text-kite-text-light,
-  /* For Investments list (investor name under business) */
-  html:not(.dark) .w-4\/12 > span.text-kite-text-light,
-  /* General subtitle in tables */
-  html:not(.dark) td:first-child .text-kite-text-light,
-  html:not(.dark) td:first-child p.text-kite-text-light {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #757575 !important;
-    line-height: 18px !important;
-  }
-
-  /* Table Values (15px, 400, #424242, 22px) */
-  /* Right side of Businesses */
-  html:not(.dark) .text-right .flex-col span.text-kite-text:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  /* Right side of Investments desktop */
-  html:not(.dark) .hidden.md\:flex .text-right span:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  /* Tables */
-  html:not(.dark) td:not(:first-child) span:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  html:not(.dark) td:not(:first-child) div:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]),
-  html:not(.dark) td:not(:first-child) p:not(.text-kite-green):not(.text-kite-red):not(.text-\[\#FF5722\]):not(.text-\[\#4CAF50\]) {
-    font-size: 15px !important;
-    font-weight: 400 !important;
-    color: #424242 !important;
-    line-height: 22px !important;
-  }
-  
-  /* Sidebar Company (15px, 400, #424242, 22px) */
-  html:not(.dark) .w-4\/12 .uppercase:not(.text-kite-text-light):not(.text-kite-text),
-  /* Investor list in Investors.tsx */
-  html:not(.dark) .flex-1 .uppercase:not(.text-kite-text) {
-    font-size: 15px !important;
-    font-weight: 400 !important;
-    color: #424242 !important;
-    line-height: 22px !important;
-  }
-
-  /* Profit / Loss & Sidebar % (15px, 500, #4CAF50 / #EF5350, 22px) */
-  html:not(.dark) .text-\[\#4CAF50\],
-  html:not(.dark) .text-kite-green,
-  html:not(.dark) .text-green-500 {
-    font-size: 15px !important;
-    font-weight: 500 !important;
-    color: #4CAF50 !important;
-    line-height: 22px !important;
-  }
-  html:not(.dark) .text-\[\#EF5350\],
-  html:not(.dark) .text-\[\#FF5722\],
-  html:not(.dark) .text-\[\#D94B4B\],
-  html:not(.dark) .text-kite-red,
-  html:not(.dark) .text-red-500 {
-    font-size: 15px !important;
-    font-weight: 500 !important;
-    color: #EF5350 !important;
-    line-height: 22px !important;
-  }
-  
-  /* Required/ROI labels in Businesses row */
-  html:not(.dark) .text-right .flex-col span.text-kite-text-light {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #757575 !important;
-    line-height: 20px !important;
-  }
-
-  /* Search Placeholder (14px, 400, #9E9E9E, 20px) */
-  html:not(.dark) input::placeholder,
-  html:not(.dark) textarea::placeholder {
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    color: #9E9E9E !important;
-    line-height: 20px !important;
-  }
-
-  /* Top Navigation (14px, 400, #757575, 20px) */
-  html:not(.dark) header nav button span {
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    color: #757575 !important;
-    line-height: 20px !important;
-  }
-
-  /* Active Navigation (14px, 500, #424242, 20px) */
-  html:not(.dark) header nav button.border-kite-blue span,
-  html:not(.dark) header nav button.text-kite-blue span,
-  html:not(.dark) header nav button.lg\:border-\[\#FF6D2D\] span,
-  html:not(.dark) header nav button.lg\:text-\[\#FF6D2D\] span {
-    font-weight: 500 !important;
-    color: #424242 !important;
-  }
-}
-/* --- END USER REQUESTED TYPOGRAPHY FOR DESKTOP LIGHT MODE --- */
 
 
 
 
-
-/* --- EXPLICIT DARK MODE DESKTOP USER FIX FOR INVESTMENTS P&L --- */
-@media (min-width: 768px) {
-  /* High specificity for business name */
-  html.dark body #root .w-4\/12 div.desktop-business-name.uppercase.tracking-wide {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #E3E3E3 !important;
-    line-height: 18px !important;
-  }
-  
-  /* High specificity for investor name */
-  html.dark body #root .w-4\/12 span.desktop-investor-name.uppercase.tracking-wide {
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    color: #969696 !important;
-    line-height: 18px !important;
-  }
-
-  /* Specificity for PnL and Net Chg */
-  html.dark body #root .desktop-pnl,
-  html.dark body #root .desktop-net-chg {
-    font-size: 12px !important;
-    line-height: 16px !important;
-  }
-}
-
-/* --- EXPLICIT LIGHT MODE DESKTOP ZERODHA TWEAKS --- */
-@media (min-width: 768px) {
-  :root:not(.dark) {
-    --body-bg: #FFFFFF;
-    --surface-color: #FFFFFF;
-    --bg-color-alt: #FAFBFC; 
-    --bg-hover: #F5F7FA;
-    --bg-selected: #F1F5F9;
-    --bg-focus: #F1F5F9;
-    
-    --border-color: #E5E7EB;
-    --border-color-soft: #E5E7EB;
-    --border-color-hard: #E5E7EB;
-    
-    --text-color: #424242;
-    --text-light-color: #757575;
-    --text-muted-color: #9E9E9E;
-    
-    --color-kite-blue: #387ED1;
-    --color-kite-green: #4CAF50;
-    --color-kite-red: #EF5350;
-    
-    --search-bg: #FFFFFF;
-  }
-  
-  html:not(.dark) body {
-    background-color: #FFFFFF !important;
-    color: #424242 !important;
-  }
-
-  /* Force background colors on the main layout wrapper if needed */
-  html:not(.dark) .bg-kite-surface {
-    background-color: #FFFFFF !important;
-  }
-  html:not(.dark) .bg-kite-surface-alt {
-    background-color: #FAFBFC !important;
-  }
-
-  /* Border / Divider specifically for light mode */
-  html:not(.dark) .border-kite-border,
-  html:not(.dark) .border-kite-border-soft {
-    border-color: #E5E7EB !important;
-  }
-
-  
-  html:not(.dark) .border-gray-100,
-  html:not(.dark) .border-gray-200,
-  html:not(.dark) .border-gray-300 {
-    border-color: #E5E7EB !important;
-  }
-  
-  /* Inputs and general border overrides for light mode */
-  html:not(.dark) input:not([type="radio"]):not([type="checkbox"]),
-  html:not(.dark) select,
-  html:not(.dark) textarea {
-    border-color: #E5E7EB !important;
-  }
-
-  /* Table Header Background */
-  html:not(.dark) body #root .hidden.md\:flex.flex-row.items-center.justify-between.w-full.px-4.py-2.bg-kite-surface {
-    background-color: #FAFBFC !important;
-    border-bottom: 1px solid #E5E7EB !important;
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
-  }
-
-  /* Table Row Compactness & Border */
-  html:not(.dark) body #root .w-full.flex.flex-col.md\:flex-row.md\:items-center.border-b.border-kite-border-soft {
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
-    border-bottom: 1px solid #E5E7EB !important;
-  }
-  
-  html:not(.dark) body #root .hover\:bg-gray-50:hover,
-  html:not(.dark) body #root .w-full.flex.flex-col.md\:flex-row.md\:items-center.border-b.border-kite-border-soft:hover {
-    background-color: #F5F7FA !important;
-  }
-
-  /* High specificity for business name (Light mode matching dark mode size/weight, but light mode color) */
-  html:not(.dark) body #root .w-4\/12 div.desktop-business-name.uppercase.tracking-wide {
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    color: #424242 !important;
-    line-height: 18px !important;
-  }
-  
-  /* High specificity for investor name (Light mode) */
-  html:not(.dark) body #root .w-4\/12 span.desktop-investor-name.uppercase.tracking-wide {
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    color: #757575 !important;
-    line-height: 18px !important;
-  }
-
-  /* Specificity for PnL and Net Chg (Light mode) */
-  html:not(.dark) body #root .desktop-pnl,
-  html:not(.dark) body #root .desktop-net-chg {
-    font-size: 12px !important;
-    line-height: 16px !important;
-  }
-
-  html:not(.dark) body #root .desktop-pnl.text-\[\#4CAF50\],
-  html:not(.dark) body #root .desktop-net-chg.text-\[\#4CAF50\] {
-    color: #4CAF50 !important;
-  }
-  html:not(.dark) body #root .desktop-pnl.text-\[\#FF5722\],
-  html:not(.dark) body #root .desktop-net-chg.text-\[\#FF5722\] {
-    color: #EF5350 !important;
-  }
-
-  /* Text color overrides for metric values in light mode */
-  html:not(.dark) body #root .text-kite-text-light {
-    color: #757575 !important;
-  }
-  html:not(.dark) body #root .text-kite-text {
-    color: #424242 !important;
-  }
-}
 
 
   /* Vertical Divider for Table */
@@ -963,4 +493,38 @@ body.is-popping .fixed.inset-0.z-\[110\] {
 @keyframes slideDown {
   from { opacity: 0; transform: scaleY(0.9); }
   to { opacity: 1; transform: scaleY(1); }
+}
+
+/* Explicit text-green and text-red classes for user */
+.text-green { color: #4CAF50 !important; }
+.text-red { color: #DF514C !important; }
+
+
+
+/* Light mode explicit green and red overrides */
+html:not(.dark) .text-green, html:not(.dark) .text-green, html:not(.dark) .text-green, html:not(.dark) .text-kite-green, html:not(.dark) .text-emerald-500, html:not(.dark) .text-green, html:not(.dark) .text-green, html:not(.dark) .text-green, html:not(.dark) .text-green {
+  color: #4CAF50 !important;
+}
+html:not(.dark) .text-red, html:not(.dark) .text-red, html:not(.dark) .text-red, html:not(.dark) .text-kite-red, html:not(.dark) .text-red, html:not(.dark) .text-red, html:not(.dark) .text-red, html:not(.dark) .text-red {
+  color: #DF514C !important;
+}
+html:not(.dark) .bg-green-50, html:not(.dark) .bg-green-50\/50 {
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+html:not(.dark) .bg-red-50, html:not(.dark) .bg-red-50\/50 {
+  background-color: rgba(223, 81, 76, 0.1) !important;
+}
+
+/* Dark mode explicit green and red overrides */
+html.dark .text-green, html.dark .text-green-500, html.dark .text-green-600, html.dark .text-green-400, html.dark .text-kite-green, html.dark .text-emerald-500, html.dark .text-green-700, html.dark .text-green-800, html.dark .text-green-900, .dark .text-green {
+  color: #5B9A5D !important;
+}
+html.dark .text-red, html.dark .text-red-500, html.dark .text-red-600, html.dark .text-red-400, html.dark .text-kite-red, html.dark .text-red-700, html.dark .text-red-800, html.dark .text-red-900, .dark .text-red {
+  color: #E25F5B !important;
+}
+html.dark .bg-green-50, html.dark .bg-green-50\/50 {
+  background-color: rgba(91, 154, 93, 0.1) !important;
+}
+html.dark .bg-red-50, html.dark .bg-red-50\/50 {
+  background-color: rgba(226, 95, 91, 0.1) !important;
 }
