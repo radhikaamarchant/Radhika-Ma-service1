@@ -895,26 +895,26 @@ export default function BusinessDetail({
       )}
       {currentView === "investors" && (
         <div className="bg-[#F8F9FA] dark:bg-kite-bg flex-1">
-          <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
-             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total funded</p>
-             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalFunded).replace("₹", "")}</p>
+          <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex items-center justify-start gap-2">
+             <p className="text-[16px] text-[#444444] dark:text-[#BBBBBB] font-normal capitalize">Total Funded (₹)</p>
+             <p className="text-[16px] font-normal text-[#4CAF50] dark:text-[#5B9A5D]">{formatINR(totalFunded).replace("₹", "")}</p>
           </div>
-          <div className="hidden md:flex bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft justify-between items-center">
-             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total profit pay</p>
-             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalProfitPay).replace("₹", "")}</p>
+          <div className="hidden md:flex bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft justify-start gap-2 items-center">
+             <p className="text-[16px] text-[#444444] dark:text-[#BBBBBB] font-normal capitalize">Total Profit Pay (-₹)</p>
+             <p className="text-[16px] font-normal text-[#E25F5B] dark:text-[#E25F5B]">{formatINR(totalProfitPay).replace("₹", "")}</p>
           </div>
-          <div className="md:hidden bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
-             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Total profit pay</p>
-             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{formatINR(totalProfitPay).replace("₹", "")}</p>
+          <div className="md:hidden bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-start gap-2 items-center">
+             <p className="text-[16px] text-[#444444] dark:text-[#BBBBBB] font-normal capitalize">Total Profit Pay (-₹)</p>
+             <p className="text-[16px] font-normal text-[#E25F5B] dark:text-[#E25F5B]">{formatINR(totalProfitPay).replace("₹", "")}</p>
           </div>
-          <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex justify-between items-center">
-             <p className="text-[13px] md:text-[14px] text-kite-text font-normal">Investors</p>
-             <p className="text-[18px] md:text-[20px] font-normal text-kite-text">{activeBusinessInvestments.length}</p>
+          <div className="bg-white dark:bg-kite-surface mb-2 py-4 px-5 border-b border-kite-border-soft flex items-center justify-start gap-2">
+             <p className="text-[16px] text-[#444444] dark:text-[#BBBBBB] font-normal capitalize">Investor</p>
+             <p className="text-[16px] font-normal text-[#4987EE] dark:text-[#4987EE]">{activeBusinessInvestments.length}</p>
           </div>
           
           <div className="bg-white dark:bg-kite-surface pt-2 border-b border-kite-border-soft mt-4">
              <div className="px-5 py-3 border-b border-kite-border-soft flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-               <h3 className="text-[14px] font-normal text-kite-text-light uppercase tracking-wider">Current investors</h3>
+               <h3 className="text-[17px] font-normal text-kite-text-light capitalize tracking-wider">Available Investor</h3>
                <div className="relative hidden md:block">
                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light" />
                  <input
@@ -929,17 +929,17 @@ export default function BusinessDetail({
              
              <div className="hidden md:block overflow-x-auto w-full max-w-full">
                <table className="w-full text-left text-[13px] md:text-[14px] min-w-[800px]">
-                 <thead className="border-b-2 border-black dark:border-kite-border font-medium uppercase text-[11px] md:text-[12px] tracking-wider text-kite-text">
+                 <thead className="border-b-2 border-black dark:border-kite-border font-medium capitalize tracking-wider text-[#9B9B9B] dark:text-[#666666]">
                    <tr>
-                     <th className="py-4 pl-5 pr-4 w-48">Investor Name</th>
-                     <th className="py-4 px-4 text-right">Amount</th>
-                     <th className="py-4 px-4 text-right">Owner Profit</th>
-                     <th className="py-4 px-4 text-right">Live Profit</th>
-                     <th className="py-4 px-4 text-center">Period</th>
-                     <th className="py-4 pr-5 pl-4 text-right">Status</th>
+                     <th className="py-4 pl-5 pr-4 w-48 text-[12px]">Investor Name</th>
+                     <th className="py-4 px-4 text-right text-[12px]">Equity Amount (₹)</th>
+                     <th className="py-4 px-4 text-right text-[12px]">Margin (₹)</th>
+                     <th className="py-4 px-4 text-right text-[12px]">My Profit (₹)</th>
+                     <th className="py-4 px-4 text-center text-[12px]">Qty.</th>
+                     <th className="py-4 pr-5 pl-4 text-right text-[12px]">Holding</th>
                    </tr>
                  </thead>
-                 <tbody className="divide-y divide-kite-border-soft text-[13px] md:text-[14px]">
+                 <tbody className="divide-y divide-kite-border-soft text-[14px] investor-table-body">
                    {businessInvestments.filter(inv => {
                      const investor = state.investors.find(i => i.id === inv.investorId);
                      return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
@@ -948,19 +948,31 @@ export default function BusinessDetail({
                      const ownerProfit = (inv.amount * (inv.interestRate || 0)) / 100;
                      const trend = marketTrends[businessId] || 0;
                      const isCompleted = inv.status === "completed";
-                     const liveProfit = isCompleted ? 0 : inv.amount * (trend / 100);
+                     const liveProfit = isCompleted 
+                        ? ((inv.payoutDetails?.totalCredited || inv.amount) + (inv.payoutDetails?.rmasCommission || 0) + (inv.payoutDetails?.happyIncomeTax || 0) - inv.amount) 
+                        : (inv.amount * (trend / 100));
+                     const qty = Number(inv.quantity) || (business?.triggerAmount ? Math.floor(inv.amount / business.triggerAmount) : Math.floor(inv.amount / 100)) || 0;
+                     
                      return (
                        <tr key={`biz_inv_desk_${inv.id}_${idx}`} className="hover:bg-kite-bg transition-colors group">
-                         <td className="py-4 pl-5 pr-4 text-kite-text font-medium whitespace-nowrap uppercase">{investor?.name?.toUpperCase() || "UNKNOWN"}</td>
-                         <td className={`py-4 px-4 text-right font-mono font-medium ${isCompleted ? 'text-kite-blue' : 'text-kite-text'}`}>{formatCompactZerodha(inv.amount)}</td>
-                         <td className="py-4 px-4 text-right font-mono font-medium text-kite-text-light">{formatCompactZerodha(ownerProfit)}</td>
-                         <td className="py-4 px-4 text-right font-mono font-medium text-[#4CAF50] dark:text-[#5B9A5D]">
-                           {isCompleted ? "-" : `${liveProfit >= 0 ? "+" : ""}${formatCompactZerodha(liveProfit)}`}
+                         <td className="!py-[10px] !px-[12px] text-[#444444] dark:text-[#BBBBBB] font-medium whitespace-nowrap capitalize !text-[14px]">
+                           {investor?.name?.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') || "Unknown"}
                          </td>
-                         <td className="py-4 px-4 text-center text-kite-text-light">{inv.timePeriodMonths} Months</td>
-                         <td className="py-4 pr-5 pl-4 text-right">
-                           <span className={inv.status === "active" ? "text-[#4CAF50] dark:text-[#5B9A5D] uppercase text-[11px] font-medium tracking-wider" : "text-kite-text-light uppercase text-[11px] font-medium tracking-wider"}>
-                             {inv.status}
+                         <td className="!py-[10px] !px-[12px] text-right font-mono font-medium !text-[14px] text-[#444444] dark:text-[#BBBBBB]">
+                           {formatCompactZerodha(inv.amount)}
+                         </td>
+                         <td className="!py-[10px] !px-[12px] text-right font-mono font-medium text-[#4CAF50] dark:text-[#5B9A5D] !text-[14px]">
+                           {`${liveProfit >= 0 ? "+" : ""}${formatCompactZerodha(liveProfit)}`}
+                         </td>
+                         <td className={`!py-[10px] !px-[12px] text-right font-mono font-medium !text-[14px] ${isCompleted ? 'text-[#FF5722] dark:text-[#D4603B]' : 'text-[#444444] dark:text-[#BBBBBB]'}`}>
+                           {formatCompactZerodha(ownerProfit)}
+                         </td>
+                         <td className="!py-[10px] !px-[12px] text-center text-[#444444] dark:text-[#BBBBBB] !text-[14px]">
+                           {qty}
+                         </td>
+                         <td className="!py-[10px] !px-[12px] text-right !text-[14px]">
+                           <span className={inv.status === "active" ? "text-[#FF5722] dark:text-[#D4603B] capitalize font-medium tracking-wider" : "text-[#4CAF50] dark:text-[#5B9A5D] capitalize font-medium tracking-wider"}>
+                             {inv.status === "active" ? "Holding" : (inv.status === "completed" ? "Pay Out" : inv.status)}
                            </span>
                          </td>
                        </tr>
@@ -982,16 +994,21 @@ export default function BusinessDetail({
                  return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
                }).map((inv, idx) => {
                  const investor = state.investors.find(i => i.id === inv.investorId);
-                 const profit = (inv.amount * (inv.interestRate || 0)) / 100;
+                 const trend = marketTrends[businessId] || 0;
+                 const isCompleted = inv.status === "completed";
+                 const liveProfit = isCompleted 
+                    ? ((inv.payoutDetails?.totalCredited || inv.amount) + (inv.payoutDetails?.rmasCommission || 0) + (inv.payoutDetails?.happyIncomeTax || 0) - inv.amount) 
+                    : (inv.amount * (trend / 100));
+                 const qty = Number(inv.quantity) || (business?.triggerAmount ? Math.floor(inv.amount / business.triggerAmount) : Math.floor(inv.amount / 100)) || 0;
                  return (
-                   <div key={`biz_inv_mob_${inv.id}_${idx}`} className="p-4 flex justify-between items-center px-5">
+                   <div key={`biz_inv_mob_${inv.id}_${idx}`} className="!py-[10px] !px-[12px] flex justify-between items-center">
                       <div>
-                        <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{investor?.name || "Unknown"}</p>
-                        <p className="text-[12px] md:text-[13px] text-kite-text-light mt-0.5">{inv.timePeriodMonths} Months • <span className={inv.status === "active" ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-kite-text-light"}>{inv.status}</span></p>
+                        <p className="!text-[14px] font-normal text-[#444444] dark:text-[#BBBBBB] capitalize">{investor?.name?.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') || "Unknown"}</p>
+                        <p className="!text-[12px] text-[#444444] dark:text-[#BBBBBB] mt-0.5">{qty} Qty. • <span className={inv.status === "active" ? "text-[#FF5722] dark:text-[#D4603B] capitalize" : "text-[#4CAF50] dark:text-[#5B9A5D] capitalize"}>{inv.status === "active" ? "Holding" : (inv.status === "completed" ? "Pay Out" : inv.status)}</span></p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[14px] md:text-[15px] font-normal text-kite-text">{formatINR(inv.amount).replace("₹", "")}</p>
-                        <p className="text-[12px] md:text-[13px] font-medium text-[#4CAF50] dark:text-[#5B9A5D] mt-0.5">+{formatINR(profit).replace("₹", "")}</p>
+                        <p className="!text-[14px] font-normal text-[#444444] dark:text-[#BBBBBB]">{formatINR(inv.amount).replace("₹", "")}</p>
+                        <p className="!text-[12px] font-medium text-[#4CAF50] dark:text-[#5B9A5D] mt-0.5">{`${liveProfit >= 0 ? "+" : ""}${formatCompactZerodha(liveProfit)}`}</p>
                       </div>
                    </div>
                  )
@@ -1019,11 +1036,11 @@ export default function BusinessDetail({
                 </div>
                 <div className="border-b border-kite-border-soft pb-4">
                   <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Account Number</p>
-                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text font-mono tracking-wider">{business.bankDetails.accountNumber}</p>
+                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text tracking-wider">{business.bankDetails.accountNumber}</p>
                 </div>
                 <div className="border-b border-kite-border-soft pb-4">
                   <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">IFSC</p>
-                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text font-mono tracking-wider">{business.bankDetails.ifscCode}</p>
+                  <p className="text-[14px] md:text-[15px] font-normal text-kite-text tracking-wider">{business.bankDetails.ifscCode}</p>
                 </div>
                 <div className="border-b border-kite-border-soft pb-4">
                   <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1">Account Holder</p>
@@ -1303,7 +1320,7 @@ export default function BusinessDetail({
                       </div>
                     </div>
                     {matchingInvestments.length > 0 && (
-                      <div className="mt-2 text-[13px] text-kite-text-light font-mono bg-[#F8F9FA] dark:bg-kite-bg p-2 rounded truncate border border-kite-border-soft">
+                      <div className="mt-2 text-[13px] text-kite-text-light bg-[#F8F9FA] dark:bg-kite-bg p-2 rounded truncate border border-kite-border-soft">
                         {matchingInvestments.map(inv => {
                           const investor = state.investors.find(i => i.id === inv.investorId);
                           return `${investor?.name || 'Unknown'}: ₹${inv.amount}`;
@@ -1349,30 +1366,30 @@ export default function BusinessDetail({
             <div className="grid grid-cols-2 gap-y-5">
               <div className="flex flex-col">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Total Invested</span>
-                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(allTimeInvestedAmount)}</span>
+                <span className="text-[14px] text-kite-text">{formatCompactZerodha(allTimeInvestedAmount)}</span>
               </div>
               <div className="flex flex-col text-right">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Active Invested</span>
-                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(totalFunded)}</span>
+                <span className="text-[14px] text-kite-text">{formatCompactZerodha(totalFunded)}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Highest Inv.</span>
-                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(maxInvestment)}</span>
+                <span className="text-[14px] text-kite-text">{formatCompactZerodha(maxInvestment)}</span>
               </div>
               <div className="flex flex-col text-right">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Lowest Inv.</span>
-                <span className="text-[14px] text-kite-text font-mono">{formatCompactZerodha(minInvestment)}</span>
+                <span className="text-[14px] text-kite-text">{formatCompactZerodha(minInvestment)}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Profit Taken Out</span>
-                <span className="text-[14px] text-[#4CAF50] dark:text-[#5B9A5D] font-mono">
+                <span className="text-[14px] text-[#4CAF50] dark:text-[#5B9A5D]">
                   {formatCompactZerodha(profitTakenOut)} 
                   <span className="text-[11px] text-kite-text-light font-sans ml-1">({allTimeInvestedAmount > 0 ? ((profitTakenOut/allTimeInvestedAmount)*100).toFixed(1) : 0}%)</span>
                 </span>
               </div>
               <div className="flex flex-col text-right">
                 <span className="text-[11px] text-kite-text-light uppercase tracking-wider mb-1">Total Profit Given</span>
-                <span className="text-[14px] text-[#4CAF50] dark:text-[#5B9A5D] font-mono">
+                <span className="text-[14px] text-[#4CAF50] dark:text-[#5B9A5D]">
                   {formatCompactZerodha(totalProfitGiven)} 
                   <span className="text-[11px] text-kite-text-light font-sans ml-1">({allTimeInvestedAmount > 0 ? ((totalProfitGiven/allTimeInvestedAmount)*100).toFixed(1) : 0}%)</span>
                 </span>
@@ -1410,7 +1427,7 @@ export default function BusinessDetail({
                      step="0.01"
                      value={triggerConfig.increaseMarket}
                      onChange={(e) => setTriggerConfig({ ...triggerConfig, increaseMarket: e.target.value })}
-                     className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] font-mono text-kite-text focus:border-kite-blue transition-colors"
+                     className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] text-kite-text focus:border-kite-blue transition-colors"
                      placeholder="e.g. 2.5"
                    />
                  </div>
@@ -1421,7 +1438,7 @@ export default function BusinessDetail({
                      step="0.01"
                      value={triggerConfig.downMarket}
                      onChange={(e) => setTriggerConfig({ ...triggerConfig, downMarket: e.target.value })}
-                     className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] font-mono text-kite-text focus:border-kite-blue transition-colors"
+                     className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] text-kite-text focus:border-kite-blue transition-colors"
                      placeholder="e.g. 4"
                    />
                  </div>

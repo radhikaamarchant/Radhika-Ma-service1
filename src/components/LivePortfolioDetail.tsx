@@ -783,7 +783,7 @@ export function LivePortfolioDetail({
                             <div className="flex justify-between text-[11px] md:text-[12px] mt-1 text-kite-text-light">
                               {""}
                               <span>Payout Date</span>{""}
-                              <span className="font-mono">
+                              <span>
                                 {""}
                                 {activeGroupedInvestments.length > 1
                                   ?"Multiple Dates"

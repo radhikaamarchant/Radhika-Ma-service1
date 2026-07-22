@@ -528,3 +528,9 @@ html.dark .bg-green-50, html.dark .bg-green-50\/50 {
 html.dark .bg-red-50, html.dark .bg-red-50\/50 {
   background-color: rgba(226, 95, 91, 0.1) !important;
 }
+
+/* Force table body font and padding as requested */
+.investor-table-body td {
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+}

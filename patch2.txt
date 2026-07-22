@@ -1,0 +1,16 @@
+                        <div className="relative group w-[172.18px]">
+                          <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] bg-[#FFFFFF] dark:bg-[#111111] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
+                            Price
+                          </label>
+                          <input
+                            type="number"
+                            disabled={priceType === "MARKET"}
+                            value={
+                              priceType === "MARKET"
+                                ? currentMarketPrice
+                                : manualPrice
+                            }
+                            onChange={handleManualPriceChange}
+                            className={`w-[172.18px] h-[44.5px] p-[10px_15px] bg-transparent border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none transition-colors disabled:bg-gray-50 dark:disabled:bg-[#111111] disabled:text-gray-500 hover:border-gray-400 dark:hover:border-gray-500 ${orderMode === "BUY" ? "focus:border-[#4184F3]" : "focus:border-[#FF5722]"}`}
+                          />
+                        </div>
