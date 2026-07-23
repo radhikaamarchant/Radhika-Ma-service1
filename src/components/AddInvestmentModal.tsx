@@ -1,5 +1,3 @@
-import { useDebounce } from "use-debounce";
-import { Virtuoso } from "react-virtuoso";
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
@@ -66,7 +64,6 @@ export default function AddInvestmentModal({
     useState(false);
   const [businessSearch, setBusinessSearch] = useState("");
   const [investorSearch, setInvestorSearch] = useState("");
-  const [debouncedInvestorSearch] = useDebounce(investorSearch, 300);
   const [isBooking, setIsBooking] = useState(false);
   const [isInvestorMultiSelect, setIsInvestorMultiSelect] = useState(false);
 
@@ -679,12 +676,12 @@ export default function AddInvestmentModal({
                                           !i.name
                                             .toLowerCase()
                                             .includes(
-                                              debouncedInvestorSearch.toLowerCase(),
+                                              investorSearch.toLowerCase(),
                                             ) &&
                                           !i.investorId
                                             ?.toLowerCase()
                                             .includes(
-                                              debouncedInvestorSearch.toLowerCase(),
+                                              investorSearch.toLowerCase(),
                                             )
                                         )
                                           return false;
@@ -743,10 +740,10 @@ export default function AddInvestmentModal({
                                   if (
                                     !i.name
                                       .toLowerCase()
-                                      .includes(debouncedInvestorSearch.toLowerCase()) &&
+                                      .includes(investorSearch.toLowerCase()) &&
                                     !i.investorId
                                       ?.toLowerCase()
-                                      .includes(debouncedInvestorSearch.toLowerCase())
+                                      .includes(investorSearch.toLowerCase())
                                   )
                                     return false;
                                   if (
@@ -829,10 +826,10 @@ export default function AddInvestmentModal({
                                 (i) =>
                                   i.name
                                     .toLowerCase()
-                                    .includes(debouncedInvestorSearch.toLowerCase()) ||
+                                    .includes(investorSearch.toLowerCase()) ||
                                   i.investorId
                                     ?.toLowerCase()
-                                    .includes(debouncedInvestorSearch.toLowerCase()),
+                                    .includes(investorSearch.toLowerCase()),
                               ).length === 0 && (
                                 <div className="px-3 py-4 text-center text-[12px] text-gray-500 dark:text-[#8F8F8F]">
                                   No investors found
@@ -1307,12 +1304,12 @@ export default function AddInvestmentModal({
                                               !i.name
                                                 .toLowerCase()
                                                 .includes(
-                                                  debouncedInvestorSearch.toLowerCase(),
+                                                  investorSearch.toLowerCase(),
                                                 ) &&
                                               !i.investorId
                                                 ?.toLowerCase()
                                                 .includes(
-                                                  debouncedInvestorSearch.toLowerCase(),
+                                                  investorSearch.toLowerCase(),
                                                 )
                                             )
                                               return false;
@@ -1373,12 +1370,12 @@ export default function AddInvestmentModal({
                                         !i.name
                                           .toLowerCase()
                                           .includes(
-                                            debouncedInvestorSearch.toLowerCase(),
+                                            investorSearch.toLowerCase(),
                                           ) &&
                                         !i.investorId
                                           ?.toLowerCase()
                                           .includes(
-                                            debouncedInvestorSearch.toLowerCase(),
+                                            investorSearch.toLowerCase(),
                                           )
                                       )
                                         return false;
@@ -1464,11 +1461,11 @@ export default function AddInvestmentModal({
                                       i.name
                                         .toLowerCase()
                                         .includes(
-                                          debouncedInvestorSearch.toLowerCase(),
+                                          investorSearch.toLowerCase(),
                                         ) ||
                                       i.investorId
                                         ?.toLowerCase()
-                                        .includes(debouncedInvestorSearch.toLowerCase()),
+                                        .includes(investorSearch.toLowerCase()),
                                   ).length === 0 && (
                                     <div className="px-3 py-4 text-center text-[12px] text-gray-500 dark:text-[#8F8F8F]">
                                       No investors found

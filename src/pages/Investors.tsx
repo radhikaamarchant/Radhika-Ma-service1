@@ -1,6 +1,6 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import InvestorPreviewModal from '../components/InvestorPreviewModal';
 import BusinessPreviewModal from '../components/BusinessPreviewModal';
 import { useAppContext } from "../utils/AppContext";
@@ -187,10 +187,10 @@ export default function Investors() {
     setSelectedPortfolioInvestment(null),
   );
   const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
-  const uniqueInvestors = Array.from(
+  const uniqueInvestors = useMemo(() => Array.from(
     new Map<string, Investor>(state.investors.map((i) => [i.id, i])).values(),
-  );
-  const filteredInvestors = uniqueInvestors
+  ), [state.investors]);
+  const filteredInvestors = useMemo(() => uniqueInvestors
     .filter(
       (i) =>
         (i.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -254,7 +254,7 @@ export default function Investors() {
     })
     .sort(
       (a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime(),
-    );
+    ), [uniqueInvestors, searchTerm, state.investments, state.businesses, state.settings, marketState.trends]);
   const generateInvestorId = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
@@ -701,209 +701,163 @@ export default function Investors() {
             <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none overflow-hidden z-10 md:mt-0">
               <div className="overflow-hidden">
                 {/* Desktop Table View */}
-                <div className="flex flex-col border-b border-kite-border">
-                  {filteredInvestors.map((investor, idx) => {
-                    const activeInvs = state.investments.filter(
-                      (inv) =>
-                        inv.investorId === investor.id &&
-                        inv.status !== "completed",
-                    );
-                    let totalAmountInvested = activeInvs.reduce(
-                      (sum, inv) => sum + inv.amount,
-                      0,
-                    );
-                    if (investor.id === "admin_investor") {
-                      totalAmountInvested = getUnifiedBankBalance(
-                        "Radhika M",
-                        state.businesses,
-                        state.investors,
-                        state.investments,
-                        state.settings,
-                      );
-                    }
-                    let totalLiveProfit = 0;
-                    const grouped = activeInvs.reduce(
-                      (acc, inv) => {
-                        if (!acc[inv.businessId]) acc[inv.businessId] = [];
-                        acc[inv.businessId].push(inv);
-                        return acc;
-                      },
-                      {} as Record<string, Investment[]>,
-                    );
-                    Object.entries(grouped).forEach(([bizId, invs]) => {
-                      const res = calculateLiveProfit(
-                        invs as Investment[],
-                        bizId,
-                        marketState.trends,
-                        state.settings,
-                      );
-                      totalLiveProfit += res.liveProfit;
-                    });
-                    const returnPercentage =
-                      totalAmountInvested > 0
-                        ? (totalLiveProfit / totalAmountInvested) * 100
-                        : 0;
-                    const hasActive = activeInvs.length > 0;
-                    const hasCompleted = state.investments.some(
-                      (inv) =>
-                        inv.investorId === investor.id &&
-                        inv.status === "completed",
-                    );
-                    const status = hasActive
-                      ? "active"
-                      : hasCompleted
-                        ? "withdrawn"
-                        : "pending";
-                    return (
-                      <div
-                        key={`inv_${investor.id}_${idx}`}
-                        onClick={() => {
-                          setSelectedInvestor(investor);
-                          setViewMode("investor-detail");
-                        }}
-                        className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
-                      >
-                        {/* Mobile View */}
-                        <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
-                          <div className="flex items-center gap-3 flex-1">
-                            {investor.photoUrl ? (
-                              <img
-                                src={investor.photoUrl}
-                                alt="Profile"
-                                className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full object-cover flex-shrink-0 cursor-pointer"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setSelectedPreviewInvestor(investor);
-                                  setPreviewHistory([investor]);
-                                }}
-                              />
-                            ) : (
-                              <div className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
-                                <span className="text-[14px] md:text-[12px] font-normal">
-                                  {(() => {
-                                    const n = (investor.shortName || investor.name) || "";
-                                    const parts = n.trim().split(" ");
-                                    if (parts.length > 1 && parts[1].length > 0) {
-                                      return (parts[0][0] + parts[1][0]).toUpperCase();
-                                    }
-                                    return n.substring(0, 2).toUpperCase();
-                                  })()}
+                <div className="flex flex-col border-b border-kite-border h-[calc(100vh-140px)] overflow-y-auto">
+                  <div className="flex flex-col">
+                    {filteredInvestors.map((investor, idx) => {
+                      const totalAmountInvested = investor.totalInvested;
+                      const totalLiveProfit = investor.totalLiveProfit;
+                      const returnPercentage = investor.returnPercentage;
+                      return (
+                        <div
+                          key={`inv_${investor.id}_${idx}`}
+                          onClick={() => {
+                            setSelectedInvestor(investor);
+                            setViewMode("investor-detail");
+                          }}
+                          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
+                        >
+                          {/* Mobile View */}
+                          <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
+                            <div className="flex items-center gap-3 flex-1">
+                              {investor.photoUrl ? (
+                                <img
+                                  src={investor.photoUrl}
+                                  alt="Profile"
+                                  className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full object-cover flex-shrink-0 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedPreviewInvestor(investor);
+                                    setPreviewHistory([investor]);
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
+                                  <span className="text-[14px] md:text-[12px] font-normal">
+                                    {(() => {
+                                      const n = (investor.shortName || investor.name) || "";
+                                      const parts = n.trim().split(" ");
+                                      if (parts.length > 1 && parts[1].length > 0) {
+                                        return (parts[0][0] + parts[1][0]).toUpperCase();
+                                      }
+                                      return n.substring(0, 2).toUpperCase();
+                                    })()}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex flex-col">
+                                <div className="flex items-center space-x-1">
+                                  <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
+                                    {investor.name?.toUpperCase()}
+                                  </span>
+                                  {investor.id === "admin_investor" && (
+                                    <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
+                                  )}
+                                </div>
+                                <span className="font-sans text-[11px] text-[#9B9B9B] leading-tight mt-0.5">
+                                  {investor.investorId}
                                 </span>
                               </div>
-                            )}
-                            <div className="flex flex-col">
-                              <div className="flex items-center space-x-1">
-                                <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
-                                  {investor.name?.toUpperCase()}
-                                </span>
-                                {investor.id === "admin_investor" && (
-                                  <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
-                                )}
-                              </div>
-                              <span className="font-sans text-[11px] text-[#9B9B9B] leading-tight mt-0.5">
-                                {investor.investorId}
-                              </span>
                             </div>
-                          </div>
-                          <div className="flex items-center space-x-3 md:space-x-6 text-right">
-                            {" "}
-                            <div className="flex flex-col items-end">
+                            <div className="flex items-center space-x-3 md:space-x-6 text-right">
                               {" "}
-                              <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
-                                {formatINR(totalAmountInvested)}
-                              </span>{" "}
-                              {totalAmountInvested > 0 && (
+                              <div className="flex flex-col items-end">
+                                {" "}
+                                <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
+                                  {formatINR(totalAmountInvested)}
+                                </span>{" "}
+                                {totalAmountInvested > 0 && (
+                                  <span
+                                    className={`text-[11px] md:text-[12px] font-normal mt-0.5 ${returnPercentage >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
+                                  >
+                                    {" "}
+                                    {returnPercentage >= 0 ? "+" : ""}
+                                    {returnPercentage.toFixed(2)}%{" "}
+                                  </span>
+                                )}
+                              </div>{" "}
+                            </div>{" "}
+                          </div>
+                          {/* Desktop View */}
+                          <div className="hidden md:flex items-stretch w-full px-4 border-b border-kite-border">
+                            <div className="w-[30%] text-left py-2 flex items-center overflow-hidden pr-2 gap-3">
+                              {investor.photoUrl ? (
+                                <img
+                                  src={investor.photoUrl}
+                                  alt="Profile"
+                                  className="w-8 h-8 md:w-12 md:h-12 rounded-full object-cover flex-shrink-0 cursor-pointer shadow-sm border border-gray-100"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedPreviewInvestor(investor);
+                                    setPreviewHistory([investor]);
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
+                                  <span className="text-[14px] md:text-[18px] font-normal">
+                                    {(() => {
+                                      const n = (investor.shortName || investor.name) || "";
+                                      const parts = n.trim().split(" ");
+                                      if (parts.length > 1 && parts[1].length > 0) {
+                                        return (parts[0][0] + parts[1][0]).toUpperCase();
+                                      }
+                                      return n.substring(0, 2).toUpperCase();
+                                    })()}
+                                  </span>
+                                </div>
+                              )}
+                              <span className="font-normal text-kite-text text-[14px] group-hover:text-kite-blue transition-colors capitalize leading-tight tracking-wide truncate">
+                                {investor.name?.toLowerCase()}
+                              </span>
+                              {investor.id === "admin_investor" && (
+                                <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
+                              )}
+                            </div>
+                            <div className="w-[14%] flex items-center text-left py-3 text-[14px] text-kite-text font-mono truncate pl-4">
+                              {investor.investorId}
+                            </div>
+                            <div className="w-[16%] flex items-center justify-start py-3 text-[12px] pl-4 pr-4 truncate text-kite-text">
+                              {investor.address?.city || investor.address?.state ? 
+                                [
+                                  investor.address?.city ? investor.address.city.charAt(0).toUpperCase() + investor.address.city.slice(1).toLowerCase() : null,
+                                  investor.address?.state ? investor.address.state.charAt(0).toUpperCase() + investor.address.state.slice(1).toLowerCase() : null
+                                ].filter(Boolean).join("-")
+                                : "-"}
+                            </div>
+                            <div className="w-[18%] flex items-center justify-end py-3 text-[14px] font-normal text-kite-text pr-4 border-l border-kite-border truncate">
+                              {totalAmountInvested > 0
+                                ? `₹${formatLargeNumber(totalAmountInvested)}`
+                                : "Not Invested"}
+                            </div>
+                            <div className="w-[22%] flex items-center justify-end py-3 text-[14px] font-normal pl-5 border-l border-kite-border truncate">
+                              {totalAmountInvested > 0 ? (
                                 <span
-                                  className={`text-[11px] md:text-[12px] font-normal mt-0.5 ${returnPercentage >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
+                                  className={
+                                    totalLiveProfit >= 0
+                                      ? "text-[#4CAF50] dark:text-[#5B9A5D]"
+                                      : "text-[#DF514C] dark:text-[#E25F5B]"
+                                  }
                                 >
-                                  {" "}
-                                  {returnPercentage >= 0 ? "+" : ""}
-                                  {returnPercentage.toFixed(2)}%{" "}
+                                  {totalLiveProfit >= 0 ? "+" : ""}₹
+                                  {formatLargeNumber(totalLiveProfit)}
+                                </span>
+                              ) : (
+                                <span className="text-kite-text-light">
+                                  Not Invested
                                 </span>
                               )}
-                            </div>{" "}
-                          </div>{" "}
-                        </div>
-                        {/* Desktop View */}
-                        <div className="hidden md:flex items-stretch w-full px-4 border-b border-kite-border">
-                          <div className="w-[30%] text-left py-2 flex items-center overflow-hidden pr-2 gap-3">
-                            {investor.photoUrl ? (
-                              <img
-                                src={investor.photoUrl}
-                                alt="Profile"
-                                className="w-8 h-8 md:w-12 md:h-12 rounded-full object-cover flex-shrink-0 cursor-pointer shadow-sm border border-gray-100"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setSelectedPreviewInvestor(investor);
-                                  setPreviewHistory([investor]);
-                                }}
-                              />
-                            ) : (
-                              <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
-                                <span className="text-[14px] md:text-[18px] font-normal">
-                                  {(() => {
-                                    const n = (investor.shortName || investor.name) || "";
-                                    const parts = n.trim().split(" ");
-                                    if (parts.length > 1 && parts[1].length > 0) {
-                                      return (parts[0][0] + parts[1][0]).toUpperCase();
-                                    }
-                                    return n.substring(0, 2).toUpperCase();
-                                  })()}
-                                </span>
-                              </div>
-                            )}
-                            <span className="font-normal text-kite-text text-[14px] group-hover:text-kite-blue transition-colors capitalize leading-tight tracking-wide truncate">
-                              {investor.name?.toLowerCase()}
-                            </span>
-                            {investor.id === "admin_investor" && (
-                              <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
-                            )}
-                          </div>
-                          <div className="w-[14%] flex items-center text-left py-3 text-[14px] text-kite-text font-mono truncate pl-4">
-                            {investor.investorId}
-                          </div>
-                          <div className="w-[16%] flex items-center justify-start py-3 text-[12px] pl-4 pr-4 truncate text-kite-text">
-                            {investor.address?.city || investor.address?.state ? 
-                              [
-                                investor.address?.city ? investor.address.city.charAt(0).toUpperCase() + investor.address.city.slice(1).toLowerCase() : null,
-                                investor.address?.state ? investor.address.state.charAt(0).toUpperCase() + investor.address.state.slice(1).toLowerCase() : null
-                              ].filter(Boolean).join("-")
-                              : "-"}
-                          </div>
-                          <div className="w-[18%] flex items-center justify-end py-3 text-[14px] font-normal text-kite-text pr-4 border-l border-kite-border truncate">
-                            {totalAmountInvested > 0
-                              ? `₹${formatLargeNumber(totalAmountInvested)}`
-                              : "Not Invested"}
-                          </div>
-                          <div className="w-[22%] flex items-center justify-end py-3 text-[14px] font-normal pl-5 border-l border-kite-border truncate">
-                            {totalAmountInvested > 0 ? (
-                              <span
-                                className={
-                                  totalLiveProfit >= 0
-                                    ? "text-[#4CAF50] dark:text-[#5B9A5D]"
-                                    : "text-[#DF514C] dark:text-[#E25F5B]"
-                                }
-                              >
-                                {totalLiveProfit >= 0 ? "+" : ""}₹
-                                {formatLargeNumber(totalLiveProfit)}
-                              </span>
-                            ) : (
-                              <span className="text-kite-text-light">
-                                Not Invested
-                              </span>
-                            )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}{" "}
+                      );
+                    })}
+                  </div>
                   {filteredInvestors.length === 0 && (
                     <div className="p-8 text-center text-gray-600 font-normal text-[13px] md:text-[14px]">
                       No investors found.
                     </div>
-                  )}{" "}
+                  )}
                 </div>{" "}
                 {/* Mobile Cards View */} <div className="hidden"> </div>{" "}
               </div>{" "}

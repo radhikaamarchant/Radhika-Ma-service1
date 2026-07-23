@@ -17,8 +17,6 @@ import {
   Plus
 } from "lucide-react";
 import { Business } from "../types";
-import { useDebounce } from "use-debounce";
-import { Virtuoso } from "react-virtuoso";
 import { getVerificationStats } from "../utils/blueTick";
 import {
   getUnifiedBankBalance,
@@ -200,12 +198,11 @@ export default function BusinessDetail({
     .sort((a, b) => getTime(b.id) - getTime(a.id)), [state.investments, businessId]);
 
   const [investorSearchQuery, setInvestorSearchQuery] = useState("");
-  const [debouncedInvestorSearchQuery] = useDebounce(investorSearchQuery, 300);
 
   const filteredBusinessInvestments = useMemo(() => businessInvestments.filter(inv => {
     const investor = state.investors.find(i => i.id === inv.investorId);
-    return investor?.name?.toLowerCase().includes(debouncedInvestorSearchQuery.toLowerCase());
-  }), [businessInvestments, state.investors, debouncedInvestorSearchQuery]);
+    return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
+  }), [businessInvestments, state.investors, investorSearchQuery]);
   const activeBusinessInvestments = businessInvestments.filter(
     (i) => i.status !== "completed",
   );
