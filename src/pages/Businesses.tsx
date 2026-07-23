@@ -239,21 +239,21 @@ export default function Businesses() {
         ) : viewMode === "list" && (
           <>
             <div className="w-full">
-              <div className="sticky top-0 z-30 bg-white dark:bg-kite-bg dark:md:bg-[#181818] w-full">
+              <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
                 {/* Header Section */}
                 
                 {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-kite-bg dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
-                  <div className="bg-white dark:bg-kite-surface rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-kite-border">
-                    <Search className="w-5 h-5 text-gray-400 dark:text-[#A3ACB8]" />
+                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
+                  <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
+                    <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
                     <input 
                       type="text"
                       placeholder="Search & add"
-                      className="flex-1 bg-transparent border-none outline-none ml-2 text-[15px] text-gray-900 dark:text-[#F1F5F9] placeholder-gray-400 dark:placeholder-[#A3ACB8]"
+                      className="flex-1 bg-transparent border-none outline-none ml-2 text-[15px] text-gray-900 dark:text-[#fcfdff] placeholder-gray-400 dark:placeholder-[#fcfdff]"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <div className="flex items-center text-gray-400 dark:text-[#A3ACB8] text-[14px]">
+                    <div className="flex items-center text-gray-400 dark:text-[#fcfdff] text-[14px]">
                       <span className="mr-3">{state.businesses.length}/250</span>
                       <SlidersHorizontal className="w-5 h-5" />
                     </div>

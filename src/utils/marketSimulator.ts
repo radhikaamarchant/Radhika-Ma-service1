@@ -106,7 +106,6 @@ export function getCurrentMarketPrice(business: Business | undefined, investment
     const downAmt = business.triggerAmount * downPct * calculateScaledQty(totalQtyClosed);
     
     displayAmount = business.triggerAmount + increaseAmt - downAmt;
-    if(displayAmount < 0.05) displayAmount = 0.05;
   } else {
     const activeInvs = investments.filter(i => i.businessId === business.id && i.status === "active");
     const totalInv = activeInvs.reduce((sum, inv) => sum + inv.amount, 0);

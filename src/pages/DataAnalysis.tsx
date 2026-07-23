@@ -530,7 +530,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
   return (
     <>
       <div className="w-full md:hidden pb-4">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-kite-border/50 bg-white dark:bg-kite-bg dark:md:bg-[#181818] sticky top-0 z-10">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-[#1c2a37] bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] sticky top-0 z-10">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 md:dark:text-[#7A7A7A] dark:text-[#8F8F8F]" />
             <input 
@@ -562,13 +562,13 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                     onNavigate("investments");
                   }
                 }}
-                className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-3 px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
+                className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-[12px] px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
               >
-                <div className="flex flex-col">
+                <div className="flex flex-col items-start gap-[4px]">
                   <span className="font-medium text-[13px] text-kite-text">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</span>
-                  <span className="text-[10px] text-kite-text/60 mt-0.5 uppercase tracking-wider">{b.ownerName}</span>
+                  <span className="text-[10px] text-kite-text/60 uppercase tracking-wider">{b.ownerName}</span>
                 </div>
-                <div className="flex flex-col items-end">
+                <div className="flex flex-col items-end text-right gap-[4px]">
                   <div className="font-medium text-[13px]">
                     {b.triggerAmount ? (
                       <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} baseColorClass={trendColor} />
@@ -576,7 +576,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                       <span className={trendColor}>-</span>
                     )}
                   </div>
-                  <span className="text-[10px] font-medium mt-0.5 text-gray-500 dark:text-gray-400">
+                  <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
                     {absoluteDiff > 0 ? "+" : ""}{absoluteDiff.toFixed(2)} ({b.overallTrend > 0 ? "+" : ""}{b.overallTrend.toFixed(2)}%)
                   </span>
                 </div>
