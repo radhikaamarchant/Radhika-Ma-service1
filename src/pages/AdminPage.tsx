@@ -11,8 +11,10 @@ import {
   Users,
   Clock,
   Search,
-  Lock
+  Lock,
+  Settings
 } from "lucide-react";
+import { useTheme } from "../utils/ThemeContext";
 import { generateAppCode, getAppCodeRemainingSeconds } from "../utils/totp";
 import Cropper from "react-easy-crop";
 import { useAppContext } from "../utils/AppContext";
@@ -33,7 +35,7 @@ interface AdminProfile {
   branch?: string;
 }
 
-type AdminView = "menu" | "funds" | "profile" | "bank" | "statement" | "market" | "users" | "show_users";
+type AdminView = "menu" | "funds" | "profile" | "bank" | "statement" | "market" | "users" | "show_users" | "settings";
 
 export default function AdminPage() {
   const { state, dispatch } = useAppContext();
@@ -70,6 +72,29 @@ export default function AdminPage() {
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [googleUser, setGoogleUser] = useState(auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null);
+  const { theme, setTheme } = useTheme();
+
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEndEvent = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isRightSwipe = distance < -50;
+    
+    if (isRightSwipe && currentView === "settings") {
+      setCurrentView("menu");
+    }
+  };
 
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(user => {
@@ -311,7 +336,7 @@ export default function AdminPage() {
 
   return (
     <div className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] min-h-full flex flex-col font-sans w-full">
-      <div className="w-full flex-1 bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] pb-12 md:pb-0">
+      <div className="w-full flex-1 bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] pb-0 md:pb-0">
         
         {currentView === "menu" && (
           <div className="animate-fade-in">
@@ -404,6 +429,10 @@ export default function AdminPage() {
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Profile</span>
                     <User className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
+                 <button onClick={() => setCurrentView("settings")} className="md:hidden flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-[#131415] transition-colors group w-full text-left">
+                    <span className="text-[15px] font-normal text-kite-text">Setting</span>
+                    <Settings className="w-4 h-4 text-kite-text-light mr-1" />
+                 </button>
                  <button onClick={() => setCurrentView("show_users")} className="hidden md:flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Show User Details</span>
                     <Users className="w-4 h-4 text-kite-text-light mr-1" />
@@ -458,7 +487,7 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              <div className="bg-white dark:bg-kite-surface border-t border-kite-border-soft mt-2 pb-10">
+              <div className="bg-white dark:bg-kite-surface border-t border-kite-border-soft mt-2 pb-0">
                 <div className="flex justify-between items-center py-3 md:py-4 px-4 border-b border-kite-border-soft">
                   <span className="text-[13px] md:text-[14px] text-kite-text font-normal">Opening balance</span>
                   <span className="text-[13px] md:text-[14px] text-kite-text font-mono">30,00,00,000.00</span>
@@ -493,7 +522,7 @@ export default function AdminPage() {
         )}
 
         {currentView === "profile" && (
-          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10">
+          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-0">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
               <button onClick={() => { setCurrentView("menu"); setFormData(profile); }} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
@@ -535,7 +564,7 @@ export default function AdminPage() {
 
         
         {currentView === "users" && (
-          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10">
+          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-0">
             <div className="px-4 py-4 flex items-center justify-between border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
               <div className="flex items-center">
                 <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
@@ -634,7 +663,7 @@ export default function AdminPage() {
 
 
         {currentView === "bank" && (
-          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10">
+          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-0">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
               <button onClick={() => { setCurrentView("menu"); setFormData(profile); }} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
@@ -698,7 +727,7 @@ export default function AdminPage() {
         )}
 
         {currentView === "show_users" && (
-          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10 hidden md:block">
+          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-0 hidden md:block">
             <div className="px-4 py-4 flex flex-col gap-4 border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
               <div className="flex items-center">
                 <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
@@ -753,7 +782,7 @@ export default function AdminPage() {
         )}
 
         {currentView === "market" && (
-          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-10">
+          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-0">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
               <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
@@ -809,7 +838,7 @@ export default function AdminPage() {
         )}
 
         {currentView === "statement" && (
-          <div className="bg-white dark:bg-kite-surface flex-1 animate-fade-in relative pb-10 min-h-full">
+          <div className="bg-white dark:bg-kite-surface flex-1 animate-fade-in relative pb-0 min-h-full">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
               <button onClick={() => setCurrentView("funds")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
@@ -856,6 +885,38 @@ export default function AdminPage() {
                   No transactions recorded yet.
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {currentView === "settings" && (
+          <div 
+            className="bg-[#F8F9FA] dark:bg-kite-bg flex-1 animate-fade-in relative pb-0 min-h-full md:hidden block"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEndEvent}
+          >
+            <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
+              <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h1 className="text-[18px] font-medium text-kite-text">Settings</h1>
+            </div>
+
+            <div className="pt-2">
+               <div className="px-5 py-3 border-b border-kite-border-soft bg-white dark:bg-kite-surface">
+                 <span className="text-[13px] text-kite-blue font-medium uppercase tracking-wider">Theme</span>
+               </div>
+               <div className="bg-white dark:bg-kite-surface">
+                 <button onClick={() => setTheme("light")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft active:bg-gray-50 dark:active:bg-[#131415] w-full text-left">
+                    <span className="text-[15px] font-normal text-kite-text">Default</span>
+                    {theme === "light" && <BadgeCheck className="w-4 h-4 text-kite-blue" />}
+                 </button>
+                 <button onClick={() => setTheme("dark")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft active:bg-gray-50 dark:active:bg-[#131415] w-full text-left">
+                    <span className="text-[15px] font-normal text-kite-text">Dark</span>
+                    {theme === "dark" && <BadgeCheck className="w-4 h-4 text-kite-blue" />}
+                 </button>
+               </div>
             </div>
           </div>
         )}

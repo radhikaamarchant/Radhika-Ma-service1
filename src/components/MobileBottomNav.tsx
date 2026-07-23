@@ -12,11 +12,13 @@ export default function MobileBottomNav({
   onNavigate,
 }: MobileBottomNavProps) {
   // Mobile only requested buttons
+  const { state } = useAppContext();
   const navItems = [
     { id:"data-analysis" as View, label:"Analysis", icon: Bookmark },
     { id:"businesses" as View, label:"Businesses", icon: Gavel },
     { id:"investors" as View, label:"Investors", icon: User },
     { id:"investments" as View, label:"Investments", icon: Briefcase },
+    { id:"admin" as View, label: (state.currentUser?.userId || (state.currentUser?.id === "admin" ? "admin" : "Profile")).toUpperCase(), icon: User },
   ];
   return (
     <>

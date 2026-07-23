@@ -160,7 +160,7 @@ function MainLayout() {
   };
 
   return (
-    <div className="h-screen bg-gray-100 dark:bg-kite-bg dark:md:bg-[#181818] text-kite-text flex flex-col overflow-hidden main-content-pb md:pb-0 font-sans">
+    <div className="h-screen bg-gray-100 dark:bg-kite-bg dark:md:bg-[#181818] text-kite-text flex flex-col overflow-hidden font-sans">
       <div className="w-full h-full flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] relative overflow-hidden">
         <TopNav currentView={currentView} onNavigate={handleNavigate} />
 
@@ -197,7 +197,7 @@ function MainLayout() {
 
           {/* Main Content */}
           <main className="flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden flex flex-col bg-white dark:bg-kite-bg text-kite-text relative main-container">
-            <div className="w-full px-0 py-0 pb-24 md:px-0 md:py-0 md:pb-8 lg:px-0 lg:py-0">
+            <div className="w-full px-0 py-0 pb-20 md:px-0 md:py-0 md:pb-8 lg:px-0 lg:py-0">
               <div
                 style={{ display: currentView === "dashboard" ? "block" : "none" }}
               >

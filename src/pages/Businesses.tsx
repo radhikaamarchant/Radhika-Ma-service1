@@ -344,7 +344,7 @@ export default function Businesses() {
                 <div className="md:overflow-visible overflow-hidden">
                   {" "}
                   {/* Unified Watchlist View */}{" "}
-                  <div className="flex flex-col border-b border-kite-border pb-20 md:pb-0">
+                  <div className="flex flex-col border-b border-kite-border">
                     {filteredBusinesses.map((business, idx) => {
                       const activeInvestments = state.investments.filter(
                         (inv) =>

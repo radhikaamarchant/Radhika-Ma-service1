@@ -411,7 +411,7 @@ export default function Investments() {
   const renderedList = useMemo(() => {
     return (
       <>
-        <div className="flex flex-col pb-16">
+        <div className="flex flex-col pb-0">
           {""}
           {groupedInvestments.map((inv, idx) => {
             const business = state.businesses.find(
@@ -823,7 +823,7 @@ export default function Investments() {
                                    />
                                  </div>
                                </div>
-                               <div className="overflow-y-auto hide-scrollbar pb-32" style={{ maxHeight: viewportHeight ? `${viewportHeight - 160}px` : 'calc(100dvh - 200px)' }}>
+                               <div className="overflow-y-auto hide-scrollbar pb-4" style={{ maxHeight: viewportHeight ? `${viewportHeight - 160}px` : 'calc(100dvh - 200px)' }}>
                                  {sortedInvestors
                                    .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
                                    .map((i, idx) => {
@@ -1234,7 +1234,7 @@ export default function Investments() {
                          />
                        </div>
                      </div>
-                     <div className="overflow-y-auto flex-1 hide-scrollbar pb-32">
+                     <div className="overflow-y-auto flex-1 hide-scrollbar pb-4">
                        {activeBusinesses
                          .filter(b => b.name.toLowerCase().includes(businessSearch.toLowerCase()) || b.businessId.toLowerCase().includes(businessSearch.toLowerCase()))
                          .map((b, idx) => (

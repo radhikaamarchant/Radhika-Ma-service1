@@ -195,9 +195,17 @@ export default function BusinessDetail({
   if (!business) return null;
 
   const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
-  const businessInvestments = state.investments
+  const businessInvestments = useMemo(() => state.investments
     .filter((inv) => inv.businessId === businessId)
-    .sort((a, b) => getTime(b.id) - getTime(a.id));
+    .sort((a, b) => getTime(b.id) - getTime(a.id)), [state.investments, businessId]);
+
+  const [investorSearchQuery, setInvestorSearchQuery] = useState("");
+  const [debouncedInvestorSearchQuery] = useDebounce(investorSearchQuery, 300);
+
+  const filteredBusinessInvestments = useMemo(() => businessInvestments.filter(inv => {
+    const investor = state.investors.find(i => i.id === inv.investorId);
+    return investor?.name?.toLowerCase().includes(debouncedInvestorSearchQuery.toLowerCase());
+  }), [businessInvestments, state.investors, debouncedInvestorSearchQuery]);
   const activeBusinessInvestments = businessInvestments.filter(
     (i) => i.status !== "completed",
   );
@@ -214,8 +222,7 @@ export default function BusinessDetail({
   }, 0);
   
   
-  const [investorSearchQuery, setInvestorSearchQuery] = useState("");
-  const [debouncedInvestorSearchQuery] = useDebounce(investorSearchQuery, 300);
+
   
   const payin = state.investments
     .filter(i => i.businessId === businessId)
