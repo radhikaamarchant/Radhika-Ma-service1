@@ -1,6 +1,7 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-import React, { useState, useRef, useEffect } from "react";
+
 import { useAppContext } from "../utils/AppContext";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import { formatINR } from "../utils/mockData";
 import {
@@ -16,6 +17,8 @@ import {
   Plus
 } from "lucide-react";
 import { Business } from "../types";
+import { useDebounce } from "use-debounce";
+import { Virtuoso } from "react-virtuoso";
 import { getVerificationStats } from "../utils/blueTick";
 import {
   getUnifiedBankBalance,
@@ -58,6 +61,34 @@ const BlueVerifiedBadge = () => (
     <path d="M15.42 8.783L10.33 14.1l-2.45-2.45c-.322-.322-.843-.322-1.165 0-.322.32-.322.84 0 1.16l3.03 3.03c.16.16.37.24.58.24.21 0 .42-.08.58-.24l5.67-6.07c.32-.32.31-.84-.01-1.16-.32-.32-.84-.31-1.16.01z" fill="#FFFFFF"/>
   </svg>
 );
+
+
+const BusinessInvestmentRow = React.memo(({ inv, investor, ownerProfit, liveProfit, qty, isCompleted }: any) => {
+  return (
+    <tr className="hover:bg-kite-bg transition-colors group">
+      <td className="!py-[10px] !px-[12px] text-[#444444] dark:text-[#BBBBBB] font-medium whitespace-nowrap capitalize !text-[14px]">
+        {investor?.name?.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') || "Unknown"}
+      </td>
+      <td className="!py-[10px] !px-[12px] text-right font-mono font-medium !text-[14px] text-[#444444] dark:text-[#BBBBBB]">
+        {formatCompactZerodha(inv.amount)}
+      </td>
+      <td className="!py-[10px] !px-[12px] text-right font-mono font-medium text-[#4CAF50] dark:text-[#5B9A5D] !text-[14px]">
+        {`${liveProfit >= 0 ? "+" : ""}${formatCompactZerodha(liveProfit)}`}
+      </td>
+      <td className={`!py-[10px] !px-[12px] text-right font-mono font-medium !text-[14px] ${isCompleted ? 'text-[#FF5722] dark:text-[#D4603B]' : 'text-[#444444] dark:text-[#BBBBBB]'}`}>
+        {formatCompactZerodha(ownerProfit)}
+      </td>
+      <td className="!py-[10px] !px-[12px] text-center text-[#444444] dark:text-[#BBBBBB] !text-[14px]">
+        {qty}
+      </td>
+      <td className="!py-[10px] !px-[12px] text-right !text-[14px]">
+        <span className={inv.status === "active" ? "text-[#FF5722] dark:text-[#D4603B] capitalize font-medium tracking-wider" : "text-[#4CAF50] dark:text-[#5B9A5D] capitalize font-medium tracking-wider"}>
+          {inv.status === "active" ? "Holding" : (inv.status === "completed" ? "Pay Out" : inv.status)}
+        </span>
+      </td>
+    </tr>
+  );
+});
 
 export default function BusinessDetail({
   businessId,
@@ -184,6 +215,7 @@ export default function BusinessDetail({
   
   
   const [investorSearchQuery, setInvestorSearchQuery] = useState("");
+  const [debouncedInvestorSearchQuery] = useDebounce(investorSearchQuery, 300);
   
   const payin = state.investments
     .filter(i => i.businessId === businessId)
@@ -940,10 +972,7 @@ export default function BusinessDetail({
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-kite-border-soft text-[14px] investor-table-body">
-                   {businessInvestments.filter(inv => {
-                     const investor = state.investors.find(i => i.id === inv.investorId);
-                     return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
-                   }).map((inv, idx) => {
+                   {filteredBusinessInvestments.map((inv, idx) => {
                      const investor = state.investors.find(i => i.id === inv.investorId);
                      const ownerProfit = (inv.amount * (inv.interestRate || 0)) / 100;
                      const trend = marketTrends[businessId] || 0;
@@ -978,10 +1007,7 @@ export default function BusinessDetail({
                        </tr>
                      )
                    })}
-                   {businessInvestments.filter(inv => {
-                     const investor = state.investors.find(i => i.id === inv.investorId);
-                     return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
-                   }).length === 0 && (
+                   {filteredBusinessInvestments.length === 0 && (
                      <tr><td colSpan={6} className="py-12 text-center text-kite-text-light font-medium">No investors found.</td></tr>
                    )}
                  </tbody>
@@ -989,10 +1015,7 @@ export default function BusinessDetail({
              </div>
              
              <div className="divide-y divide-kite-border-soft md:hidden">
-               {businessInvestments.filter(inv => {
-                 const investor = state.investors.find(i => i.id === inv.investorId);
-                 return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
-               }).map((inv, idx) => {
+               {filteredBusinessInvestments.map((inv, idx) => {
                  const investor = state.investors.find(i => i.id === inv.investorId);
                  const trend = marketTrends[businessId] || 0;
                  const isCompleted = inv.status === "completed";
@@ -1013,10 +1036,7 @@ export default function BusinessDetail({
                    </div>
                  )
                })}
-               {businessInvestments.filter(inv => {
-                 const investor = state.investors.find(i => i.id === inv.investorId);
-                 return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
-               }).length === 0 && (
+               {filteredBusinessInvestments.length === 0 && (
                  <div className="p-6 text-center text-kite-text-light text-[13px] font-normal">
                    No investors found.
                  </div>

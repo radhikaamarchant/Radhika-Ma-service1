@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+import { useDebounce } from "use-debounce";
+import { Virtuoso } from "react-virtuoso";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import ImageCropModal from "./ImageCropModal";
 import { useAppContext } from '../utils/AppContext';
 import BioMentionEditor from './BioMentionEditor';
@@ -42,6 +44,119 @@ interface InvestorDetailProps {
   onWithdraw?: (investments: any[]) => void;
   onBuyClick?: (investment: any) => void;
 }
+
+const InvestorInvestmentRowDesktop = React.memo(({ inv, business, duration, onClick, marketTrends }: any) => {
+  const trend = marketTrends[inv.businessId] || 0;
+  const isCompleted = inv.status === "completed";
+  const pnl = isCompleted
+    ? (inv.payoutDetails?.totalCredited || inv.amount) +
+      (inv.payoutDetails?.rmasCommission || 0) +
+      (inv.payoutDetails?.happyIncomeTax || 0) -
+      inv.amount
+    : inv.amount * (trend / 100);
+  const pnlPct = isCompleted
+    ? (pnl / inv.amount) * 100
+    : trend;
+
+  const qty = Number(inv.quantity) || (business?.triggerAmount ? Math.floor(inv.amount / business.triggerAmount) : Math.floor(inv.amount / 100)) || 0;
+  
+  return (
+    <tr
+      className="hover:bg-kite-bg transition-colors cursor-pointer"
+      onClick={onClick}
+    >
+      <td className="!py-[10px] !px-[12px] font-medium whitespace-nowrap !text-[13px] capitalize text-[#444444] dark:text-[#BBBBBB]">
+        {business?.name?.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
+      </td>
+      <td className="!py-[10px] !px-[12px] text-right font-mono font-medium !text-[13px] text-[#444444] dark:text-[#BBBBBB]">
+        {formatCompactZerodha(inv.amount)}
+      </td>
+      <td
+        className={`!py-[10px] !px-[12px] text-right font-mono font-medium !text-[13px] ${
+          pnl >= 0
+            ? "text-[#4CAF50] dark:text-[#5B9A5D]"
+            : "text-[#FF5722] dark:text-[#D4603B]"
+        }`}
+      >
+        {pnl >= 0 ? "+" : ""}
+        {formatCompactZerodha(pnl)}
+      </td>
+      <td
+        className={`!py-[10px] !px-[12px] text-right font-mono font-medium !text-[13px] ${
+          pnlPct >= 0
+            ? "text-[#4CAF50] dark:text-[#5B9A5D]"
+            : "text-[#FF5722] dark:text-[#D4603B]"
+        }`}
+      >
+        {pnlPct >= 0 ? "+" : ""}
+        {pnlPct.toFixed(2)}%
+      </td>
+      <td className="!py-[10px] !px-[12px] text-center text-[#444444] dark:text-[#BBBBBB] !text-[13px]">
+        {qty}
+      </td>
+      <td className="!py-[10px] !px-[12px] text-right text-kite-text-light font-medium !text-[13px]">
+        <span className={inv.status === "active" ? "text-[#FF5722] dark:text-[#D4603B] capitalize font-medium tracking-wider" : "text-[#4CAF50] dark:text-[#5B9A5D] capitalize font-medium tracking-wider"}>
+          {inv.status === "active" ? "Holding" : (inv.status === "completed" ? "Pay Out" : inv.status)}
+        </span>
+      </td>
+    </tr>
+  );
+});
+
+const InvestorInvestmentRowMobile = React.memo(({ inv, business, duration, onClick, marketTrends }: any) => {
+  const trend = marketTrends[inv.businessId] || 0;
+  const isCompleted = inv.status === "completed";
+  const pnl = isCompleted
+    ? (inv.payoutDetails?.totalCredited || inv.amount) +
+      (inv.payoutDetails?.rmasCommission || 0) +
+      (inv.payoutDetails?.happyIncomeTax || 0) -
+      inv.amount
+    : inv.amount * (trend / 100);
+  const pnlPct = isCompleted
+    ? (pnl / inv.amount) * 100
+    : trend;
+
+  const qty = Number(inv.quantity) || (business?.triggerAmount ? Math.floor(inv.amount / business.triggerAmount) : Math.floor(inv.amount / 100)) || 0;
+
+  return (
+    <div
+      className="p-3 hover:bg-kite-bg cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="flex justify-between items-start mb-1">
+        <span className="font-medium text-[#444444] dark:text-[#BBBBBB] capitalize text-[13px]">
+          {business?.name?.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
+        </span>
+        <span className="font-mono text-[13px] font-medium text-[#444444] dark:text-[#BBBBBB]">
+          {formatCompactZerodha(inv.amount)}
+        </span>
+      </div>
+      <div className="flex justify-between items-end mt-1">
+        <div className="flex flex-col gap-[2px]">
+          <span className="text-[11px] text-kite-text-light font-medium tracking-wider uppercase">
+             {qty} QTY
+          </span>
+          <span className={inv.status === "active" ? "text-[11px] font-medium tracking-wider uppercase text-[#FF5722] dark:text-[#D4603B]" : "text-[11px] font-medium tracking-wider uppercase text-[#4CAF50] dark:text-[#5B9A5D]"}>
+            {inv.status === "active" ? "Holding" : (inv.status === "completed" ? "Pay Out" : inv.status)}
+          </span>
+        </div>
+        <div className="text-right flex flex-col items-end gap-[2px]">
+          <span
+            className={`font-mono text-[13px] font-medium ${
+              pnl >= 0
+                ? "text-[#4CAF50] dark:text-[#5B9A5D]"
+                : "text-[#FF5722] dark:text-[#D4603B]"
+            }`}
+          >
+            {pnl >= 0 ? "+" : ""}
+            {formatCompactZerodha(pnl)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 export default function InvestorDetail({
   investorId,
   onBack,
@@ -59,12 +174,13 @@ export default function InvestorDetail({
         new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
     );
   const [investmentSearch, setInvestmentSearch] = useState("");
+  const [debouncedInvestmentSearch] = useDebounce(investmentSearch, 300);
 
-  const filteredInvestments = investorInvestments.filter((inv) => {
-    if (!investmentSearch.trim()) return true;
+  const filteredInvestments = useMemo(() => investorInvestments.filter((inv) => {
+    if (!debouncedInvestmentSearch.trim()) return true;
     const business = state.businesses.find((b) => b.id === inv.businessId);
-    return business?.name?.toLowerCase().includes(investmentSearch.toLowerCase());
-  });
+    return business?.name?.toLowerCase().includes(debouncedInvestmentSearch.toLowerCase());
+  }), [investorInvestments, debouncedInvestmentSearch, state.businesses]);
 
   const activeInvestments = investorInvestments.filter(
     (inv) => inv.status === "active",

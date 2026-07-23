@@ -1,6 +1,8 @@
+import { useDebounce } from "use-debounce";
+import { Virtuoso } from "react-virtuoso";
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowLeft,
@@ -64,6 +66,7 @@ export default function AddInvestmentModal({
     useState(false);
   const [businessSearch, setBusinessSearch] = useState("");
   const [investorSearch, setInvestorSearch] = useState("");
+  const [debouncedInvestorSearch] = useDebounce(investorSearch, 300);
   const [isBooking, setIsBooking] = useState(false);
   const [isInvestorMultiSelect, setIsInvestorMultiSelect] = useState(false);
 
@@ -676,12 +679,12 @@ export default function AddInvestmentModal({
                                           !i.name
                                             .toLowerCase()
                                             .includes(
-                                              investorSearch.toLowerCase(),
+                                              debouncedInvestorSearch.toLowerCase(),
                                             ) &&
                                           !i.investorId
                                             ?.toLowerCase()
                                             .includes(
-                                              investorSearch.toLowerCase(),
+                                              debouncedInvestorSearch.toLowerCase(),
                                             )
                                         )
                                           return false;
@@ -740,10 +743,10 @@ export default function AddInvestmentModal({
                                   if (
                                     !i.name
                                       .toLowerCase()
-                                      .includes(investorSearch.toLowerCase()) &&
+                                      .includes(debouncedInvestorSearch.toLowerCase()) &&
                                     !i.investorId
                                       ?.toLowerCase()
-                                      .includes(investorSearch.toLowerCase())
+                                      .includes(debouncedInvestorSearch.toLowerCase())
                                   )
                                     return false;
                                   if (
@@ -826,10 +829,10 @@ export default function AddInvestmentModal({
                                 (i) =>
                                   i.name
                                     .toLowerCase()
-                                    .includes(investorSearch.toLowerCase()) ||
+                                    .includes(debouncedInvestorSearch.toLowerCase()) ||
                                   i.investorId
                                     ?.toLowerCase()
-                                    .includes(investorSearch.toLowerCase()),
+                                    .includes(debouncedInvestorSearch.toLowerCase()),
                               ).length === 0 && (
                                 <div className="px-3 py-4 text-center text-[12px] text-gray-500 dark:text-[#8F8F8F]">
                                   No investors found
@@ -1071,13 +1074,7 @@ export default function AddInvestmentModal({
                           parseFloat(formData.adminCommissionBusinessPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium">
-                            {formatINR(
-                              (getRawAmount(formData.amount) *
-                                parseFloat(
-                                  formData.adminCommissionBusinessPct,
-                                )) /
-                                100,
-                            )}
+                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionBusinessPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                         )}
                     </label>
@@ -1105,13 +1102,7 @@ export default function AddInvestmentModal({
                           parseFloat(formData.adminCommissionInvestorPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium">
-                            {formatINR(
-                              (getRawAmount(formData.amount) *
-                                parseFloat(
-                                  formData.adminCommissionInvestorPct,
-                                )) /
-                                100,
-                            )}
+                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionInvestorPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                         )}
                     </label>
@@ -1316,12 +1307,12 @@ export default function AddInvestmentModal({
                                               !i.name
                                                 .toLowerCase()
                                                 .includes(
-                                                  investorSearch.toLowerCase(),
+                                                  debouncedInvestorSearch.toLowerCase(),
                                                 ) &&
                                               !i.investorId
                                                 ?.toLowerCase()
                                                 .includes(
-                                                  investorSearch.toLowerCase(),
+                                                  debouncedInvestorSearch.toLowerCase(),
                                                 )
                                             )
                                               return false;
@@ -1382,12 +1373,12 @@ export default function AddInvestmentModal({
                                         !i.name
                                           .toLowerCase()
                                           .includes(
-                                            investorSearch.toLowerCase(),
+                                            debouncedInvestorSearch.toLowerCase(),
                                           ) &&
                                         !i.investorId
                                           ?.toLowerCase()
                                           .includes(
-                                            investorSearch.toLowerCase(),
+                                            debouncedInvestorSearch.toLowerCase(),
                                           )
                                       )
                                         return false;
@@ -1473,11 +1464,11 @@ export default function AddInvestmentModal({
                                       i.name
                                         .toLowerCase()
                                         .includes(
-                                          investorSearch.toLowerCase(),
+                                          debouncedInvestorSearch.toLowerCase(),
                                         ) ||
                                       i.investorId
                                         ?.toLowerCase()
-                                        .includes(investorSearch.toLowerCase()),
+                                        .includes(debouncedInvestorSearch.toLowerCase()),
                                   ).length === 0 && (
                                     <div className="px-3 py-4 text-center text-[12px] text-gray-500 dark:text-[#8F8F8F]">
                                       No investors found
@@ -1649,13 +1640,7 @@ export default function AddInvestmentModal({
                           parseFloat(formData.adminCommissionBusinessPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium text-[12px] mt-[4px] block text-right w-[172.18px]">
-                            {formatINR(
-                              (getRawAmount(formData.amount) *
-                                parseFloat(
-                                  formData.adminCommissionBusinessPct,
-                                )) /
-                                100,
-                            )}
+                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionBusinessPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                       )}
                     </div>
@@ -1684,13 +1669,7 @@ export default function AddInvestmentModal({
                           parseFloat(formData.adminCommissionInvestorPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium text-[12px] mt-[4px] block text-right w-[172.18px]">
-                            {formatINR(
-                              (getRawAmount(formData.amount) *
-                                parseFloat(
-                                  formData.adminCommissionInvestorPct,
-                                )) /
-                                100,
-                            )}
+                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionInvestorPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                       )}
                     </div>
@@ -1704,11 +1683,11 @@ export default function AddInvestmentModal({
                   <span className="font-medium text-[#4184F3]">
                     {orderMode === "SELL" ? (
                       <>
-                        ₹{calculateSellStats().capUsed.toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {calculateCommissions().totalAdmin.toLocaleString("en-IN", { maximumFractionDigits: 2 })} <span className="text-[#4CAF50] dark:text-[#5B9A5D] ml-2">Profit: ₹{calculateSellStats().profit.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                        ₹{(calculateSellStats().capUsed * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {(calculateCommissions().totalAdmin * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })} <span className="text-[#4CAF50] dark:text-[#5B9A5D] ml-2">Profit: ₹{(calculateSellStats().profit * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
                       </>
                     ) : (
                       <>
-                        ₹{getRawAmount(formData.amount).toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {calculateCommissions().totalAdmin.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                        ₹{(getRawAmount(formData.amount) * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {(calculateCommissions().totalAdmin * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
                       </>
                     )}
                   </span>

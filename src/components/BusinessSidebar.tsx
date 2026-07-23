@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { useTheme } from "../utils/ThemeContext";
 import { Search, ChevronUp, ChevronDown } from "lucide-react";
@@ -6,6 +6,8 @@ import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import { getBaseMarketTrend, getCurrentMarketPrice } from "../utils/marketSimulator";
 import { getMarketTimeContext } from "../utils/marketTiming";
 import AddInvestmentModal from "./AddInvestmentModal";
+import { useDebounce } from "use-debounce";
+import { Virtuoso } from "react-virtuoso";
 
 const formatPrice = (num: number) => {
   return new Intl.NumberFormat('en-IN', {
@@ -14,7 +16,7 @@ const formatPrice = (num: number) => {
   }).format(num);
 };
 
-const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { name: string; baseAmount: number; roi: number; overallTrend: number; isOpen: boolean }) => {
+const LiveSidebarValue = React.memo(({ name, baseAmount, roi, overallTrend, isOpen }: { name: string; baseAmount: number; roi: number; overallTrend: number; isOpen: boolean }) => {
   const { isDark } = useTheme();
   const displayBase = baseAmount || 10000;
   const [currentAmount, setCurrentAmount] = useState(displayBase);
@@ -86,7 +88,7 @@ const LiveSidebarValue = ({ name, baseAmount, roi, overallTrend, isOpen }: { nam
       </span>
     </div>
   );
-};
+});
 
 export default function BusinessSidebar() {
   const { state } = useAppContext();
@@ -95,14 +97,24 @@ export default function BusinessSidebar() {
   const isMarketOpen = timeCtx.isOpen;
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [showInvestModal, setShowInvestModal] = useState(false);
   const [investBusinessId, setInvestBusinessId] = useState("");
 
-  const filteredBusinesses = state.businesses.filter(b =>
-    b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.shortName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBusinesses = useMemo(() => state.businesses.filter(b =>
+    b.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+    b.shortName?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+    b.ownerName.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+  ), [state.businesses, debouncedSearchTerm]);
+
+  const handleRowClick = useCallback((businessId: string) => {
+    setInvestBusinessId(businessId);
+    setShowInvestModal(true);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setShowInvestModal(false);
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-kite-surface md:dark:bg-[#181818] relative">
@@ -121,34 +133,37 @@ export default function BusinessSidebar() {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto">
-        {filteredBusinesses.map((business, index) => {
-          const overallTrend = marketState.trends[business.id] ?? business.interestRate;
-          
-          const displayAmount = getCurrentMarketPrice(business, state.investments);
-          
-          return (
-          <div
-            key={business.id}
-            style={{ padding: "10px 12px" }} className="cursor-pointer border-b border-kite-border dark:border-[#2b2b2b] hover:bg-gray-50 md:dark:hover:bg-[#131415] transition-colors group bg-white dark:bg-kite-surface md:dark:bg-[#181818]"
-            onClick={() => {
-              setInvestBusinessId(business.id);
-              setShowInvestModal(true);
-            }}
-          >
-            <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={displayAmount} roi={business.interestRate} overallTrend={overallTrend} isOpen={isMarketOpen} />
-          </div>
-        )})}
-        {filteredBusinesses.length === 0 && (
+      <div className="flex-1 overflow-hidden">
+        {filteredBusinesses.length === 0 ? (
           <div className="p-8 text-center text-[12px] text-kite-text-light dark:text-[#9b9b9b]">
             No businesses found.
           </div>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            totalCount={filteredBusinesses.length}
+            data={filteredBusinesses}
+            itemContent={(_, business) => {
+              const overallTrend = marketState.trends[business.id] ?? business.interestRate;
+              const displayAmount = getCurrentMarketPrice(business, state.investments);
+              return (
+                <div
+                  key={business.id}
+                  style={{ padding: "10px 12px" }}
+                  className="cursor-pointer border-b border-kite-border dark:border-[#2b2b2b] hover:bg-gray-50 md:dark:hover:bg-[#131415] transition-colors group bg-white dark:bg-kite-surface md:dark:bg-[#181818]"
+                  onClick={() => handleRowClick(business.id)}
+                >
+                  <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={displayAmount} roi={business.interestRate} overallTrend={overallTrend} isOpen={isMarketOpen} />
+                </div>
+              );
+            }}
+          />
         )}
       </div>
 
       <AddInvestmentModal 
         isOpen={showInvestModal}
-        onClose={() => setShowInvestModal(false)}
+        onClose={handleModalClose}
         initialBusinessId={investBusinessId}
       />
     </div>
