@@ -349,7 +349,7 @@ export default function InvestorDetail({
     onBack();
   };
   return (
-    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-4 md:pt-4 px-3 md:px-0 w-full">
+    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-12 md:pt-4 px-3 md:px-0 w-full">
 
       {cropImageUrl && (
         <ImageCropModal
