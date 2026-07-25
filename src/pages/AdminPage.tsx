@@ -104,6 +104,7 @@ export default function AdminPage() {
   }, []);
 
   const [formData, setFormData] = useState(profile);
+  const [viewPhotoUrl, setViewPhotoUrl] = useState<string | null>(null);
   const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const defaultDay = { isOpen: true, openTime: "09:15", closeTime: "15:30" };
   const initialDays = daysOfWeek.reduce((acc: any, day: string) => {
@@ -259,6 +260,10 @@ export default function AdminPage() {
     );
     const base64Image = canvas.toDataURL("image/jpeg", 0.7);
     
+    if (state.currentUser) {
+      dispatch({ type: "UPDATE_USER", payload: { ...state.currentUser, photoUrl: base64Image } });
+    }
+    
     // Save photo immediately
     const updatedProfile = { ...formData, photoUrl: base64Image };
     setFormData(updatedProfile);
@@ -394,17 +399,39 @@ export default function AdminPage() {
   </h2>
                        <p className="text-[13px] md:text-[14px] text-kite-text-light mt-0.5 tracking-wide">{state.currentUser?.email || "radhikaamarchant@gmail.com"}</p>
                      </div>
-                     <div className="relative cursor-pointer shrink-0 ml-4" onClick={() => fileInputRef.current?.click()}>
-                       <div className="w-[72px] h-[72px] md:w-[76px] md:h-[76px] rounded-full bg-[#E8F0FE] dark:bg-kite-blue/20 text-kite-blue  flex items-center justify-center overflow-hidden relative">
-                         {profile.photoUrl ? (
-                           <img src={profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                     <div className="relative shrink-0 ml-4 group">
+                       <div 
+                         className="w-[72px] h-[72px] md:w-[76px] md:h-[76px] rounded-full bg-[#E8F0FE] dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden relative cursor-pointer"
+                         onClick={() => {
+                           const p = state.currentUser?.photoUrl || profile.photoUrl;
+                           if (p) {
+                             setViewPhotoUrl(p);
+                           } else {
+                             fileInputRef.current?.click();
+                           }
+                         }}
+                       >
+                         {(state.currentUser?.photoUrl || profile.photoUrl) ? (
+                           <img src={state.currentUser?.photoUrl || profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                          ) : (
-                           <span className="text-[26px] font-normal">{(state.currentUser?.name || profile.name).substring(0, 2).toUpperCase()}</span>
+                           <span className="text-[26px] font-normal">
+                             {(() => {
+                               const name = state.currentUser?.name || profile.name || "";
+                               const parts = name.trim().split(" ");
+                               if (parts.length > 1 && parts[1].length > 0) {
+                                 return (parts[0][0] + parts[1][0]).toUpperCase();
+                               }
+                               return name.substring(0, 2).toUpperCase();
+                             })()}
+                           </span>
                          )}
-                         <div className="absolute bottom-0 w-full h-1/3 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                           <Upload className="w-3 h-3 text-white" />
-                         </div>
                        </div>
+                       <button 
+                         onClick={() => fileInputRef.current?.click()}
+                         className="absolute bottom-0 right-0 w-[26px] h-[26px] md:w-[28px] md:h-[28px] bg-white dark:bg-kite-surface border border-gray-200 dark:border-kite-border-soft rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:bg-gray-50 z-10 text-kite-blue"
+                       >
+                         <Upload className="w-3.5 h-3.5" />
+                       </button>
                      </div>
                      <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
                   </div>
@@ -1002,6 +1029,23 @@ export default function AdminPage() {
               Changes in <span className="text-kite-blue">{appCodeSeconds}s</span>
             </p>
           </div>
+        </div>
+      )}
+
+      {viewPhotoUrl && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black/90 flex flex-col items-center justify-center p-4 animate-fade-in"
+          onClick={() => setViewPhotoUrl(null)}
+        >
+          <div className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full cursor-pointer hover:bg-black/70 transition-colors z-10" onClick={() => setViewPhotoUrl(null)}>
+            <X className="w-6 h-6" />
+          </div>
+          <img 
+            src={viewPhotoUrl} 
+            alt="Profile View" 
+            className="max-w-full max-h-full object-contain select-none" 
+            onClick={e => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

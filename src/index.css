@@ -534,3 +534,9 @@ html.dark .bg-red-50, html.dark .bg-red-50\/50 {
   padding: 10px 12px !important;
   font-size: 14px !important;
 }
+
+body.investor-detail-open .mobile-header-safe,
+body.investor-detail-open .global-topnav {
+  display: none !important;
+}
+

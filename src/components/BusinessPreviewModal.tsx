@@ -48,7 +48,7 @@ export default function BusinessPreviewModal({
   const activeInvestments = investments.filter(inv => inv.businessId === business.id && inv.status === 'active');
   const uniqueInvestors = new Set(activeInvestments.map(inv => inv.investorId)).size;
   const totalRupeesInvested = activeInvestments.reduce((sum, inv) => sum + inv.amount, 0);
-  const ownerProfit = investments.filter(inv => inv.businessId === business.id).reduce((sum, inv) => sum + (inv.amount * (business.interestRate || 0)) / 100, 0);
+  const ownerProfit = investments.filter(inv => inv.businessId === business.id).reduce((sum, inv) => sum + (inv.amount * 60) / 100, 0);
 
   const ownerAsInvestor = investors.find(i => i.name.toLowerCase() === business.ownerName?.toLowerCase());
 

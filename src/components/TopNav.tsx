@@ -69,7 +69,7 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
   ];
 
   return (
-    <header className="hidden md:flex h-[55px] border-b border-kite-border bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] items-center justify-between px-6 shrink-0 z-[110]">
+    <header className="global-topnav hidden md:flex h-[55px] border-b border-kite-border bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] items-center justify-between px-6 shrink-0 z-[110]">
       <div className="flex items-center space-x-2">
         <div className="flex flex-col cursor-pointer" onClick={() => onNavigate("admin")}>
           <Logo />

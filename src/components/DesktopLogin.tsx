@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../utils/AppContext';
 import { Logo } from './Logo';
 import { generateAppCode } from '../utils/totp';
+import { Loader2 } from 'lucide-react';
 
 export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void }) => {
   const { state } = useAppContext();
@@ -12,46 +13,54 @@ export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void })
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
     
-    if (step === 'userid_password') {
-       if (userId === "admin" && password === "admin") {
-         setUserId("admin");
-         setStep('code');
-         return;
-       }
-       const user = state.users.find(u => (u.userId === userId || u.email === userId) && u.password === password);
-       if (user) {
-         setUserId(user.userId);
-         setStep('code');
-       } else {
-         setError("Invalid User ID or Password");
-       }
-    } else if (step === 'code') {
-       if (userId === "admin") {
-         const expectedCode = generateAppCode("admin");
-         if (code === expectedCode) {
-           onLogin("admin");
-           return;
-         } else {
-           setError("Invalid App Code");
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (step === 'userid_password') {
+         if (userId === "admin" && password === "admin") {
+           setUserId("admin");
+           setStep('code');
            return;
          }
-       }
-       const user = state.users.find(u => u.id === userId || u.userId === userId);
-       if (user) {
-         const expectedCode = generateAppCode(user.userId);
-         if (code === expectedCode) {
-           onLogin(user.id || user.userId);
+         const user = state.users.find(u => (u.userId === userId || u.email === userId) && u.password === password);
+         if (user) {
+           setUserId(user.userId);
+           setStep('code');
          } else {
-           setError("Invalid App Code");
+           setError("Invalid User ID or Password");
          }
-       } else {
-         setStep('userid_password');
-       }
+      } else if (step === 'code') {
+         if (userId === "admin") {
+           const expectedCode = generateAppCode("admin");
+           if (code === expectedCode) {
+             onLogin("admin");
+             return;
+           } else {
+             setError("Invalid App Code");
+             return;
+           }
+         }
+         const user = state.users.find(u => u.id === userId || u.userId === userId);
+         if (user) {
+           const expectedCode = generateAppCode(user.userId);
+           if (code === expectedCode) {
+             onLogin(user.id || user.userId);
+           } else {
+             setError("Invalid App Code");
+           }
+         } else {
+           setStep('userid_password');
+         }
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -66,7 +75,12 @@ export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void })
   
   const displayPhotoUrl = adminProfile?.photoUrl || user?.photoUrl;
   const displayName = adminProfile?.name || user?.name || "DEMOUSER";
-  const initials = displayName.substring(0, 2).toUpperCase();
+  
+  let initials = displayName.substring(0, 2).toUpperCase();
+  const parts = displayName.trim().split(" ");
+  if (parts.length > 1 && parts[1].length > 0) {
+     initials = (parts[0][0] + parts[1][0]).toUpperCase();
+  }
 
   return (
     <div className="min-h-screen bg-[#111111] flex flex-col items-center justify-center font-sans text-white">
@@ -100,8 +114,8 @@ export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void })
                  />
                </div>
                {error && <div className="text-[#DF514C] dark:text-[#E25F5B] text-sm">{error}</div>}
-               <button type="submit" className="w-full bg-[#FF5722] hover:bg-[#FF5722] text-white font-medium py-3 rounded transition-colors mt-4">
-                 Login
+               <button type="submit" disabled={isLoading} className="w-full bg-[#FF5722] hover:bg-[#FF5722] text-white font-medium py-3 rounded transition-colors mt-4 flex justify-center items-center disabled:opacity-100 disabled:pointer-events-none">
+                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Login"}
                </button>
                <div className="mt-6 text-center">
                  <span className="text-[#999999] text-[13px] hover:text-white cursor-pointer">Forgot user ID or password?</span>
@@ -145,8 +159,8 @@ export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void })
                  Open the Kite mobile app on your phone to generate the 2FA App Code. <span className="text-[#4184f3] cursor-pointer hover:underline">Need help?</span>
                </p>
                {error && <div className="text-[#DF514C] dark:text-[#E25F5B] text-sm text-center">{error}</div>}
-               <button type="submit" className="w-full bg-[#FF5722] hover:bg-[#FF5722] text-white font-medium py-3.5 rounded transition-colors tracking-wide mt-2">
-                 Continue
+               <button type="submit" disabled={isLoading} className="w-full bg-[#FF5722] hover:bg-[#FF5722] text-white font-medium py-3.5 rounded transition-colors tracking-wide mt-2 flex justify-center items-center disabled:opacity-100 disabled:pointer-events-none">
+                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
                </button>
              </form>
              <button onClick={() => { setStep('userid_password'); setPassword(""); }} className="mt-8 text-[#999999] text-[13px] hover:text-white transition-colors">

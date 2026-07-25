@@ -242,7 +242,7 @@ export default function BusinessDetail({
 
   const ownerProfit = state.investments
     .filter((inv) => inv.businessId === businessId)
-    .reduce((sum, inv) => sum + (inv.amount * (inv.interestRate || 0)) / 100, 0);
+    .reduce((sum, inv) => sum + (inv.amount * 60) / 100, 0);
 
   const unifiedBalance = getUnifiedBankBalance(
     business.ownerName,
@@ -978,7 +978,7 @@ export default function BusinessDetail({
                  <tbody className="divide-y divide-kite-border-soft text-[14px] investor-table-body">
                    {filteredBusinessInvestments.map((inv, idx) => {
                      const investor = state.investors.find(i => i.id === inv.investorId);
-                     const ownerProfit = (inv.amount * (inv.interestRate || 0)) / 100;
+                     const ownerProfit = (inv.amount * 60) / 100;
                      const trend = marketTrends[businessId] || 0;
                      const isCompleted = inv.status === "completed";
                      const liveProfit = isCompleted 

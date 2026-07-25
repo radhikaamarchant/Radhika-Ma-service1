@@ -551,7 +551,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
             .map((b) => {
             const isUp = b.overallTrend >= b.interestRate;
             const trendColor = isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]";
-            const absoluteDiff = (getCurrentMarketPrice(b, state.investments) * b.overallTrend) / 100;
+            const currentPrice = getCurrentMarketPrice(b, state.investments);
+            const absoluteDiff = currentPrice - (currentPrice / (1 + (b.overallTrend / 100)));
             return (
               <div 
                 key={b.id}

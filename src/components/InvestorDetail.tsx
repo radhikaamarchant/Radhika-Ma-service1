@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from "react";
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import ImageCropModal from "./ImageCropModal";
 import { useAppContext } from '../utils/AppContext';
 import BioMentionEditor from './BioMentionEditor';
@@ -185,6 +185,12 @@ export default function InvestorDetail({
 }: InvestorDetailProps) {
   const { state, dispatch } = useAppContext();
   const { marketState } = useMarketSimulation();
+  
+  useEffect(() => {
+    document.body.classList.add("investor-detail-open");
+    return () => document.body.classList.remove("investor-detail-open");
+  }, []);
+
   const investor = state.investors.find((i) => i.id === investorId);
   if (!investor) return null;
   const investorInvestments = state.investments
@@ -343,7 +349,7 @@ export default function InvestorDetail({
     onBack();
   };
   return (
-    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-8 md:pt-0 px-3 md:px-0 w-full">
+    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-4 md:pt-4 px-3 md:px-0 w-full">
 
       {cropImageUrl && (
         <ImageCropModal

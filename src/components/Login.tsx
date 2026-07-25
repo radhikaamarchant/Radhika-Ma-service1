@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useAppContext } from "../utils/AppContext";
 import { Logo } from "./Logo";
-import { Eye, EyeOff, ArrowLeft, User, CheckCircle2, LogIn } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, User, CheckCircle2, LogIn, Loader2 } from "lucide-react";
 import { DesktopLogin } from "./DesktopLogin";
 
-type Step = 'welcome' | 'login' | 'signup_email' | 'signup_name' | 'signup_password' | 'signup_success' | 'forgot_password';
+type Step = 'welcome' | 'login' | 'signup_email' | 'signup_name' | 'signup_password' | 'signup_photo' | 'signup_success' | 'forgot_password';
 
 export default function Login({ onLogin }: { onLogin: (userId: string) => void }) {
   const [isDesktop, setIsDesktop] = React.useState(window.innerWidth >= 768);
@@ -21,6 +21,7 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [loginId, setLoginId] = useState(""); // For login: email or userId
   const [loginPassword, setLoginPassword] = useState("");
   
@@ -32,6 +33,7 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
   // Forgot password
   const [forgotId, setForgotId] = useState("");
   const [recoveredPassword, setRecoveredPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const generateUserId = () => {
     let maxId = 108; // start from RMAS109
@@ -46,14 +48,21 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
     return "RMAS" + (maxId + 1);
   };
 
-  const handleSignupComplete = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    const passwordRegex = /^[A-Z][a-z]{4}\d{2}@$/;
+    if (!passwordRegex.test(password)) {
+      setError("Password must have 1 capital letter, 4 small letters, 2 digits, and end with @ (e.g. Abcde12@)");
       return;
     }
-    
+    setStep('signup_photo');
+  };
+
+  const handleFinalSignup = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsLoading(true);
     try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
       const newId = generateUserId();
       const newUser = {
         id: newId,
@@ -61,6 +70,7 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
         name: name,
         email: email,
         password: password,
+        photoUrl: photoUrl,
         role: "INVESTOR" as any,
       };
               
@@ -74,22 +84,30 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
     } catch (err) {
       setError("Error creating account");
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const user = state.users.find(u => 
-      (u.userId === loginId || u.email === loginId || u.id === loginId) && 
-      u.password === loginPassword
-    );
-    
-    if (user) {
-      onLogin(user.id);
-    } else if (loginId.toLowerCase() === "admin" && loginPassword === "admin") {
-      onLogin("admin");
-    } else {
-      setError("Invalid User ID or Password");
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const user = state.users.find(u => 
+        (u.userId === loginId || u.email === loginId || u.id === loginId) && 
+        u.password === loginPassword
+      );
+      
+      if (user) {
+        onLogin(user.id);
+      } else if (loginId.toLowerCase() === "admin" && loginPassword === "admin") {
+        onLogin("admin");
+      } else {
+        setError("Invalid User ID or Password");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -163,10 +181,10 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
           </div>
         )}
 
-        {(step === 'signup_email' || step === 'signup_name' || step === 'signup_password') && (
+        {(step === 'signup_email' || step === 'signup_name' || step === 'signup_password' || step === 'signup_photo') && (
           <div className="flex-1 flex flex-col pt-2">
             <div className="flex items-center justify-between mb-8">
-              <button onClick={() => setStep(step === 'signup_password' ? 'signup_name' : step === 'signup_name' ? 'signup_email' : 'welcome')} className="p-2 -ml-2 text-[#444444]">
+              <button onClick={() => setStep(step === 'signup_photo' ? 'signup_password' : step === 'signup_password' ? 'signup_name' : step === 'signup_name' ? 'signup_email' : 'welcome')} className="p-2 -ml-2 text-[#444444]">
                 <ArrowLeft className="w-6 h-6" />
               </button>
               <Logo className="scale-75 origin-right" forceDarkText={true} />
@@ -176,6 +194,7 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
               {step === 'signup_email' && "Verify your details"}
               {step === 'signup_name' && "Verify your name"}
               {step === 'signup_password' && "Verify your password"}
+              {step === 'signup_photo' && "Profile Photo"}
             </h1>
             
             <div className="flex justify-center mb-10">
@@ -194,13 +213,15 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
               {step === 'signup_email' && "Please enter the your email account"}
               {step === 'signup_name' && "Please enter the your full name"}
               {step === 'signup_password' && "Please enter the your 6-8 Digit Password set"}
+              {step === 'signup_photo' && "Please upload your profile photo (Optional)"}
             </p>
             
             <form onSubmit={(e) => {
               e.preventDefault();
               if (step === 'signup_email' && email) setStep('signup_name');
               else if (step === 'signup_name' && name) setStep('signup_password');
-              else if (step === 'signup_password') handleSignupComplete(e);
+              else if (step === 'signup_password') handlePasswordSubmit(e);
+              else if (step === 'signup_photo') handleFinalSignup(e);
             }} className="space-y-6">
               
               <div className="relative">
@@ -233,11 +254,29 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
                     className="w-full border border-[#e0e0e0] rounded py-3.5 px-4 text-[16px] !text-black dark:!text-black bg-white dark:bg-white focus:border-[#4184f3] focus:outline-none transition-colors"
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                    minLength={6}
+                    minLength={8}
                     maxLength={8}
                     required
                     autoFocus
                   />
+                )}
+                {step === 'signup_photo' && (
+                  <div className="flex flex-col items-center gap-4">
+                     <label className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer overflow-hidden border border-gray-300">
+                        {photoUrl ? (
+                           <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                           <span className="text-gray-400 text-sm font-medium uppercase tracking-wider text-[11px]">Upload</span>
+                        )}
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                           if (e.target.files && e.target.files.length > 0) {
+                             const reader = new FileReader();
+                             reader.onload = () => setPhotoUrl(reader.result?.toString() || "");
+                             reader.readAsDataURL(e.target.files[0]);
+                           }
+                        }} />
+                     </label>
+                  </div>
                 )}
               </div>
 
@@ -245,9 +284,10 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
 
               <button
                 type="submit"
-                className="w-full bg-[#4184f3] hover:bg-[#3367d6] text-white py-3.5 rounded text-[15px] font-medium transition-colors uppercase tracking-wide"
+                disabled={isLoading}
+                className="w-full bg-[#4184f3] hover:bg-[#3367d6] text-white py-3.5 rounded text-[15px] font-medium transition-colors uppercase tracking-wide flex items-center justify-center disabled:opacity-100 disabled:pointer-events-none"
               >
-                Verify
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify"}
               </button>
             </form>
             
@@ -258,12 +298,15 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
         )}
 
         {step === 'signup_success' && (
-          <div className="flex-1 flex flex-col pt-12">
-            <div className="w-full animate-fade-in text-left">
-              <CheckCircle2 className="w-16 h-16 text-[#4184f3] mb-8 animate-bounce" />
+          <div className="flex-1 flex flex-col justify-center pb-20">
+            <div className="w-full animate-fade-in text-center flex flex-col items-center">
+              <CheckCircle2 className="w-20 h-20 text-[#4184f3] mb-6" />
               <h1 className="text-[28px] font-medium text-[#444444] mb-2">
-                Successfully {name} Account
+                Successfully
               </h1>
+              <h2 className="text-[24px] font-medium text-[#444444] mb-4">
+                {name}
+              </h2>
               <p className="text-[16px] text-[#666] mb-10">
                 ID number: <span className="font-bold text-[#444444]">{generatedUserId}</span>
               </p>
@@ -327,9 +370,10 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
 
               <button
                 type="submit"
-                className="w-full bg-[#4184f3] hover:bg-[#3367d6] text-white py-3.5 rounded text-[15px] font-medium transition-colors uppercase tracking-wide mt-2"
+                disabled={isLoading}
+                className="w-full bg-[#4184f3] hover:bg-[#3367d6] text-white py-3.5 rounded text-[15px] font-medium transition-colors uppercase tracking-wide flex items-center justify-center disabled:opacity-100 disabled:pointer-events-none mt-2"
               >
-                LOGIN
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "LOGIN"}
               </button>
             </form>
 

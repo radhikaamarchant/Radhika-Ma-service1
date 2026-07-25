@@ -48,7 +48,7 @@ const LiveSidebarValue = React.memo(({ name, baseAmount, roi, overallTrend, isOp
   const isPositive = overallTrend > 0;
   const isNegative = overallTrend < 0;
 
-  const absoluteChange = (displayBase * overallTrend) / 100;
+  const absoluteChange = displayBase - (displayBase / (1 + (overallTrend / 100)));
   
   const getTrendColorClass = (flashState: "up" | "down" | null, isMarketOpen: boolean) => {
     if (isMarketOpen && flashState === "up") return "text-[#4CAF50] dark:text-[#5B9A5D] md:text-[#4CAF50] md:dark:text-[#5B9A5D]";
