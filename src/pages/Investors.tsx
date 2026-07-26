@@ -98,40 +98,8 @@ export default function Investors() {
       searchInputRef.current.focus();
     }
   }, [isSearchExpanded]);
-  // Scroll preservation
-  const scrollPosRef = useRef<number>(0);
-  const mainRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
-    const mainEl = document.querySelector("main");
-    mainRef.current = mainEl;
-    if (!mainEl) return;
-    
-    const handleScroll = () => {
-      if (viewMode === "list") {
-        scrollPosRef.current = mainEl.scrollTop;
-      }
-    };
-    
-    mainEl.addEventListener("scroll", handleScroll, { passive: true });
-    return () => mainEl.removeEventListener("scroll", handleScroll);
-  }, [viewMode]);
-
-  useLayoutEffect(() => {
-    if (viewMode === "list") {
-      if (mainRef.current) {
-        mainRef.current.scrollTop = scrollPosRef.current;
-      }
-    } else {
-      if (mainRef.current) {
-        mainRef.current.scrollTop = 0;
-      }
-    }
-  }, [viewMode]);
-  // Withdraw State
-  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(
-    null,
-  );
+  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
   const [selectedInvestments, setSelectedInvestments] = useState<Investment[]>(
     [],
   );
@@ -580,33 +548,34 @@ export default function Investors() {
       {/* --- Hide this whole container during print --- */}{" "}
       <div className="print:hidden space-y-3 sm:space-y-6">
         {" "}
-        {viewMode === "investor-detail" && selectedInvestor && (
-          <InvestorDetail
-            investorId={selectedInvestor.id}
-            onBack={() => {
-              setViewMode("list");
-              setSelectedInvestor(null);
-            }}
-            onWithdraw={(invs) => {
-              if (invs && invs.length > 0) {
-                handleCreditInvestorClick(invs);
-              } else {
-                handleWithdrawClick(selectedInvestor);
-              }
-            }}
-            onBuyClick={(investment: any) => {
-              setAddModalBusinessId(investment.businessId);
-              setAddModalInvestorId(investment.investorId);
-              setShowAddForm(true);
-            }}
-          />
+        {selectedInvestor && (
+          <div className="w-full h-full bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-50">
+            <InvestorDetail
+              investorId={selectedInvestor.id}
+              onBack={() => {
+                setSelectedInvestor(null);
+              }}
+              onWithdraw={(invs) => {
+                if (invs && invs.length > 0) {
+                  handleCreditInvestorClick(invs);
+                } else {
+                  handleWithdrawClick(selectedInvestor);
+                }
+              }}
+              onBuyClick={(investment: any) => {
+                setAddModalBusinessId(investment.businessId);
+                setAddModalInvestorId(investment.investorId);
+                setShowAddForm(true);
+              }}
+            />
+          </div>
         )}{" "}
-        {viewMode === "list" && (
+        <div className={`w-full h-full ${selectedInvestor ? 'hidden' : 'block'}`}>
           <div className="w-full">
             <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
               
                 {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
+                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
                   <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
                     <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
                     <input 
@@ -874,7 +843,7 @@ export default function Investors() {
               </div>{" "}
             </div>{" "}
           </div>
-        )}{" "}
+        </div>{" "}
         {viewMode === "add-step-1" && (
           <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
@@ -1437,13 +1406,7 @@ export default function Investors() {
 
             return (
               <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile">
-                <style>{`
-                  @media (max-width: 767px) {
-                    .mobile-header-safe {
-                      display: none !important;
-                    }
-                  }
-                `}</style>
+                
                 {/* Header and Tabs */}
                 <div className="bg-[#ececed] md:bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] pt-[calc(32px+env(safe-area-inset-top))] md:pt-4 pb-2 md:pb-0 px-4 md:px-6 relative z-10 border-none md:border-none">
                   <div className="flex items-center mb-6">

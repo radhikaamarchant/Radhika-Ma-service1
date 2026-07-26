@@ -33,14 +33,14 @@ export default function MobileBottomNav({
               triggerSelectionHaptic();
               onNavigate(item.id);
             }}
-            className={`flex-1 h-full flex flex-col items-center justify-center gap-1 ${isActive ?"text-[#4184F3] dark:text-[#4184F3]" :"text-[#9B9B9B] dark:text-[#9B9B9B] hover:text-[#9B9B9B] dark:hover:text-[#9B9B9B]"}`}
+            className={`flex-1 h-full flex flex-col items-center justify-center gap-1 ${isActive ?"text-[#4184F3] dark:text-[#4184F3]" :"text-[#2e2e34] dark:text-[#fafafa] hover:text-[#2e2e34] dark:hover:text-[#fafafa]"}`}
           >
             <Icon
-              className={`w-[20px] h-[20px] ${isActive ?"text-[#4184F3] dark:text-[#4184F3]" :"text-[#9B9B9B] dark:text-[#9B9B9B]"}`}
+              className={`w-[20px] h-[20px] ${isActive ?"text-[#4184F3] dark:text-[#4184F3]" :"text-[#2e2e34] dark:text-[#fafafa]"}`}
               strokeWidth={isActive ? 2 : 1.5}
             />
             <span
-              className={`text-[10px] font-medium tracking-wide ${isActive ?"text-[#4184F3] dark:text-[#4184F3]" :"text-[#9B9B9B] dark:text-[#9B9B9B]"}`}
+              className={`text-[10px] font-medium tracking-wide ${isActive ?"text-[#4184F3] dark:text-[#4184F3]" :"text-[#2e2e34] dark:text-[#fafafa]"}`}
             >
               {item.label}
             </span>

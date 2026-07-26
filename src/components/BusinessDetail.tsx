@@ -153,6 +153,11 @@ export default function BusinessDetail({
   });
 
   useEffect(() => {
+    document.body.classList.add('business-detail-open');
+    return () => document.body.classList.remove('business-detail-open');
+  }, []);
+
+  useEffect(() => {
     if (business) {
       setTriggerConfig({
         type: business.investmentType || 'manual',

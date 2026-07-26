@@ -100,6 +100,10 @@ function MainLayout() {
     return "dashboard";
   });
 
+  useEffect(() => {
+    document.body.setAttribute("data-current-view", currentView);
+  }, [currentView]);
+
   const { state, dispatch } = useAppContext();
 
   // Keyboard Shortcuts Mapping
@@ -166,7 +170,7 @@ function MainLayout() {
 
         {/* Mobile Header - Kite Style */}
         <div 
-          className={`md:hidden flex items-center justify-between px-4 pb-3 bg-white border-b shrink-0 z-40 fixed top-0 left-0 right-0 mobile-header-safe ${(currentView === "data-analysis" || currentView === "businesses" || currentView === "investors") ? "dark:bg-[#1c2a37] dark:border-transparent border-kite-border-soft" : "dark:bg-kite-bg border-kite-border-soft"}`}
+          className={`md:hidden flex items-center justify-between px-4 pb-3 ${currentView === "businesses" ? "bg-[#ececed]" : currentView === "investors" ? "bg-[#ececed]" : "bg-white"} border-b shrink-0 z-40 fixed top-0 left-0 right-0 mobile-header-safe ${(currentView === "data-analysis" || currentView === "businesses" || currentView === "investors") ? "dark:bg-[#1c2a37] dark:border-transparent " + (currentView === "businesses" ? "border-transparent" : currentView === "investors" ? "border-transparent" : "border-kite-border-soft") : "dark:bg-kite-bg border-kite-border-soft"}`}
         >
           <div
             className="flex flex-col cursor-pointer"

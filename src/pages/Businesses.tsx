@@ -232,19 +232,22 @@ export default function Businesses() {
   return (
     <div className="w-full space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
       <div className="print:hidden space-y-6">
-        {selectedBusinessId ? (
-          <BusinessDetail
-            businessId={selectedBusinessId}
-            onBack={() => setSelectedBusinessId(null)}
-          />
-        ) : viewMode === "list" && (
+        {selectedBusinessId && (
+          <div className="w-full h-full bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-50">
+            <BusinessDetail
+              businessId={selectedBusinessId}
+              onBack={() => setSelectedBusinessId(null)}
+            />
+          </div>
+        )}
+        <div className={`w-full h-full ${selectedBusinessId ? 'hidden' : 'block'}`}>
           <>
             <div className="w-full">
               <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
                 {/* Header Section */}
                 
                 {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#f2f2f2] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
+                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
                   <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
                     <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
                     <input 
@@ -581,7 +584,8 @@ export default function Businesses() {
               </div>{" "}
             </div>
           </>
-        )}{" "}
+        </div>
+        {" "}
         {viewMode === "add-owner-choice" && (
           <div className="w-full max-w-xl mx-auto bg-transparent p-4 md:p-8 mt-4 md:mt-10 animate-fade-in flex flex-col items-center min-h-[60vh] justify-center">
             <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-kite-text tracking-tight">Radhika Listed</h2>
