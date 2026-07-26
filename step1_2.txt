@@ -1,0 +1,271 @@
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowInvestorSelect(!showInvestorSelect);
+                              setInvestorSearch("");
+                            }}
+                            className="text-[11px] md:text-[12px] font-medium text-kite-blue hover:underline focus:outline-none ml-auto relative z-10"
+                          >
+                            investor register
+                          </button>
+                        </div>
+                        <input
+                          required
+                          type="text"
+                          className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase"
+                          value={formData.ownerName}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              ownerName: e.target.value.toUpperCase(),
+                            })
+                          }
+                          placeholder="Example : Radhika Marchant"
+                        />{" "}
+                        {showInvestorSelect && (
+                          <div className="absolute z-20 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
+                            <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
+                              <div className="relative">
+                                <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  placeholder="Search investor..."
+                                  className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                                  value={investorSearch}
+                                  onChange={(e) => setInvestorSearch(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="overflow-y-auto flex-1">
+                              {state.investors
+                                .filter((inv) => inv.name.toLowerCase().includes(investorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(investorSearch.toLowerCase()))
+                                .sort((a, b) => {
+                                  const idA = parseInt(a.investorId?.replace(/\D/g, "") || "0");
+                                  const idB = parseInt(b.investorId?.replace(/\D/g, "") || "0");
+                                  return idB - idA;
+                                })
+                                .map((inv) => (
+                                  <div
+                                    key={inv.id}
+                                    className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
+                                    onClick={() => {
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        ownerName: inv.name,
+                                        bankName: inv.bankDetails?.bankName || "",
+                                        accountNumber: inv.bankDetails?.accountNumber || "",
+                                        ifscCode: inv.bankDetails?.ifscCode || "",
+                                        accountHolderName: inv.bankDetails?.accountHolderName || inv.name,
+                                      }));
+                                      setShowInvestorSelect(false);
+                                    }}
+                                  >
+                                    <div className="w-8 h-8 rounded-full bg-[#E8F0FE] dark:bg-kite-blue/10 text-kite-blue dark:text-kite-blue flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                      {inv.photoUrl ? (
+                                        <img src={inv.photoUrl} alt={inv.name} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span className="text-[11px] font-normal">
+                                          {(() => {
+                                            const n = (inv.name) || "";
+                                            const parts = n.trim().split(" ");
+                                            if (parts.length > 1 && parts[1].length > 0) {
+                                              return (parts[0][0] + parts[1][0]).toUpperCase();
+                                            }
+                                            return n.substring(0, 2).toUpperCase();
+                                          })()}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="font-normal text-kite-text dark:text-kite-text text-[13px] md:text-[14px] uppercase">{inv.name}</span>
+                                      <span className="text-[11px] md:text-[12px] text-kite-text dark:text-kite-text-light font-mono mt-0.5">
+                                        ID: #{inv.investorId}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              {state.investors.filter((inv) => inv.name.toLowerCase().includes(investorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(investorSearch.toLowerCase())).length === 0 && (
+                                <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
+                                  No investor found.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}{" "}
+                    <div className={`${mobileStep === 2 ? "block" : "hidden"} md:block relative w-full mb-6`}>
+                      {" "}
+                      <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                        Authority Type
+                      </label>{" "}
+                      <select
+                        className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors cursor-pointer"
+                        value={formData.authorityType}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            authorityType: e.target.value as any,
+                          })
+                        }
+                        required
+                      >
+                        {" "}
+                        <option value="Business Authorities">
+                          Business Authorities
+                        </option>{" "}
+                        <option value="Government Authorities">
+                          Government Authorities
+                        </option>{" "}
+                        <option value="Trust Authorities">
+                          Trust Authorities
+                        </option>{" "}
+                      </select>{" "}
+                    </div>{" "}
+                    {(formData.authorityType === "Government Authorities" ||
+                      formData.authorityType === "Trust Authorities") && (
+                      <div className={`${mobileStep === 3 ? "block" : "hidden"} md:block relative w-full mb-6`}>
+                        {" "}
+                        <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                          RMAS Subsidy Rate (%)
+                        </label>{" "}
+                        <input
+                          required
+                          type="number"
+                          step="0.1"
+                          className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                          value={formData.rmasSubsidy}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              rmasSubsidy: e.target.value,
+                            })
+                          }
+                          placeholder="e.g. 4"
+                        />{" "}
+                        <p className="text-[11px] md:text-[12px] text-kite-text dark:text-kite-text-light mt-1.5">
+                          RMAS will pay this percentage towards the interest
+                          when an investor withdraws.
+                        </p>{" "}
+                      </div>
+                    )}{" "}
+                    <div className={`${mobileStep === 3 ? "grid" : "hidden"} md:grid grid-cols-1 md:grid-cols-2 gap-6`}>
+                      {" "}
+                      <div className="relative w-full mb-6">
+                        {" "}
+                        <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                          Funding Required (₹)
+                        </label>{" "}
+                        <input
+                          required
+                          type="text"
+                          inputMode="numeric"
+                          className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                          value={
+                            formData.fundingRequired
+                              ? Number(
+                                  formData.fundingRequired
+                                    .toString()
+                                    .replace(/\D/g, ""),
+                                ).toLocaleString("en-IN")
+                              : ""
+                          }
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              fundingRequired: e.target.value.replace(
+                                /\D/g,
+                                "",
+                              ),
+                            })
+                          }
+                          placeholder="e.g. 5,00,000"
+                        />{" "}
+                      </div>{" "}
+                      <div className="relative w-full mb-6">
+                        {" "}
+                        <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                          Interest Rate (%)
+                        </label>{" "}
+                        <input
+                          required
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                          value={formData.interestRate}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              interestRate: e.target.value,
+                            })
+                          }
+                          placeholder="e.g. 12.5"
+                        />{" "}
+                      </div>{" "}
+                    </div>{" "}
+                    {Number(formData.fundingRequired) > 0 && Number(formData.interestRate) > 0 && (
+                        <div className={`${mobileStep === 3 ? "block" : "hidden"} md:block mt-4 border border-kite-border rounded-sm overflow-hidden`}>
+                          {" "}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowInterestCalculation(
+                                !showInterestCalculation,
+                              )
+                            }
+                            className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
+                          >
+                            {" "}
+                            <span className="truncate">
+                              Show Interest Return Breakdown
+                            </span>{" "}
+                            <span className="text-kite-text-light text-[11px] md:text-[12px] flex-shrink-0">
+                              {showInterestCalculation ? "−" : "+"}
+                            </span>{" "}
+                          </button>{" "}
+                          {showInterestCalculation && (
+                            <div className="p-2 md:p-4 bg-white dark:bg-kite-surface border-t border-kite-border flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+                              {" "}
+                              <div>
+                                {" "}
+                                <p className="text-[13px] md:text-[14px] font-normal text-kite-text">
+                                  Calculated Return to Investor
+                                </p>{" "}
+                                <p className="text-[11px] md:text-[12px] text-kite-text mt-0.5">
+                                  Based on{" "}
+                                  <span className="font-normal text-[#4CAF50] dark:text-[#5B9A5D]">
+                                    {formData.interestRate}%
+                                  </span>{" "}
+                                  interest rate applied on{" "}
+                                  <span className="font-mono font-normal">
+                                    {formatINR(
+                                      Number(formData.fundingRequired),
+                                    )}
+                                  </span>
+                                  .
+                                </p>{" "}
+                              </div>{" "}
+                              <div className="text-left flex flex-col gap-2 min-w-0">
+                                {" "}
+                                <p className="text-[13px] md:text-[14px] font-normal text-kite-text-light dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818] px-3 py-1.5 rounded-sm break-words whitespace-normal">
+                                  {" "}
+                                  Monthly Return:{" "}
+                                  <span className="font-normal font-mono text-kite-text dark:text-kite-text break-all">
+                                    {formatINR(
+                                      (Number(formData.fundingRequired) *
+                                        Number(formData.interestRate)) /
+                                        100 /
+                                        12,
+                                    )}
+                                  </span>{" "}
+                                </p>{" "}
+                                <p className="text-[13px] md:text-[14px] font-normal text-[#4CAF50] dark:text-[#5B9A5D] border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-sm break-words whitespace-normal">
+                                  {" "}
+                                  Yearly Return:{" "}
+                                  <span className="font-normal font-mono text-[#4CAF50] dark:text-[#5B9A5D] break-all">
+                                    {formatINR(
+                                      (Number(formData.fundingRequired) *
+                                        Number(formData.interestRate)) /
+                                        100,

@@ -349,7 +349,7 @@ export default function InvestorDetail({
     onBack();
   };
   return (
-    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-12 md:pt-4 px-3 md:px-0 w-full">
+    <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-16 md:pt-4 px-3 md:px-0 w-full">
 
       {cropImageUrl && (
         <ImageCropModal
@@ -383,13 +383,26 @@ export default function InvestorDetail({
       )}
 
       {""}
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center px-4 py-3 bg-white dark:bg-[#181818] border-b border-kite-border mb-6 -mt-4 shrink-0 w-full">
+        <button
+          onClick={onBack}
+          className="flex items-center text-kite-text-light hover:text-kite-blue transition-colors mr-3 p-1 -ml-1 rounded-full hover:bg-kite-bg"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
+          Investor Profile
+        </h2>
+      </div>
+
       {/* Header */}
       {""}
       <div className="flex justify-between items-start mb-4 md:mb-6">
         <div className="flex items-start space-x-3">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 mt-2 md:mt-4 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
+            className="p-2 -ml-2 mt-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center md:hidden"
           >
             {" "}
             <ArrowLeft className="w-5 h-5" />{" "}
@@ -399,7 +412,7 @@ export default function InvestorDetail({
             <div className="flex items-center space-x-3">
               <div className="relative shrink-0">
             <div 
-              className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative group cursor-pointer"
+              className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft relative group cursor-pointer"
               onClick={() => {
                 if (investor.photoUrl) {
                   setShowPhotoMenu(!showPhotoMenu);
@@ -411,7 +424,7 @@ export default function InvestorDetail({
               {investor.photoUrl ? (
                 <img src={investor.photoUrl} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-xl md:text-2xl font-normal">{(investor.shortName || investor.name)?.substring(0, 2).toUpperCase()}</span>
+                <span className="text-2xl md:text-3xl font-normal">{(investor.shortName || investor.name)?.substring(0, 2).toUpperCase()}</span>
               )}
             </div>
             

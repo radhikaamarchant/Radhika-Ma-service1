@@ -262,10 +262,10 @@ export default function Bids() {
                     No IPOs found in {activeTab} status.
                   </div>
                 ) : (
-                  filteredIpos.map(ipo => {
+                  filteredIpos.map((ipo, _idx) => {
                     const hasApplied = applications.some((app: any) => app.ipoId === ipo.id);
                     return (
-                    <div key={ipo.id} className="flex items-center px-6 py-3 text-[13px] border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group">
+                    <div key={`${ipo.id}-${_idx}`} className="flex items-center px-6 py-3 text-[13px] border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group">
                       <div className="w-[18%] font-medium text-kite-text truncate pr-2">{ipo.companyName} {hasApplied && <span className="ml-2 px-1.5 py-0.5 bg-green-50 text-[#4CAF50] dark:text-[#5B9A5D] dark:bg-green-900/20 rounded text-[9px] uppercase tracking-wider">Applied</span>}</div>
                       <div className="w-[12%] text-right text-kite-text-light">₹{ipo.priceBandMin} - ₹{ipo.priceBandMax}</div>
                       <div className="w-[8%] text-right text-kite-text-light">{ipo.lotSize}</div>
@@ -480,8 +480,8 @@ function AdminBidsView({ ipos, saveIpos, commissions, saveCommissions, applicati
           <div className="w-[15%] text-right">Min Inv</div>
           <div className="w-[20%] text-right">Actions</div>
         </div>
-        {ipos.map((ipo: any) => (
-          <div key={ipo.id} className="flex items-center px-4 py-3 border-b border-kite-border-soft text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415]">
+        {ipos.map((ipo: any, _idx: number) => (
+          <div key={`${ipo.id}-${_idx}`} className="flex items-center px-4 py-3 border-b border-kite-border-soft text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415]">
              <div className="w-[20%] font-medium text-kite-text">{ipo.companyName}</div>
              <div className="w-[15%] text-kite-text-light">{ipo.status}</div>
              <div className="w-[15%] text-right text-kite-text-light">₹{ipo.priceBandMin} - ₹{ipo.priceBandMax}</div>
@@ -500,8 +500,8 @@ function AdminBidsView({ ipos, saveIpos, commissions, saveCommissions, applicati
         <div className="bg-white dark:bg-kite-surface border border-kite-border-soft rounded-sm p-4">
            {commissions.length === 0 ? <p className="text-[12px] text-kite-text-light">No commissions recorded yet.</p> : (
              <div className="text-[12px]">
-               {commissions.map((c: any) => (
-                 <div key={c.id} className="flex justify-between py-1 border-b border-kite-border-soft last:border-0">
+               {commissions.map((c: any, _cidx: number) => (
+                 <div key={`${c.id}-${_cidx}`} className="flex justify-between py-1 border-b border-kite-border-soft last:border-0">
                    <span className="text-kite-text-light">{new Date(c.date).toLocaleDateString()} - {c.type}</span>
                    <span className="text-[#4CAF50] dark:text-[#5B9A5D] font-medium">+ ₹{c.amount.toFixed(2)}</span>
                  </div>

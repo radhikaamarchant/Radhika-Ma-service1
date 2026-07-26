@@ -113,8 +113,9 @@ export default function AddInvestmentModal({
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, "");
-    const formatted = raw ? Number(raw).toLocaleString("en-IN") : "";
+    const raw = e.target.value.replace(/[^0-9.]/g, "");
+    const numeric = raw ? Number(raw) : 0;
+    const formatted = raw ? numeric.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "";
     setFormData({ ...formData, amount: formatted });
   };
 
@@ -144,8 +145,16 @@ export default function AddInvestmentModal({
     return { capUsed: totalCap, profit: totalProfit };
   };
 
+  const getTrueAmount = () => {
+    const rawMarketPrice = selectedBusiness ? getCurrentMarketPrice(selectedBusiness, state.investments) : 0;
+    const cmp = Math.abs(Number(rawMarketPrice.toFixed(2)));
+    const efPrice = priceType === "MARKET" ? cmp : (Math.abs(parseFloat(manualPrice)) || cmp);
+    const qty = Number(formData.quantity) || 0;
+    return qty * efPrice;
+  };
+
   const calculateCommissions = () => {
-    const amount = getRawAmount(formData.amount);
+    const amount = getTrueAmount();
     const invPct = parseFloat(formData.adminCommissionInvestorPct) || 0;
     const busPct = parseFloat(formData.adminCommissionBusinessPct) || 0;
     const fromInvestor = (amount * invPct) / 100;
@@ -191,7 +200,7 @@ export default function AddInvestmentModal({
       alert("Please select both a business and at least one investor.");
       return;
     }
-    const amount = getRawAmount(formData.amount);
+    const amount = getTrueAmount();
     if (amount <= 0) return;
 
     const comms = calculateCommissions();
@@ -316,9 +325,10 @@ export default function AddInvestmentModal({
     }).format(amount);
   };
 
-  const currentMarketPrice = selectedBusiness
+  const rawMarketPrice = selectedBusiness
     ? getCurrentMarketPrice(selectedBusiness, state.investments)
     : 0;
+  const currentMarketPrice = Math.abs(Number(rawMarketPrice.toFixed(2)));
 
   const effectivePrice =
     priceType === "MARKET"
@@ -329,22 +339,22 @@ export default function AddInvestmentModal({
     inputMode === "AMOUNT" ? formData.amount : formData.quantity;
 
   const handleDesktopInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, "");
+    const raw = e.target.value.replace(/[^0-9.]/g, "");
     const numeric = raw ? Number(raw) : 0;
 
     if (inputMode === "AMOUNT") {
       const qty = effectivePrice > 0 ? Math.floor(numeric / effectivePrice) : 0;
       setFormData({
         ...formData,
-        amount: raw ? numeric.toLocaleString("en-IN") : "",
-        quantity: qty || ("" as any),
+        amount: raw ? numeric.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "",
+        quantity: qty ? qty : ("" as any),
       });
     } else {
       const amt = numeric * effectivePrice;
       setFormData({
         ...formData,
         quantity: raw ? numeric : ("" as any),
-        amount: raw ? amt.toLocaleString("en-IN") : "",
+        amount: amt ? amt.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "",
       });
     }
   };
@@ -358,40 +368,39 @@ export default function AddInvestmentModal({
     const newEffectivePrice =
       type === "MARKET"
         ? currentMarketPrice
-        : parseFloat(manualPrice) || currentMarketPrice;
+        : Math.abs(parseFloat(manualPrice)) || currentMarketPrice;
 
     if (inputMode === "QTY") {
-      const qty = parseFloat(String(formData.quantity).replace(/\D/g, "")) || 0;
+      const qty = parseFloat(String(formData.quantity).replace(/[^0-9.]/g, "")) || 0;
       const amt = qty * newEffectivePrice;
       setFormData((prev) => ({
         ...prev,
-        amount: amt ? amt.toLocaleString("en-IN") : "",
+        amount: amt ? amt.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "",
       }));
     } else {
-      const amt = parseFloat(formData.amount.replace(/,/g, "")) || 0;
-      const qty =
-        newEffectivePrice > 0 ? Math.floor(amt / newEffectivePrice) : 0;
-      setFormData((prev) => ({ ...prev, quantity: qty || ("" as any) }));
+      const amt = parseFloat(String(formData.amount).replace(/,/g, "")) || 0;
+      const qty = newEffectivePrice > 0 ? Math.floor(amt / newEffectivePrice) : 0;
+      setFormData((prev) => ({ ...prev, quantity: qty ? qty : ("" as any) }));
     }
   };
 
   const handleManualPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+    // Only allow positive numbers
+    const val = e.target.value.replace(/[^0-9.]/g, "");
     setManualPrice(val);
     const newEffectivePrice = parseFloat(val) || currentMarketPrice;
 
     if (inputMode === "QTY") {
-      const qty = parseFloat(String(formData.quantity).replace(/\D/g, "")) || 0;
+      const qty = parseFloat(String(formData.quantity).replace(/[^0-9.]/g, "")) || 0;
       const amt = qty * newEffectivePrice;
       setFormData((prev) => ({
         ...prev,
-        amount: amt ? amt.toLocaleString("en-IN") : "",
+        amount: amt ? amt.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "",
       }));
     } else {
-      const amt = parseFloat(formData.amount.replace(/,/g, "")) || 0;
-      const qty =
-        newEffectivePrice > 0 ? Math.floor(amt / newEffectivePrice) : 0;
-      setFormData((prev) => ({ ...prev, quantity: qty || ("" as any) }));
+      const amt = parseFloat(String(formData.amount).replace(/,/g, "")) || 0;
+      const qty = newEffectivePrice > 0 ? Math.floor(amt / newEffectivePrice) : 0;
+      setFormData((prev) => ({ ...prev, quantity: qty ? qty : ("" as any) }));
     }
   };
 
@@ -1066,12 +1075,12 @@ export default function AddInvestmentModal({
                       <span>{orderMode === "SELL" && orderTab === "CAP" ? "HPG Tax" : "BSE Brokrage"}</span>
                       {formData.amount &&
                         formData.adminCommissionBusinessPct &&
-                        getRawAmount(formData.amount) > 0 &&
+                        getTrueAmount() > 0 &&
                         !isNaN(
                           parseFloat(formData.adminCommissionBusinessPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium">
-                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionBusinessPct)) / 100) * Math.max(1, formData.investorIds.length))}
+                            {formatINR(((getTrueAmount() * parseFloat(formData.adminCommissionBusinessPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                         )}
                     </label>
@@ -1094,12 +1103,12 @@ export default function AddInvestmentModal({
                       <span>INC Brokrage</span>
                       {formData.amount &&
                         formData.adminCommissionInvestorPct &&
-                        getRawAmount(formData.amount) > 0 &&
+                        getTrueAmount() > 0 &&
                         !isNaN(
                           parseFloat(formData.adminCommissionInvestorPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium">
-                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionInvestorPct)) / 100) * Math.max(1, formData.investorIds.length))}
+                            {formatINR(((getTrueAmount() * parseFloat(formData.adminCommissionInvestorPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                         )}
                     </label>
@@ -1632,12 +1641,12 @@ export default function AddInvestmentModal({
                       </div>
                       {formData.amount &&
                         formData.adminCommissionBusinessPct &&
-                        getRawAmount(formData.amount) > 0 &&
+                        getTrueAmount() > 0 &&
                         !isNaN(
                           parseFloat(formData.adminCommissionBusinessPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium text-[12px] mt-[4px] block text-right w-[172.18px]">
-                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionBusinessPct)) / 100) * Math.max(1, formData.investorIds.length))}
+                            {formatINR(((getTrueAmount() * parseFloat(formData.adminCommissionBusinessPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                       )}
                     </div>
@@ -1661,12 +1670,12 @@ export default function AddInvestmentModal({
                       </div>
                       {formData.amount &&
                         formData.adminCommissionInvestorPct &&
-                        getRawAmount(formData.amount) > 0 &&
+                        getTrueAmount() > 0 &&
                         !isNaN(
                           parseFloat(formData.adminCommissionInvestorPct),
                         ) && (
                           <span className="text-[#4184F3] font-medium text-[12px] mt-[4px] block text-right w-[172.18px]">
-                            {formatINR(((getRawAmount(formData.amount) * parseFloat(formData.adminCommissionInvestorPct)) / 100) * Math.max(1, formData.investorIds.length))}
+                            {formatINR(((getTrueAmount() * parseFloat(formData.adminCommissionInvestorPct)) / 100) * Math.max(1, formData.investorIds.length))}
                           </span>
                       )}
                     </div>
@@ -1684,7 +1693,7 @@ export default function AddInvestmentModal({
                       </>
                     ) : (
                       <>
-                        ₹{(getRawAmount(formData.amount) * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {(calculateCommissions().totalAdmin * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+                        ₹{(getTrueAmount() * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })} + {(calculateCommissions().totalAdmin * Math.max(1, formData.investorIds.length)).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
                       </>
                     )}
                   </span>

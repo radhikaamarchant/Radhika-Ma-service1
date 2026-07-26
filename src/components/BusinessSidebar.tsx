@@ -14,7 +14,7 @@ const formatPrice = (num: number) => {
   }).format(num);
 };
 
-const LiveSidebarValue = React.memo(({ name, baseAmount, roi, overallTrend, isOpen }: { name: string; baseAmount: number; roi: number; overallTrend: number; isOpen: boolean }) => {
+const LiveSidebarValue = React.memo(({ name, originalPrice, baseAmount, isOpen }: { name: string; originalPrice: number; baseAmount: number; isOpen: boolean }) => {
   const { isDark } = useTheme();
   const displayBase = baseAmount || 10000;
   const [currentAmount, setCurrentAmount] = useState(displayBase);
@@ -40,30 +40,24 @@ const LiveSidebarValue = React.memo(({ name, baseAmount, roi, overallTrend, isOp
       
       setTimeout(() => setFlash(null), 300);
     }, 2000 + Math.random() * 3000);
-
     return () => clearInterval(interval);
   }, [baseAmount, isOpen]);
 
-  // Use the actual overall trend instead of the random fluctuation for percentage
-  const isPositive = overallTrend > 0;
-  const isNegative = overallTrend < 0;
-
-  const absoluteChange = displayBase - (displayBase / (1 + (overallTrend / 100)));
+  const absoluteChange = currentAmount - originalPrice;
+  const percentageChange = originalPrice > 0 ? (absoluteChange / originalPrice) * 100 : 0;
   
   const getTrendColorClass = (flashState: "up" | "down" | null, isMarketOpen: boolean) => {
     if (isMarketOpen && flashState === "up") return "text-[#4CAF50] dark:text-[#5B9A5D] md:text-[#4CAF50] md:dark:text-[#5B9A5D]";
     if (isMarketOpen && flashState === "down") return "text-[#DF514C] dark:text-[#E25F5B] md:text-[#DF514C] md:dark:text-[#E25F5B]";
-    return overallTrend > 0 
+    return percentageChange >= 0 
       ? "text-[#4CAF50] dark:text-[#5B9A5D] md:text-[#4CAF50] md:dark:text-[#5B9A5D]" 
-      : overallTrend < 0 
-        ? "text-[#DF514C] dark:text-[#E25F5B] md:text-[#DF514C] md:dark:text-[#E25F5B]" 
-        : "text-kite-text dark:text-[#e0e0e0] md:text-[#9B9B9B] md:dark:text-[#666666]"; // default neutral
+      : "text-[#DF514C] dark:text-[#E25F5B] md:text-[#DF514C] md:dark:text-[#E25F5B]";
   };
 
   const trendColorClass = getTrendColorClass(flash, isOpen);
 
   const formatValue = (val: number) => {
-    return val.toFixed(2);
+    return val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2);
   };
 
   return (
@@ -73,16 +67,16 @@ const LiveSidebarValue = React.memo(({ name, baseAmount, roi, overallTrend, isOp
       >
         {name}
       </span>
-      <span className="text-right text-[13px] md:text-[13px] font-medium text-[#9B9B9B] dark:text-[#666666] md:text-[#9B9B9B] md:dark:text-[#666666]">
+      <span className="text-right text-[13px] md:text-[13px] font-medium text-[#9B9B9B] dark:text-[#666666]">
         {formatValue(absoluteChange)}
       </span>
-      <span className="text-right text-[13px] md:text-[13px] font-medium text-[#444444D9] dark:text-[#BBBBBBD9] md:text-[#444444D9] md:dark:text-[#BBBBBBD9]">
-        {formatValue(overallTrend)}%
+      <span className="text-right text-[13px] md:text-[13px] font-medium text-[#444444D9] dark:text-[#BBBBBBD9]">
+        {formatValue(percentageChange)}%
       </span>
       <span 
         className={`text-right text-[13px] md:text-[13px] font-medium tabular-nums ${trendColorClass}`}
       >
-        {formatPrice(currentAmount)}
+        {formatPrice(Math.abs(currentAmount))}
       </span>
     </div>
   );
@@ -147,7 +141,7 @@ export default function BusinessSidebar() {
                   className="cursor-pointer border-b border-kite-border dark:border-[#2b2b2b] hover:bg-gray-50 md:dark:hover:bg-[#131415] transition-colors group bg-white dark:bg-kite-surface md:dark:bg-[#181818]"
                   onClick={() => handleRowClick(business.id)}
                 >
-                  <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} baseAmount={displayAmount} roi={business.interestRate} overallTrend={overallTrend} isOpen={isMarketOpen} />
+                  <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} originalPrice={business.triggerAmount || 100} baseAmount={displayAmount} isOpen={isMarketOpen} />
                 </div>
               );
             })}

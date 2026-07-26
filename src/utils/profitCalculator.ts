@@ -16,7 +16,7 @@ export function calculateLiveProfit(
 
   return {
     investedAmount: financials.capitalInvested,
-    liveTrendPercentage: marketTrends[businessId] || 0,
+    liveTrendPercentage: financials.capitalInvested > 0 ? (financials.profitBooked / financials.capitalInvested) * 100 : 0,
     liveProfit: financials.profitBooked,
     currentValue: financials.currentValue,
     activeInvestments: financials.activeInvestments,

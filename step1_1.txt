@@ -1,0 +1,161 @@
+            <form onSubmit={handleNextStep} className="space-y-6">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-2 md:gap-4">
+                    {" "}
+                    {ownerMode === "existing" && (
+                      <div className={`${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6 z-20`}>
+                        {" "}
+                        <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                          Select Existing Owner
+                        </label>{" "}
+                        <div
+                          className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer flex justify-between items-center transition-colors hover:border-[#387ed1] focus:outline-none"
+                          onClick={() => {
+                            setShowOwnerSelect(!showOwnerSelect);
+                            setOwnerSearch("");
+                          }}
+                        >
+                          {" "}
+                          <span className="truncate text-[13px] md:text-[14px]">
+                            {" "}
+                            {formData.businessId ? (
+                              <span className="font-normal text-kite-text dark:text-kite-text">
+                                {formData.ownerName}{" "}
+                                <span className="font-normal text-kite-text-light dark:text-[#7A7A7A] ml-1 font-mono text-[11px] md:text-[12px]">
+                                  (ID: #{formData.businessId})
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-kite-text-light dark:text-kite-text-light font-normal">
+                                Select an owner...
+                              </span>
+                            )}{" "}
+                          </span>{" "}
+                          <ChevronDown className="w-4 h-4 text-kite-text-light dark:text-kite-text-light" />{" "}
+                        </div>{" "}
+                        {showOwnerSelect && (
+                          <div className="absolute z-10 w-full mt-1 bg-kite-surface border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+                            {" "}
+                            <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
+                              {" "}
+                              <div className="relative">
+                                {" "}
+                                <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />{" "}
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  placeholder="Search owner..."
+                                  className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                                  value={ownerSearch}
+                                  onChange={(e) =>
+                                    setOwnerSearch(e.target.value)
+                                  }
+                                  onClick={(e) => e.stopPropagation()}
+                                />{" "}
+                              </div>{" "}
+                            </div>{" "}
+                            <div className="overflow-y-auto flex-1">
+                              {" "}
+                              {uniqueOwners
+                                .filter(
+                                  (b) =>
+                                    b.ownerName
+                                      .toLowerCase()
+                                      .includes(ownerSearch.toLowerCase()) ||
+                                    b.businessId
+                                      .toLowerCase()
+                                      .includes(ownerSearch.toLowerCase()),
+                                )
+                                .map((b) => (
+                                  <div
+                                    key={`opt_${b.id}`}
+                                    className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                                    onClick={() => {
+                                      handleExistingOwnerChange({
+                                        target: { value: b.businessId },
+                                      } as any);
+                                      setShowOwnerSelect(false);
+                                    }}
+                                  >
+                                    {" "}
+                                    <span className="font-normal text-kite-text dark:text-kite-text">
+                                      {b.ownerName}
+                                    </span>{" "}
+                                    <span className="text-[11px] md:text-[12px] text-kite-text dark:text-kite-text-light mt-0.5">
+                                      ID: #{b.businessId}
+                                    </span>{" "}
+                                  </div>
+                                ))}{" "}
+                              {uniqueOwners.filter(
+                                (b) =>
+                                  b.ownerName
+                                    .toLowerCase()
+                                    .includes(ownerSearch.toLowerCase()) ||
+                                  b.businessId
+                                    .toLowerCase()
+                                    .includes(ownerSearch.toLowerCase()),
+                              ).length === 0 && (
+                                <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
+                                  No owner found.
+                                </div>
+                              )}{" "}
+                            </div>{" "}
+                          </div>
+                        )}{" "}
+                      </div>
+                    )}{" "}
+                    <div className={`${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6`}>
+                      {" "}
+                      <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                        OWNER ID NUMBER
+                      </label>{" "}
+                      <input
+                        type="text"
+                        readOnly
+                        className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono text-kite-text-light dark:text-kite-text-light cursor-not-allowed outline-none focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                        value={formData.businessId}
+                      placeholder=" " />{" "}
+                    </div>{" "}
+                    <div className={`${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6`}>
+                      {" "}
+                      <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                        Business Name
+                      </label>{" "}
+                      <input
+                        required
+                        type="text"
+                        autoFocus
+                        className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value.toUpperCase() })
+                        }
+                        placeholder="Example : Encore Health Private Limited"
+                      />{" "}
+                    </div>{" "}
+                    <div className={`${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6`}>
+                      {" "}
+                      <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                        Short Business Name
+                      </label>{" "}
+                      <input
+                        type="text"
+                        className="peer placeholder-transparent w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase"
+                        value={formData.shortName}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            shortName: e.target.value.toUpperCase(),
+                          })
+                        }
+                        placeholder="Example : ENCOREHPL"
+                      />{" "}
+                    </div>{" "}
+                    {ownerMode === "new" && (
+                      <div className="relative w-full mb-6 z-10">
+                        {" "}
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="absolute left-3 px-1 font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-10 pointer-events-none transition-all duration-200 top-3 text-[13px] md:text-[14px] peer-focus:-top-2.5 peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-focus:text-[#387ed1] peer-valid:-top-2.5 peer-valid:text-xs">
+                            Owner Name
+                          </label>
+                          <button

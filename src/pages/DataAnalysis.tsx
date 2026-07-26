@@ -549,10 +549,12 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
               b.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
             )
             .map((b) => {
-            const isUp = b.overallTrend >= b.interestRate;
-            const trendColor = isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]";
             const currentPrice = getCurrentMarketPrice(b, state.investments);
-            const absoluteDiff = currentPrice - (currentPrice / (1 + (b.overallTrend / 100)));
+            const originalPrice = b.triggerAmount || 100;
+            const absoluteDiff = currentPrice - originalPrice;
+            const percentageChange = b.overallTrend;
+            const isUp = percentageChange >= 0;
+            const trendColor = isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]";
             return (
               <div 
                 key={b.id}
@@ -578,7 +580,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                     )}
                   </div>
                   <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
-                    {absoluteDiff > 0 ? "+" : ""}{absoluteDiff.toFixed(2)} ({b.overallTrend > 0 ? "+" : ""}{b.overallTrend.toFixed(2)}%)
+                    {absoluteDiff > 0 ? "+" : ""}{absoluteDiff.toFixed(2)} ({percentageChange > 0 ? "+" : ""}{percentageChange.toFixed(2)}%)
                   </span>
                 </div>
               </div>
@@ -657,10 +659,19 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                       <span className="text-xs text-kite-text/60 mt-0.5">{b.ownerName}</span>
                     </div>
                     <div className="flex flex-col items-end">
-                      {renderLiveAmount(b, "font-medium text-[15px]")}
-                      <span className={`text-[12px] font-medium ${b.overallTrend >= b.interestRate ? 'text-[#4CAF50] dark:text-[#5B9A5D]' : 'text-[#DF514C] dark:text-[#E25F5B]'}`}>
-                        {b.overallTrend >= b.interestRate ? "+" : ""}{b.overallTrend.toFixed(2)}%
-                      </span>
+                      {(() => {
+                        const originalP = b.triggerAmount || 100;
+                        const currentP = getCurrentMarketPrice(b, state.investments);
+                        const pctChange = originalP > 0 ? ((currentP - originalP) / originalP) * 100 : 0;
+                        return (
+                          <>
+                            {renderLiveAmount(b, "font-medium text-[15px]")}
+                            <span className={`text-[12px] font-medium ${pctChange >= 0 ? 'text-[#4CAF50] dark:text-[#5B9A5D]' : 'text-[#DF514C] dark:text-[#E25F5B]'}`}>
+                              {pctChange >= 0 ? "+" : ""}{pctChange.toFixed(2)}%
+                            </span>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 ))

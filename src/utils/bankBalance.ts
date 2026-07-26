@@ -1,4 +1,4 @@
-import { Investment, Business, Investor, GlobalSettings } from"../types";
+import { Investment, Business, Investor, GlobalSettings } from "../types";
 
 export function calculateFinancials(
   investments: Investment[],
@@ -8,7 +8,7 @@ export function calculateFinancials(
 ) {
   const activeInvestments = investments.filter(
     (inv) =>
-      inv.status ==="active" &&
+      inv.status === "active" &&
       (businessId ? inv.businessId === businessId : true),
   );
 
@@ -47,9 +47,7 @@ export function calculateFinancials(
     currentValue,
     activeInvestments,
   };
-}
-
-export function getUnifiedBankBalance(
+}export function getUnifiedBankBalance(
   entityName: string,
   businesses: Business[],
   investors: Investor[],

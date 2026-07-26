@@ -6,7 +6,7 @@ import React, {
   useRef,
 } from"react";
 import { useAppContext } from"./AppContext";
-import { getBaseMarketTrend } from"./marketSimulator";
+import { getBaseMarketTrend, getCurrentMarketPrice } from"./marketSimulator";
 import { getBlueTickBusinessIds } from"./blueTick";
 import { getMarketTimeContext } from "./marketTiming";
 

@@ -64,6 +64,17 @@ const formatLargeNumber = (num) => {
   return (num < 0 ? "-" : "") + formatted;
 };
 
+
+// Helper for deterministic day change
+const getDayChangePct = (bizId: string) => {
+  const hash = bizId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  const todayHash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const combined = ((hash * 31) + todayHash) % 1000; 
+  return ((combined / 1000) * 10) - 5; // -5.00% to +5.00%
+};
+
 export default function Investors() {
   const { state, dispatch } = useAppContext();
   const { marketState } = useMarketSimulation();
@@ -1064,7 +1075,6 @@ export default function Investors() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
               <div className="h-full bg-kite-blue w-full transition-all duration-300"></div>
             </div>
-
             <div className="flex flex-col mb-6 pt-2">
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -1086,76 +1096,86 @@ export default function Investors() {
             </div>
 
             <form onSubmit={handleVerifiedSave} className="space-y-6">
-              <div>
-                <label className="block text-[11px] md:text-[12px] font-medium uppercase tracking-wider text-gray-500 mb-1 flex items-center space-x-1.5">
-                  <Building className="w-3.5 h-3.5" />
-                  <span>Bank Name</span>
-                </label>
-                <div className="relative z-20">
-                  <div
-                    className="w-full border-0 border-b border-kite-border py-2 bg-transparent cursor-pointer flex justify-between items-center transition-colors hover:border-kite-blue"
-                    onClick={() => {
+              <div className={`relative w-full mb-6 ${showBankSelect ? 'z-[60]' : 'z-20'}`}>
+                <input
+                  type="text"
+                  placeholder=" "
+                  readOnly
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer text-transparent focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                  onClick={() => {
+                    if (ownerMode !== "existing") {
                       setShowBankSelect(!showBankSelect);
                       setBankSearch("");
-                    }}
-                  >
-                    <span className="truncate text-[13px] md:text-[14px] text-kite-text">
+                    }
+                  }}
+                />
+                <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showBankSelect || formData.bankName ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#181818] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
+                  Bank Name
+                </label>
+                <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-10">
+                  <div className="flex items-center gap-3">
+                    {formData.bankName && (
+                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formData.bankName)}&background=random&color=fff&size=64`} alt="Bank Logo" className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                    )}
+                    <span className={`truncate text-[13px] md:text-[14px] ${!formData.bankName && "text-kite-text-light dark:text-kite-text-light"} ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light" : "text-kite-text dark:text-kite-text"}`}>
                       {formData.bankName || "Select Bank"}
                     </span>
-                    <ChevronDown className="w-4 h-4 text-kite-text-light" />
                   </div>
-                  {showBankSelect && (
-                    <div className="absolute z-10 w-full mt-1 bg-kite-surface border border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col shadow-lg">
-                      <div className="p-2 border-b border-kite-border bg-kite-bg">
-                        <div className="relative">
-                          <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light" />
-                          <input
-                            type="text"
-                            autoFocus
-                            placeholder="Search bank..."
-                            className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-kite-border bg-transparent text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-kite-blue"
-                            value={bankSearch}
-                            onChange={(e) => setBankSearch(e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                      </div>
-                      <div className="overflow-y-auto flex-1">
-                        {INDIAN_BANKS.filter((b) =>
-                          b.toLowerCase().includes(bankSearch.toLowerCase()),
-                        ).map((bank) => (
-                          <div
-                            key={bank}
-                            className="px-4 py-2 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer border-b border-kite-border last:border-0 text-[13px] text-kite-text"
-                            onClick={() => {
-                              setFormData({ ...formData, bankName: bank });
-                              setShowBankSelect(false);
-                            }}
-                          >
-                            {bank}
-                          </div>
-                        ))}
-                        {INDIAN_BANKS.filter((b) =>
-                          b.toLowerCase().includes(bankSearch.toLowerCase()),
-                        ).length === 0 && (
-                          <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
-                            No bank found.
-                          </div>
-                        )}
+                  <ChevronDown className="w-4 h-4 text-kite-text-light dark:text-kite-text-light" />
+                </div>
+                
+                {showBankSelect && ownerMode !== "existing" && (
+                  <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
+                      <div className="relative">
+                        <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
+                        <input
+                          type="text"
+                          autoFocus
+                          placeholder="Search bank..."
+                          className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                          value={bankSearch}
+                          onChange={(e) => setBankSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
+                    <div className="overflow-y-auto flex-1">
+                      {INDIAN_BANKS.filter((b) =>
+                        b.toLowerCase().includes(bankSearch.toLowerCase()),
+                      ).map((b) => (
+                        <div
+                          key={b}
+                          className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                          onClick={() => {
+                            setFormData({ ...formData, bankName: b });
+                            setShowBankSelect(false);
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(b)}&background=random&color=fff&size=64`} alt={b} className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                            <span>{b}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {INDIAN_BANKS.filter((b) =>
+                        b.toLowerCase().includes(bankSearch.toLowerCase()),
+                      ).length === 0 && (
+                        <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
+                          No bank found.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label className="block text-[11px] md:text-[12px] font-medium uppercase tracking-wider text-gray-500 mb-1">
-                  Account Number
-                </label>
+              <div className="relative w-full mb-6">
                 <input
                   required
                   type="text"
-                  className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono text-kite-text focus:ring-0 focus:border-kite-blue outline-none transition-colors"
+                  placeholder=" "
+                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
                   value={formData.accountNumber}
                   onChange={(e) => {
                     const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
@@ -1172,18 +1192,19 @@ export default function Investors() {
                       ifscCode: newIfsc,
                     });
                   }}
-                  placeholder="e.g. 1234 5678 9012"
+                  readOnly={ownerMode === "existing"}
                 />
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                  Account Number
+                </label>
               </div>
 
-              <div>
-                <label className="block text-[11px] md:text-[12px] font-medium uppercase tracking-wider text-gray-500 mb-1">
-                  Bank IFSC Code
-                </label>
+              <div className="relative w-full mb-6">
                 <input
                   required
                   type="text"
-                  className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono uppercase text-kite-text focus:ring-0 focus:border-kite-blue outline-none transition-colors"
+                  placeholder=" "
+                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
                   value={formData.ifscCode}
                   onChange={(e) => {
                     const prefix = e.target.value
@@ -1198,18 +1219,19 @@ export default function Investors() {
                       ifscCode: prefix.length === 3 ? prefix + last4 : prefix,
                     });
                   }}
-                  placeholder="e.g. HDF9012"
+                  readOnly={ownerMode === "existing"}
                 />
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                  Bank IFSC Code
+                </label>
               </div>
 
-              <div>
-                <label className="block text-[11px] md:text-[12px] font-medium uppercase tracking-wider text-gray-500 mb-1">
-                  Account Holder Name
-                </label>
+              <div className="relative w-full mb-6">
                 <input
                   required
                   type="text"
-                  className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal uppercase text-kite-text focus:ring-0 focus:border-kite-blue outline-none transition-colors"
+                  placeholder=" "
+                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-normal uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
                   value={formData.accountHolderName}
                   onChange={(e) =>
                     setFormData({
@@ -1217,17 +1239,24 @@ export default function Investors() {
                       accountHolderName: e.target.value.toUpperCase(),
                     })
                   }
+                  readOnly={ownerMode === "existing"}
                 />
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                  Account Holder Name
+                </label>
+                {ownerMode === "existing" && (
+                  <p className="text-[11px] md:text-[12px] text-orange-600 mt-1.5 font-normal">
+                    Bank details are locked because this owner is already registered.
+                  </p>
+                )}
               </div>
 
-              <div className="pt-2">
-                <label className="block text-[11px] md:text-[12px] font-medium uppercase tracking-wider text-gray-500 mb-1 group-focus-within:text-kite-blue transition-colors">
-                  Radhika Ma Service Charge (₹)
-                </label>
+              <div className="relative w-full mb-6 pt-2">
                 <input
                   required
                   type="text"
-                  className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[14px] md:text-[15px] font-medium text-kite-blue focus:ring-0 focus:border-kite-blue outline-none transition-colors"
+                  placeholder=" "
+                  className="peer w-full md:w-1/2 border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-[14px] md:text-[15px] font-medium text-kite-blue focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
                   value={formData.rmasServiceCharge}
                   onChange={(e) => {
                     const raw = e.target.value.replace(/\D/g, "");
@@ -1243,8 +1272,10 @@ export default function Investors() {
                       });
                     }
                   }}
-                  placeholder="0"
                 />
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                  Radhika Ma Service Charge (₹)
+                </label>
               </div>
 
               <div className="pt-6 flex justify-between items-center gap-4">
@@ -1313,6 +1344,8 @@ export default function Investors() {
             let activeTotalInvested = 0;
             let activeTotalLiveProfit = 0;
             let activeTotalCurrentValue = 0;
+            let activeTotalDayPnL = 0;
+            let activeTotalYesterdayValue = 0;
 
             const holdings = Object.entries(groupedActive).map(
               ([bizId, invs]) => {
@@ -1328,9 +1361,26 @@ export default function Investors() {
                   marketState.trends,
                   state.settings,
                 );
+                
+                const qty = (invs as Investment[]).reduce((sum, inv) => {
+                  if (inv.quantity) return sum + inv.quantity;
+                  if (business && business.triggerAmount) {
+                    return sum + Math.floor(inv.amount / business.triggerAmount);
+                  }
+                  return sum + 1;
+                }, 0);
+                
+                const ltp = qty > 0 ? currentValue / qty : 0;
+                const dayChangePct = getDayChangePct(bizId);
+                const yesterdayLtp = ltp / (1 + (dayChangePct / 100));
+                const dayPnL = (ltp - yesterdayLtp) * qty;
+
                 activeTotalInvested += investedAmount;
                 activeTotalLiveProfit += liveProfit;
                 activeTotalCurrentValue += currentValue;
+                activeTotalDayPnL += dayPnL;
+                activeTotalYesterdayValue += (yesterdayLtp * qty);
+
                 return {
                   bizId,
                   business,
@@ -1339,9 +1389,13 @@ export default function Investors() {
                   liveProfit,
                   liveTrendPercentage,
                   currentValue,
+                  dayChangePct,
                 };
-              },
+              }
             );
+            
+            const activeTotalDayChangePct = activeTotalYesterdayValue > 0 ? (activeTotalDayPnL / activeTotalYesterdayValue) * 100 : 0;
+
 
             const positions = Object.entries(groupedCompleted).map(
               ([bizId, invs]) => {
@@ -1383,8 +1437,15 @@ export default function Investors() {
 
             return (
               <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile">
+                <style>{`
+                  @media (max-width: 767px) {
+                    .mobile-header-safe {
+                      display: none !important;
+                    }
+                  }
+                `}</style>
                 {/* Header and Tabs */}
-                <div className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] pt-4 px-4 md:px-6 relative z-10 border-b border-kite-border md:border-none">
+                <div className="bg-[#ececed] md:bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] pt-8 md:pt-4 px-4 md:px-6 relative z-10 border-none md:border-none">
                   <div className="flex items-center mb-6">
                     <button
                       onClick={() => setViewMode("investor-detail")}
@@ -1410,7 +1471,7 @@ export default function Investors() {
                       </span>
                     </h2>
                   </div>
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center justify-center w-full gap-6">
                     <button
                       className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "holdings" ? "border-kite-blue text-kite-blue font-medium" : "border-transparent text-kite-text-light hover:text-kite-text font-medium"}`}
                       onClick={() => setWithdrawTab("holdings")}
@@ -1437,13 +1498,13 @@ export default function Investors() {
                 </div>
 
                 {withdrawTab === "holdings" && (
-                  <div className="bg-transparent md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
+                  <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
                         <thead className="bg-white dark:bg-kite-surface border-b border-kite-border text-kite-text-light">
                           <tr>
-                            <th className="py-3 px-4 font-normal text-left">
+                            <th className="py-3 px-4 font-normal text-left border-r border-kite-border pr-6">
                               Instrument
                             </th>
                             <th className="py-3 px-4 font-normal text-right">
@@ -1452,24 +1513,27 @@ export default function Investors() {
                             <th className="py-3 px-4 font-normal text-right">
                               Avg. cost
                             </th>
-                            <th className="py-3 px-4 font-normal text-right">
+                            <th className="py-3 px-4 font-normal text-right border-r border-kite-border pr-6">
                               LTP
                             </th>
                             <th className="py-3 px-4 font-normal text-right">
                               Cur. val
                             </th>
                             <th className="py-3 px-4 font-normal text-right">
-                              P&L
+                              Total P&L (₹)
                             </th>
                             <th className="py-3 px-4 font-normal text-right">
-                              % Chg
+                              Net Chg.
+                            </th>
+                            <th className="py-3 px-4 font-normal text-right">
+                              Day chg.
                             </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-kite-border-soft bg-white dark:bg-kite-surface">
                           {holdings.length === 0 ? (
                             <tr>
-                              <td colSpan={7}>
+                              <td colSpan={8}>
                                 <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                                   <div className="text-gray-300 mb-4">
                                     <svg
@@ -1493,7 +1557,13 @@ export default function Investors() {
                             </tr>
                           ) : (
                             holdings.map((h, i) => {
-                              const qty = (h.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
+                              const qty = (h.invs as Investment[]).reduce((sum, inv) => {
+                                if (inv.quantity) return sum + inv.quantity;
+                                if (h.business && h.business.triggerAmount) {
+                                  return sum + Math.floor(inv.amount / h.business.triggerAmount);
+                                }
+                                return sum + 1;
+                              }, 0);
                               const avgPrice = h.investedAmount / qty;
                               const ltp = h.currentValue / qty;
                               const pnlPercent =
@@ -1526,8 +1596,8 @@ export default function Investors() {
                                     });
                                   }}
                                 >
-                                  <td className="py-4 px-4 text-kite-text font-normal">
-                                    {h.business?.name?.toUpperCase() ||
+                                  <td className="py-4 px-4 text-kite-text font-normal border-r border-kite-border pr-6">
+                                    {(h.business?.shortName || h.business?.name)?.toUpperCase() ||
                                       "UNKNOWN"}
                                   </td>
                                   <td
@@ -1542,11 +1612,8 @@ export default function Investors() {
                                   >
                                     {avgPrice.toFixed(2)}
                                   </td>
-                                  <td
-                                    className="py-4 px-4 text-right text-kite-text font-normal"
-                                   
-                                  >
-                                    {ltp.toFixed(2)}
+                                  <td className="py-4 px-4 text-right text-kite-text font-normal border-r border-kite-border pr-6">
+                                    {Math.abs(ltp).toFixed(2)}
                                   </td>
                                   <td
                                     className="py-4 px-4 text-right text-kite-text font-normal"
@@ -1563,10 +1630,14 @@ export default function Investors() {
                                   </td>
                                   <td
                                     className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                   
                                   >
                                     {h.liveProfit >= 0 ? "+" : ""}
                                     {pnlPercent.toFixed(2)}%
+                                  </td>
+                                  <td
+                                    className={`py-4 px-4 text-right font-normal ${h.dayChangePct >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
+                                  >
+                                    {h.dayChangePct >= 0 ? "+" : ""}{h.dayChangePct.toFixed(2)}%
                                   </td>
                                 </tr>
                               );
@@ -1585,7 +1656,6 @@ export default function Investors() {
                               </p>
                               <p
                                 className="text-[16px] text-kite-text font-normal"
-                               
                               >
                                 {formatINR(activeTotalInvested)}
                               </p>
@@ -1596,29 +1666,37 @@ export default function Investors() {
                               </p>
                               <p
                                 className="text-[16px] text-kite-text font-normal"
-                               
                               >
                                 {formatINR(curValue)}
                               </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-[12px] text-kite-text mb-1 uppercase tracking-wider">
-                              Total P&L
-                            </p>
-                            <div className="flex items-center justify-end space-x-2">
+                          <div className="flex space-x-16 text-right">
+                            <div className="flex flex-col items-end">
+                              <p className="text-[12px] text-kite-text mb-1 uppercase tracking-wider">
+                                Day's P&L
+                              </p>
+                              <span className={`text-[16px] font-medium ${activeTotalDayPnL >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                                {activeTotalDayPnL >= 0 ? "+" : ""}{formatINR(Math.abs(activeTotalDayPnL))}
+                              </span>
+                              <span className={`text-[12px] mt-0.5 ${activeTotalDayPnL >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                                ({activeTotalDayChangePct >= 0 ? "+" : ""}{activeTotalDayChangePct.toFixed(2)}%)
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <p className="text-[12px] text-kite-text mb-1 uppercase tracking-wider">
+                                Total P&L
+                              </p>
                               <span
                                 className={`text-[16px] font-medium ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                               
                               >
                                 {isProfit ? "+" : ""}
-                                {formatINR(activeTotalLiveProfit)}
+                                {formatINR(Math.abs(activeTotalLiveProfit))}
                               </span>
                               <span
-                                className={`text-[12px] font-medium px-2 py-0.5 rounded-sm ${isProfit ? "bg-kite-green/10 text-[#4CAF50] dark:text-[#5B9A5D]" : "bg-kite-red/10 text-[#DF514C] dark:text-[#E25F5B]"}`}
-                               
+                                className={`text-[12px] mt-0.5 ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
                               >
-                                {isProfit ? "+" : ""}
+                                ({isProfit ? "+" : ""}
                                 {activeTotalInvested > 0
                                   ? (
                                       (activeTotalLiveProfit /
@@ -1626,16 +1704,15 @@ export default function Investors() {
                                       100
                                     ).toFixed(2)
                                   : "0.00"}
-                                %
+                                %)
                               </span>
                             </div>
                           </div>
                         </div>
                       )}
                     </div>
-
                     {/* Mobile Holdings List (Matches Kite App) */}
-                    <div className="block md:hidden">
+                    <div className="block md:hidden pb-32 bg-transparent">
                       {holdings.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                           <div className="text-gray-300 mb-4">
@@ -1659,72 +1736,48 @@ export default function Investors() {
                       ) : (
                         <>
                           {/* Kite Style Top Summary Card - Full Width on Mobile */}
-                          <div className="bg-transparent px-4 py-4 border-b border-kite-border-soft">
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <p className="text-[12px] text-kite-text mb-1">
-                                  Invested
-                                </p>
-                                <p
-                                  className="text-[18px] text-kite-text font-normal"
-                                 
-                                >
-                                  {formatINR(activeTotalInvested).replace(
-                                    "₹",
-                                    "",
-                                  )}
-                                </p>
+                          <div className="relative bg-white dark:bg-[#14212b] pt-4 pb-2 px-4">
+                            <div className="absolute top-0 left-0 right-0 h-[106px] bg-[#ececed] dark:bg-[#1c2a37] z-0"></div>
+                            <div className="bg-white dark:bg-[#2b414f] rounded-none border border-gray-300 dark:border-[#2b414f] shadow-sm p-4 relative z-10">
+                              <div className="flex justify-between items-start mb-1">
+                                <p className="text-[12px] text-kite-text-light">Invested</p>
+                                <p className="text-[12px] text-kite-text-light">Current</p>
                               </div>
-                              <div className="text-right">
-                                <p className="text-[12px] text-kite-text mb-1">
-                                  Current
+                              <div className="flex justify-between items-start mb-4">
+                                <p className="text-[16px] text-kite-text font-medium">
+                                  {formatINR(activeTotalInvested).replace("₹", "")}
                                 </p>
-                                <p
-                                  className="text-[18px] text-kite-text font-normal"
-                                 
-                                >
+                                <p className="text-[16px] text-kite-text font-medium">
                                   {formatINR(curValue).replace("₹", "")}
                                 </p>
                               </div>
-                            </div>
-                            <div className="h-[1px] w-full bg-kite-border-soft mb-4"></div>
-                            <div className="flex justify-between items-center">
-                              <p className="text-[14px] text-kite-text-light">
-                                P&L
-                              </p>
-                              <div className="flex items-center space-x-2">
-                                <span
-                                  className={`text-[16px] font-normal ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                 
-                                >
-                                  {isProfit ? "+" : ""}
-                                  {formatINR(activeTotalLiveProfit).replace(
-                                    "₹",
-                                    "",
-                                  )}
-                                </span>
-                                <span
-                                  className={`text-[11px] px-1.5 py-0.5 rounded-sm ${isProfit ? "bg-kite-green/10 text-[#4CAF50] dark:text-[#5B9A5D]" : "bg-kite-red/10 text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                 
-                                >
-                                  {isProfit ? "+" : ""}
-                                  {activeTotalInvested > 0
-                                    ? (
-                                        (activeTotalLiveProfit /
-                                          activeTotalInvested) *
-                                        100
-                                      ).toFixed(2)
-                                    : "0.00"}
-                                  %
-                                </span>
-                              </div>
+                              <hr className="border-gray-300 dark:border-gray-600 my-3" />
+                              <div className="flex justify-between items-center">
+                                <p className="text-[14px] text-kite-text-light mt-1">P&L</p>
+                                <div className="flex items-center space-x-2">
+                                  <span className={`text-[16px] font-medium ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                                    {isProfit ? "+" : ""}{formatINR(Math.abs(activeTotalLiveProfit)).replace("₹", "")}
+                                  </span>
+                                  <span className={`text-[12px] px-1.5 py-0.5 rounded-sm ${isProfit ? "bg-[#4CAF50]/10 text-[#4CAF50] dark:bg-[#5B9A5D]/10 dark:text-[#5B9A5D]" : "bg-[#DF514C]/10 text-[#DF514C] dark:bg-[#E25F5B]/10 dark:text-[#E25F5B]"}`}>
+                                    {isProfit ? "+" : ""}
+                                    {activeTotalInvested > 0
+                                      ? ((activeTotalLiveProfit / activeTotalInvested) * 100).toFixed(2)
+                                      : "0.00"}%
+                                  </span>
+                                </div>
+                          </div>
                             </div>
                           </div>
-
                           {/* Kite Style List */}
-                          <div className="bg-transparent">
+                          <div className="bg-white dark:bg-[#14212b] min-h-screen">
                             {holdings.map((h, i) => {
-                              const qty = (h.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
+                              const qty = (h.invs as Investment[]).reduce((sum, inv) => {
+                                if (inv.quantity) return sum + inv.quantity;
+                                if (h.business && h.business.triggerAmount) {
+                                  return sum + Math.floor(inv.amount / h.business.triggerAmount);
+                                }
+                                return sum + 1;
+                              }, 0);
                               const avgPrice = h.investedAmount / qty;
                               const ltp = h.currentValue / qty;
                               const pnlPercent =
@@ -1757,85 +1810,35 @@ export default function Investors() {
                                     });
                                   }}
                                 >
-                                  {/* Line 1: Metrics Row (Qty & Avg) */}
-                                  <div className="flex justify-between items-center mb-1.5 leading-tight">
-                                    <div className="flex items-center text-[11px] md:text-[12px]">
-                                      <span className="text-kite-text-light font-normal mr-1">
-                                        Qty.
-                                      </span>
-                                      <span className="text-kite-text font-normal tracking-wide">
-                                        {qty}
-                                      </span>
-                                      <span className="text-kite-text-light mx-1.5">
-                                        •
-                                      </span>
-                                      <span className="text-kite-text-light font-normal mr-1">
-                                        Avg.
-                                      </span>
-                                      <span className="text-kite-text font-normal tracking-wide">
-                                        {avgPrice.toFixed(2)}
-                                      </span>
+                                  <div className="flex justify-between items-stretch">
+                                  <div className="flex flex-col gap-1.5 justify-between">
+                                    <div className="text-[11px] md:text-[12px] text-kite-text-light">
+                                      Qty. {qty} • Avg. {avgPrice.toFixed(2)}
                                     </div>
-                                    <div
-                                      className={`text-[11px] md:text-[12px] font-normal ${pnlPercent >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                    >
-                                      {pnlPercent >= 0 ? "+" : ""}{" "}
-                                      {pnlPercent.toFixed(2)}%
+                                    <h3 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wide uppercase">
+                                      {(h.business?.shortName || h.business?.name)?.toUpperCase() || "UNKNOWN"}
+                                    </h3>
+                                    <div className="text-[11px] md:text-[12px] text-kite-text-light">
+                                      Invested {formatINR(h.investedAmount).replace("₹", "")}
                                     </div>
                                   </div>
-
-                                  {/* Line 2: Core Business Name & Absolute P&L Row */}
-                                  <div className="flex justify-between items-center mb-1.5 leading-tight">
-                                    <div className="flex items-center gap-1.5">
-                                      <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
-                                        {h.business?.name?.toUpperCase() ||
-                                          "UNKNOWN"}
-                                      </h3>
+                                  <div className="flex flex-col gap-1.5 justify-between text-right items-end">
+                                    <div className={`text-[11px] md:text-[12px] ${pnlPercent >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                                      {pnlPercent >= 0 ? "+" : ""}{pnlPercent.toFixed(2)}%
                                     </div>
-                                    <div
-                                      className={`text-[13px] md:text-[14px] font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                    >
-                                      {h.liveProfit >= 0 ? "+" : ""}
-                                      {formatINR(
-                                        Math.abs(h.liveProfit),
-                                      ).replace("₹", "")}
+                                    <div className={`text-[13px] md:text-[14px] font-medium ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                                      {h.liveProfit >= 0 ? "+" : ""}{formatINR(Math.abs(h.liveProfit)).replace("₹", "")}
                                     </div>
-                                  </div>
-
-                                  {/* Line 3: Footer Row (Investor Info & LTP) */}
-                                  <div className="flex justify-between items-center leading-tight">
-                                    <div className="flex items-center text-[10px] md:text-[11px]">
-                                      <span className="text-kite-text-light font-normal mr-1">
-                                        Invested:
-                                      </span>
-                                      <span className="text-kite-text font-normal uppercase tracking-wide">
-                                        {formatINR(h.investedAmount).replace(
-                                          "₹",
-                                          "",
-                                        )}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center text-[11px] md:text-[12px]">
-                                      <span className="text-kite-text-light font-normal mr-1">
-                                        LTP
-                                      </span>
-                                      <span className="text-kite-text font-normal tracking-wide">
-                                        {ltp.toFixed(2)}
-                                      </span>
-                                      <span
-                                        className={`ml-1 ${h.liveTrendPercentage >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                      >
-                                        ({h.liveTrendPercentage >= 0 ? "+" : ""}
-                                        {h.liveTrendPercentage.toFixed(2)}%)
-                                      </span>
+                                    <div className="text-[11px] md:text-[12px] text-kite-text-light">
+                                      LTP {Math.abs(ltp).toFixed(2)} <span className={`ml-0.5 ${h.dayChangePct >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>({h.dayChangePct >= 0 ? "+" : ""}{h.dayChangePct.toFixed(2)}%)</span>
                                     </div>
                                   </div>
                                 </div>
+                                </div>
                               );
                             })}
-
                             {/* Active IPO Apps on Mobile */}
-                            {activeBidsApps.map((app: any) => {
+                            {activeBidsApps.map((app: any, i: number) => {
                               const ipo = allIpos.find(
                                 (i: any) => i.id === app.ipoId,
                               );
@@ -1845,7 +1848,7 @@ export default function Investors() {
 
                               return (
                                 <div
-                                  key={app.id}
+                                  key={`${app.id}-${i}`}
                                   className="bg-transparent px-4 py-4 border-b border-kite-border-soft"
                                 >
                                   <div className="flex justify-between items-center mb-1.5 leading-tight">
@@ -1876,6 +1879,20 @@ export default function Investors() {
                               );
                             })}
                           </div>
+                          {/* Sticky Bottom Bar for Mobile - Today's P&L */}
+                          <div className="fixed bottom-[56px] left-0 w-full z-[100] bg-white dark:bg-[#2b414f] border-t border-gray-200 dark:border-[#2b414f] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] px-4 h-[54px] flex justify-between items-center md:hidden">
+                            <span className="text-[14px] text-kite-text font-medium">
+                              Today's P&L
+                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-[16px] font-medium ${activeTotalDayPnL >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                                {activeTotalDayPnL >= 0 ? "+" : ""}{formatINR(Math.abs(activeTotalDayPnL)).replace("₹", "")}
+                              </span>
+                              <span className={`text-[12px] ${activeTotalDayPnL >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                                {activeTotalDayChangePct >= 0 ? "+" : ""}{activeTotalDayChangePct.toFixed(2)}%
+                              </span>
+                            </div>
+                          </div>
                         </>
                       )}
                     </div>
@@ -1883,7 +1900,7 @@ export default function Investors() {
                 )}
 
                 {withdrawTab === "positions" && (
-                  <div className="bg-transparent md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
+                  <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
@@ -1933,7 +1950,13 @@ export default function Investors() {
                             </tr>
                           ) : (
                             positions.map((p, i) => {
-                              const qty = (p.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
+                              const qty = (p.invs as Investment[]).reduce((sum, inv) => {
+                                if (inv.quantity) return sum + inv.quantity;
+                                if (p.business && p.business.triggerAmount) {
+                                  return sum + Math.floor(inv.amount / p.business.triggerAmount);
+                                }
+                                return sum + 1;
+                              }, 0);
                               const avgPrice = p.investedAmount / qty;
                               return (
                                 <tr
@@ -1961,7 +1984,7 @@ export default function Investors() {
                                   }}
                                 >
                                   <td className="py-4 px-4 text-kite-text font-normal">
-                                    {p.business?.name?.toUpperCase() ||
+                                    {(p.business?.shortName || p.business?.name)?.toUpperCase() ||
                                       "UNKNOWN"}
                                   </td>
                                   <td
@@ -2009,7 +2032,7 @@ export default function Investors() {
                             </tr>
                           </thead>
                           <tbody>
-                            {historyBidsApps.map((app: any) => {
+                            {historyBidsApps.map((app: any, i: number) => {
                               const ipo = allIpos.find(
                                 (i: any) => i.id === app.ipoId,
                               );
@@ -2026,7 +2049,7 @@ export default function Investors() {
 
                               return (
                                 <tr
-                                  key={app.id}
+                                  key={`${app.id}-${i}`}
                                   className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"
                                 >
                                   <td className="py-3 px-4 md:px-6">
@@ -2072,7 +2095,7 @@ export default function Investors() {
                             </tr>
                           </thead>
                           <tbody>
-                            {activeBidsApps.map((app: any) => {
+                            {activeBidsApps.map((app: any, i: number) => {
                               const ipo = allIpos.find(
                                 (i: any) => i.id === app.ipoId,
                               );
@@ -2081,7 +2104,7 @@ export default function Investors() {
                                 displayStatus = "IPO ALLOTTED";
                               return (
                                 <tr
-                                  key={app.id}
+                                  key={`${app.id}-${i}`}
                                   className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"
                                 >
                                   <td className="py-3 px-4 md:px-6">
@@ -2136,7 +2159,13 @@ export default function Investors() {
                       ) : (
                         <div className="bg-transparent">
                           {positions.map((p, i) => {
-                            const qty = (p.invs as Investment[]).reduce((sum, inv) => sum + (inv.quantity || 1), 0);
+                            const qty = (p.invs as Investment[]).reduce((sum, inv) => {
+                                if (inv.quantity) return sum + inv.quantity;
+                                if (p.business && p.business.triggerAmount) {
+                                  return sum + Math.floor(inv.amount / p.business.triggerAmount);
+                                }
+                                return sum + 1;
+                              }, 0);
                             const avgPrice = p.investedAmount / qty;
 
                             return (
@@ -2192,7 +2221,7 @@ export default function Investors() {
                                 <div className="flex justify-between items-center mb-1.5 leading-tight">
                                   <div className="flex items-center gap-1.5">
                                     <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
-                                      {p.business?.name?.toUpperCase() ||
+                                      {(p.business?.shortName || p.business?.name)?.toUpperCase() ||
                                         "UNKNOWN"}
                                     </h3>
                                   </div>
@@ -2223,7 +2252,7 @@ export default function Investors() {
                           })}
 
                           {/* IPO Apps on Mobile */}
-                          {historyBidsApps.map((app: any) => {
+                          {historyBidsApps.map((app: any, i: number) => {
                             const ipo = allIpos.find(
                               (i: any) => i.id === app.ipoId,
                             );
@@ -2240,7 +2269,7 @@ export default function Investors() {
 
                             return (
                               <div
-                                key={app.id}
+                                key={`${app.id}-${i}`}
                                 className="bg-transparent px-4 py-4 border-b border-kite-border-soft"
                               >
                                 <div className="flex justify-between items-center mb-1.5 leading-tight">
