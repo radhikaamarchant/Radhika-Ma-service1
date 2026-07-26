@@ -1,6 +1,7 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import InvestorPreviewModal from '../components/InvestorPreviewModal';
 import BusinessPreviewModal from '../components/BusinessPreviewModal';
 import { useAppContext } from "../utils/AppContext";
@@ -98,8 +99,10 @@ export default function Investors() {
       searchInputRef.current.focus();
     }
   }, [isSearchExpanded]);
-
-  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
+  // Withdraw State
+  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(
+    null,
+  );
   const [selectedInvestments, setSelectedInvestments] = useState<Investment[]>(
     [],
   );
@@ -548,29 +551,28 @@ export default function Investors() {
       {/* --- Hide this whole container during print --- */}{" "}
       <div className="print:hidden space-y-3 sm:space-y-6">
         {" "}
-        {selectedInvestor && (
-          <div className="w-full h-full bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-50">
-            <InvestorDetail
-              investorId={selectedInvestor.id}
-              onBack={() => {
-                setSelectedInvestor(null);
-              }}
-              onWithdraw={(invs) => {
-                if (invs && invs.length > 0) {
-                  handleCreditInvestorClick(invs);
-                } else {
-                  handleWithdrawClick(selectedInvestor);
-                }
-              }}
-              onBuyClick={(investment: any) => {
-                setAddModalBusinessId(investment.businessId);
-                setAddModalInvestorId(investment.investorId);
-                setShowAddForm(true);
-              }}
-            />
-          </div>
+        {viewMode === "investor-detail" && selectedInvestor && (
+          <InvestorDetail
+            investorId={selectedInvestor.id}
+            onBack={() => {
+              setViewMode("list");
+              setSelectedInvestor(null);
+            }}
+            onWithdraw={(invs) => {
+              if (invs && invs.length > 0) {
+                handleCreditInvestorClick(invs);
+              } else {
+                handleWithdrawClick(selectedInvestor);
+              }
+            }}
+            onBuyClick={(investment: any) => {
+              setAddModalBusinessId(investment.businessId);
+              setAddModalInvestorId(investment.investorId);
+              setShowAddForm(true);
+            }}
+          />
         )}{" "}
-        <div className={`w-full h-full ${selectedInvestor ? 'hidden' : 'block'}`}>
+        <div className={viewMode === "list" ? "w-full block" : "w-full hidden"}>
           <div className="w-full">
             <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
               
@@ -1405,10 +1407,10 @@ export default function Investors() {
             const isProfit = curValue - activeTotalInvested >= 0;
 
             return (
-              <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile">
+              <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile max-md:fixed max-md:top-0 max-md:left-0 max-md:right-0 max-md:bottom-[calc(56px+env(safe-area-inset-bottom))] max-md:z-[45] max-md:overflow-y-auto">
                 
                 {/* Header and Tabs */}
-                <div className="bg-[#ececed] md:bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] pt-[calc(32px+env(safe-area-inset-top))] md:pt-4 pb-2 md:pb-0 px-4 md:px-6 relative z-10 border-none md:border-none">
+                <div className="bg-[#ececed] md:bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] pt-16 md:pt-4 pb-2 md:pb-0 px-4 md:px-6 relative z-10 border-none md:border-none">
                   <div className="flex items-center mb-6">
                     <button
                       onClick={() => setViewMode("investor-detail")}
@@ -2487,12 +2489,7 @@ export default function Investors() {
         initialBusinessId={addModalBusinessId}
         initialInvestorId={addModalInvestorId}
       />
-      {selectedPortfolioInvestment && (
-        <LivePortfolioDetail
-          selectedInvestment={selectedPortfolioInvestment}
-          onClose={() => setSelectedPortfolioInvestment(null)}
-        />
-      )}
+      {selectedPortfolioInvestment && createPortal(<LivePortfolioDetail selectedInvestment={selectedPortfolioInvestment} onClose={() => setSelectedPortfolioInvestment(null)} />, document.body)}
       {selectedPreviewInvestor && (
         <>
         <InvestorPreviewModal

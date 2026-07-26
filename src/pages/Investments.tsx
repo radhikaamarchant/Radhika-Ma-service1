@@ -107,6 +107,10 @@ export default function Investments() {
   const dragRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef<number>(0);
   const mainRef = useRef<HTMLElement | null>(null);
+  const isRestoringScroll = useRef<boolean>(false);
+  
+  const isListRef = useRef<boolean>(!showAddForm && !selectedInvestment);
+  isListRef.current = !showAddForm && !selectedInvestment;
 
   useEffect(() => {
     const mainEl = document.querySelector("main");
@@ -114,21 +118,29 @@ export default function Investments() {
     if (!mainEl) return;
     
     const handleScroll = () => {
-      const isList = !showAddForm && !selectedInvestment;
-      if (isList) {
+      if (isRestoringScroll.current) return;
+      if (isListRef.current) {
         scrollPosRef.current = mainEl.scrollTop;
       }
     };
     
     mainEl.addEventListener("scroll", handleScroll, { passive: true });
     return () => mainEl.removeEventListener("scroll", handleScroll);
-  }, [showAddForm, selectedInvestment]);
+  }, []);
 
   useLayoutEffect(() => {
     const isList = !showAddForm && !selectedInvestment;
     if (isList) {
       if (mainRef.current) {
-        mainRef.current.scrollTop = scrollPosRef.current;
+        isRestoringScroll.current = true;
+        setTimeout(() => {
+          if (mainRef.current) {
+            mainRef.current.scrollTop = scrollPosRef.current;
+          }
+          setTimeout(() => {
+            isRestoringScroll.current = false;
+          }, 50);
+        }, 100);
       }
     } else {
       if (mainRef.current) {

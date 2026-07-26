@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import ImageCropModal from "./ImageCropModal";
 import { useAppContext } from '../utils/AppContext';
 import BioMentionEditor from './BioMentionEditor';
@@ -1051,14 +1052,12 @@ export default function InvestorDetail({
         </>
       )}
       {""}
-      {selectedPortfolioInvestment && (
-        <LivePortfolioDetail
+      {selectedPortfolioInvestment && createPortal(<LivePortfolioDetail
           selectedInvestment={selectedPortfolioInvestment}
           onClose={() => setSelectedPortfolioInvestment(null)}
           onSellClick={onWithdraw}
           onBuyClick={onBuyClick}
-        />
-      )}
+        />, document.body)}
       {showPhotoPreview && investor.photoUrl && (
         <div className="fixed inset-0 z-[110] bg-black md:bg-black/80 flex flex-col md:items-center md:justify-center md:p-8">
           <div className="flex justify-between items-center p-4 bg-black text-white mobile-modal-safe w-full shrink-0 md:hidden">

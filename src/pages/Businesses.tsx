@@ -61,6 +61,10 @@ export default function Businesses() {
   // Scroll preservation
   const scrollPosRef = useRef<number>(0);
   const mainRef = useRef<HTMLElement | null>(null);
+  const isRestoringScroll = useRef<boolean>(false);
+  
+  const isListRef = useRef<boolean>(viewMode === "list" && !selectedBusinessId);
+  isListRef.current = viewMode === "list" && !selectedBusinessId;
 
   useEffect(() => {
     const mainEl = document.querySelector("main");
@@ -68,21 +72,29 @@ export default function Businesses() {
     if (!mainEl) return;
     
     const handleScroll = () => {
-      const isList = viewMode === "list" && !selectedBusinessId;
-      if (isList) {
+      if (isRestoringScroll.current) return;
+      if (isListRef.current) {
         scrollPosRef.current = mainEl.scrollTop;
       }
     };
     
     mainEl.addEventListener("scroll", handleScroll, { passive: true });
     return () => mainEl.removeEventListener("scroll", handleScroll);
-  }, [viewMode, selectedBusinessId]);
+  }, []);
 
   useLayoutEffect(() => {
     const isList = viewMode === "list" && !selectedBusinessId;
     if (isList) {
       if (mainRef.current) {
-        mainRef.current.scrollTop = scrollPosRef.current;
+        isRestoringScroll.current = true;
+        setTimeout(() => {
+          if (mainRef.current) {
+            mainRef.current.scrollTop = scrollPosRef.current;
+          }
+          setTimeout(() => {
+            isRestoringScroll.current = false;
+          }, 50);
+        }, 100);
       }
     } else {
       if (mainRef.current) {
@@ -232,15 +244,12 @@ export default function Businesses() {
   return (
     <div className="w-full space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
       <div className="print:hidden space-y-6">
-        {selectedBusinessId && (
-          <div className="w-full h-full bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-50">
-            <BusinessDetail
-              businessId={selectedBusinessId}
-              onBack={() => setSelectedBusinessId(null)}
-            />
-          </div>
-        )}
-        <div className={`w-full h-full ${selectedBusinessId ? 'hidden' : 'block'}`}>
+        {selectedBusinessId ? (
+          <BusinessDetail
+            businessId={selectedBusinessId}
+            onBack={() => setSelectedBusinessId(null)}
+          />
+        ) : viewMode === "list" && (
           <>
             <div className="w-full">
               <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
@@ -584,8 +593,7 @@ export default function Businesses() {
               </div>{" "}
             </div>
           </>
-        </div>
-        {" "}
+        )}{" "}
         {viewMode === "add-owner-choice" && (
           <div className="w-full max-w-xl mx-auto bg-transparent p-4 md:p-8 mt-4 md:mt-10 animate-fade-in flex flex-col items-center min-h-[60vh] justify-center">
             <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-kite-text tracking-tight">Radhika Listed</h2>
