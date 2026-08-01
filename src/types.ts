@@ -69,6 +69,8 @@ export interface Investor {
   };
   rmasServiceCharge: number;
   bio?: string;
+  availableMargin?: number;
+  fundHistory?: { id: string; amount: number; type: "ADD" | "WITHDRAW"; date: string; category?: string; description?: string; }[];
   address?: {
     flatHouse?: string;
     residentHouseName?: string;
@@ -142,6 +144,14 @@ export interface GlobalSettings {
   investmentCommission: CommissionSetting;
   profitCommission: CommissionSetting;
   tax: CommissionSetting;
+  inactivityTax?: {
+    enabled: boolean;
+    durationType: "hours" | "days";
+    hourlyAmount: number;
+    hoursThreshold: number;
+    dailyAmount: number;
+    daysThreshold: number;
+  };
   marketTiming?: {
     openTime: string;
     closeTime: string;

@@ -12,7 +12,7 @@ import {
   Clock,
   Search,
   Lock,
-  Settings
+  Settings, Percent
 } from "lucide-react";
 import { useTheme } from "../utils/ThemeContext";
 import { generateAppCode, getAppCodeRemainingSeconds } from "../utils/totp";
@@ -35,7 +35,7 @@ interface AdminProfile {
   branch?: string;
 }
 
-type AdminView = "menu" | "funds" | "profile" | "bank" | "statement" | "market" | "users" | "show_users" | "settings";
+type AdminView = "menu" | "funds" | "profile" | "bank" | "statement" | "market" | "tax_payer" | "users" | "show_users" | "settings";
 
 export default function AdminPage() {
   const { state, dispatch } = useAppContext();
@@ -70,6 +70,7 @@ export default function AdminPage() {
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "INVESTOR" });
   const [currentView, setCurrentView] = useState<AdminView>("menu");
   const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [statementSearchTerm, setStatementSearchTerm] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [googleUser, setGoogleUser] = useState(auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null);
   const { theme, setTheme } = useTheme();
@@ -112,6 +113,15 @@ export default function AdminPage() {
       return acc;
   }, {});
 
+  const [taxPayerConfig, setTaxPayerConfig] = useState({
+    enabled: state.settings?.inactivityTax?.enabled || false,
+    durationType: state.settings?.inactivityTax?.durationType || "hours",
+    hourlyAmount: state.settings?.inactivityTax?.hourlyAmount || 0,
+    hoursThreshold: state.settings?.inactivityTax?.hoursThreshold || 1,
+    dailyAmount: state.settings?.inactivityTax?.dailyAmount || 0,
+    daysThreshold: state.settings?.inactivityTax?.daysThreshold || 1
+  });
+
   const [marketTiming, setMarketTiming] = useState<any>({
     openTime: state.settings?.marketTiming?.openTime || "09:15",
     closeTime: state.settings?.marketTiming?.closeTime || "15:30",
@@ -131,6 +141,17 @@ export default function AdminPage() {
       });
     }
   }, [state.settings?.marketTiming]);
+
+  const handleSaveTaxPayer = () => {
+    if (state.settings) {
+      const updatedSettings = {
+        ...state.settings,
+        inactivityTax: taxPayerConfig
+      };
+      dispatch({ type: "UPDATE_SETTINGS", payload: updatedSettings });
+      setCurrentView("menu");
+    }
+  };
 
   const handleSaveMarketTiming = () => {
     if (state.settings) {
@@ -478,6 +499,10 @@ export default function AdminPage() {
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Market Time</span>
                     <Clock className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
+                 <button onClick={() => setCurrentView("tax_payer")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                    <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Tax Payer</span>
+                    <Percent className="w-4 h-4 text-kite-text-light mr-1" />
+                 </button>
 
                  <button onClick={() => { localStorage.removeItem("loggedInUserId"); dispatch({ type: "SET_CURRENT_USER", payload: null }); }} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-[#DF514C] dark:text-[#E25F5B]">Log out</span>
@@ -808,6 +833,91 @@ export default function AdminPage() {
           </div>
         )}
 
+
+        {currentView === "tax_payer" && (
+          <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-0">
+            <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
+              <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Tax Payer Settings, Percent</h1>
+            </div>
+            
+            <div className="p-5 md:p-6 space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-kite-border-soft pb-4">
+                  <div>
+                    <h3 className="text-[15px] font-medium text-kite-text">Enable Tax Payer</h3>
+                    <p className="text-[12px] text-kite-text-light">Automatically charge inactive investors</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={taxPayerConfig.enabled} onChange={(e) => setTaxPayerConfig({...taxPayerConfig, enabled: e.target.checked})} />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-kite-blue"></div>
+                  </label>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-[15px] font-medium text-kite-text">Duration Type</h3>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="durationType" value="hours" checked={taxPayerConfig.durationType === "hours"} onChange={() => setTaxPayerConfig({...taxPayerConfig, durationType: "hours"})} className="text-kite-blue focus:ring-kite-blue" />
+                      <span className="text-[14px] text-kite-text">Hours</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="durationType" value="days" checked={taxPayerConfig.durationType === "days"} onChange={() => setTaxPayerConfig({...taxPayerConfig, durationType: "days"})} className="text-kite-blue focus:ring-kite-blue" />
+                      <span className="text-[14px] text-kite-text">Days</span>
+                    </label>
+                  </div>
+                </div>
+
+                {taxPayerConfig.durationType === "hours" ? (
+                  <div className="space-y-4 border border-kite-border p-4 rounded bg-gray-50 dark:bg-kite-bg">
+                    <div>
+                      <label className="block text-[12px] font-medium mb-1 text-kite-text-light">Hours Threshold</label>
+                      <input type="number" min="1" value={taxPayerConfig.hoursThreshold} onChange={(e) => setTaxPayerConfig({...taxPayerConfig, hoursThreshold: Number(e.target.value)})} className="w-full border border-kite-border rounded px-3 py-2 bg-white dark:bg-kite-surface text-[14px] text-kite-text outline-none focus:border-kite-blue" />
+                    </div>
+                    <div>
+                      <label className="block text-[12px] font-medium mb-1 text-kite-text-light">Charge Amount (₹)</label>
+                      <input type="text" value={taxPayerConfig.hourlyAmount ? Number(String(taxPayerConfig.hourlyAmount).replace(/,/g, '')).toLocaleString('en-IN') : ''} onChange={(e) => {
+                          const val = e.target.value.replace(/,/g, '');
+                          if (!isNaN(Number(val)) && val.trim() !== '') {
+                            setTaxPayerConfig({...taxPayerConfig, hourlyAmount: Number(val)});
+                          } else if (val === '') {
+                            setTaxPayerConfig({...taxPayerConfig, hourlyAmount: 0});
+                          }
+                      }} placeholder="e.g. 500" className="w-full border border-kite-border rounded px-3 py-2 bg-white dark:bg-kite-surface text-[14px] text-kite-text outline-none focus:border-kite-blue" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4 border border-kite-border p-4 rounded bg-gray-50 dark:bg-kite-bg">
+                    <div>
+                      <label className="block text-[12px] font-medium mb-1 text-kite-text-light">Days Threshold</label>
+                      <input type="number" min="1" value={taxPayerConfig.daysThreshold} onChange={(e) => setTaxPayerConfig({...taxPayerConfig, daysThreshold: Number(e.target.value)})} className="w-full border border-kite-border rounded px-3 py-2 bg-white dark:bg-kite-surface text-[14px] text-kite-text outline-none focus:border-kite-blue" />
+                    </div>
+                    <div>
+                      <label className="block text-[12px] font-medium mb-1 text-kite-text-light">Charge Amount (₹)</label>
+                      <input type="text" value={taxPayerConfig.dailyAmount ? Number(String(taxPayerConfig.dailyAmount).replace(/,/g, '')).toLocaleString('en-IN') : ''} onChange={(e) => {
+                          const val = e.target.value.replace(/,/g, '');
+                          if (!isNaN(Number(val)) && val.trim() !== '') {
+                            setTaxPayerConfig({...taxPayerConfig, dailyAmount: Number(val)});
+                          } else if (val === '') {
+                            setTaxPayerConfig({...taxPayerConfig, dailyAmount: 0});
+                          }
+                      }} placeholder="e.g. 1000" className="w-full border border-kite-border rounded px-3 py-2 bg-white dark:bg-kite-surface text-[14px] text-kite-text outline-none focus:border-kite-blue" />
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="pt-4">
+                <button onClick={handleSaveTaxPayer} className="w-full bg-kite-blue text-white py-3 rounded font-normal text-[14px] md:text-[15px] hover:opacity-90 active:scale-[0.98] transition-all">
+                  Save Tax Payer Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {currentView === "market" && (
           <div className="bg-white dark:bg-kite-surface flex-1 min-h-full animate-fade-in relative pb-0">
             <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
@@ -866,11 +976,25 @@ export default function AdminPage() {
 
         {currentView === "statement" && (
           <div className="bg-white dark:bg-kite-surface flex-1 animate-fade-in relative pb-0 min-h-full">
-            <div className="px-4 py-4 flex items-center border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface">
-              <button onClick={() => setCurrentView("funds")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Financial Statement</h1>
+            <div className="px-4 py-4 flex flex-col md:flex-row md:items-center justify-between border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface gap-3">
+              <div className="flex items-center">
+                <button onClick={() => setCurrentView("funds")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Financial Statement</h1>
+              </div>
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <div className="relative w-full">
+                  <Search className="w-4 h-4 text-kite-text-light absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search statement..."
+                    className="pl-9 pr-4 py-1.5 border border-kite-border-soft rounded text-[13px] text-kite-text outline-none focus:border-kite-blue w-full md:w-64 bg-transparent"
+                    value={statementSearchTerm}
+                    onChange={(e) => setStatementSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="p-4 md:p-6">
@@ -880,27 +1004,41 @@ export default function AdminPage() {
                     <thead className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border">
                       <tr>
                         <th className="py-3 px-4 font-normal text-kite-text-light text-[12px] uppercase tracking-wider">Date</th>
-                        <th className="py-3 px-4 font-normal text-kite-text-light text-[12px] uppercase tracking-wider">Particulars</th>
-                        <th className="py-3 px-4 text-right font-normal text-kite-text-light text-[12px] uppercase tracking-wider">Amount</th>
+                        <th className="py-3 px-4 font-normal text-kite-text-light text-[12px] uppercase tracking-wider">User List</th>
+                        <th className="py-3 px-4 text-right font-normal text-kite-text-light text-[12px] uppercase tracking-wider">Debit(-₹)</th>
+                        <th className="py-3 px-4 text-right font-normal text-kite-text-light text-[12px] uppercase tracking-wider">Credit(+₹)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-kite-border-soft">
-                      {bankTransactions.map((tx) => (
-                        <tr key={tx.id} className="hover:bg-gray-50 dark:md:hover:bg-[#131415]">
-                          <td className="py-3 px-4 text-[12px] text-kite-text-light whitespace-nowrap align-top">
+                      {bankTransactions.filter(tx => 
+                        tx.title.toLowerCase().includes(statementSearchTerm.toLowerCase()) || 
+                        tx.description.toLowerCase().includes(statementSearchTerm.toLowerCase()) ||
+                        tx.amount.toString().includes(statementSearchTerm) ||
+                        new Date(tx.date).toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        }).toLowerCase().includes(statementSearchTerm.toLowerCase())
+                      ).map((tx) => (
+                        <tr key={tx.id} className="hover:bg-gray-50 dark:md:hover:bg-[#131415] border-b border-kite-border-soft">
+                          <td className="py-3 px-4 text-[12px] text-kite-text-light whitespace-nowrap align-middle">
                             {new Date(tx.date).toLocaleDateString("en-IN", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
                             })}
                           </td>
-                          <td className="py-3 px-4 align-top">
-                            <p className="text-[13px] md:text-[14px] font-medium text-kite-text">{tx.title}</p>
-                            <p className="text-[12px] text-kite-text-light mt-0.5">{tx.description}</p>
+                          <td className="py-3 px-4 align-middle">
+                             <div className="flex items-center gap-2">
+                               <span className="text-[13px] md:text-[14px] font-medium text-kite-text whitespace-nowrap">{tx.title}</span>
+                               <span className="text-[12px] text-kite-text-light truncate max-w-[200px] md:max-w-md hidden sm:inline-block">- {tx.description}</span>
+                             </div>
                           </td>
-                          <td className={`py-3 px-4 text-right font-mono text-[13px] md:text-[14px] align-top ${tx.type === "CREDIT" ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-kite-text"}`}>
-                            {tx.type === "CREDIT" ? "+" : "-"}
-                            {formatINR(tx.amount)}
+                          <td className="py-3 px-4 text-right font-mono text-[13px] md:text-[14px] align-middle whitespace-nowrap text-[#DF514C] dark:text-[#E25F5B]">
+                            {tx.type === "DEBIT" ? `₹${formatINR(tx.amount).replace("₹", "")}` : "-"}
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono text-[13px] md:text-[14px] align-middle whitespace-nowrap text-[#4CAF50] dark:text-[#5B9A5D]">
+                            {tx.type === "CREDIT" ? `₹${formatINR(tx.amount).replace("₹", "")}` : "-"}
                           </td>
                         </tr>
                       ))}
@@ -927,7 +1065,7 @@ export default function AdminPage() {
               <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <h1 className="text-[18px] font-medium text-kite-text">Settings</h1>
+              <h1 className="text-[18px] font-medium text-kite-text">Settings, Percent</h1>
             </div>
 
             <div className="pt-2">

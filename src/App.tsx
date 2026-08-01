@@ -310,6 +310,80 @@ function AuthWrapper() {
     }
   }, []);
 
+
+  // Inactivity Tax Processor
+  useEffect(() => {
+    if (state.loading || !state.usersLoaded || !state.settings?.inactivityTax?.enabled) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const taxConfig = state.settings.inactivityTax;
+      if (!taxConfig || !taxConfig.enabled) return;
+
+      const durationMs = taxConfig.durationType === "hours" 
+        ? taxConfig.hoursThreshold * 60 * 60 * 1000 
+        : taxConfig.daysThreshold * 24 * 60 * 60 * 1000;
+        
+      const taxAmount = taxConfig.durationType === "hours" 
+        ? taxConfig.hourlyAmount 
+        : taxConfig.dailyAmount;
+
+      if (taxAmount <= 0) return;
+
+      let taxApplied = false;
+      let newFundHistoryAdditions = [];
+
+      state.investors.forEach(investor => {
+        // Find if investor has any active investments
+        const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
+        
+        if (!hasActiveInvestments) {
+          // Check last processed
+          const lastProcessed = taxConfig.lastProcessedMap?.[investor.id] || investor.createdAt || now;
+          if (now - lastProcessed >= durationMs) {
+            // Apply tax
+            taxApplied = true;
+            
+            // Deduct from investor
+            const taxDeduction = {
+              id: Date.now().toString() + "-" + investor.id,
+              date: new Date().toISOString(),
+              amount: taxAmount,
+              type: "WITHDRAW",
+              title: "Inactivity Tax",
+              description: `Inactivity tax applied for ${taxConfig.durationType === "hours" ? taxConfig.hoursThreshold + " hours" : taxConfig.daysThreshold + " days"}`,
+              category: "tax"
+            };
+
+            const updatedInvestor = {
+              ...investor,
+              fundHistory: [...(investor.fundHistory || []), taxDeduction]
+            };
+            dispatch({ type: "UPDATE_INVESTOR", payload: updatedInvestor });
+
+            // Ensure lastProcessedMap is updated
+            if (!taxConfig.lastProcessedMap) taxConfig.lastProcessedMap = {};
+            taxConfig.lastProcessedMap[investor.id] = now;
+            
+            // Note: we can also create an admin receipt, but the balance will just automatically reflect it if we logic it right, or we can explicitly add to admin
+          }
+        } else {
+          // Reset last processed if they have investments? Actually just update to now so they get a full window when they withdraw
+          if (!taxConfig.lastProcessedMap) taxConfig.lastProcessedMap = {};
+          taxConfig.lastProcessedMap[investor.id] = now;
+          taxApplied = true; // Just to trigger settings update for the map
+        }
+      });
+
+      if (taxApplied) {
+        dispatch({ type: "UPDATE_SETTINGS", payload: { ...state.settings, inactivityTax: taxConfig } });
+      }
+
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [state.loading, state.usersLoaded, state.settings?.inactivityTax, state.investors, state.investments, dispatch]);
+
   useEffect(() => {
     if (!state.loading && state.usersLoaded) {
        const savedUserId = localStorage.getItem("loggedInUserId");

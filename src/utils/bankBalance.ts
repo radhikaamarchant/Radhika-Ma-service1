@@ -72,9 +72,17 @@ export function calculateFinancials(
       }
     });
 
+
     investors.forEach((i) => {
       if (i.id !=="admin_investor" && i.rmasServiceCharge) {
         balance += i.rmasServiceCharge;
+      }
+      if (i.fundHistory) {
+        i.fundHistory.forEach(f => {
+          if (f.category === "tax" && f.type === "WITHDRAW") {
+            balance += f.amount;
+          }
+        });
       }
     });
   } else {
@@ -92,6 +100,12 @@ export function calculateFinancials(
     if (biz && biz.addedFunds) {
       biz.addedFunds.forEach(f => {
         balance += f.amount;
+      });
+    }
+    if (invt && invt.fundHistory) {
+      invt.fundHistory.forEach(f => {
+        if (f.type === "ADD") balance += f.amount;
+        if (f.type === "WITHDRAW") balance -= f.amount;
       });
     }
   }
@@ -187,8 +201,8 @@ export function getUnifiedTransactions(
         transactions.push({
           id: `tx_biz_reg_${b.id}`,
           date: b.registrationDate || new Date().toISOString(),
-          title: `Business Registration Fee`,
-          description: `From ${b.name}`,
+          title: `REGISTER BUSINESS`,
+          description: b.name,
           amount: b.registrationFee,
           type:"CREDIT",
           category:"commission",
@@ -196,16 +210,32 @@ export function getUnifiedTransactions(
       }
     });
 
+
     investors.forEach((i) => {
       if (i.id !=="admin_investor" && i.rmasServiceCharge) {
         transactions.push({
           id: `tx_inv_reg_${i.id}`,
           date: i.joinDate || new Date().toISOString(),
-          title: `Investor Registration Fee`,
-          description: `From ${i.name}`,
+          title: `REGISTER INVESTOR`,
+          description: i.name,
           amount: i.rmasServiceCharge,
           type:"CREDIT",
           category:"commission",
+        });
+      }
+      if (i.fundHistory) {
+        i.fundHistory.forEach(f => {
+          if (f.category === "tax" && f.type === "WITHDRAW") {
+            transactions.push({
+              id: `tx_tax_${f.id}`,
+              date: f.date,
+              title: `Tax Penalty - ${i.name}`,
+              description: f.description || "Inactivity Tax",
+              amount: f.amount,
+              type: "CREDIT",
+              category: "commission"
+            });
+          }
         });
       }
     });
@@ -213,13 +243,28 @@ export function getUnifiedTransactions(
     investments.forEach((inv) => {
       const b = businesses.find((b) => b.id === inv.businessId);
       const i = investors.find((i) => i.id === inv.investorId);
+      
+      const qtyText = inv.quantity ? `${inv.quantity} Qty` : `Amt: ₹${inv.amount}`;
+
+      if (inv.adminCommissionInvestor || inv.adminCommissionBusiness) {
+        const totalBuyComm = (inv.adminCommissionInvestor || 0) + (inv.adminCommissionBusiness || 0);
+        transactions.push({
+          id: `tx_${inv.id}_buy_comm`,
+          date: inv.startDate || new Date().toISOString(),
+          title: `BUY`,
+          description: `${b?.name || "Unknown"} | ${i?.name || "Unknown"} | ${qtyText}`,
+          amount: totalBuyComm,
+          type:"CREDIT",
+          category:"commission",
+        });
+      }
 
       if (inv.status ==="completed" && inv.payoutDetails) {
         transactions.push({
           id: `tx_${inv.id}_comm`,
           date: inv.payoutDetails.payoutDate || new Date().toISOString(),
-          title: `RMAS Commission Booked`,
-          description: `From settlement of ${b?.name} and ${i?.name}`,
+          title: `SELL`,
+          description: `${b?.name || "Unknown"} | ${i?.name || "Unknown"} | ${qtyText}`,
           amount: inv.payoutDetails.rmasCommission,
           type:"CREDIT",
           category:"commission",
@@ -279,7 +324,7 @@ export function getUnifiedTransactions(
       const bidsComms = JSON.parse(localStorage.getItem("bids_commissions") || "[]");
       bidsComms.forEach((c: any) => {
          transactions.push({
-           id: c.id || `tx_bids_${Math.random()}`,
+           id: (c.id ? c.id + "_admin" : `tx_bids_${Math.random()}`),
            date: c.date || new Date().toISOString(),
            title: c.type === 'IPO Listing' ? 'IPO Listing Fee' : (c.type === 'Exit' ? 'Exit Commission' : 'Platform Commission'),
            description: 'From Bids Platform',
@@ -290,20 +335,7 @@ export function getUnifiedTransactions(
       });
     } catch(e) {}
     
-    try {
-      const bidsComms = JSON.parse(localStorage.getItem("bids_commissions") || "[]");
-      bidsComms.forEach((c: any) => {
-         transactions.push({
-           id: c.id || `tx_bids_${Math.random()}`,
-           date: c.date || new Date().toISOString(),
-           title: c.type === 'IPO Listing' ? 'IPO Listing Fee' : (c.type === 'Exit' ? 'Exit Commission' : 'Application Commission'),
-           description: 'From Bids Platform',
-           amount: c.amount || 0,
-           type: 'CREDIT',
-           category: 'commission'
-         });
-      });
-    } catch(e) {}
+
   } else {
     // For specific business or investor
     const isBusiness = businesses.some(
@@ -333,7 +365,7 @@ export function getUnifiedTransactions(
         transactions.push({
           id: `tx_biz_reg_${biz.id}`,
           date: biz.registrationDate || new Date().toISOString(),
-          title: `Business Registration Fee`,
+          title: `REGISTER BUSINESS`,
           description: `Paid to RMAS`,
           amount: biz.registrationFee,
           type:"DEBIT",
@@ -373,7 +405,7 @@ export function getUnifiedTransactions(
         bidsComms.forEach((c: any) => {
           if (c.type === 'IPO Listing' && c.investorId === biz.id) {
             transactions.push({
-              id: c.id || `tx_bids_ipo_${Math.random()}`,
+              id: (c.id ? c.id + "_biz" : `tx_bids_ipo_${Math.random()}`),
               date: c.date || new Date().toISOString(),
               title: `IPO Listing Charge`,
               description: `Paid to RMAS`,
@@ -396,7 +428,7 @@ export function getUnifiedTransactions(
             // Business only gets money if Allotted, but NOT if Listed (because Investment takes over)
             if (app.allotmentStatus === 'Allotted' && app.listingStatus !== 'Listed') {
                 transactions.push({
-                  id: app.id + "_recv" || `tx_bids_app_recv_${Math.random()}`,
+                  id: (app.id ? app.id + "_biz_recv" : `tx_bids_app_recv_${Math.random()}`),
                   date: app.applicationDate || new Date().toISOString(),
                   title: `IPO Capital Received`,
                   description: `From Investor ID: ${app.investorId}`,
@@ -409,11 +441,24 @@ export function getUnifiedTransactions(
         });
       } catch(e) {}
     } else if (inv) {
+      if (inv.fundHistory) {
+        inv.fundHistory.forEach(f => {
+          transactions.push({
+            id: f.id,
+            date: f.date,
+            title: f.type === "ADD" ? "Funds Added" : "Funds Withdrawn",
+            description: f.type === "ADD" ? "Added to account" : "Withdrawn to bank",
+            amount: f.amount,
+            type: f.type === "ADD" ? "DEBIT" : "CREDIT",
+            category: "capital"
+          });
+        });
+      }
       if (inv.id !=="admin_investor" && inv.rmasServiceCharge) {
         transactions.push({
           id: `tx_inv_reg_${inv.id}`,
           date: inv.joinDate || new Date().toISOString(),
-          title: `Investor Registration Fee`,
+          title: `REGISTER INVESTOR`,
           description: `Paid to RMAS`,
           amount: inv.rmasServiceCharge,
           type:"DEBIT",
@@ -451,7 +496,7 @@ export function getUnifiedTransactions(
         bidsComms.forEach((c: any) => {
           if (c.investorId === inv.id && c.type !== 'IPO Listing') {
             transactions.push({
-              id: c.id || `tx_bids_comm_${Math.random()}`,
+              id: (c.id ? c.id + "_inv" : `tx_bids_comm_${Math.random()}`),
               date: c.date || new Date().toISOString(),
               title: c.type === 'Exit' ? `Exit Commission` : `Application Commission`,
               description: `Paid to RMAS`,
@@ -469,7 +514,7 @@ export function getUnifiedTransactions(
             // Always deduct when applied, unless Listed
             if (app.listingStatus !== 'Listed') {
                 transactions.push({
-                  id: app.id || `tx_bids_app_inv_${Math.random()}`,
+                  id: (app.id ? app.id + "_inv_deduct" : `tx_bids_app_inv_${Math.random()}`),
                   date: app.applicationDate || new Date().toISOString(),
                   title: `Locked IPO Balance`,
                   description: `For ${ipo?.companyName || 'Unknown IPO'}`,
@@ -482,7 +527,7 @@ export function getUnifiedTransactions(
             // If Refunded, credit it back
             if (app.applicationStatus === 'Cancelled' || app.allotmentStatus === 'Not Allotted') {
               transactions.push({
-                id: app.id + "_refund" || `tx_bids_app_ret_${Math.random()}`,
+                id: (app.id ? app.id + "_inv_refund" : `tx_bids_app_ret_${Math.random()}`),
                 date: new Date().toISOString(),
                 title: `IPO Refund`,
                 description: `From ${ipo?.companyName || 'Unknown IPO'}`,

@@ -176,6 +176,7 @@ const InvestorInvestmentRowMobile = React.memo(({ inv, business, duration, onCli
       </div>
     </div>
   );
+
 });
 
 export default function InvestorDetail({
@@ -248,6 +249,32 @@ export default function InvestorDetail({
     : 0;
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [isBankDetailsExpanded, setIsBankDetailsExpanded] = useState(false);
+  const [currentView, setCurrentView] = useState<"profile" | "statement" | "funds">("profile");
+  const [statementSearch, setStatementSearch] = useState("");
+  const [fundAction, setFundAction] = useState<"add" | "withdraw" | null>(null);
+  const [fundAmount, setFundAmount] = useState("");
+  
+  const unifiedBankTransactions = investor ? getUnifiedTransactions(
+    investor.name,
+    state.businesses,
+    state.investors,
+    state.investments,
+    state.settings
+  ) : [];
+  
+  const filteredBankTransactions = unifiedBankTransactions.filter(tx => 
+    tx.title.toLowerCase().includes(statementSearch.toLowerCase()) || 
+    tx.description.toLowerCase().includes(statementSearch.toLowerCase()) ||
+    tx.amount.toString().includes(statementSearch) ||
+    new Date(tx.date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).toLowerCase().includes(statementSearch.toLowerCase())
+  );
+
+
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
   const [showPhotoPreview, setShowPhotoPreview] = useState(false);
@@ -351,6 +378,8 @@ export default function InvestorDetail({
     onBack();
   };
   return (
+    <>
+    {currentView === "profile" && (
     <div className="space-y-4 md:space-y-6 animate-slide-in-mobile pb-20 pt-16 md:pt-4 px-3 md:px-0 w-full">
 
       {cropImageUrl && (
@@ -824,6 +853,7 @@ export default function InvestorDetail({
             {isBankDetailsExpanded && (
               <div className="p-4">
                 {investor.bankDetails ? (
+                  <>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <p className="text-[10px] md:text-[11px] text-kite-text-light uppercase">
@@ -858,6 +888,12 @@ export default function InvestorDetail({
                       </p>
                     </div>
                   </div>
+                  <div className="mt-4 flex justify-end border-t border-kite-border-soft pt-4">
+                    <button onClick={() => setCurrentView("funds")} className="flex items-center gap-1.5 px-4 py-1.5 border border-kite-blue text-kite-blue rounded text-[13px] hover:bg-kite-blue hover:text-white transition-colors">
+                      <span className="w-2.5 h-2.5 border-2 border-current rounded-full inline-block"></span> Funds & Statement
+                    </button>
+                  </div>
+                  </>
                 ) : (
                   <p className="text-[13px] md:text-[14px] text-kite-text-light py-2">
                     No bank details added.
@@ -1142,5 +1178,266 @@ export default function InvestorDetail({
         </>
       )}
     </div>
+    )}
+    
+  {currentView === "funds" && (
+    <div className="space-y-4 md:space-y-6 animate-fade-in pb-20 pt-16 md:pt-4 px-3 md:px-0 w-full bg-white dark:bg-kite-surface min-h-[calc(100vh-64px)] rounded-md border border-kite-border">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 md:p-6 border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface rounded-t-md">
+        <div className="flex items-center gap-4">
+          <button onClick={() => setCurrentView("profile")} className="p-1 text-kite-text hover:bg-gray-100 dark:hover:bg-[#131415] rounded-full transition-colors flex items-center justify-center">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text whitespace-nowrap">Funds</h1>
+        </div>
+      </div>
+
+      <div className="px-4 md:px-6">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-10 border-b border-kite-border-soft pb-8">
+          {/* Left: Balances */}
+          <div className="flex-1 max-w-lg">
+            <h2 className="text-[20px] md:text-[24px] font-medium text-kite-text mb-6">Bank balance</h2>
+            
+            <div className="space-y-6">
+              <div className="flex justify-between items-end border-b border-kite-border-soft pb-2">
+                <span className="text-[14px] text-kite-text-light">Available margin</span>
+                <span className="text-[24px] font-medium text-kite-blue">
+                  ₹{formatINR(unifiedBalance).replace("₹", "")}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-end border-b border-kite-border-soft pb-2">
+                <span className="text-[14px] text-kite-text-light">Used margin</span>
+                <span className="text-[14px] font-medium text-kite-text">
+                  ₹{formatINR(totalAmountInvested).replace("₹", "")}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-end pb-2">
+                <span className="text-[14px] text-kite-text-light">Available cash</span>
+                <span className="text-[14px] font-medium text-kite-text">
+                  ₹{formatINR(unifiedBalance + totalAmountInvested).replace("₹", "")}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex gap-4 mt-8">
+              <button 
+                onClick={() => setFundAction("add")}
+                className="flex-1 bg-kite-blue hover:bg-opacity-90 active:scale-[0.98] text-white font-medium py-2.5 rounded text-[14px] transition-all"
+              >
+                Add funds
+              </button>
+              <button 
+                onClick={() => setFundAction("withdraw")}
+                className="flex-1 bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#131415] active:scale-[0.98] text-kite-text border border-kite-border-soft font-medium py-2.5 rounded text-[14px] transition-all"
+              >
+                Withdraw
+              </button>
+            </div>
+          </div>
+          
+          {/* Right: Bank Statement Link / Summary */}
+          <div className="flex-1 md:border-l md:border-kite-border-soft md:pl-10 flex flex-col justify-center">
+            <h3 className="text-[14px] text-kite-text-light mb-4 uppercase tracking-wider">Bank Details</h3>
+            <div className="space-y-3">
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light">Bank Name</span>
+                <span className="text-[14px] text-kite-text font-medium">{investor.bankDetails?.bankName || "-"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light">Account Number</span>
+                <span className="text-[14px] text-kite-text font-mono font-medium">{investor.bankDetails?.accountNumber || "-"}</span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => setCurrentView("statement")}
+              className="mt-6 flex items-center justify-between w-full p-4 border border-kite-border-soft rounded hover:bg-gray-50 dark:hover:bg-kite-bg/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-kite-blue" />
+                <span className="text-[14px] font-medium text-kite-text">View statement</span>
+              </div>
+              <ArrowLeft className="w-4 h-4 text-kite-text-light rotate-180" />
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Fund Modals */}
+      {fundAction && createPortal(
+        <div className="fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-kite-surface w-full max-w-sm rounded-lg shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-kite-border-soft flex items-center justify-between bg-gray-50 dark:bg-kite-bg/50">
+              <h3 className="text-[16px] font-medium text-kite-text">
+                {fundAction === "add" ? "Add Funds" : "Withdraw Funds"}
+              </h3>
+              <button 
+                onClick={() => { setFundAction(null); setFundAmount(""); }} 
+                className="text-kite-text-light hover:text-kite-text transition-colors text-[24px] leading-none"
+              >&times;</button>
+            </div>
+            <div className="p-6">
+              <div className="mb-6">
+                <label className="block text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-2">
+                  Amount (₹)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-kite-text-light font-mono text-[16px]">₹</span>
+                  <input
+                    type="text"
+                    value={fundAmount ? Number(fundAmount.replace(/,/g, '')).toLocaleString('en-IN') : ''}
+                    onChange={(e) => {
+                       const val = e.target.value.replace(/,/g, '');
+                       if (!isNaN(Number(val)) && val.trim() !== '') {
+                         setFundAmount(val);
+                       } else if (val === '') {
+                         setFundAmount('');
+                       }
+                    }}
+                    placeholder="0"
+                    className="w-full pl-8 pr-4 py-3 bg-white dark:bg-kite-surface border border-kite-border-soft rounded font-mono text-[18px] text-kite-text focus:outline-none focus:border-kite-blue transition-colors"
+                    autoFocus
+                  />
+                </div>
+                {fundAction === "withdraw" && (
+                  <p className="mt-2 text-[12px] text-kite-text-light">
+                    Available to withdraw: ₹{formatINR(Math.max(0, unifiedBalance)).replace("₹", "")}
+                  </p>
+                )}
+              </div>
+              
+              <button
+                disabled={!fundAmount || parseFloat(fundAmount) <= 0 || (fundAction === 'withdraw' && parseFloat(fundAmount) > unifiedBalance)}
+                onClick={() => {
+                  const amt = parseFloat(fundAmount);
+                  if (amt > 0) {
+                    const newFundHistory = investor.fundHistory || [];
+                    newFundHistory.push({
+                      id: Math.random().toString(36).substring(7),
+                      amount: amt,
+                      type: fundAction === "add" ? "ADD" : "WITHDRAW",
+                      date: new Date().toISOString()
+                    });
+                    
+                    const updatedInvestor = {
+                      ...investor,
+                      fundHistory: newFundHistory
+                    };
+                    
+                    dispatch({ type: "UPDATE_INVESTOR", payload: updatedInvestor });
+                    setFundAction(null);
+                    setFundAmount("");
+                  }
+                }}
+                className="w-full bg-kite-blue disabled:bg-opacity-50 hover:bg-opacity-90 active:scale-[0.98] text-white font-medium py-3 rounded text-[14px] transition-all"
+              >
+                {fundAction === "add" ? "Add Funds" : "Withdraw"}
+              </button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+    </div>
+  )}
+\n    {currentView === "statement" && (
+      <div className="space-y-4 md:space-y-6 animate-fade-in pb-20 pt-16 md:pt-4 px-3 md:px-0 w-full bg-white dark:bg-kite-surface min-h-[calc(100vh-64px)] rounded-md border border-kite-border">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface rounded-t-md">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setCurrentView("profile")} className="p-1 text-kite-text hover:bg-gray-100 dark:hover:bg-[#131415] rounded-full transition-colors flex items-center justify-center">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text whitespace-nowrap">Bank Statement</h1>
+          </div>
+          <div className="relative w-full max-w-[200px] md:max-w-xs ml-4">
+            <Search className="w-4 h-4 text-kite-text-light absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={statementSearch}
+              onChange={(e) => setStatementSearch(e.target.value)}
+              className="pl-9 pr-4 py-1.5 md:py-2 bg-gray-50 dark:bg-kite-bg border border-kite-border-soft rounded text-[13px] md:text-[14px] text-kite-text focus:outline-none focus:border-kite-blue w-full transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Bank Details Banner */}
+        <div className="px-4 md:px-6 py-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-gray-50 dark:bg-kite-bg/50 p-4 md:p-5 rounded-md border border-kite-border-soft">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] md:text-[11px] text-kite-text-light font-medium tracking-wider uppercase">Investor Name</span>
+              <span className="text-[13px] md:text-[14px] text-kite-text font-medium">{investor.name}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] md:text-[11px] text-kite-text-light font-medium tracking-wider uppercase">Bank Name</span>
+              <span className="text-[13px] md:text-[14px] text-kite-text font-medium">{investor.bankDetails?.bankName || "-"}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] md:text-[11px] text-kite-text-light font-medium tracking-wider uppercase">Account Number</span>
+              <span className="text-[13px] md:text-[14px] text-kite-text font-mono font-medium">{investor.bankDetails?.accountNumber || "-"}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] md:text-[11px] text-kite-text-light font-medium tracking-wider uppercase">Holder Name</span>
+              <span className="text-[13px] md:text-[14px] text-kite-text font-medium">{investor.bankDetails?.accountHolderName || "-"}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] md:text-[11px] text-kite-text-light font-medium tracking-wider uppercase">IFSC Code</span>
+              <span className="text-[13px] md:text-[14px] text-kite-text font-mono font-medium">{investor.bankDetails?.ifscCode || "-"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Transactions Table */}
+        <div className="px-4 md:px-6 pb-6 overflow-x-auto">
+          <div className="border border-kite-border rounded-md overflow-hidden min-w-[600px]">
+            <table className="w-full text-left text-[13px] md:text-[14px] text-kite-text">
+              <thead className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border">
+                <tr>
+                  <th className="py-3 px-4 font-normal text-kite-text-light text-[11px] md:text-[12px] uppercase tracking-wider">Date</th>
+                  <th className="py-3 px-4 font-normal text-kite-text-light text-[11px] md:text-[12px] uppercase tracking-wider">Transaction Details</th>
+                  <th className="py-3 px-4 text-right font-normal text-kite-text-light text-[11px] md:text-[12px] uppercase tracking-wider">Debit (-₹)</th>
+                  <th className="py-3 px-4 text-right font-normal text-kite-text-light text-[11px] md:text-[12px] uppercase tracking-wider">Credit (+₹)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-kite-border-soft">
+                {filteredBankTransactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors">
+                    <td className="py-3.5 px-4 text-[12px] md:text-[13px] text-kite-text-light whitespace-nowrap align-middle">
+                      {new Date(tx.date).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="py-3.5 px-4 align-middle">
+                       <div className="flex items-center gap-2">
+                         <span className="text-[13px] md:text-[14px] font-medium text-kite-text whitespace-nowrap">{tx.title}</span>
+                         <span className="text-[12px] md:text-[13px] text-kite-text-light truncate hidden sm:inline-block max-w-sm md:max-w-md">- {tx.description}</span>
+                       </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono text-[13px] md:text-[14px] align-middle whitespace-nowrap text-[#DF514C] dark:text-[#E25F5B]">
+                      {tx.type === "DEBIT" ? `₹${formatINR(tx.amount).replace("₹", "")}` : "-"}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono text-[13px] md:text-[14px] align-middle whitespace-nowrap text-[#4CAF50] dark:text-[#5B9A5D]">
+                      {tx.type === "CREDIT" ? `₹${formatINR(tx.amount).replace("₹", "")}` : "-"}
+                    </td>
+                  </tr>
+                ))}
+                {filteredBankTransactions.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center text-kite-text-light text-[13px] md:text-[14px] bg-[#F8F9FA] dark:bg-kite-bg/30">
+                      No transactions recorded yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
