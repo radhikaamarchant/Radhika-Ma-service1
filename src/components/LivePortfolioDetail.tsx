@@ -170,7 +170,7 @@ export function LivePortfolioDetail({
       : groupCurrentVal;
     const isProfit = holdingProfit >= 0;
     return (
-      <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 md:p-4">
+      <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 md:p-4 investors-portal">
         <div className="absolute inset-0 max-md:bg-white max-md:dark:bg-kite-bg md:bg-black/40 dark:md:bg-black/70" onClick={() => setSelectedInvestment(null)}></div>
         {""}
         <div className="bg-white dark:bg-kite-surface md:rounded w-full h-full md:h-auto md:max-h-[90vh] md:max-w-2xl flex flex-col overflow-hidden relative md:shadow-xl dark:md:shadow-none md:border md:border-gray-200 dark:md:border-[#383838]">

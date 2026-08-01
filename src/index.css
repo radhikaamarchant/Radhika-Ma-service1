@@ -536,13 +536,21 @@ html.dark .bg-red-50, html.dark .bg-red-50\/50 {
 }
 
 
-body.investor-detail-open .mobile-header-safe { display: none !important; }
+body[data-current-view="investors"].investor-detail-open .mobile-header-safe { display: none !important; }
 
-body.business-detail-open .mobile-header-safe {
+body[data-current-view="businesses"].business-detail-open .mobile-header-safe {
   background-color: #ffffff !important;
   border-bottom-color: #E8EDF3 !important;
 }
-html.dark body.business-detail-open .mobile-header-safe {
+html.dark body[data-current-view="businesses"].business-detail-open .mobile-header-safe {
   background-color: var(--kite-bg) !important;
   border-bottom-color: var(--border-color-soft) !important;
+}
+
+body:not([data-current-view="investors"]) .investors-portal {
+  display: none !important;
+}
+
+body:not([data-current-view="businesses"]) .businesses-portal {
+  display: none !important;
 }

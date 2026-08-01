@@ -1267,7 +1267,7 @@ export default function InvestorDetail({
       
       {/* Fund Modals */}
       {fundAction && createPortal(
-        <div className="fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 animate-fade-in investors-portal">
           <div className="bg-white dark:bg-kite-surface w-full max-w-sm rounded-lg shadow-2xl overflow-hidden flex flex-col">
             <div className="p-4 border-b border-kite-border-soft flex items-center justify-between bg-gray-50 dark:bg-kite-bg/50">
               <h3 className="text-[16px] font-medium text-kite-text">
@@ -1341,7 +1341,7 @@ export default function InvestorDetail({
       )}
     </div>
   )}
-\n    {currentView === "statement" && (
+    {currentView === "statement" && (
       <div className="space-y-4 md:space-y-6 animate-fade-in pb-20 pt-16 md:pt-4 px-3 md:px-0 w-full bg-white dark:bg-kite-surface min-h-[calc(100vh-64px)] rounded-md border border-kite-border">
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface rounded-t-md">

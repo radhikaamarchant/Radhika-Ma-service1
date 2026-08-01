@@ -1655,7 +1655,7 @@ export default function BusinessDetail({
       )}
 
       {showStatement && createPortal(
-        <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center md:p-0 p-4">
+        <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center md:p-0 p-4 businesses-portal">
           <div className="bg-white dark:bg-kite-surface rounded shadow-lg w-full md:w-full md:h-full md:max-w-none md:max-h-none md:rounded-none max-w-4xl max-h-[90vh] flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-kite-border-soft flex justify-between items-center bg-gray-50 dark:bg-kite-bg/50 rounded-t md:rounded-none">
               <div className="flex items-center gap-4">
