@@ -230,6 +230,7 @@ export default function InvestorDetail({
       bizId,
       marketState.trends,
       state.settings,
+      state.businesses
     );
     totalLiveProfit += res.liveProfit;
   });

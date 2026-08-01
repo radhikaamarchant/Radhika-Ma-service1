@@ -5,6 +5,7 @@ export function calculateFinancials(
   businessId: string | null,
   marketTrends: Record<string, number>,
   settings: GlobalSettings | null,
+  businesses: Business[] = []
 ) {
   const activeInvestments = investments.filter(
     (inv) =>
@@ -19,7 +20,8 @@ export function calculateFinancials(
 
   let profitBooked = 0;
   activeInvestments.forEach((inv) => {
-    const trend = marketTrends[inv.businessId] || 0;
+    let trend = marketTrends[inv.businessId] || 0;
+    
     profitBooked += inv.amount * (trend / 100);
   });
 
@@ -86,6 +88,12 @@ export function calculateFinancials(
       balance -= biz.registrationFee;
     if (invt && invt.id !== "admin_investor" && invt.rmasServiceCharge)
       balance -= invt.rmasServiceCharge;
+      
+    if (biz && biz.addedFunds) {
+      biz.addedFunds.forEach(f => {
+        balance += f.amount;
+      });
+    }
   }
 
   investments.forEach((inv) => {
@@ -307,6 +315,20 @@ export function getUnifiedTransactions(
     const inv = investors.find((i) => i.name === entityName);
 
     if (biz) {
+      if (biz.addedFunds) {
+        biz.addedFunds.forEach((f) => {
+          transactions.push({
+            id: f.id,
+            date: f.date,
+            title: `Manual Funds Added`,
+            description: `Added by Owner`,
+            amount: f.amount,
+            type: "CREDIT",
+            category: "capital",
+          });
+        });
+      }
+
       if (biz.id !=="admin_business" && biz.registrationFee) {
         transactions.push({
           id: `tx_biz_reg_${biz.id}`,

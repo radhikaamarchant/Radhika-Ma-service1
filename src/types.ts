@@ -47,6 +47,9 @@ export interface Business {
     companyShareHolder: string;
     companyAddress: string;
   };
+  addedFunds?: { id: string; amount: number; date: string; }[];
+  profitLimitMode?: "manual" | "percentage";
+  profitLimitPercentage?: number;
 }
 
 export interface Investor {

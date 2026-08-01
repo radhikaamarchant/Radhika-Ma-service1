@@ -210,6 +210,7 @@ export default function Investors() {
           bizId,
           marketState.trends,
           state.settings,
+          state.businesses
         );
         totalLiveProfit += res.liveProfit;
       });
@@ -395,6 +396,7 @@ export default function Investors() {
       businessId,
       marketState.trends,
       state.settings,
+      state.businesses
     );
     const completed = Number(withdrawFormData.completedMonths) || 12;
     const scaledProfit = liveProfit * (completed / 12);
@@ -1331,6 +1333,7 @@ export default function Investors() {
                   bizId,
                   marketState.trends,
                   state.settings,
+                  state.businesses
                 );
                 
                 const qty = (invs as Investment[]).reduce((sum, inv) => {

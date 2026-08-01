@@ -2,6 +2,7 @@ import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 
 import { useAppContext } from "../utils/AppContext";
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useMarketSimulation } from "../utils/MarketSimulationContext";
 import { formatINR } from "../utils/mockData";
 import {
@@ -152,6 +153,37 @@ export default function BusinessDetail({
     downMarket: business?.downMarket?.toString() || "",
   });
 
+  const [profitLimitMode, setProfitLimitMode] = useState<"manual" | "percentage">(business?.profitLimitMode || "manual");
+  const [profitLimitPercentage, setProfitLimitPercentage] = useState(business?.profitLimitPercentage?.toString() || "");
+  const [isSavingProfitLimit, setIsSavingProfitLimit] = useState(false);
+  const [showProfitLimitSuccess, setShowProfitLimitSuccess] = useState(false);
+
+  const [showAddAmount, setShowAddAmount] = useState(false);
+  const [addAmountValue, setAddAmountValue] = useState("");
+  const [showStatement, setShowStatement] = useState(false);
+  const [statementSearch, setStatementSearch] = useState("");
+
+  const handleAddAmount = () => {
+    const amount = parseFloat(addAmountValue.replace(/,/g, ""));
+    if (isNaN(amount) || amount <= 0) return;
+    
+    const newFunds = {
+      id: "tx_manual_" + Date.now(),
+      amount,
+      date: new Date().toISOString()
+    };
+    
+    dispatch({
+      type: "UPDATE_BUSINESS",
+      payload: {
+        ...business,
+        addedFunds: [...(business.addedFunds || []), newFunds]
+      }
+    });
+    setAddAmountValue("");
+    setShowAddAmount(false);
+  };
+
   useEffect(() => {
     document.body.classList.add('business-detail-open');
     return () => document.body.classList.remove('business-detail-open');
@@ -241,6 +273,17 @@ export default function BusinessDetail({
     state.investments,
     state.settings,
   );
+  
+  const filteredBankTransactions = useMemo(() => {
+    if (!statementSearch) return bankTransactions;
+    const search = statementSearch.toLowerCase();
+    return bankTransactions.filter(tx => 
+      tx.title.toLowerCase().includes(search) || 
+      tx.description.toLowerCase().includes(search) ||
+      (tx.category && tx.category.toLowerCase().includes(search)) ||
+      (tx.amount.toString().includes(search))
+    );
+  }, [bankTransactions, statementSearch]);
   const authoritiesAssistance = bankTransactions
     .filter(tx => tx.category === "sahay")
     .reduce((sum, tx) => sum + tx.amount, 0);
@@ -525,13 +568,44 @@ export default function BusinessDetail({
 
       {currentView === "funds" && (
         <div className="p-4 md:p-6 bg-[#F8F9FA] dark:bg-kite-bg flex-1">
-          <div className="bg-white dark:bg-kite-surface rounded shadow-sm border border-kite-border-hard p-5 mb-5 text-center">
+          <div className="bg-white dark:bg-kite-surface rounded shadow-sm border border-kite-border-hard p-5 mb-5 text-center relative">
             <p className="text-[12px] md:text-[13px] text-kite-text-light font-normal mb-1 flex items-center justify-center gap-1">
-              Available balance <Info className="w-3.5 h-3.5 text-kite-blue" />
+              Available balance <button onClick={() => setShowStatement(true)} className="outline-none"><Info className="w-3.5 h-3.5 text-kite-blue hover:text-kite-blue-dark transition-colors cursor-pointer" /></button>
             </p>
             <p className="text-[26px] md:text-[32px] font-normal text-kite-blue tracking-wide mb-2">
-              {unifiedBalance >= 0 ? "" : "-"}₹{formatINR(Math.abs(unifiedBalance)).replace("₹", "")}
+              {(unifiedBalance + ownerProfit) >= 0 ? "" : "-"}₹{formatINR(Math.abs(unifiedBalance + ownerProfit)).replace("₹", "")}
             </p>
+            
+            {showAddAmount ? (
+              <div className="flex flex-col items-center justify-center mt-3 animate-in fade-in zoom-in duration-200">
+                 <div className="flex w-full max-w-[200px] border-b border-kite-blue mb-3">
+                   <span className="text-kite-text py-1 pr-1">₹</span>
+                   <input
+                      autoFocus
+                      type="text"
+                      className="w-full bg-transparent outline-none py-1 text-[15px] text-kite-text"
+                      value={addAmountValue}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                        if (rawValue) {
+                          setAddAmountValue(Number(rawValue).toLocaleString('en-IN'));
+                        } else {
+                          setAddAmountValue('');
+                        }
+                      }}
+                      placeholder="Enter amount"
+                   />
+                 </div>
+                 <div className="flex gap-2 w-full max-w-[200px]">
+                    <button onClick={() => setShowAddAmount(false)} className="flex-1 py-1.5 border border-kite-border-soft rounded text-[12px] text-kite-text-light hover:bg-gray-50 dark:hover:bg-kite-bg/50 transition-colors uppercase tracking-wide">Cancel</button>
+                    <button onClick={handleAddAmount} className="flex-1 py-1.5 bg-kite-blue text-white rounded text-[12px] hover:bg-kite-blue-dark transition-colors uppercase tracking-wide">Add</button>
+                 </div>
+              </div>
+            ) : (
+              <button onClick={() => setShowAddAmount(true)} className="mt-1 px-4 py-1.5 bg-kite-blue/10 text-kite-blue hover:bg-kite-blue/20 rounded text-[12px] font-medium transition-colors uppercase tracking-wide">
+                Add Amount
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4 mb-6">
@@ -1503,7 +1577,156 @@ export default function BusinessDetail({
               </button>
             </div>
           </div>
+
+          <div className="border border-kite-border-soft rounded mt-4 overflow-hidden">
+            <div className="p-3 border-b border-kite-border-soft flex justify-between items-center bg-gray-50 dark:bg-kite-bg/50">
+               <span className="text-[12px] font-medium text-kite-text uppercase tracking-wide">Amount taken out</span>
+            </div>
+            <div className="p-4 bg-white dark:bg-kite-surface flex flex-col gap-5">
+              <div className="flex bg-gray-50 dark:bg-kite-bg/50 p-1 rounded">
+                <button
+                  onClick={() => setProfitLimitMode("manual")}
+                  className={`flex-1 py-1.5 text-[12px] font-medium uppercase tracking-wide rounded transition-colors ${
+                    profitLimitMode === "manual"
+                      ? "bg-white dark:bg-kite-surface text-kite-blue shadow-sm"
+                      : "text-kite-text-light hover:text-kite-text"
+                  }`}
+                >
+                  Manually (No Limit)
+                </button>
+                <button
+                  onClick={() => setProfitLimitMode("percentage")}
+                  className={`flex-1 py-1.5 text-[12px] font-medium uppercase tracking-wide rounded transition-colors ${
+                    profitLimitMode === "percentage"
+                      ? "bg-white dark:bg-kite-surface text-kite-blue shadow-sm"
+                      : "text-kite-text-light hover:text-kite-text"
+                  }`}
+                >
+                  Percentage (%)
+                </button>
+              </div>
+
+              {profitLimitMode === "percentage" && (
+                <div>
+                   <label className="text-[11px] text-kite-text-light uppercase tracking-wide mb-1 block">Profit Limit % (Based on Investor's Amount)</label>
+                   <input
+                     type="number"
+                     step="0.01"
+                     value={profitLimitPercentage}
+                     onChange={(e) => setProfitLimitPercentage(e.target.value)}
+                     className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] text-kite-text focus:border-kite-blue transition-colors"
+                     placeholder="e.g. 20"
+                   />
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setIsSavingProfitLimit(true);
+                  setTimeout(() => {
+                    dispatch({
+                      type: "UPDATE_BUSINESS",
+                      payload: {
+                        ...business,
+                        profitLimitMode,
+                        profitLimitPercentage: profitLimitMode === "percentage" ? (parseFloat(profitLimitPercentage) || undefined) : undefined,
+                      }
+                    });
+                    setIsSavingProfitLimit(false);
+                    setShowProfitLimitSuccess(true);
+                    setTimeout(() => setShowProfitLimitSuccess(false), 2000);
+                  }, 1000);
+                }}
+                className="w-full bg-kite-blue !text-white dark:text-white px-5 py-2.5 rounded text-[13px] font-medium hover:bg-kite-blue-dark transition-colors uppercase tracking-wide mt-2"
+              >
+                {isSavingProfitLimit ? (
+                  <span className="flex items-center justify-center space-x-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Saving...</span>
+                  </span>
+                ) : showProfitLimitSuccess ? "verifed value" : "confrim limit"}
+              </button>
+            </div>
+          </div>
         </div>
+      )}
+
+      {showStatement && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center md:p-0 p-4">
+          <div className="bg-white dark:bg-kite-surface rounded shadow-lg w-full md:w-full md:h-full md:max-w-none md:max-h-none md:rounded-none max-w-4xl max-h-[90vh] flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-4 border-b border-kite-border-soft flex justify-between items-center bg-gray-50 dark:bg-kite-bg/50 rounded-t md:rounded-none">
+              <div className="flex items-center gap-4">
+                <h3 className="text-[16px] font-medium text-kite-text">{business.bankDetails?.bankName || "Bank Statement"}</h3>
+                <div className="relative ml-4">
+                  <Search className="w-4 h-4 text-kite-text-light absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search name..."
+                    value={statementSearch}
+                    onChange={(e) => setStatementSearch(e.target.value)}
+                    className="pl-9 pr-4 py-1.5 bg-white dark:bg-kite-surface border border-kite-border-soft rounded text-[13px] text-kite-text focus:outline-none focus:border-kite-blue w-[250px]"
+                  />
+                </div>
+              </div>
+              <button onClick={() => setShowStatement(false)} className="text-kite-text-light hover:text-kite-text transition-colors text-[24px] leading-none">&times;</button>
+            </div>
+            
+            <div className="p-4 border-b border-kite-border-soft flex gap-8 items-center bg-white dark:bg-kite-surface flex-wrap">
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wide">Account Number</span>
+                <span className="text-[14px] text-kite-text font-medium">{business.bankDetails?.accountNumber || "-"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wide">Holder Name</span>
+                <span className="text-[14px] text-kite-text font-medium">{business.bankDetails?.accountHolderName || "-"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wide">IFSC Code</span>
+                <span className="text-[14px] text-kite-text font-medium">{business.bankDetails?.ifscCode || "-"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wide">Owner Name</span>
+                <span className="text-[14px] text-kite-text font-medium">{business.ownerName}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-kite-text-light uppercase tracking-wide">Business Full Name</span>
+                <span className="text-[14px] text-kite-text font-medium">{business.name}</span>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="sticky top-0 bg-gray-50 dark:bg-kite-bg/80 backdrop-blur z-10">
+                  <tr>
+                    <th className="py-3 px-4 border-b border-kite-border-soft text-[11px] text-kite-text-light uppercase tracking-wide font-normal">Date</th>
+                    <th className="py-3 px-4 border-b border-kite-border-soft text-[11px] text-kite-text-light uppercase tracking-wide font-normal">User List</th>
+                    <th className="py-3 px-4 border-b border-kite-border-soft text-[11px] text-kite-text-light uppercase tracking-wide font-normal text-right">Debit(-₹)</th>
+                    <th className="py-3 px-4 border-b border-kite-border-soft text-[11px] text-kite-text-light uppercase tracking-wide font-normal text-right">Credit(+₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBankTransactions.map(tx => (
+                    <tr key={tx.id} className="hover:bg-gray-50/50 dark:hover:bg-kite-bg/30 transition-colors">
+                      <td className="py-3 px-4 border-b border-kite-border-soft text-[13px] text-kite-text whitespace-nowrap">{new Date(tx.date).toLocaleDateString()}</td>
+                      <td className="py-3 px-4 border-b border-kite-border-soft text-[13px] text-kite-text">{tx.title} - {tx.description}</td>
+                      <td className="py-3 px-4 border-b border-kite-border-soft text-[13px] text-[#DF514C] dark:text-[#E25F5B] text-right">{tx.type === "DEBIT" ? `₹${formatINR(tx.amount).replace("₹", "")}` : "-"}</td>
+                      <td className="py-3 px-4 border-b border-kite-border-soft text-[13px] text-[#4CAF50] dark:text-[#5B9A5D] text-right">{tx.type === "CREDIT" ? `₹${formatINR(tx.amount).replace("₹", "")}` : "-"}</td>
+                    </tr>
+                  ))}
+                  {filteredBankTransactions.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-[13px] text-kite-text-light border-b border-kite-border-soft">No statements available</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {cropImageUrl && (

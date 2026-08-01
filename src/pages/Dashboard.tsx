@@ -76,7 +76,7 @@ let expectedProfitToPay = 0; let actualProfitPaid = 0; bizInvestments.forEach(in
 // A simple way: Profit paid to investor is just the gross profit before deductions, since that's what the business paid!
  const grossPayout = payout.totalCredited + payout.rmasCommission + payout.happyIncomeTax; actualProfitPaid += (grossPayout - inv.amount); } else { 
 // fallback
-actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 100); } } else { const { liveProfit } = calculateLiveProfit([inv], business.id, marketState.trends, state.settings); expectedProfitToPay += liveProfit; } }); const fundingData = [ { name: 'Invested', value: totalInvested, color: '#4CAF50' }, 
+actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 100); } } else { const { liveProfit } = calculateLiveProfit([inv], business.id, marketState.trends, state.settings, state.businesses); expectedProfitToPay += liveProfit; } }); const fundingData = [ { name: 'Invested', value: totalInvested, color: '#4CAF50' }, 
 // Green
 { name: 'Remaining', value: fundingRemaining, color: '#eeeeee' } 
 // Gray

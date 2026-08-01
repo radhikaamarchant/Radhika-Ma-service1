@@ -71,10 +71,20 @@ export function getBaseMarketTrend(
   // Market noise based on the wave
   const marketNoise = (combinedWave / 2) * amplitude; // -12 to +12 or -25 to +25
 
-  const calculatedTrend =
+  let finalTrend =
     baseRate + investorBonus - withdrawalPenalty + blueTickBonus + marketNoise;
 
-  return calculatedTrend;
+  if (business.profitLimitMode === "percentage" && business.profitLimitPercentage !== undefined) {
+    const limit = business.profitLimitPercentage;
+    let upwardTrend = baseRate + investorBonus + blueTickBonus + (marketNoise > 0 ? marketNoise : 0);
+    if (upwardTrend > limit) {
+        upwardTrend = limit;
+    }
+    const downwardForces = withdrawalPenalty + (marketNoise < 0 ? Math.abs(marketNoise) : 0);
+    finalTrend = upwardTrend - downwardForces;
+  }
+
+  return finalTrend;
 }
 
 export function getCurrentMarketPrice(business: Business | undefined, investments: Investment[]): number {
