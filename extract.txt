@@ -1,0 +1,101 @@
+          <div className="p-4 md:p-8 space-y-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Total Investors</p>
+                    <p className="text-xl font-medium text-white">{totalInvestors}</p>
+                </div>
+                <div className="bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Active Investors</p>
+                    <p className="text-xl font-medium text-kite-blue">{activeInvestors}</p>
+                </div>
+                <div className="bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Total Invested</p>
+                    <p className="text-xl font-medium text-white">{formatINR(totalInvestedAmount)}</p>
+                </div>
+                <div className="bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Currently Invested</p>
+                    <p className="text-xl font-medium text-kite-blue">{formatINR(currentInvestedAmount)}</p>
+                </div>
+                <div className="bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Profit Paid Out</p>
+                    <p className="text-xl font-medium text-[#4CAF50]">{formatINR(totalProfitPaid)}</p>
+                </div>
+                <div className="bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Expected Profit</p>
+                    <p className="text-xl font-medium text-amber-500">{formatINR(expectedProfit)}</p>
+                </div>
+            </div>
+
+            {business.companyInfo ? (
+                <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 bg-[#1a1a1a] p-6 rounded-lg border border-[#2a2a2a]">
+                        <div>
+                            <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-1.5">Company Name</p>
+                            <p className="text-[15px] font-medium text-gray-200">{business.companyInfo.companyName}</p>
+                        </div>
+                        <div>
+                            <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-1.5">Established</p>
+                            <p className="text-[15px] font-medium text-gray-200">{business.companyInfo.since}</p>
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                            <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-1.5">Owner</p>
+                            <p className="text-[15px] font-medium text-gray-200">{business.companyInfo.ownerName || business.ownerName}</p>
+                        </div>
+                        <div className="col-span-2 md:col-span-3 pt-4 border-t border-[#2a2a2a]">
+                            <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-2.5">About Company</p>
+                            <p className="text-[14px] text-gray-300 leading-relaxed font-light">{business.companyInfo.companyInformation}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <p className="text-[11px] text-kite-blue uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4"/> Revenue & Profit Strategy</p>
+                            <div className="bg-[#1a1a1a] p-5 rounded-lg border border-[#2a2a2a] text-[14px] text-gray-300 leading-relaxed font-light">
+                                {business.companyInfo.profitRevenueInvest}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <p className="text-[11px] text-[#4CAF50] uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><Lightbulb className="w-4 h-4"/> Investment Idea</p>
+                            <div className="bg-[#1a1a1a] p-5 rounded-lg border border-[#2a2a2a] text-[14px] text-gray-300 leading-relaxed font-light">
+                                {business.companyInfo.investmentIdea}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                            <div>
+                                <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-2.5">Shareholders</p>
+                                <p className="text-[14px] text-gray-300 leading-relaxed font-light bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">{business.companyInfo.companyShareHolder}</p>
+                            </div>
+                            <div>
+                                <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-2.5">Address</p>
+                                <p className="text-[14px] text-gray-300 leading-relaxed font-light bg-[#1a1a1a] p-4 rounded-lg border border-[#2a2a2a]">{business.companyInfo.companyAddress}</p>
+                            </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#2a2a2a]">
+                            <div>
+                                <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-3">Documents</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {business.companyInfo.documents && business.companyInfo.documents.length > 0 ? (
+                                        business.companyInfo.documents.map((doc, idx) => (
+                                            <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{doc}</span>
+                                        ))
+                                    ) : (
+                                        <span className="text-gray-500 text-sm">No documents provided</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-3">Government Reg Identifies</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 ? (
+                                        business.companyInfo.governmentRegIdentifies.map((reg, idx) => (
+                                            <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{reg}</span>
+                                        ))
+                                    ) : (
+                                        <span className="text-gray-500 text-sm">No reg identifies provided</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>

@@ -61,8 +61,7 @@ const highestInvested = [...businessesWithStats].sort((a, b) => b.totalInv - a.t
 
 // Since they are appended
 
-const statsMap = getVerificationStats(state.businesses, state.investments); const blueTickBusinesses = businessesWithStats .filter(b => statsMap.get(b.id)?.isBlueTick) .sort((a, b) => b.totalRet - a.totalRet) .slice(0, 4) .filter(b => (b.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || (b.ownerName || "").toLowerCase().includes(searchTerm.toLowerCase())); const preVerifiedBusinesses = businessesWithStats .filter(b => statsMap.get(b.id)?.isPreVerified) .sort((a, b) => b.totalRet - a.totalRet) .filter(b => (b.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || (b.ownerName || "").toLowerCase().includes(searchTerm.toLowerCase())); const otherBusinesses = topBusinesses.filter(b => { const stats = statsMap.get(b.id); return !stats?.isBlueTick && !stats?.isPreVerified; }); const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0; const recentFilteredInvestments = state.investments.slice() .sort((a, b) => getTime(b.id) - getTime(a.id)) .filter(inv => { const business = state.businesses.find(b => b.id === inv.businessId); const investor = state.investors.find(i => i.id === inv.investorId); const match = searchTerm.toLowerCase(); return (business?.name || "").toLowerCase().includes(match) || (investor?.name || "").toLowerCase().includes(match); }); 
-
+const statsMap = getVerificationStats(state.businesses, state.investments); const blueTickBusinesses = businessesWithStats .filter(b => statsMap.get(b.id)?.isBlueTick) .sort((a, b) => b.totalRet - a.totalRet) .slice(0, 4) .filter(b => (b.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || (b.ownerName || "").toLowerCase().includes(searchTerm.toLowerCase())); const preVerifiedBusinesses = businessesWithStats .filter(b => statsMap.get(b.id)?.isPreVerified) .sort((a, b) => b.totalRet - a.totalRet) .filter(b => (b.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || (b.ownerName || "").toLowerCase().includes(searchTerm.toLowerCase())); const otherBusinesses = topBusinesses.filter(b => { const stats = statsMap.get(b.id); return !stats?.isBlueTick && !stats?.isPreVerified; }); const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0; 
 // Business Analytics Details
 
 const renderBusinessDetails = (business: Business) => { const bizInvestments = state.investments.filter(i => i.businessId === business.id); const totalInvested = bizInvestments.reduce((sum, inv) => sum + inv.amount, 0); const fundingRemaining = Math.max(0, business.fundingRequired - totalInvested); const fundingPercentage = business.fundingRequired > 0 ? (totalInvested / business.fundingRequired) * 100 : 0; 
@@ -127,33 +126,6 @@ return (
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="bg-white dark:bg-kite-surface mt-4 border-y border-kite-border">
-        <div className="p-4 border-b border-kite-border">
-           <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text uppercase tracking-wider">Recent Investments</h2>
-        </div>
-        <div className="divide-y divide-kite-border">
-           {recentFilteredInvestments.map((inv, idx) => {
-              const business = state.businesses.find(b => b.id === inv.businessId);
-              const investor = state.investors.find(i => i.id === inv.investorId);
-              return (
-                <div key={`dash_inv_${inv.id}_${idx}`} className="p-4 flex justify-between items-center">
-                   <div>
-                     <p className="font-normal text-[13px] md:text-[14px] uppercase text-kite-text">{business?.name}</p>
-                     <p className="text-[11px] md:text-[12px] text-kite-text-light">{investor?.name}</p>
-                   </div>
-                   <div className="text-right">
-                     <p className="font-medium text-[13px] md:text-[14px] text-kite-text">{formatINR(inv.amount)}</p>
-                     <p className="text-[11px] md:text-[12px] text-[#4CAF50] dark:text-[#5B9A5D] font-medium">{inv.interestRate}% Int.</p>
-                   </div>
-                </div>
-              )
-           })}
-           {recentFilteredInvestments.length === 0 && (
-              <div className="p-6 text-center text-kite-text-light text-[13px] md:text-[14px]">No recent investments</div>
-           )}
-        </div>
       </div>
     </div>
     {selectedBusiness && renderBusinessDetails(selectedBusiness)}

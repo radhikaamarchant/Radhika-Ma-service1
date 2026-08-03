@@ -300,6 +300,13 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
   border-radius: 4px;
 }
 
+/* Mobile users must only have SF Pro fonts */
+@media (max-width: 1023px) {
+  * {
+    font-family: var(--font-sans) !important;
+  }
+}
+
 /* માત્ર ડેસ્કટોપ યુઝર્સ માટે Open Sans ફૉન્ટ લૉક કરવા (Universal Selector સાથે) */
 @media (min-width: 1024px) {
   * {

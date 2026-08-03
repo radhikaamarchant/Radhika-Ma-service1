@@ -462,7 +462,7 @@ export default function InvestorDetail({
             {showPhotoMenu && investor.photoUrl && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowPhotoMenu(false)}></div>
-                <div className="absolute top-full left-0 md:left-1/2 md:-translate-x-1/2 mt-2 w-40 bg-white dark:bg-kite-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5">
+                <div className="absolute top-full left-0 md:left-0 md:translate-x-0 mt-2 w-40 bg-white dark:bg-kite-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5">
                   <button 
                     onClick={() => { setShowPhotoMenu(false); setShowPhotoPreview(true); }}
                     className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors"

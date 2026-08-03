@@ -413,7 +413,17 @@ export default function Investments() {
           : inv.status ==="completed";
       return searchMatch && tabMatch;
     })
-    .sort((a, b) => getTime(b.id) - getTime(a.id)), [allGroupedInvestments, state.businesses, state.investors, searchTerm, activeTab]);
+    .sort((a, b) => {
+      const getInvTime = (inv) => {
+        if (inv.id.startsWith("inv")) {
+           return parseInt(inv.id.replace("inv", "").split("_")[0]) || 0;
+        }
+        return parseInt(inv.id.replace(/\D/g, "")) || new Date(inv.startDate || 0).getTime();
+      };
+      const timeA = Math.max(...a.groupedInvestmentsList.map(getInvTime));
+      const timeB = Math.max(...b.groupedInvestmentsList.map(getInvTime));
+      return timeB - timeA;
+    }), [allGroupedInvestments, state.businesses, state.investors, searchTerm, activeTab]);
   const activeBusinesses = useMemo(() => state.businesses
     .slice()
     .sort((a, b) => getTime(b.id) - getTime(a.id)), [state.businesses]);
@@ -692,13 +702,15 @@ export default function Investments() {
               }
               setShowAddForm(!showAddForm);
             }}
-            className="flex items-center space-x-1.5 px-4 py-2 bg-kite-blue text-white rounded font-medium text-[13px] md:text-[14px] hover:bg-blue-600 transition-colors shadow-sm"
+            className="flex md:hidden items-center space-x-1.5 px-4 py-2 bg-kite-blue text-white rounded font-medium text-[13px] md:text-[14px] hover:bg-blue-600 transition-colors shadow-sm"
           >
             {""}
             <Plus className="w-4 h-4" /> <span>Add</span>{""}
           </button>
         )}
-        <div className={`flex items-center justify-end h-[36px] ${isSearchExpanded ? 'w-full' : 'w-auto'}`}>
+        
+        {/* Mobile Search */}
+        <div className={`md:hidden flex items-center justify-end h-[36px] ${isSearchExpanded ? 'w-full' : 'w-auto'}`}>
           {!isSearchExpanded ? (
             <button
               onClick={() => setIsSearchExpanded(true)}
@@ -707,7 +719,7 @@ export default function Investments() {
               <Search className="w-[18px] h-[18px] text-kite-blue" />
             </button>
           ) : (
-            <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-kite-surface md:bg-gray-100 md:dark:bg-transparent rounded-sm h-[36px]">
+            <div className="flex items-center w-full transition-all duration-300 bg-kite-surface rounded-sm h-[36px]">
               <button
                 onClick={() => {
                   setIsSearchExpanded(false);
@@ -721,7 +733,7 @@ export default function Investments() {
                 ref={searchInputRef}
                 type="text"
                 placeholder="Search Eg: RMAS,SARITA.."
-                className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
+                className="bg-transparent border-none outline-none w-full text-[13px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -735,6 +747,28 @@ export default function Investments() {
               )}
             </div>
           )}
+        </div>
+
+        {/* Desktop Search */}
+        <div className="hidden md:flex items-center w-full max-w-[250px] bg-white dark:bg-[#181818] border border-gray-200 dark:border-[#2A2A2A] rounded h-[36px] overflow-hidden focus-within:border-kite-blue transition-colors relative ml-auto">
+            <div className="pl-3 pr-2 flex items-center justify-center absolute left-0 text-gray-400 dark:text-[#A3ACB8]">
+                <Search className="w-[16px] h-[16px]" />
+            </div>
+            <input
+                type="text"
+                placeholder="Search Eg: RMAS,SARITA.."
+                className="bg-transparent border-none outline-none w-full pl-9 pr-8 text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="p-2 text-gray-600 hover:text-kite-text transition-colors flex-shrink-0 absolute right-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+            )}
         </div>{""}
       </div>{""}
       
