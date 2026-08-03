@@ -146,15 +146,11 @@ export interface GlobalSettings {
   tax: CommissionSetting;
   inactivityTax?: {
     enabled: boolean;
-    durationType: "minutes" | "hours" | "days";
-    minuteAmount?: number;
-    minutesThreshold?: number;
+    durationType: "hours" | "days";
     hourlyAmount: number;
     hoursThreshold: number;
     dailyAmount: number;
     daysThreshold: number;
-    lastProcessedMap?: Record<string, number>;
-    inactivityStartMap?: Record<string, number>;
   };
   marketTiming?: {
     openTime: string;

@@ -319,77 +319,59 @@ function AuthWrapper() {
       const now = Date.now();
       const taxConfig = state.settings.inactivityTax;
       if (!taxConfig || !taxConfig.enabled) return;
-        
-      const taxAmount = taxConfig.durationType === "minutes"
-        ? taxConfig.minuteAmount
-        : taxConfig.durationType === "hours" 
-          ? taxConfig.hourlyAmount 
-          : taxConfig.dailyAmount;
 
-      if (!taxAmount || taxAmount <= 0) return;
+      const durationMs = taxConfig.durationType === "hours" 
+        ? taxConfig.hoursThreshold * 60 * 60 * 1000 
+        : taxConfig.daysThreshold * 24 * 60 * 60 * 1000;
+        
+      const taxAmount = taxConfig.durationType === "hours" 
+        ? taxConfig.hourlyAmount 
+        : taxConfig.dailyAmount;
+
+      if (taxAmount <= 0) return;
 
       let taxApplied = false;
+      let newFundHistoryAdditions = [];
 
       state.investors.forEach(investor => {
-        if (investor.id === "admin_investor") return;
-
+        // Find if investor has any active investments
         const hasActiveInvestments = state.investments.some(inv => inv.investorId === investor.id && inv.status === 'active');
         
-        if (!taxConfig.inactivityStartMap) taxConfig.inactivityStartMap = {};
-        if (!taxConfig.lastProcessedMap) taxConfig.lastProcessedMap = {};
-
         if (!hasActiveInvestments) {
-          if (!taxConfig.inactivityStartMap[investor.id]) {
-            taxConfig.inactivityStartMap[investor.id] = now;
+          // Check last processed
+          const lastProcessed = taxConfig.lastProcessedMap?.[investor.id] || investor.createdAt || now;
+          if (now - lastProcessed >= durationMs) {
+            // Apply tax
             taxApplied = true;
-          } else {
-            const timeSince0 = now - taxConfig.inactivityStartMap[investor.id];
             
-            const initialThresholdMs = taxConfig.durationType === "minutes" 
-              ? taxConfig.minutesThreshold * 60 * 1000 
-              : taxConfig.durationType === "hours" 
-                ? taxConfig.hoursThreshold * 60 * 60 * 1000 
-                : taxConfig.daysThreshold * 24 * 60 * 60 * 1000;
-              
-            if (timeSince0 >= initialThresholdMs) {
-              const lastProcessed = taxConfig.lastProcessedMap[investor.id];
-              const intervalMs = taxConfig.durationType === "minutes" 
-                ? taxConfig.minutesThreshold * 60 * 1000 
-                : taxConfig.durationType === "hours" 
-                  ? taxConfig.hoursThreshold * 60 * 60 * 1000 
-                  : 24 * 60 * 60 * 1000;
-                
-              if (!lastProcessed || now - lastProcessed >= intervalMs) {
-                taxApplied = true;
-                
-                const descriptionStr = taxConfig.durationType === "minutes" ? taxConfig.minutesThreshold + " minutes" : taxConfig.durationType === "hours" ? taxConfig.hoursThreshold + " hours" : taxConfig.daysThreshold + " days";
+            // Deduct from investor
+            const taxDeduction = {
+              id: Date.now().toString() + "-" + investor.id,
+              date: new Date().toISOString(),
+              amount: taxAmount,
+              type: "WITHDRAW",
+              title: "Inactivity Tax",
+              description: `Inactivity tax applied for ${taxConfig.durationType === "hours" ? taxConfig.hoursThreshold + " hours" : taxConfig.daysThreshold + " days"}`,
+              category: "tax"
+            };
 
-                const taxDeduction = {
-                  id: Date.now().toString() + "-" + investor.id,
-                  date: new Date().toISOString(),
-                  amount: taxAmount,
-                  type: "WITHDRAW",
-                  title: `RMAS KITE invest penalty charge - ${descriptionStr}`,
-                  description: descriptionStr,
-                  category: "tax"
-                };
+            const updatedInvestor = {
+              ...investor,
+              fundHistory: [...(investor.fundHistory || []), taxDeduction]
+            };
+            dispatch({ type: "UPDATE_INVESTOR", payload: updatedInvestor });
 
-                const updatedInvestor = {
-                  ...investor,
-                  fundHistory: [...(investor.fundHistory || []), taxDeduction]
-                };
-                dispatch({ type: "UPDATE_INVESTOR", payload: updatedInvestor });
-
-                taxConfig.lastProcessedMap[investor.id] = now;
-              }
-            }
+            // Ensure lastProcessedMap is updated
+            if (!taxConfig.lastProcessedMap) taxConfig.lastProcessedMap = {};
+            taxConfig.lastProcessedMap[investor.id] = now;
+            
+            // Note: we can also create an admin receipt, but the balance will just automatically reflect it if we logic it right, or we can explicitly add to admin
           }
         } else {
-          if (taxConfig.inactivityStartMap[investor.id] || taxConfig.lastProcessedMap[investor.id]) {
-            delete taxConfig.inactivityStartMap[investor.id];
-            delete taxConfig.lastProcessedMap[investor.id];
-            taxApplied = true;
-          }
+          // Reset last processed if they have investments? Actually just update to now so they get a full window when they withdraw
+          if (!taxConfig.lastProcessedMap) taxConfig.lastProcessedMap = {};
+          taxConfig.lastProcessedMap[investor.id] = now;
+          taxApplied = true; // Just to trigger settings update for the map
         }
       });
 
@@ -416,9 +398,7 @@ function AuthWrapper() {
            if (isDesktop && (!lastLoginTime || now - parseInt(lastLoginTime) > twentyFourHours)) {
               // Needs 2FA. Do not auto login. Let Login page handle it.
            } else {
-             if (!state.currentUser || state.currentUser.id !== user.id) {
-               dispatch({ type: "SET_CURRENT_USER", payload: user });
-             }
+             dispatch({ type: "SET_CURRENT_USER", payload: user });
            }
          } else {
            localStorage.removeItem("loggedInUserId");
