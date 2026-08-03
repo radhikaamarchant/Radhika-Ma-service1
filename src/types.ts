@@ -146,7 +146,9 @@ export interface GlobalSettings {
   tax: CommissionSetting;
   inactivityTax?: {
     enabled: boolean;
-    durationType: "hours" | "days";
+    durationType: "minutes" | "hours" | "days";
+    minuteAmount?: number;
+    minutesThreshold?: number;
     hourlyAmount: number;
     hoursThreshold: number;
     dailyAmount: number;

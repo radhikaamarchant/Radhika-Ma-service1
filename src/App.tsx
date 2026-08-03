@@ -319,16 +319,14 @@ function AuthWrapper() {
       const now = Date.now();
       const taxConfig = state.settings.inactivityTax;
       if (!taxConfig || !taxConfig.enabled) return;
-
-      const durationMs = taxConfig.durationType === "hours" 
-        ? taxConfig.hoursThreshold * 60 * 60 * 1000 
-        : taxConfig.daysThreshold * 24 * 60 * 60 * 1000;
         
-      const taxAmount = taxConfig.durationType === "hours" 
-        ? taxConfig.hourlyAmount 
-        : taxConfig.dailyAmount;
+      const taxAmount = taxConfig.durationType === "minutes"
+        ? taxConfig.minuteAmount
+        : taxConfig.durationType === "hours" 
+          ? taxConfig.hourlyAmount 
+          : taxConfig.dailyAmount;
 
-      if (taxAmount <= 0) return;
+      if (!taxAmount || taxAmount <= 0) return;
 
       let taxApplied = false;
 
@@ -347,20 +345,24 @@ function AuthWrapper() {
           } else {
             const timeSince0 = now - taxConfig.inactivityStartMap[investor.id];
             
-            const initialThresholdMs = taxConfig.durationType === "hours" 
-              ? taxConfig.hoursThreshold * 60 * 60 * 1000 
-              : taxConfig.daysThreshold * 24 * 60 * 60 * 1000;
+            const initialThresholdMs = taxConfig.durationType === "minutes" 
+              ? taxConfig.minutesThreshold * 60 * 1000 
+              : taxConfig.durationType === "hours" 
+                ? taxConfig.hoursThreshold * 60 * 60 * 1000 
+                : taxConfig.daysThreshold * 24 * 60 * 60 * 1000;
               
             if (timeSince0 >= initialThresholdMs) {
               const lastProcessed = taxConfig.lastProcessedMap[investor.id];
-              const intervalMs = taxConfig.durationType === "hours" 
-                ? taxConfig.hoursThreshold * 60 * 60 * 1000 
-                : 24 * 60 * 60 * 1000;
+              const intervalMs = taxConfig.durationType === "minutes" 
+                ? taxConfig.minutesThreshold * 60 * 1000 
+                : taxConfig.durationType === "hours" 
+                  ? taxConfig.hoursThreshold * 60 * 60 * 1000 
+                  : 24 * 60 * 60 * 1000;
                 
               if (!lastProcessed || now - lastProcessed >= intervalMs) {
                 taxApplied = true;
                 
-                const descriptionStr = taxConfig.durationType === "hours" ? taxConfig.hoursThreshold + " hours" : taxConfig.daysThreshold + " days";
+                const descriptionStr = taxConfig.durationType === "minutes" ? taxConfig.minutesThreshold + " minutes" : taxConfig.durationType === "hours" ? taxConfig.hoursThreshold + " hours" : taxConfig.daysThreshold + " days";
 
                 const taxDeduction = {
                   id: Date.now().toString() + "-" + investor.id,
@@ -414,7 +416,9 @@ function AuthWrapper() {
            if (isDesktop && (!lastLoginTime || now - parseInt(lastLoginTime) > twentyFourHours)) {
               // Needs 2FA. Do not auto login. Let Login page handle it.
            } else {
-             dispatch({ type: "SET_CURRENT_USER", payload: user });
+             if (!state.currentUser || state.currentUser.id !== user.id) {
+               dispatch({ type: "SET_CURRENT_USER", payload: user });
+             }
            }
          } else {
            localStorage.removeItem("loggedInUserId");
