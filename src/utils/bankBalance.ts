@@ -229,8 +229,8 @@ export function getUnifiedTransactions(
             transactions.push({
               id: `tx_tax_${f.id}`,
               date: f.date,
-              title: `Tax Penalty - ${i.name}`,
-              description: f.description || "Inactivity Tax",
+              title: `${i.name} - invest penalty charge - ${f.description}`,
+              description: "Penalty Charge",
               amount: f.amount,
               type: "CREDIT",
               category: "commission"
@@ -446,8 +446,8 @@ export function getUnifiedTransactions(
           transactions.push({
             id: f.id,
             date: f.date,
-            title: f.type === "ADD" ? "Funds Added" : "Funds Withdrawn",
-            description: f.type === "ADD" ? "Added to account" : "Withdrawn to bank",
+            title: f.category === "tax" ? `RMAS KITE invest penalty charge - ${f.description}` : (f.type === "ADD" ? "Funds Added" : "Funds Withdrawn"),
+            description: f.category === "tax" ? "Inactivity Tax" : (f.type === "ADD" ? "Added to account" : "Withdrawn to bank"),
             amount: f.amount,
             type: f.type === "ADD" ? "DEBIT" : "CREDIT",
             category: "capital"

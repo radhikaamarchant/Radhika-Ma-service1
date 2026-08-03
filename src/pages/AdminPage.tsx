@@ -320,15 +320,23 @@ export default function AdminPage() {
     });
 
     let investorFees = 0;
+    let brokerage = 0;
     state.investors.forEach(i => {
       if (i.id !== "admin_investor") {
         investorFees += (i.rmasServiceCharge || 0);
+      }
+      if (i.fundHistory) {
+        i.fundHistory.forEach(f => {
+          if (f.category === "tax" && f.type === "WITHDRAW") {
+            brokerage += f.amount;
+          }
+        });
       }
     });
 
     let authorities = 0;
     let investmentsCommission = 0;
-        let brokerage = 0;
+        
     let hpgTax = 0;
     
     state.investments.forEach(inv => {

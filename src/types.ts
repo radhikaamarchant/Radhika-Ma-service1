@@ -151,6 +151,8 @@ export interface GlobalSettings {
     hoursThreshold: number;
     dailyAmount: number;
     daysThreshold: number;
+    lastProcessedMap?: Record<string, number>;
+    inactivityStartMap?: Record<string, number>;
   };
   marketTiming?: {
     openTime: string;
