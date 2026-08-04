@@ -271,6 +271,11 @@ export default function App() {
   const [isKeyLoading, setIsKeyLoading] = useState(true);
 
   useEffect(() => {
+    // Suppress Google Maps authentication failure alert
+    (window as any).gm_authFailure = () => {
+      console.warn("Google Maps authentication failed. Places autocomplete will gracefully degrade to a standard text input.");
+    };
+
     fetch('/api/config')
       .then(res => res.json())
       .then(data => {
