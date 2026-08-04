@@ -235,11 +235,14 @@ export default function BusinessDetail({
     .sort((a, b) => getTime(b.id) - getTime(a.id)), [state.investments, businessId]);
 
   const [investorSearchQuery, setInvestorSearchQuery] = useState("");
+  const [investorMode, setInvestorMode] = useState<"holding" | "payout">("holding");
 
   const filteredBusinessInvestments = useMemo(() => businessInvestments.filter(inv => {
     const investor = state.investors.find(i => i.id === inv.investorId);
-    return investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
-  }), [businessInvestments, state.investors, investorSearchQuery]);
+    const matchesSearch = investor?.name?.toLowerCase().includes(investorSearchQuery.toLowerCase());
+    const matchesMode = investorMode === "holding" ? inv.status !== "completed" : inv.status === "completed";
+    return matchesSearch && matchesMode;
+  }), [businessInvestments, state.investors, investorSearchQuery, investorMode]);
   const activeBusinessInvestments = businessInvestments.filter(
     (i) => i.status !== "completed",
   );
@@ -1029,7 +1032,31 @@ export default function BusinessDetail({
           
           <div className="bg-white dark:bg-kite-surface pt-2 border-b border-kite-border-soft mt-4">
              <div className="px-5 py-3 border-b border-kite-border-soft flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-               <h3 className="text-[17px] font-normal text-kite-text-light capitalize tracking-wider">Available Investor</h3>
+               <div className="flex items-center gap-4">
+                 <h3 className="text-[17px] font-normal text-kite-text-light capitalize tracking-wider">Available Investor</h3>
+                 <div className="flex items-center bg-gray-100 dark:bg-kite-bg p-0.5 rounded-sm overflow-hidden border border-kite-border-soft dark:border-kite-border-hard">
+                   <button
+                     onClick={() => setInvestorMode("holding")}
+                     className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${
+                       investorMode === "holding"
+                         ? "bg-white dark:bg-kite-surface text-kite-text shadow-sm"
+                         : "text-kite-text-light hover:text-kite-text"
+                     }`}
+                   >
+                     Holding
+                   </button>
+                   <button
+                     onClick={() => setInvestorMode("payout")}
+                     className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${
+                       investorMode === "payout"
+                         ? "bg-white dark:bg-kite-surface text-kite-text shadow-sm"
+                         : "text-kite-text-light hover:text-kite-text"
+                     }`}
+                   >
+                     Pay Out
+                   </button>
+                 </div>
+               </div>
                <div className="relative hidden md:block">
                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light" />
                  <input

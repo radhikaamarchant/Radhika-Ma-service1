@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import ImageCropModal from "./ImageCropModal";
+import PlacesAutocomplete from "./PlacesAutocomplete";
 import { useAppContext } from '../utils/AppContext';
 import BioMentionEditor from './BioMentionEditor';
 import BioRenderer from './BioRenderer';
@@ -585,12 +586,12 @@ export default function InvestorDetail({
               <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
                 Resident / House Name
               </label>
-              <input
-                type="text"
+              <PlacesAutocomplete
                 className="w-full border border-kite-border rounded-sm px-3 py-2 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none"
                 value={formData.address.residentHouseName}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: { ...formData.address, residentHouseName: e.target.value } })
+                placeholder="Search resident or house name..."
+                onChange={(value) =>
+                  setFormData({ ...formData, address: { ...formData.address, residentHouseName: value } })
                 }
               />
             </div>
@@ -598,12 +599,12 @@ export default function InvestorDetail({
               <label className="block text-[10px] md:text-[11px] font-medium mb-1 text-kite-text-light uppercase tracking-wider">
                 Circle & Landmark
               </label>
-              <input
-                type="text"
+              <PlacesAutocomplete
                 className="w-full border border-kite-border rounded-sm px-3 py-2 bg-transparent text-[13px] md:text-[14px] font-medium text-kite-text focus:ring-1 focus:ring-kite-blue focus:border-kite-blue transition-colors outline-none"
                 value={formData.address.landmark}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: { ...formData.address, landmark: e.target.value } })
+                placeholder="Search circle or landmark..."
+                onChange={(value) =>
+                  setFormData({ ...formData, address: { ...formData.address, landmark: value } })
                 }
               />
             </div>
