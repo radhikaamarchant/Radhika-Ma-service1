@@ -662,7 +662,7 @@ export default function AddInvestmentModal({
                                 <input
                                   type="text"
                                   autoFocus
-                                  placeholder="Search by name or ID..."
+                                  placeholder="Search by name, ID, or city..."
                                   className="w-full pl-8 pr-3 py-1 bg-gray-50 dark:bg-transparent border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3]"
                                   value={investorSearch}
                                   onChange={(e) =>
@@ -681,19 +681,24 @@ export default function AddInvestmentModal({
     }
     const filteredIds = sortedInvestors
                                       .filter((i) => {
-                                        if (
-                                          !i.name
-                                            .toLowerCase()
-                                            .includes(
-                                              investorSearch.toLowerCase(),
-                                            ) &&
-                                          !i.investorId
-                                            ?.toLowerCase()
-                                            .includes(
-                                              investorSearch.toLowerCase(),
-                                            )
-                                        )
-                                          return false;
+                                      if (
+                                        !i.name
+                                          .toLowerCase()
+                                          .includes(
+                                            investorSearch.toLowerCase(),
+                                          ) &&
+                                        !i.investorId
+                                          ?.toLowerCase()
+                                          .includes(
+                                            investorSearch.toLowerCase(),
+                                          ) &&
+                                        !i.address?.city
+                                          ?.toLowerCase()
+                                          .includes(
+                                            investorSearch.toLowerCase(),
+                                          )
+                                      )
+                                        return false;
                                         if (
                                           !isMobile &&
                                           orderMode === "SELL" &&
@@ -751,6 +756,9 @@ export default function AddInvestmentModal({
                                       .toLowerCase()
                                       .includes(investorSearch.toLowerCase()) &&
                                     !i.investorId
+                                      ?.toLowerCase()
+                                      .includes(investorSearch.toLowerCase()) &&
+                                    !i.address?.city
                                       ?.toLowerCase()
                                       .includes(investorSearch.toLowerCase())
                                   )
@@ -1260,7 +1268,7 @@ export default function AddInvestmentModal({
                               <input
                                 type="text"
                                 autoFocus
-                                placeholder="Search by name or ID..."
+                                placeholder="Search by name, ID, or city..."
                                 className="flex-1 w-full h-full bg-transparent border-none outline-none text-[13px] text-gray-900 dark:text-[#FFFFFF]"
                                 value={investorSearch}
                                 onChange={(e) => setInvestorSearch(e.target.value)}
@@ -1316,6 +1324,11 @@ export default function AddInvestmentModal({
                                                   investorSearch.toLowerCase(),
                                                 ) &&
                                               !i.investorId
+                                                ?.toLowerCase()
+                                                .includes(
+                                                  investorSearch.toLowerCase(),
+                                                ) &&
+                                              !i.address?.city
                                                 ?.toLowerCase()
                                                 .includes(
                                                   investorSearch.toLowerCase(),
@@ -1382,6 +1395,11 @@ export default function AddInvestmentModal({
                                             investorSearch.toLowerCase(),
                                           ) &&
                                         !i.investorId
+                                          ?.toLowerCase()
+                                          .includes(
+                                            investorSearch.toLowerCase(),
+                                          ) &&
+                                        !i.address?.city
                                           ?.toLowerCase()
                                           .includes(
                                             investorSearch.toLowerCase(),
@@ -1473,6 +1491,9 @@ export default function AddInvestmentModal({
                                           investorSearch.toLowerCase(),
                                         ) ||
                                       i.investorId
+                                        ?.toLowerCase()
+                                        .includes(investorSearch.toLowerCase()) ||
+                                      i.address?.city
                                         ?.toLowerCase()
                                         .includes(investorSearch.toLowerCase()),
                                   ).length === 0 && (
