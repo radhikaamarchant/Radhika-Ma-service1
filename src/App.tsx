@@ -32,7 +32,8 @@ import {
 
 import { APIProvider } from '@vis.gl/react-google-maps';
 
-const API_KEY =
+// Key will be fetched at runtime to support deployment environments
+let INITIAL_API_KEY =
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
   (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
   (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
@@ -266,6 +267,23 @@ function MainLayout() {
 
 export default function App() {
   const isOnline = useOnlineStatus();
+  const [apiKey, setApiKey] = useState(INITIAL_API_KEY);
+  const [isKeyLoading, setIsKeyLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.GOOGLE_MAPS_PLATFORM_KEY) {
+          setApiKey(data.GOOGLE_MAPS_PLATFORM_KEY);
+        }
+        setIsKeyLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching config:', err);
+        setIsKeyLoading(false);
+      });
+  }, []);
 
   if (!isOnline) {
     return (
@@ -288,7 +306,15 @@ export default function App() {
     );
   }
 
-  const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
+  if (isKeyLoading) {
+    return (
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',fontFamily:'sans-serif'}}>
+        <div>Loading configuration...</div>
+      </div>
+    );
+  }
+
+  const hasValidKey = Boolean(apiKey) && apiKey !== 'YOUR_API_KEY';
 
   if (!hasValidKey) {
     return (
@@ -312,7 +338,7 @@ export default function App() {
   return (
     <AppProvider>
       <MarketSimulationProvider>
-        <APIProvider apiKey={API_KEY} version="weekly">
+        <APIProvider apiKey={apiKey} version="weekly">
           <AuthWrapper />
         </APIProvider>
       </MarketSimulationProvider>
