@@ -30,15 +30,6 @@ import {
   useMarketSimulation,
 } from"./utils/MarketSimulationContext";
 
-import { APIProvider } from '@vis.gl/react-google-maps';
-
-// Key will be fetched at runtime to support deployment environments
-let INITIAL_API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
-
 function GlobalMarketAlerts() {
   const { marketState, removeAlert } = useMarketSimulation();
   if (marketState.alerts.length === 0) return null;
@@ -267,28 +258,6 @@ function MainLayout() {
 
 export default function App() {
   const isOnline = useOnlineStatus();
-  const [apiKey, setApiKey] = useState(INITIAL_API_KEY);
-  const [isKeyLoading, setIsKeyLoading] = useState(true);
-
-  useEffect(() => {
-    // Suppress Google Maps authentication failure alert
-    (window as any).gm_authFailure = () => {
-      console.warn("Google Maps authentication failed. Places autocomplete will gracefully degrade to a standard text input.");
-    };
-
-    fetch('/api/config')
-      .then(res => res.json())
-      .then(data => {
-        if (data.GOOGLE_MAPS_PLATFORM_KEY) {
-          setApiKey(data.GOOGLE_MAPS_PLATFORM_KEY);
-        }
-        setIsKeyLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching config:', err);
-        setIsKeyLoading(false);
-      });
-  }, []);
 
   if (!isOnline) {
     return (
@@ -311,22 +280,10 @@ export default function App() {
     );
   }
 
-  if (isKeyLoading) {
-    return (
-      <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',fontFamily:'sans-serif'}}>
-        <div>Loading configuration...</div>
-      </div>
-    );
-  }
-
-
-
   return (
     <AppProvider>
       <MarketSimulationProvider>
-        <APIProvider apiKey={apiKey} version="weekly">
-          <AuthWrapper />
-        </APIProvider>
+        <AuthWrapper />
       </MarketSimulationProvider>
     </AppProvider>
   );

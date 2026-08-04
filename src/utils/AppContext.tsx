@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { motion } from "motion/react";
-import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, getDocs, getDoc } from "firebase/firestore";
 import { db, auth } from "./firebase";
 import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
 
@@ -106,71 +106,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Use onSnapshot which will utilize the local cache from persistentLocalCache in firebase.ts
-    const unsubBusinesses = onSnapshot(collection(db, "businesses"), (snap) => {
-      if (!isMounted) return;
-      setState((s) => {
-        const newBusinesses = applyChanges(s.businesses, snap.docChanges());
-        if (s.businesses !== newBusinesses || s.loading !== false) {
-          return { ...s, businesses: newBusinesses, loading: false };
-        }
-        return s;
-      });
-    }, handleQuotaError);
+    const fetchInitialData = async () => {
+      try {
+        const [bizSnap, invSnap, invsSnap, usersSnap, settingsSnap] = await Promise.all([
+          getDocs(collection(db, "businesses")),
+          getDocs(collection(db, "investors")),
+          getDocs(collection(db, "investments")),
+          getDocs(collection(db, "users")),
+          getDoc(doc(db, "settings", "global"))
+        ]);
 
-    const unsubInvestors = onSnapshot(collection(db, "investors"), (snap) => {
-      if (!isMounted) return;
-      setState((s) => {
-        const newInvestors = applyChanges(s.investors, snap.docChanges());
-        if (s.investors !== newInvestors) {
-          return { ...s, investors: newInvestors };
-        }
-        return s;
-      });
-    }, handleQuotaError);
+        if (!isMounted) return;
 
-    const unsubInvestments = onSnapshot(collection(db, "investments"), (snap) => {
-      if (!isMounted) return;
-      setState((s) => {
-        const newInvestments = applyChanges(s.investments, snap.docChanges());
-        if (s.investments !== newInvestments) {
-          return { ...s, investments: newInvestments };
-        }
-        return s;
-      });
-    }, handleQuotaError);
+        const businesses = bizSnap.docs.map(d => d.data() as Business);
+        const investors = invSnap.docs.map(d => d.data() as Investor);
+        const investments = invsSnap.docs.map(d => d.data() as Investment);
+        const users = usersSnap.docs.map(d => d.data() as AppUser);
+        const settings = settingsSnap.exists() ? (settingsSnap.data() as GlobalSettings) : null;
 
-    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
-      if (!isMounted) return;
-      setState((s) => {
-        const newUsers = applyChanges(s.users, snap.docChanges());
-        if (s.users !== newUsers || !s.usersLoaded) {
-          return { ...s, users: newUsers, usersLoaded: true };
-        }
-        return s;
-      });
-    }, handleQuotaError);
-
-    const unsubSettings = onSnapshot(doc(db, "settings", "global"), (docSnap) => {
-      if (!isMounted) return;
-      if (docSnap.exists()) {
-        const data = docSnap.data() as GlobalSettings;
-        setState((s) => {
-          if (JSON.stringify(s.settings) !== JSON.stringify(data)) {
-            return { ...s, settings: data };
-          }
-          return s;
-        });
+        setState((s) => ({
+          ...s,
+          businesses,
+          investors,
+          investments,
+          users,
+          settings,
+          usersLoaded: true,
+          loading: false
+        }));
+      } catch (err: any) {
+        handleQuotaError(err);
       }
-    }, handleQuotaError);
+    };
+
+    fetchInitialData();
 
     return () => {
       isMounted = false;
-      unsubBusinesses();
-      unsubInvestors();
-      unsubInvestments();
-      unsubUsers();
-      unsubSettings();
     };
   }, []); // Only run once on mount
 
