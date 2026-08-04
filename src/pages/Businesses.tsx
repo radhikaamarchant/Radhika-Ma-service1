@@ -349,7 +349,7 @@ export default function Businesses() {
                   <div>Business Name</div>
                   <div>Owner Name</div>
                   <div>ID</div>
-                  <div>ROI</div>
+                  <div>Investors</div>
                   <div className="text-right">Trigger</div>
                 </div>
               </div>
@@ -368,6 +368,7 @@ export default function Businesses() {
                         (sum, inv) => sum + inv.amount,
                         0,
                       );
+                      const uniqueInvestorsCount = new Set(activeInvestments.map(inv => inv.investorId)).size;
                       return (
                         <div
                           key={`inv_${business.id}_${idx}`}
@@ -444,9 +445,9 @@ export default function Businesses() {
                               {business.businessId}
                             </div>
 
-                            {/* 4. ROI */}
-                            <div className="text-[14px] text-[#53b987] font-medium">
-                              {business.interestRate}%
+                            {/* 4. Investors Count */}
+                            <div className="text-[14px] text-[#444444] dark:text-[#e0e0e0] font-medium">
+                              {uniqueInvestorsCount}
                             </div>
 
                             {/* 5. TRIGGER AMOUNT & APPLY BUTTON */}
