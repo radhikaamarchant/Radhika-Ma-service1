@@ -1035,7 +1035,9 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
           
           <div className="sticky top-0 z-40 bg-white dark:bg-kite-bg dark:md:bg-[#181818] pt-2 pb-0 -mx-4 px-4 md:mx-0 md:px-0">
             <div className="flex overflow-x-auto no-scrollbar border-b border-kite-border/50 items-center whitespace-nowrap">
-              {cities.map((city: string) => (
+              {cities.map((city: string) => {
+                const investorCountForCity = state.investors.filter((i: any) => i.address?.city?.toLowerCase()?.trim() === city).length;
+                return (
                 <button
                   key={city}
                   onClick={() => { setSelectedCity(city); setExpandedBusinessId(null); }}
@@ -1045,12 +1047,12 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                       : "text-kite-text-light hover:text-kite-text"
                   }`}
                 >
-                  {city}
+                  {city}-{investorCountForCity}
                   {selectedCity === city && (
                     <div className="absolute bottom-0 left-0 w-full h-[2px] bg-kite-blue" />
                   )}
                 </button>
-              ))}
+              ) })}
             </div>
           </div>
 
