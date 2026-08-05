@@ -561,3 +561,11 @@ body:not([data-current-view="investors"]) .investors-portal {
 body:not([data-current-view="businesses"]) .businesses-portal {
   display: none !important;
 }
+
+/* Desktop Dark Mode Specific Overrides */
+html.dark .text-desktop-dark-bbbbbbd9 {
+    color: #BBBBBBD9 !important;
+}
+html.dark .text-desktop-dark-666666 {
+    color: #666666 !important;
+}
