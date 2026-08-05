@@ -1,5 +1,5 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-import React, { useState } from"react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAppContext } from"../utils/AppContext";
 import { formatINR } from"../utils/mockData";
 import {
@@ -32,6 +32,7 @@ import { Business } from"../types";
 import { getVerificationStats } from"../utils/blueTick";
 import { MarketTrendCell } from"../components/MarketTrendCell";
 import { getUnifiedBankBalance } from"../utils/bankBalance";
+import { getCurrentMarketPrice } from"../utils/marketSimulator";
 import { calculateLiveProfit } from"../utils/profitCalculator";
 import { useMarketSimulation } from"../utils/MarketSimulationContext";
 export default function Dashboard() {
@@ -106,29 +107,289 @@ actualProfitPaid += inv.amount * ((inv.interestRate || business.interestRate) / 
   );
 };
 
-return (
-  <div className="flex-1 overflow-auto bg-kite-bg">
-    <div className="w-full">
+
+  
+  // --- Desktop Split Screen Logic ---
+  const [desktopSelectedBusinessId, setDesktopSelectedBusinessId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!desktopSelectedBusinessId && state.businesses.length > 0) {
+      setDesktopSelectedBusinessId(state.businesses[0].id);
+    }
+  }, [state.businesses, desktopSelectedBusinessId]);
+
+  const desktopSelectedBusiness = state.businesses.find(b => b.id === desktopSelectedBusinessId) || state.businesses[0];
+
+  const [liveTick, setLiveTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveTick(prev => prev + 1);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+
+  const getLiveFluctuatedPrice = (b: any, basePrice: number, tick: number) => {
+    if (!b) return { livePrice: 0, liveTrend: 0 };
+    
+    const livePrice = basePrice;
+    const originalPrice = b.triggerAmount || 100;
+    
+    // Strictly compute percentage based on price difference, exactly like the Left Sidebar
+    const absoluteChange = livePrice - originalPrice;
+    const liveTrend = originalPrice > 0 ? (absoluteChange / originalPrice) * 100 : 0;
+    
+    return { livePrice, liveTrend };
+  };
+
+  // Calculate prices for the Option Chain based on the selected company's ACTUAL price
+  const { spotPrice, spotChange, percentageChange } = useMemo(() => {
+    if (!desktopSelectedBusiness) return { spotPrice: 0, spotChange: 0, percentageChange: 0 };
+    const basePrice = getCurrentMarketPrice(desktopSelectedBusiness, state.investments);
+    
+    // Read directly from the base price logic
+    const originalPrice = desktopSelectedBusiness.triggerAmount || 100;
+    const absoluteDiff = basePrice - originalPrice;
+    const pctChange = originalPrice > 0 ? (absoluteDiff / originalPrice) * 100 : 0;
+    
+    return { spotPrice: basePrice, spotChange: absoluteDiff, percentageChange: pctChange };
+  }, [desktopSelectedBusiness, state.investments]);
+
+
+  const baseOptionsData = useMemo(() => {
+    if (!desktopSelectedBusiness || !spotPrice) return null;
+    const base = spotPrice;
+    
+    let step = 10;
+    if (base > 500) step = 50;
+    if (base > 2000) step = 100;
+    if (base > 10000) step = 500;
+    
+    const atmStrike = Math.round(base / step) * step;
+    const chain = [];
+    
+    for (let i = -10; i <= 10; i++) {
+      const strike = atmStrike + (i * step);
+      chain.push({
+        strike,
+        ceBaseVol: Math.floor(Math.random() * 50000) + 10000,
+        ceBaseOi: Math.floor(Math.random() * 200000) + 20000,
+        peBaseVol: Math.floor(Math.random() * 50000) + 10000,
+        peBaseOi: Math.floor(Math.random() * 200000) + 20000,
+      });
+    }
+    return { base, atmStrike, chain, step };
+  }, [desktopSelectedBusiness]);
+
+  const optionChain = useMemo(() => {
+    if (!baseOptionsData || !spotPrice) return [];
+    
+    return baseOptionsData.chain.map(data => {
+      const { strike, ceBaseVol, ceBaseOi, peBaseVol, peBaseOi } = data;
+      const step = baseOptionsData.step;
       
-      <div className="flex justify-between items-center p-4 border-b border-kite-border">
-        <h1 className="text-[17px] md:text-[18px] font-medium text-kite-text uppercase">Dashboard</h1>
+      const ceITM = strike < spotPrice;
+      const peITM = strike > spotPrice;
+      
+      const ceIntrinsic = Math.max(0, spotPrice - strike);
+      const peIntrinsic = Math.max(0, strike - spotPrice);
+      
+      const distanceFromAtm = Math.abs(strike - baseOptionsData.atmStrike) / step;
+      const timeValue = Math.max(0.5, (step * 2) - (distanceFromAtm * (step * 0.3)));
+      
+      const cePrice = ceIntrinsic + timeValue + ((spotPrice % 1) * (step * 0.02));
+      const pePrice = peIntrinsic + timeValue + ((spotPrice % 1) * (step * 0.02));
+      
+      const ceChange = percentageChange * 2 * (1 - (distanceFromAtm * 0.05));
+      const peChange = -percentageChange * 2 * (1 - (distanceFromAtm * 0.05));
+
+      return {
+        strike,
+        isAtm: strike === baseOptionsData.atmStrike,
+        ce: {
+          price: cePrice.toFixed(2),
+          change: ceChange.toFixed(2),
+          vol: ceBaseVol + Math.floor(spotPrice % 100),
+          oi: ceBaseOi + Math.floor(spotPrice % 50),
+          itm: ceITM
+        },
+        pe: {
+          price: pePrice.toFixed(2),
+          change: peChange.toFixed(2),
+          vol: peBaseVol + Math.floor(spotPrice % 100),
+          oi: peBaseOi + Math.floor(spotPrice % 50),
+          itm: peITM
+        }
+      };
+    });
+  }, [baseOptionsData, spotPrice, percentageChange]);
+  // --- End Desktop Split Screen Logic ---
+
+return (
+  <div className="absolute inset-0 overflow-hidden bg-kite-bg flex flex-col">
+    
+    {/* MOBILE VIEW */}
+    <div className="flex md:hidden flex-col flex-1 overflow-auto pb-[80px]">
+      <div className="w-full">
+        <div className="flex justify-between items-center p-4 border-b border-kite-border">
+          <h1 className="text-[17px] font-medium text-kite-text uppercase">Dashboard</h1>
+        </div>
+        <div className="grid grid-cols-2 divide-x divide-y divide-kite-border border-b border-kite-border bg-white dark:bg-kite-surface">
+          {stats.map((stat, i) => (
+            <div key={i} className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-[11px] text-kite-text-light uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-[20px] font-medium text-kite-text mt-2">{stat.value}</p>
+                </div>
+                <stat.icon className="w-4 h-4 text-kite-blue mt-1" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {selectedBusiness && renderBusinessDetails(selectedBusiness)}
+    </div>
+
+    {/* DESKTOP VIEW */}
+    <div className="hidden md:flex flex-col flex-1 min-h-0 overflow-hidden bg-white dark:bg-kite-surface">
+      {/* Top 50% - Companies List */}
+      <div className="flex-1 overflow-hidden flex flex-col min-h-0 bg-white dark:bg-kite-surface">
+        <div className="p-3 border-b border-kite-border flex items-center justify-between bg-gray-50 dark:bg-kite-bg shrink-0">
+          <h2 className="text-[13px] font-medium text-kite-text uppercase tracking-wider">Listed Companies</h2>
+          <span className="text-[12px] text-kite-text-light">{state.businesses.length} Total</span>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <table className="w-full text-[13px] text-left">
+            <thead className="sticky top-0 bg-white dark:bg-kite-surface border-b border-kite-border/50 text-kite-text-light z-10">
+              <tr>
+                <th className="py-2 px-4 font-normal">Company</th>
+                <th className="py-2 px-4 font-normal text-right">LTP</th>
+                <th className="py-2 px-4 font-normal text-right">Change %</th>
+                <th className="py-2 px-4 font-normal text-right">Inv Impect (%)</th>
+                <th className="py-2 px-4 font-normal text-right">Expect (%)</th>
+                <th className="py-2 px-4 font-normal text-right">Chance (%)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-kite-border/50">
+              {state.businesses.map(b => {
+                const bBasePrice = getCurrentMarketPrice(b, state.investments);
+                const { livePrice: bPrice, liveTrend: bTrend } = getLiveFluctuatedPrice(b, bBasePrice, liveTick);
+                
+                const isUp = bTrend >= 0;
+                const trendColor = isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]";
+                
+                // Calculate dynamic fluctuating percentages
+                const hash = b.id.charCodeAt(0) + b.id.charCodeAt(b.id.length - 1);
+                const bizInvs = state.investments.filter(i => i.businessId === b.id && i.status === "active");
+                const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0);
+                
+                // Inv Impect (%) based on strict ratio of investors
+                const distinctInvestors = new Set(bizInvs.map(i => i.investorId)).size;
+                const totalPlatformInvestors = state.investors.length || 1;
+                const calculatedImpact = (distinctInvestors / totalPlatformInvestors) * 100;
+                const invImpact = distinctInvestors === totalPlatformInvestors ? 100 : Math.min(99.99, calculatedImpact);
+                
+                // Expect (%)
+                const expectBase = b.interestRate || 10;
+                const expectFluctuation = Math.cos((liveTick + hash) * 0.6) * 1.5;
+                const expectVal = Math.max(0, expectBase + expectFluctuation);
+                
+                // Chance (%)
+                const chanceBase = 60 + (hash % 30);
+                const chanceFluctuation = Math.sin((liveTick + hash * 2) * 0.4) * 4.5;
+                const chance = Math.max(0, Math.min(100, chanceBase + chanceFluctuation));
+                
+                return (
+                <tr 
+                  key={b.id} 
+                  onClick={() => setDesktopSelectedBusinessId(b.id)}
+                  className={`cursor-pointer transition-colors ${desktopSelectedBusinessId === b.id ? 'bg-kite-blue/5 dark:bg-kite-blue/10' : 'hover:bg-gray-50 dark:hover:bg-[#222222]'}`}
+                >
+                  <td className="py-2.5 px-4 font-medium text-kite-blue">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</td>
+                  <td className="py-2.5 px-4 text-right font-medium text-kite-text">{formatINR(bPrice)}</td>
+                  <td className={`py-2.5 px-4 text-right font-medium ${trendColor}`}>{isUp ? '+' : ''}{bTrend.toFixed(2)}%</td>
+                  <td className="py-2.5 px-4 text-right text-kite-text">{invImpact.toFixed(2)}%</td>
+                  <td className="py-2.5 px-4 text-right text-kite-text">{expectVal.toFixed(2)}%</td>
+                  <td className="py-2.5 px-4 text-right text-kite-text">{chance.toFixed(2)}%</td>
+                </tr>
+              )})}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-kite-border border-b border-kite-border bg-white dark:bg-kite-surface">
-        {stats.map((stat, i) => (
-          <div key={i} className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wider">{stat.label}</p>
-                <p className="text-[20px] md:text-[22px] font-medium text-kite-text mt-2">{stat.value}</p>
-              </div>
-              <stat.icon className="w-4 h-4 text-kite-blue mt-1" />
-            </div>
+      {/* Splitter */}
+      <div className="h-[1px] w-full bg-kite-border shrink-0"></div>
+
+      {/* Bottom 50% - Option Chain */}
+      <div className="flex-1 overflow-hidden flex flex-col min-h-0 bg-white dark:bg-kite-surface">
+        <div className="p-3 border-b border-kite-border flex items-center justify-between bg-gray-50 dark:bg-kite-bg shrink-0">
+          <div className="flex items-center gap-4">
+            <h2 className="text-[13px] font-medium text-kite-text tracking-wider">Liqudity Price (₹)</h2>
+            <span className="text-[13px] font-medium text-kite-blue">{desktopSelectedBusiness?.name?.toUpperCase()}</span>
+            <span className={`text-[13px] font-medium flex items-center gap-1 ${percentageChange >= 0 ? 'text-[#4CAF50] dark:text-[#5B9A5D]' : 'text-[#DF514C] dark:text-[#E25F5B]'}`}>
+              ₹{spotPrice.toFixed(2)} 
+              <span className="text-[11px]">({spotChange >= 0 ? '+' : ''}{spotChange.toFixed(2)} / {percentageChange >= 0 ? '+' : ''}{percentageChange.toFixed(2)}%)</span>
+            </span>
           </div>
-        ))}
+          <div className="flex text-[11px] text-kite-text-light gap-4">
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#fdf5f2] dark:bg-[#4a2e2b]"></div> ITM Calls</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#f4f7fa] dark:bg-[#203348]"></div> ITM Puts</span>
+          </div>
+        </div>
+        
+        {/* Option Chain Table */}
+        <div className="flex-1 overflow-auto bg-white dark:bg-kite-surface">
+          <table className="w-full text-[12px] text-right font-mono">
+            <thead className="sticky top-0 z-10 bg-gray-100 dark:bg-[#1e1e1e] border-b border-kite-border text-kite-text-light tracking-wider">
+              <tr>
+                <th colSpan={4} className="py-2 px-2 text-center border-r border-kite-border/50">Expect Price (₹)</th>
+                <th className="py-2 px-2 text-center border-r border-kite-border/50 bg-gray-50 dark:bg-[#181818]">Strike</th>
+                <th colSpan={4} className="py-2 px-2 text-center">Genetic Price (₹)</th>
+              </tr>
+              <tr className="border-b border-kite-border/50 bg-white dark:bg-kite-surface">
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50">Oi</th>
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50">Vol</th>
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50">Change %</th>
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50">Ltp</th>
+                
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50 bg-gray-50 dark:bg-[#181818]"></th>
+                
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50">Ltp</th>
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50">Change %</th>
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50">Vol</th>
+                <th className="py-1 px-2 font-normal">Oi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {optionChain.map((row, idx) => (
+                <tr key={idx} className={`border-b border-kite-border/20 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] transition-colors ${row.isAtm ? 'border-y-2 border-y-kite-blue/30' : ''}`}>
+                  {/* Calls */}
+                  <td className={`py-1.5 px-2 border-r border-kite-border/20 ${row.ce.itm ? 'bg-[#fdf5f2] dark:bg-[#4a2e2b]/30' : ''}`}>{row.ce.oi.toLocaleString()}</td>
+                  <td className={`py-1.5 px-2 border-r border-kite-border/20 ${row.ce.itm ? 'bg-[#fdf5f2] dark:bg-[#4a2e2b]/30' : ''}`}>{row.ce.vol.toLocaleString()}</td>
+                  <td className={`py-1.5 px-2 border-r border-kite-border/20 ${Number(row.ce.change) > 0 ? 'text-[#4CAF50] dark:text-[#5B9A5D]' : Number(row.ce.change) < 0 ? 'text-[#DF514C] dark:text-[#E25F5B]' : ''} ${row.ce.itm ? 'bg-[#fdf5f2] dark:bg-[#4a2e2b]/30' : ''}`}>
+                    {row.ce.change}%
+                  </td>
+                  <td className={`py-1.5 px-2 font-medium border-r border-kite-border/50 ${row.ce.itm ? 'bg-[#fdf5f2] dark:bg-[#4a2e2b]/30' : ''}`}>{row.ce.price}</td>
+                  
+                  {/* Strike */}
+                  <td className="py-1.5 px-2 text-center font-bold bg-gray-50 dark:bg-[#181818] border-r border-kite-border/50 text-kite-text">{row.strike}</td>
+                  
+                  {/* Puts */}
+                  <td className={`py-1.5 px-2 font-medium border-r border-kite-border/20 ${row.pe.itm ? 'bg-[#f4f7fa] dark:bg-[#203348]/30' : ''}`}>{row.pe.price}</td>
+                  <td className={`py-1.5 px-2 border-r border-kite-border/20 ${Number(row.pe.change) > 0 ? 'text-[#4CAF50] dark:text-[#5B9A5D]' : Number(row.pe.change) < 0 ? 'text-[#DF514C] dark:text-[#E25F5B]' : ''} ${row.pe.itm ? 'bg-[#f4f7fa] dark:bg-[#203348]/30' : ''}`}>
+                    {row.pe.change}%
+                  </td>
+                  <td className={`py-1.5 px-2 border-r border-kite-border/20 ${row.pe.itm ? 'bg-[#f4f7fa] dark:bg-[#203348]/30' : ''}`}>{row.pe.vol.toLocaleString()}</td>
+                  <td className={`py-1.5 px-2 ${row.pe.itm ? 'bg-[#f4f7fa] dark:bg-[#203348]/30' : ''}`}>{row.pe.oi.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    {selectedBusiness && renderBusinessDetails(selectedBusiness)}
   </div>
 );
 }
