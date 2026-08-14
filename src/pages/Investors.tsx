@@ -1,5 +1,6 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import DebouncedInput from "../components/DebouncedInput";
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useDeferredValue } from "react";
 import { createPortal } from "react-dom";
 import InvestorPreviewModal from '../components/InvestorPreviewModal';
@@ -23,8 +24,8 @@ import {
   BadgeCheck,
   Clock,
   ChevronRight,
-  ChevronDown,
-} from "lucide-react";
+  ChevronDown } from
+"lucide-react";
 import { Investor, Investment, Business } from "../types";
 import { INDIAN_BANKS } from "../utils/indianBanks";
 import { downloadElementAsPDF } from "../utils/pdfGenerator";
@@ -38,16 +39,16 @@ import { LivePortfolioDetail } from "../components/LivePortfolioDetail";
 import InvestorDetail from "../components/InvestorDetail";
 import AddInvestmentModal from "../components/AddInvestmentModal";
 type ViewMode =
-  | "list"
-  | "add-step-1"
-  | "add-step-2"
-  | "withdraw-list"
-  | "withdraw-calc"
-  | "withdraw-bank"
-  | "banking-record"
-  | "investor-detail";
+"list" |
+"add-step-1" |
+"add-step-2" |
+"withdraw-list" |
+"withdraw-calc" |
+"withdraw-bank" |
+"banking-record" |
+"investor-detail";
 const generateId = (prefix: string) =>
-  `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
+`${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
 
 const formatLargeNumber = (num) => {
   if (num === 0) return "0";
@@ -72,8 +73,8 @@ const getDayChangePct = (bizId: string) => {
   const today = new Date();
   const dateStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
   const todayHash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const combined = ((hash * 31) + todayHash) % 1000; 
-  return ((combined / 1000) * 10) - 5; // -5.00% to +5.00%
+  const combined = (hash * 31 + todayHash) % 1000;
+  return combined / 1000 * 10 - 5; // -5.00% to +5.00%
 };
 
 export default function Investors() {
@@ -90,7 +91,7 @@ export default function Investors() {
   const [addModalBusinessId, setAddModalBusinessId] = useState("");
   const [addModalInvestorId, setAddModalInvestorId] = useState("");
   const [withdrawTab, setWithdrawTab] = useState<"holdings" | "positions">(
-    "holdings",
+    "holdings"
   );
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -101,21 +102,21 @@ export default function Investors() {
   }, [isSearchExpanded]);
   // Withdraw State
   const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(
-    null,
+    null
   );
   const [selectedInvestments, setSelectedInvestments] = useState<Investment[]>(
-    [],
+    []
   );
   const [selectedPortfolioInvestment, setSelectedPortfolioInvestment] =
-    useState<any>(null);
+  useState<any>(null);
   const [withdrawFormData, setWithdrawFormData] = useState({
     committedMonths: "12",
     completedMonths: "12",
     rmasCommission: "",
-    happyIncomeTax: "",
+    happyIncomeTax: ""
   });
   const [withdrawQtyMap, setWithdrawQtyMap] = useState<Record<string, number>>(
-    {},
+    {}
   );
   // PDF Modal State
   const [pdfInvestor, setPdfInvestor] = useState<Investor | null>(null);
@@ -139,24 +140,24 @@ export default function Investors() {
     accountNumber: "",
     ifscCode: "",
     accountHolderName: "",
-    rmasServiceCharge: "",
+    rmasServiceCharge: ""
   });
 
   useMobileBackNavigation(viewMode === "add-step-1", () => setViewMode("list"));
   useMobileBackNavigation(viewMode === "add-step-2", () =>
-    setViewMode("add-step-1"),
+  setViewMode("add-step-1")
   );
   useMobileBackNavigation(viewMode === "withdraw-list", () =>
-    setViewMode("investor-detail"),
+  setViewMode("investor-detail")
   );
   useMobileBackNavigation(viewMode === "withdraw-calc", () =>
-    setViewMode("withdraw-list"),
+  setViewMode("withdraw-list")
   );
   useMobileBackNavigation(viewMode === "withdraw-bank", () =>
-    setViewMode("withdraw-calc"),
+  setViewMode("withdraw-calc")
   );
   useMobileBackNavigation(viewMode === "banking-record", () =>
-    setViewMode("list"),
+  setViewMode("list")
   );
   useMobileBackNavigation(viewMode === "investor-detail", () => {
     setViewMode("list");
@@ -166,85 +167,97 @@ export default function Investors() {
   useMobileBackNavigation(!!pdfProfitSlip, () => setPdfProfitSlip(null));
   useMobileBackNavigation(showOwnerSelect, () => setShowOwnerSelect(false));
   useMobileBackNavigation(!!selectedPortfolioInvestment, () =>
-    setSelectedPortfolioInvestment(null),
+  setSelectedPortfolioInvestment(null)
   );
   const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const deferredOwnerSearch = useDeferredValue(ownerSearch);
   const deferredBankSearch = useDeferredValue(bankSearch);
   const uniqueInvestors = useMemo(() => Array.from(
-    new Map<string, Investor>(state.investors.map((i) => [i.id, i])).values(),
+    new Map<string, Investor>(state.investors.map((i) => [i.id, i])).values()
   ), [state.investors]);
-  const investorsWithStats = useMemo(() => uniqueInvestors
-    
-    .map((i) => {
-      const activeInvs = state.investments.filter(
-        (inv) => inv.investorId === i.id && inv.status !== "completed",
-      );
-      let totalAmountInvested = activeInvs.reduce(
-        (sum, inv) => sum + inv.amount,
-        0,
-      );
-      if (i.id === "admin_investor") {
-        totalAmountInvested = getUnifiedBankBalance(
-          "Radhika M",
-          state.businesses,
-          state.investors,
-          state.investments,
-          state.settings,
-        );
-      }
-      let totalLiveProfit = 0;
-      const grouped = activeInvs.reduce(
-        (acc, inv) => {
-          if (!acc[inv.businessId]) acc[inv.businessId] = [];
-          acc[inv.businessId].push(inv);
-          return acc;
-        },
-        {} as Record<string, Investment[]>,
-      );
-      Object.entries(grouped).forEach(([bizId, invs]) => {
-        const res = calculateLiveProfit(
-          invs as Investment[],
-          bizId,
-          marketState.trends,
-          state.settings,
-          state.businesses
-        );
-        totalLiveProfit += res.liveProfit;
-      });
-      const returnPercentage =
-        totalAmountInvested > 0
-          ? (totalLiveProfit / totalAmountInvested) * 100
-          : 0;
-      const hasActive = activeInvs.length > 0;
-      const hasCompleted = state.investments.some(
-        (inv) => inv.investorId === i.id && inv.status === "completed",
-      );
-      const status = hasActive
-        ? "active"
-        : hasCompleted
-          ? "withdrawn"
-          : "pending";
-      return {
-        ...i,
-        totalInvested: totalAmountInvested,
-        totalLiveProfit,
-        returnPercentage,
-        status,
-      };
-    })
-    .sort(
-      (a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime(),
-    ), [uniqueInvestors, state.investments, state.businesses, state.settings, marketState.trends]);
-  const filteredInvestors = useMemo(() => {
-    const term = deferredSearchTerm.toLowerCase();
-    return investorsWithStats.filter(
-      (i) =>
-        (i.name || "").toLowerCase().includes(term) ||
-        i.investorId.includes(term)
+  const investorsWithStats = useMemo(() => uniqueInvestors.
+
+  map((i) => {
+    const activeInvs = state.investments.filter(
+      (inv) => inv.investorId === i.id && inv.status !== "completed"
     );
-  }, [investorsWithStats, deferredSearchTerm]);
+    let totalAmountInvested = activeInvs.reduce(
+      (sum, inv) => sum + inv.amount,
+      0
+    );
+    if (i.id === "admin_investor") {
+      totalAmountInvested = getUnifiedBankBalance(
+        "Radhika M",
+        state.businesses,
+        state.investors,
+        state.investments,
+        state.settings
+      );
+    }
+    let totalLiveProfit = 0;
+    const grouped = activeInvs.reduce(
+      (acc, inv) => {
+        if (!acc[inv.businessId]) acc[inv.businessId] = [];
+        acc[inv.businessId].push(inv);
+        return acc;
+      },
+      {} as Record<string, Investment[]>
+    );
+    Object.entries(grouped).forEach(([bizId, invs]) => {
+      const res = calculateLiveProfit(
+        invs as Investment[],
+        bizId,
+        marketState.trends,
+        state.settings,
+        state.businesses
+      );
+      totalLiveProfit += res.liveProfit;
+    });
+    const returnPercentage =
+    totalAmountInvested > 0 ?
+    totalLiveProfit / totalAmountInvested * 100 :
+    0;
+    const hasActive = activeInvs.length > 0;
+    const hasCompleted = state.investments.some(
+      (inv) => inv.investorId === i.id && inv.status === "completed"
+    );
+    const status = hasActive ?
+    "active" :
+    hasCompleted ?
+    "withdrawn" :
+    "pending";
+    return {
+      ...i,
+      totalInvested: totalAmountInvested,
+      totalLiveProfit,
+      returnPercentage,
+      status
+    };
+  }).
+  sort(
+    (a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime()
+  ), [uniqueInvestors, state.investments, state.businesses, state.settings, marketState.trends]);
+  const filteredInvestors = investorsWithStats;
+
+  
+  useEffect(() => {
+    const term = searchTerm.toLowerCase();
+    let visibleCount = 0;
+    document.querySelectorAll('.investor-list-row').forEach((node: any) => {
+      const key = node.getAttribute('data-search-key') || '';
+      if (key.includes(term)) {
+        node.style.display = '';
+        visibleCount++;
+      } else {
+        node.style.display = 'none';
+      }
+    });
+    const noResults = document.getElementById('no-investors-found');
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }, [searchTerm, investorsWithStats]);
 
   const generateInvestorId = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -254,7 +267,7 @@ export default function Investors() {
     if (state.settings && state.settings.formDataRegistration) {
       if (state.settings.formDataRegistration.type === "amount") {
         defaultServiceCharge = String(
-          state.settings.formDataRegistration.value,
+          state.settings.formDataRegistration.value
         );
       }
     }
@@ -266,7 +279,7 @@ export default function Investors() {
       accountNumber: "",
       ifscCode: "",
       accountHolderName: "",
-      rmasServiceCharge: defaultServiceCharge,
+      rmasServiceCharge: defaultServiceCharge
     });
     setViewMode("add-step-1");
   };
@@ -289,9 +302,9 @@ export default function Investors() {
           e.preventDefault();
           handleNextStep(e as any);
         }
-      },
+      }
     },
-    viewMode === "add-step-1",
+    viewMode === "add-step-1"
   );
 
   const handleNextStep = (e: React.FormEvent) => {
@@ -300,7 +313,7 @@ export default function Investors() {
     setFormData({
       ...formData,
       accountHolderName:
-        formData.accountHolderName || formData.name.toUpperCase(),
+      formData.accountHolderName || formData.name.toUpperCase()
       // auto fill all caps
     });
     setViewMode("add-step-2");
@@ -324,9 +337,9 @@ export default function Investors() {
           e.preventDefault();
           handleVerifiedSave(e as any);
         }
-      },
+      }
     },
-    viewMode === "add-step-2",
+    viewMode === "add-step-2"
   );
 
   const handleVerifiedSave = (e: React.FormEvent) => {
@@ -343,10 +356,10 @@ export default function Investors() {
           bankName: formData.bankName,
           accountNumber: formData.accountNumber,
           ifscCode: formData.ifscCode.toUpperCase(),
-          accountHolderName: formData.accountHolderName.toUpperCase(),
+          accountHolderName: formData.accountHolderName.toUpperCase()
         },
         rmasServiceCharge:
-          Number(formData.rmasServiceCharge.toString().replace(/,/g, "")) || 0,
+        Number(formData.rmasServiceCharge.toString().replace(/,/g, "")) || 0
       };
       dispatch({ type: "ADD_INVESTOR", payload: actualNewInvestor });
       setIsVerifying(false);
@@ -370,35 +383,35 @@ export default function Investors() {
     setSelectedInvestments(investments);
     setWithdrawFormData({
       committedMonths:
-        investments.length > 0
-          ? investments[0].timePeriodMonths.toString()
-          : "12",
+      investments.length > 0 ?
+      investments[0].timePeriodMonths.toString() :
+      "12",
       completedMonths:
-        investments.length > 0
-          ? investments[0].timePeriodMonths.toString()
-          : "12",
+      investments.length > 0 ?
+      investments[0].timePeriodMonths.toString() :
+      "12",
       rmasCommission: "",
-      happyIncomeTax: "",
+      happyIncomeTax: ""
     });
     setViewMode("withdraw-calc");
   };
   const businessId =
-    selectedInvestments.length > 0 ? selectedInvestments[0].businessId : "";
+  selectedInvestments.length > 0 ? selectedInvestments[0].businessId : "";
   const business = state.businesses.find((b) => b.id === businessId);
   const isBlueTick = statsMap.get(businessId)?.isBlueTick ?? false;
   const isPreVerified = statsMap.get(businessId)?.isPreVerified ?? false;
   const marketTrend = marketState.trends[businessId] || 0;
   const calculateProfit = () => {
     if (selectedInvestments.length === 0)
-      return {
-        baseProfit: 0,
-        totalProfit: 0,
-        marketProfit: 0,
-        fullLiveProfit: 0,
-        rmasMarketCover: 0,
-        marketTrend: 0,
-        isPremature: false,
-      };
+    return {
+      baseProfit: 0,
+      totalProfit: 0,
+      marketProfit: 0,
+      fullLiveProfit: 0,
+      rmasMarketCover: 0,
+      marketTrend: 0,
+      isPremature: false
+    };
     const { liveProfit, liveTrendPercentage } = calculateLiveProfit(
       selectedInvestments,
       businessId,
@@ -415,7 +428,7 @@ export default function Investors() {
       marketProfit: scaledProfit,
       rmasMarketCover: 0,
       marketTrend: liveTrendPercentage,
-      isPremature: false,
+      isPremature: false
     };
   };
   const calculateFinalPayout = () => {
@@ -423,7 +436,7 @@ export default function Investors() {
     const { totalProfit } = calculateProfit();
     const totalPrincipal = selectedInvestments.reduce(
       (sum, inv) => sum + inv.amount,
-      0,
+      0
     );
     const grossAmount = totalPrincipal + totalProfit;
     const rmasFee = Number(withdrawFormData.rmasCommission) || 0;
@@ -432,21 +445,21 @@ export default function Investors() {
   };
   const calculateBusinessBurden = () => {
     if (selectedInvestments.length === 0)
-      return {
-        businessPays: 0,
-        rmasSubsidyPays: 0,
-        rmasMarketCover: 0,
-        totalRmasContribution: 0,
-      };
+    return {
+      businessPays: 0,
+      rmasSubsidyPays: 0,
+      rmasMarketCover: 0,
+      totalRmasContribution: 0
+    };
     const business = state.businesses.find(
-      (b) => b.id === selectedInvestments[0].businessId,
+      (b) => b.id === selectedInvestments[0].businessId
     );
     let rmasSubsidyPays = 0;
     const completed = Number(withdrawFormData.completedMonths) || 12;
     if (business && business.rmasSubsidy && business.rmasSubsidy > 0) {
       selectedInvestments.forEach((inv) => {
         rmasSubsidyPays =
-          inv.amount * (business.rmasSubsidy! / 100) * (completed / 12);
+        inv.amount * (business.rmasSubsidy! / 100) * (completed / 12);
       });
     }
     const finalPayout = calculateFinalPayout();
@@ -456,7 +469,7 @@ export default function Investors() {
       businessPays,
       rmasSubsidyPays,
       rmasMarketCover: 0,
-      totalRmasContribution: rmasSubsidyPays,
+      totalRmasContribution: rmasSubsidyPays
     };
   };
   const goToBanking = (e?: React.FormEvent) => {
@@ -482,15 +495,15 @@ export default function Investors() {
           e.preventDefault();
           handlePay();
         }
-      },
+      }
     },
-    viewMode === "withdraw-bank",
+    viewMode === "withdraw-bank"
   );
 
   const handlePay = () => {
     if (selectedInvestments.length === 0 || !selectedInvestor) return;
     const business = state.businesses.find(
-      (b) => b.id === selectedInvestments[0].businessId,
+      (b) => b.id === selectedInvestments[0].businessId
     );
     if (!business) return;
     const rmasFee = Number(withdrawFormData.rmasCommission) || 0;
@@ -502,9 +515,9 @@ export default function Investors() {
     const prematurePenalty = Math.max(0, fullLiveProfit - totalProfit);
     selectedInvestments.forEach((inv) => {
       const ratio =
-        totalAmount > 0
-          ? inv.amount / totalAmount
-          : 1 / selectedInvestments.length;
+      totalAmount > 0 ?
+      inv.amount / totalAmount :
+      1 / selectedInvestments.length;
       const updatedInvestment: Investment = {
         ...inv,
         status: "completed",
@@ -515,8 +528,8 @@ export default function Investors() {
           totalCredited: finalPayout * ratio,
           payoutDate: new Date().toISOString(),
           rmasMarketCover: burden.rmasMarketCover * ratio,
-          rmasSubsidyPays: burden.rmasSubsidyPays * ratio,
-        },
+          rmasSubsidyPays: burden.rmasSubsidyPays * ratio
+        }
       };
       dispatch({ type: "UPDATE_INVESTMENT", payload: updatedInvestment });
     });
@@ -530,14 +543,14 @@ export default function Investors() {
         totalCredited: finalPayout,
         payoutDate: new Date().toISOString(),
         rmasMarketCover: burden.rmasMarketCover,
-        rmasSubsidyPays: burden.rmasSubsidyPays,
-      },
+        rmasSubsidyPays: burden.rmasSubsidyPays
+      }
     };
     // Generate Profit Slip
     setPdfProfitSlip({
       investment: mergedInv,
       investor: selectedInvestor,
-      business,
+      business
     });
     setViewMode("list");
     setSelectedInvestor(null);
@@ -546,42 +559,196 @@ export default function Investors() {
   const handlePrintProfitSlip = () => {
     downloadElementAsPDF(
       "profit-slip-content",
-      `Profit_Slip_${pdfProfitSlip?.investor.name || "Investor"}`,
+      `Profit_Slip_${pdfProfitSlip?.investor.name || "Investor"}`
     );
   };
   const handlePrintInvestorPDF = () => {
     downloadElementAsPDF(
       "investor-pdf-content",
-      `Terms_${pdfInvestor?.name || "Investor"}`,
+      `Terms_${pdfInvestor?.name || "Investor"}`
     );
   };
+  const rendered_filteredInvestors = useMemo(() => {
+    return filteredInvestors.map((investor, idx) => {
+      const totalAmountInvested = investor.totalInvested;
+      const totalLiveProfit = investor.totalLiveProfit;
+      const returnPercentage = investor.returnPercentage;
+      return (
+        <div
+          key={`inv_${investor.id}_${idx}`}
+          onClick={() => {
+            setSelectedInvestor(investor);
+            setViewMode("investor-detail");
+          }}
+          className="investor-list-row flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
+                          data-search-key={`${investor.name} ${investor.investorId}`.toLowerCase()}
+                          style={{ contentVisibility: 'auto', containIntrinsicSize: '60px' }}>
+          
+                          {/* Mobile View */}
+                          <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
+                            <div className="flex items-center gap-3 flex-1">
+                              {investor.photoUrl ?
+              <img
+                src={investor.photoUrl}
+                alt="Profile"
+                className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full object-cover flex-shrink-0 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedPreviewInvestor(investor);
+                  setPreviewHistory([investor]);
+                }} /> :
+
+
+              <div className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
+                                  <span className="text-[14px] md:text-[12px] font-normal">
+                                    {(() => {
+                    const n = investor.shortName || investor.name || "";
+                    const parts = n.trim().split(" ");
+                    if (parts.length > 1 && parts[1].length > 0) {
+                      return (parts[0][0] + parts[1][0]).toUpperCase();
+                    }
+                    return n.substring(0, 2).toUpperCase();
+                  })()}
+                                  </span>
+                                </div>
+              }
+                              <div className="flex flex-col">
+                                <div className="flex items-center space-x-1">
+                                  <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
+                                    {investor.name?.toUpperCase()}
+                                  </span>
+                                  {investor.id === "admin_investor" &&
+                  <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
+                  }
+                                </div>
+                                <span className="font-sans text-[11px] text-[#9B9B9B] leading-tight mt-0.5">
+                                  {investor.investorId}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3 md:space-x-6 text-right">
+                              {" "}
+                              <div className="flex flex-col items-end">
+                                {" "}
+                                <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
+                                  {formatINR(totalAmountInvested)}
+                                </span>{" "}
+                                {totalAmountInvested > 0 &&
+                <span
+                  className={`text-[11px] md:text-[12px] font-normal mt-0.5 ${returnPercentage >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                  
+                                    {" "}
+                                    {returnPercentage >= 0 ? "+" : ""}
+                                    {returnPercentage.toFixed(2)}%{" "}
+                                  </span>
+                }
+                              </div>{" "}
+                            </div>{" "}
+                          </div>
+                          {/* Desktop View */}
+                          <div className="hidden md:flex items-stretch w-full px-4 border-b border-kite-border">
+                            <div className="w-[30%] text-left py-2 flex items-center overflow-hidden pr-2 gap-3">
+                              {investor.photoUrl ?
+              <img
+                src={investor.photoUrl}
+                alt="Profile"
+                className="w-8 h-8 md:w-12 md:h-12 rounded-full object-cover flex-shrink-0 cursor-pointer shadow-sm border border-gray-100"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedPreviewInvestor(investor);
+                  setPreviewHistory([investor]);
+                }} /> :
+
+
+              <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
+                                  <span className="text-[14px] md:text-[18px] font-normal">
+                                    {(() => {
+                    const n = investor.shortName || investor.name || "";
+                    const parts = n.trim().split(" ");
+                    if (parts.length > 1 && parts[1].length > 0) {
+                      return (parts[0][0] + parts[1][0]).toUpperCase();
+                    }
+                    return n.substring(0, 2).toUpperCase();
+                  })()}
+                                  </span>
+                                </div>
+              }
+                              <span className="font-normal text-kite-text text-[14px] group-hover:text-kite-blue transition-colors capitalize leading-tight tracking-wide truncate">
+                                {investor.name?.toLowerCase()}
+                              </span>
+                              {investor.id === "admin_investor" &&
+              <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
+              }
+                            </div>
+                            <div className="w-[14%] flex items-center text-left py-3 text-[14px] text-kite-text font-mono truncate pl-4">
+                              {investor.investorId}
+                            </div>
+                            <div className="w-[16%] flex items-center justify-start py-3 text-[12px] pl-4 pr-4 truncate text-kite-text">
+                              {investor.address?.city || investor.address?.state ?
+              [
+              investor.address?.city ? investor.address.city.charAt(0).toUpperCase() + investor.address.city.slice(1).toLowerCase() : null,
+              investor.address?.state ? investor.address.state.charAt(0).toUpperCase() + investor.address.state.slice(1).toLowerCase() : null].
+              filter(Boolean).join("-") :
+              "-"}
+                            </div>
+                            <div className="w-[18%] flex items-center justify-end py-3 text-[14px] font-normal text-kite-text pr-4 border-l border-kite-border truncate">
+                              {totalAmountInvested > 0 ?
+              `₹${formatLargeNumber(totalAmountInvested)}` :
+              "Not Invested"}
+                            </div>
+                            <div className="w-[22%] flex items-center justify-end py-3 text-[14px] font-normal pl-5 border-l border-kite-border truncate">
+                              {totalAmountInvested > 0 ?
+              <span
+                className={
+                totalLiveProfit >= 0 ?
+                "text-[#4CAF50] dark:text-[#5B9A5D]" :
+                "text-[#DF514C] dark:text-[#E25F5B]"
+                }>
+                
+                                  {totalLiveProfit >= 0 ? "+" : ""}₹
+                                  {formatLargeNumber(totalLiveProfit)}
+                                </span> :
+
+              <span className="text-kite-text-light">
+                                  Not Invested
+                                </span>
+              }
+                            </div>
+                          </div>
+                        </div>);
+
+    });
+  }, [filteredInvestors, selectedPreviewInvestor, previewHistory]);
+
   return (
     <div className="w-full space-y-3 sm:space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
       {" "}
       {/* --- Hide this whole container during print --- */}{" "}
       <div className="print:hidden space-y-3 sm:space-y-6">
         {" "}
-        {viewMode === "investor-detail" && selectedInvestor && (
-          <InvestorDetail
-            investorId={selectedInvestor.id}
-            onBack={() => {
-              setViewMode("list");
-              setSelectedInvestor(null);
-            }}
-            onWithdraw={(invs) => {
-              if (invs && invs.length > 0) {
-                handleCreditInvestorClick(invs);
-              } else {
-                handleWithdrawClick(selectedInvestor);
-              }
-            }}
-            onBuyClick={(investment: any) => {
-              setAddModalBusinessId(investment.businessId);
-              setAddModalInvestorId(investment.investorId);
-              setShowAddForm(true);
-            }}
-          />
-        )}{" "}
+        {viewMode === "investor-detail" && selectedInvestor &&
+        <InvestorDetail
+          investorId={selectedInvestor.id}
+          onBack={() => {
+            setViewMode("list");
+            setSelectedInvestor(null);
+          }}
+          onWithdraw={(invs) => {
+            if (invs && invs.length > 0) {
+              handleCreditInvestorClick(invs);
+            } else {
+              handleWithdrawClick(selectedInvestor);
+            }
+          }}
+          onBuyClick={(investment: any) => {
+            setAddModalBusinessId(investment.businessId);
+            setAddModalInvestorId(investment.investorId);
+            setShowAddForm(true);
+          }} />
+
+        }{" "}
         <div className={viewMode === "list" ? "w-full block" : "w-full hidden"}>
           <div className="w-full">
             <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
@@ -590,13 +757,13 @@ export default function Investors() {
                 <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
                   <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
                     <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
-                    <input 
-                      type="text"
-                      placeholder="Search & add"
-                      className="flex-1 bg-transparent border-none outline-none ml-2 text-[15px] text-gray-900 dark:text-[#fcfdff] placeholder-gray-400 dark:placeholder-[#fcfdff]"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                    <DebouncedInput
+                    type="text"
+                    placeholder="Search & add"
+                    className="flex-1 bg-transparent border-none outline-none ml-2 text-[15px] text-gray-900 dark:text-[#fcfdff] placeholder-gray-400 dark:placeholder-[#fcfdff]"
+                    value={searchTerm}
+                    onChange={setSearchTerm} />
+                  
                     <div className="flex items-center text-gray-400 dark:text-[#fcfdff] text-[14px]">
                       <span className="mr-3">{state.investors.length}/250</span>
                       <SlidersHorizontal className="w-5 h-5" />
@@ -622,50 +789,50 @@ export default function Investors() {
                     <div className="w-full md:w-auto pt-1 md:pt-0 pb-2 md:pb-0">
                       <button
                         onClick={startAddInvestor}
-                        className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none"
-                      >
+                        className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none">
+                        
                         <Plus className="w-4 h-4" />
                         <span>New Investor</span>
                       </button>
                     </div>
                     {/* Search Container (Bottom on mobile, right on desktop) */}
                     <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
-                      {!isSearchExpanded ? (
-                        <button
-                          onClick={() => setIsSearchExpanded(true)}
-                          className="-ml-1 md:ml-0 p-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
-                        >
+                      {!isSearchExpanded ?
+                      <button
+                        onClick={() => setIsSearchExpanded(true)}
+                        className="-ml-1 md:ml-0 p-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full transition-colors flex-shrink-0 flex items-center gap-2">
+                        
                           <Search className="w-[18px] h-[18px] text-kite-blue" />
-                        </button>
-                      ) : (
-                        <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white dark:bg-kite-surface md:bg-gray-100 md:dark:bg-transparent rounded-sm h-[36px]">
+                        </button> :
+
+                      <div className="flex items-center w-full md:w-[250px] transition-all duration-300 bg-white dark:bg-kite-surface md:bg-gray-100 md:dark:bg-transparent rounded-sm h-[36px]">
                           <button
-                            onClick={() => {
-                              setIsSearchExpanded(false);
-                              setSearchTerm("");
-                            }}
-                            className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full mr-1 transition-colors flex-shrink-0"
-                          >
+                          onClick={() => {
+                            setIsSearchExpanded(false);
+                            setSearchTerm("");
+                          }}
+                          className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full mr-1 transition-colors flex-shrink-0">
+                          
                             <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />
                           </button>
-                          <input
-                            ref={searchInputRef}
-                            type="text"
-                            placeholder="Search Eg: Radhika"
-                            className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                          />
-                          {searchTerm && (
-                            <button
-                              onClick={() => setSearchTerm("")}
-                              className="p-2 text-gray-600 hover:text-kite-text transition-colors flex-shrink-0"
-                            >
+                          <DebouncedInput
+                          ref={searchInputRef}
+                          type="text"
+                          placeholder="Search Eg: Radhika"
+                          className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
+                          value={searchTerm}
+                          onChange={setSearchTerm} />
+                        
+                          {searchTerm &&
+                        <button
+                          onClick={() => setSearchTerm("")}
+                          className="p-2 text-gray-600 hover:text-kite-text transition-colors flex-shrink-0">
+                          
                               <X className="w-4 h-4" />
                             </button>
-                          )}
+                        }
                         </div>
-                      )}
+                      }
                     </div>
                   </div>
                 </div>
@@ -695,169 +862,17 @@ export default function Investors() {
                 {/* Desktop Table View */}
                 <div className="flex flex-col border-b border-kite-border h-[calc(100vh-140px)] overflow-y-auto">
                   <div className="flex flex-col">
-                    {filteredInvestors.map((investor, idx) => {
-                      const totalAmountInvested = investor.totalInvested;
-                      const totalLiveProfit = investor.totalLiveProfit;
-                      const returnPercentage = investor.returnPercentage;
-                      return (
-                        <div
-                          key={`inv_${investor.id}_${idx}`}
-                          onClick={() => {
-                            setSelectedInvestor(investor);
-                            setViewMode("investor-detail");
-                          }}
-                          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
-                        >
-                          {/* Mobile View */}
-                          <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
-                            <div className="flex items-center gap-3 flex-1">
-                              {investor.photoUrl ? (
-                                <img
-                                  src={investor.photoUrl}
-                                  alt="Profile"
-                                  className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full object-cover flex-shrink-0 cursor-pointer"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setSelectedPreviewInvestor(investor);
-                                    setPreviewHistory([investor]);
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-[42px] h-[42px] md:w-8 md:h-8 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
-                                  <span className="text-[14px] md:text-[12px] font-normal">
-                                    {(() => {
-                                      const n = (investor.shortName || investor.name) || "";
-                                      const parts = n.trim().split(" ");
-                                      if (parts.length > 1 && parts[1].length > 0) {
-                                        return (parts[0][0] + parts[1][0]).toUpperCase();
-                                      }
-                                      return n.substring(0, 2).toUpperCase();
-                                    })()}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="flex flex-col">
-                                <div className="flex items-center space-x-1">
-                                  <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
-                                    {investor.name?.toUpperCase()}
-                                  </span>
-                                  {investor.id === "admin_investor" && (
-                                    <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
-                                  )}
-                                </div>
-                                <span className="font-sans text-[11px] text-[#9B9B9B] leading-tight mt-0.5">
-                                  {investor.investorId}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-3 md:space-x-6 text-right">
-                              {" "}
-                              <div className="flex flex-col items-end">
-                                {" "}
-                                <span className="font-normal text-kite-text text-[13px] md:text-[14px]">
-                                  {formatINR(totalAmountInvested)}
-                                </span>{" "}
-                                {totalAmountInvested > 0 && (
-                                  <span
-                                    className={`text-[11px] md:text-[12px] font-normal mt-0.5 ${returnPercentage >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                  >
-                                    {" "}
-                                    {returnPercentage >= 0 ? "+" : ""}
-                                    {returnPercentage.toFixed(2)}%{" "}
-                                  </span>
-                                )}
-                              </div>{" "}
-                            </div>{" "}
-                          </div>
-                          {/* Desktop View */}
-                          <div className="hidden md:flex items-stretch w-full px-4 border-b border-kite-border">
-                            <div className="w-[30%] text-left py-2 flex items-center overflow-hidden pr-2 gap-3">
-                              {investor.photoUrl ? (
-                                <img
-                                  src={investor.photoUrl}
-                                  alt="Profile"
-                                  className="w-8 h-8 md:w-12 md:h-12 rounded-full object-cover flex-shrink-0 cursor-pointer shadow-sm border border-gray-100"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setSelectedPreviewInvestor(investor);
-                                    setPreviewHistory([investor]);
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-kite-blue/10 dark:bg-kite-blue/20 text-kite-blue flex items-center justify-center overflow-hidden border border-kite-border-soft flex-shrink-0">
-                                  <span className="text-[14px] md:text-[18px] font-normal">
-                                    {(() => {
-                                      const n = (investor.shortName || investor.name) || "";
-                                      const parts = n.trim().split(" ");
-                                      if (parts.length > 1 && parts[1].length > 0) {
-                                        return (parts[0][0] + parts[1][0]).toUpperCase();
-                                      }
-                                      return n.substring(0, 2).toUpperCase();
-                                    })()}
-                                  </span>
-                                </div>
-                              )}
-                              <span className="font-normal text-kite-text text-[14px] group-hover:text-kite-blue transition-colors capitalize leading-tight tracking-wide truncate">
-                                {investor.name?.toLowerCase()}
-                              </span>
-                              {investor.id === "admin_investor" && (
-                                <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
-                              )}
-                            </div>
-                            <div className="w-[14%] flex items-center text-left py-3 text-[14px] text-kite-text font-mono truncate pl-4">
-                              {investor.investorId}
-                            </div>
-                            <div className="w-[16%] flex items-center justify-start py-3 text-[12px] pl-4 pr-4 truncate text-kite-text">
-                              {investor.address?.city || investor.address?.state ? 
-                                [
-                                  investor.address?.city ? investor.address.city.charAt(0).toUpperCase() + investor.address.city.slice(1).toLowerCase() : null,
-                                  investor.address?.state ? investor.address.state.charAt(0).toUpperCase() + investor.address.state.slice(1).toLowerCase() : null
-                                ].filter(Boolean).join("-")
-                                : "-"}
-                            </div>
-                            <div className="w-[18%] flex items-center justify-end py-3 text-[14px] font-normal text-kite-text pr-4 border-l border-kite-border truncate">
-                              {totalAmountInvested > 0
-                                ? `₹${formatLargeNumber(totalAmountInvested)}`
-                                : "Not Invested"}
-                            </div>
-                            <div className="w-[22%] flex items-center justify-end py-3 text-[14px] font-normal pl-5 border-l border-kite-border truncate">
-                              {totalAmountInvested > 0 ? (
-                                <span
-                                  className={
-                                    totalLiveProfit >= 0
-                                      ? "text-[#4CAF50] dark:text-[#5B9A5D]"
-                                      : "text-[#DF514C] dark:text-[#E25F5B]"
-                                  }
-                                >
-                                  {totalLiveProfit >= 0 ? "+" : ""}₹
-                                  {formatLargeNumber(totalLiveProfit)}
-                                </span>
-                              ) : (
-                                <span className="text-kite-text-light">
-                                  Not Invested
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {rendered_filteredInvestors}
                   </div>
-                  {filteredInvestors.length === 0 && (
-                    <div className="p-8 text-center text-gray-600 font-normal text-[13px] md:text-[14px]">
-                      No investors found.
-                    </div>
-                  )}
+                  <div id="no-investors-found" style={{ display: 'none' }} className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">No investors found.</div>
                 </div>{" "}
                 {/* Mobile Cards View */} <div className="hidden"> </div>{" "}
               </div>{" "}
             </div>{" "}
           </div>
         </div>{" "}
-        {viewMode === "add-step-1" && (
-          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
+        {viewMode === "add-step-1" &&
+        <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
               <div className="h-full bg-kite-blue w-1/2 transition-all duration-300"></div>
             </div>
@@ -873,9 +888,9 @@ export default function Investors() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setViewMode("list")}
-                  className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
-                >
+                onClick={() => setViewMode("list")}
+                className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center">
+                
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               </div>
@@ -883,176 +898,176 @@ export default function Investors() {
 
             <div className="flex flex-col md:flex-row gap-3 mb-6 border-b border-kite-border pb-4">
               <button
-                type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
-                onClick={() => {
-                  setOwnerMode("new");
-                  setFormData({
-                    ...formData,
-                    name: "",
-                    bankName: INDIAN_BANKS[0],
-                    accountNumber: "",
-                    ifscCode: "",
-                    accountHolderName: "",
-                    rmasServiceCharge: "",
-                  });
-                }}
-              >
+              type="button"
+              className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
+              onClick={() => {
+                setOwnerMode("new");
+                setFormData({
+                  ...formData,
+                  name: "",
+                  bankName: INDIAN_BANKS[0],
+                  accountNumber: "",
+                  ifscCode: "",
+                  accountHolderName: "",
+                  rmasServiceCharge: ""
+                });
+              }}>
+              
                 New Investor
               </button>
               <button
-                type="button"
-                className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
-                onClick={() => setOwnerMode("existing")}
-              >
+              type="button"
+              className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
+              onClick={() => setOwnerMode("existing")}>
+              
                 Already Registered Owner
               </button>
             </div>
 
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setFormData({
-                  ...formData,
-                  accountHolderName:
-                    formData.accountHolderName || formData.name.toUpperCase(),
-                });
-                setViewMode("add-step-2");
-              }}
-              className="space-y-6"
-            >
-              {ownerMode === "existing" && (
-                <div className="relative">
+            onSubmit={(e) => {
+              e.preventDefault();
+              setFormData({
+                ...formData,
+                accountHolderName:
+                formData.accountHolderName || formData.name.toUpperCase()
+              });
+              setViewMode("add-step-2");
+            }}
+            className="space-y-6">
+            
+              {ownerMode === "existing" &&
+            <div className="relative">
                   <input
-                    type="text"
-                    className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text focus:ring-0 focus:border-kite-blue outline-none transition-colors"
-                    placeholder="Search owner name..."
-                    value={ownerSearch}
-                    onChange={(e) => {
-                      setOwnerSearch(e.target.value);
-                      setShowOwnerSelect(true);
-                    }}
-                    onFocus={() => setShowOwnerSelect(true)}
-                  />
-                  {showOwnerSelect && (
-                    <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-kite-surface border border-kite-border rounded max-h-48 overflow-y-auto z-50 shadow-lg">
+                type="text"
+                className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal text-kite-text focus:ring-0 focus:border-kite-blue outline-none transition-colors"
+                placeholder="Search owner name..."
+                value={ownerSearch}
+                onChange={(e) => {
+                  setOwnerSearch(e.target.value);
+                  setShowOwnerSelect(true);
+                }}
+                onFocus={() => setShowOwnerSelect(true)} />
+              
+                  {showOwnerSelect &&
+              <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-kite-surface border border-kite-border rounded max-h-48 overflow-y-auto z-50 shadow-lg">
                       {Array.from(
-                        new Set(state.businesses.map((b) => b.ownerName)),
-                      )
-                        .filter(
-                          (name) =>
-                            !state.investors.some(
-                              (inv) =>
-                                (inv.name || "").toLowerCase() ===
-                                ((name as string) || "").toLowerCase(),
-                            ),
-                        )
-                        .filter((name) =>
-                          ((name as string) || "")
-                            .toLowerCase()
-                            .includes(deferredOwnerSearch.toLowerCase()),
-                        )
-                        .map((name, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3 hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
-                            onClick={() => {
-                              const ownerBiz = state.businesses.find(
-                                (b) => b.ownerName === name,
-                              );
-                              if (ownerBiz && ownerBiz.bankDetails) {
-                                setFormData({
-                                  ...formData,
-                                  name: ownerBiz.ownerName,
-                                  bankName: ownerBiz.bankDetails.bankName,
-                                  accountNumber:
-                                    ownerBiz.bankDetails.accountNumber,
-                                  ifscCode: ownerBiz.bankDetails.ifscCode,
-                                  accountHolderName:
-                                    ownerBiz.bankDetails.accountHolderName,
-                                });
-                              } else if (ownerBiz) {
-                                setFormData({
-                                  ...formData,
-                                  name: ownerBiz.ownerName,
-                                });
-                              }
-                              setOwnerSearch(name);
-                              setShowOwnerSelect(false);
-                            }}
-                          >
+                  new Set(state.businesses.map((b) => b.ownerName))
+                ).
+                filter(
+                  (name) =>
+                  !state.investors.some(
+                    (inv) =>
+                    (inv.name || "").toLowerCase() ===
+                    (name as string || "").toLowerCase()
+                  )
+                ).
+                filter((name) =>
+                (name as string || "").
+                toLowerCase().
+                includes(deferredOwnerSearch.toLowerCase())
+                ).
+                map((name, idx) =>
+                <div
+                  key={idx}
+                  className="p-3 hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
+                  onClick={() => {
+                    const ownerBiz = state.businesses.find(
+                      (b) => b.ownerName === name
+                    );
+                    if (ownerBiz && ownerBiz.bankDetails) {
+                      setFormData({
+                        ...formData,
+                        name: ownerBiz.ownerName,
+                        bankName: ownerBiz.bankDetails.bankName,
+                        accountNumber:
+                        ownerBiz.bankDetails.accountNumber,
+                        ifscCode: ownerBiz.bankDetails.ifscCode,
+                        accountHolderName:
+                        ownerBiz.bankDetails.accountHolderName
+                      });
+                    } else if (ownerBiz) {
+                      setFormData({
+                        ...formData,
+                        name: ownerBiz.ownerName
+                      });
+                    }
+                    setOwnerSearch(name);
+                    setShowOwnerSelect(false);
+                  }}>
+                  
                             {name}
                           </div>
-                        ))}
+                )}
                     </div>
-                  )}
+              }
                 </div>
-              )}
+            }
 
               <div>
                 <label className="block text-[11px] md:text-[12px] font-medium uppercase tracking-wider text-gray-500 mb-1">
                   Investor ID Number
                 </label>
                 <input
-                  type="text"
-                  readOnly
-                  className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono text-gray-500 cursor-not-allowed outline-none"
-                  value={formData.investorId}
-                />
+                type="text"
+                readOnly
+                className="w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-mono text-gray-500 cursor-not-allowed outline-none"
+                value={formData.investorId} />
+              
               </div>
               <div>
                 <label className="block text-[11px] md:text-[12px] font-medium uppercase tracking-wider text-gray-500 mb-1">
                   Full Name
                 </label>
                 <input
-                  required
-                  type="text"
-                  autoFocus={ownerMode === "new"}
-                  readOnly={ownerMode === "existing"}
-                  className={`w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-gray-500 cursor-not-allowed" : "text-kite-text focus:ring-0 focus:border-kite-blue"}`}
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      name: e.target.value,
-                      accountHolderName: e.target.value.toUpperCase(),
-                    })
-                  }
-                  placeholder="e.g. Radhika Marchant"
-                />
+                required
+                type="text"
+                autoFocus={ownerMode === "new"}
+                readOnly={ownerMode === "existing"}
+                className={`w-full border-0 border-b border-kite-border rounded-none px-0 py-2 bg-transparent text-[13px] md:text-[14px] font-normal uppercase outline-none transition-colors ${ownerMode === "existing" ? "text-gray-500 cursor-not-allowed" : "text-kite-text focus:ring-0 focus:border-kite-blue"}`}
+                value={formData.name}
+                onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  name: e.target.value,
+                  accountHolderName: e.target.value.toUpperCase()
+                })
+                }
+                placeholder="e.g. Radhika Marchant" />
+              
               </div>
 
               <div className="pt-6 flex justify-between items-center">
                 <button
-                  type="button"
-                  onClick={() => {
-                    setViewMode("list");
-                    setFormData({
-                      name: "",
-                      bankName: INDIAN_BANKS[0],
-                      accountNumber: "",
-                      ifscCode: "",
-                      accountHolderName: "",
-                      rmasServiceCharge: "",
-                      investorId: generateId("INV"),
-                    });
-                  }}
-                  className="text-gray-500 hover:text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
-                >
+                type="button"
+                onClick={() => {
+                  setViewMode("list");
+                  setFormData({
+                    name: "",
+                    bankName: INDIAN_BANKS[0],
+                    accountNumber: "",
+                    ifscCode: "",
+                    accountHolderName: "",
+                    rmasServiceCharge: "",
+                    investorId: generateId("INV")
+                  });
+                }}
+                className="text-gray-500 hover:text-kite-text transition-colors font-medium text-[13px] md:text-[14px]">
+                
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  className="bg-kite-blue hover:bg-opacity-90 text-white px-6 py-2 rounded font-medium transition-colors text-[13px] md:text-[14px]"
-                >
+                type="submit"
+                className="bg-kite-blue hover:bg-opacity-90 text-white px-6 py-2 rounded font-medium transition-colors text-[13px] md:text-[14px]">
+                
                   Next Step →
                 </button>
               </div>
             </form>
           </div>
-        )}
-        {viewMode === "add-step-2" && (
-          <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
+        }
+        {viewMode === "add-step-2" &&
+        <div className="w-full max-w-xl mx-auto bg-transparent border-t md:border-t border-kite-border p-4 md:p-8 animate-fade-in mt-4 md:mt-6 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
               <div className="h-full bg-kite-blue w-full transition-all duration-300"></div>
             </div>
@@ -1067,10 +1082,10 @@ export default function Investors() {
                   </p>
                 </div>
                 <button
-                  type="button"
-                  onClick={() => setViewMode("add-step-1")}
-                  className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center"
-                >
+                type="button"
+                onClick={() => setViewMode("add-step-1")}
+                className="p-2 text-gray-500 hover:text-kite-text transition-colors rounded-full hover:bg-gray-100 flex items-center justify-center">
+                
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               </div>
@@ -1079,25 +1094,25 @@ export default function Investors() {
             <form onSubmit={handleVerifiedSave} className="space-y-6">
               <div className={`relative w-full mb-6 ${showBankSelect ? 'z-[60]' : 'z-20'}`}>
                 <input
-                  type="text"
-                  placeholder=" "
-                  readOnly
-                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer text-transparent focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
-                  onClick={() => {
-                    if (ownerMode !== "existing") {
-                      setShowBankSelect(!showBankSelect);
-                      setBankSearch("");
-                    }
-                  }}
-                />
+                type="text"
+                placeholder=" "
+                readOnly
+                className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer text-transparent focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                onClick={() => {
+                  if (ownerMode !== "existing") {
+                    setShowBankSelect(!showBankSelect);
+                    setBankSearch("");
+                  }
+                }} />
+              
                 <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showBankSelect || formData.bankName ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#181818] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
                   Bank Name
                 </label>
                 <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-10">
                   <div className="flex items-center gap-3">
-                    {formData.bankName && (
-                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formData.bankName)}&background=random&color=fff&size=64`} alt="Bank Logo" className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
-                    )}
+                    {formData.bankName &&
+                  <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formData.bankName)}&background=random&color=fff&size=64`} alt="Bank Logo" className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                  }
                     <span className={`truncate text-[13px] md:text-[14px] ${!formData.bankName && "text-kite-text-light dark:text-kite-text-light"} ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light" : "text-kite-text dark:text-kite-text"}`}>
                       {formData.bankName || "Select Bank"}
                     </span>
@@ -1105,76 +1120,76 @@ export default function Investors() {
                   <ChevronDown className="w-4 h-4 text-kite-text-light dark:text-kite-text-light" />
                 </div>
                 
-                {showBankSelect && ownerMode !== "existing" && (
-                  <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+                {showBankSelect && ownerMode !== "existing" &&
+              <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
                     <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
                       <div className="relative">
                         <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
-                        <input
-                          type="text"
-                          autoFocus
-                          placeholder="Search bank..."
-                          className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
-                          value={bankSearch}
-                          onChange={(e) => setBankSearch(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        <DebouncedInput
+                      type="text"
+                      autoFocus
+                      placeholder="Search bank..."
+                      className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                      value={bankSearch}
+                      onChange={setBankSearch}
+                      onClick={(e) => e.stopPropagation()} />
+                    
                       </div>
                     </div>
                     <div className="overflow-y-auto flex-1">
                       {INDIAN_BANKS.filter((b) =>
-                        b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
-                      ).map((b) => (
-                        <div
-                          key={b}
-                          className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
-                          onClick={() => {
-                            setFormData({ ...formData, bankName: b });
-                            setShowBankSelect(false);
-                          }}
-                        >
+                  b.toLowerCase().includes(deferredBankSearch.toLowerCase())
+                  ).map((b) =>
+                  <div
+                    key={b}
+                    className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                    onClick={() => {
+                      setFormData({ ...formData, bankName: b });
+                      setShowBankSelect(false);
+                    }}>
+                    
                           <div className="flex items-center gap-3">
                             <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(b)}&background=random&color=fff&size=64`} alt={b} className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
                             <span>{b}</span>
                           </div>
                         </div>
-                      ))}
+                  )}
                       {INDIAN_BANKS.filter((b) =>
-                        b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
-                      ).length === 0 && (
-                        <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
+                  b.toLowerCase().includes(deferredBankSearch.toLowerCase())
+                  ).length === 0 &&
+                  <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
                           No bank found.
                         </div>
-                      )}
+                  }
                     </div>
                   </div>
-                )}
+              }
               </div>
 
               <div className="relative w-full mb-6">
                 <input
-                  required
-                  type="text"
-                  placeholder=" "
-                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
-                  value={formData.accountNumber}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
-                    const formatted = raw.replace(/(\d{4})(?=\d)/g, "$1 ");
-                    const last4 = raw.length >= 4 ? raw.slice(-4) : raw;
-                    const ifscPrefix = formData.ifscCode
-                      .replace(/[^A-Z]/g, "")
-                      .slice(0, 3);
-                    const newIfsc =
-                      ifscPrefix.length === 3 ? ifscPrefix + last4 : ifscPrefix;
-                    setFormData({
-                      ...formData,
-                      accountNumber: formatted,
-                      ifscCode: newIfsc,
-                    });
-                  }}
-                  readOnly={ownerMode === "existing"}
-                />
+                required
+                type="text"
+                placeholder=" "
+                className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
+                value={formData.accountNumber}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
+                  const formatted = raw.replace(/(\d{4})(?=\d)/g, "$1 ");
+                  const last4 = raw.length >= 4 ? raw.slice(-4) : raw;
+                  const ifscPrefix = formData.ifscCode.
+                  replace(/[^A-Z]/g, "").
+                  slice(0, 3);
+                  const newIfsc =
+                  ifscPrefix.length === 3 ? ifscPrefix + last4 : ifscPrefix;
+                  setFormData({
+                    ...formData,
+                    accountNumber: formatted,
+                    ifscCode: newIfsc
+                  });
+                }}
+                readOnly={ownerMode === "existing"} />
+              
                 <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Account Number
                 </label>
@@ -1182,26 +1197,26 @@ export default function Investors() {
 
               <div className="relative w-full mb-6">
                 <input
-                  required
-                  type="text"
-                  placeholder=" "
-                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
-                  value={formData.ifscCode}
-                  onChange={(e) => {
-                    const prefix = e.target.value
-                      .toUpperCase()
-                      .replace(/[^A-Z]/g, "")
-                      .slice(0, 3);
-                    const rawAcc = formData.accountNumber.replace(/\D/g, "");
-                    const last4 =
-                      rawAcc.length >= 4 ? rawAcc.slice(-4) : rawAcc;
-                    setFormData({
-                      ...formData,
-                      ifscCode: prefix.length === 3 ? prefix + last4 : prefix,
-                    });
-                  }}
-                  readOnly={ownerMode === "existing"}
-                />
+                required
+                type="text"
+                placeholder=" "
+                className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
+                value={formData.ifscCode}
+                onChange={(e) => {
+                  const prefix = e.target.value.
+                  toUpperCase().
+                  replace(/[^A-Z]/g, "").
+                  slice(0, 3);
+                  const rawAcc = formData.accountNumber.replace(/\D/g, "");
+                  const last4 =
+                  rawAcc.length >= 4 ? rawAcc.slice(-4) : rawAcc;
+                  setFormData({
+                    ...formData,
+                    ifscCode: prefix.length === 3 ? prefix + last4 : prefix
+                  });
+                }}
+                readOnly={ownerMode === "existing"} />
+              
                 <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Bank IFSC Code
                 </label>
@@ -1209,51 +1224,51 @@ export default function Investors() {
 
               <div className="relative w-full mb-6">
                 <input
-                  required
-                  type="text"
-                  placeholder=" "
-                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-normal uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
-                  value={formData.accountHolderName}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      accountHolderName: e.target.value.toUpperCase(),
-                    })
-                  }
-                  readOnly={ownerMode === "existing"}
-                />
+                required
+                type="text"
+                placeholder=" "
+                className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-normal uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
+                value={formData.accountHolderName}
+                onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  accountHolderName: e.target.value.toUpperCase()
+                })
+                }
+                readOnly={ownerMode === "existing"} />
+              
                 <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Account Holder Name
                 </label>
-                {ownerMode === "existing" && (
-                  <p className="text-[11px] md:text-[12px] text-orange-600 mt-1.5 font-normal">
+                {ownerMode === "existing" &&
+              <p className="text-[11px] md:text-[12px] text-orange-600 mt-1.5 font-normal">
                     Bank details are locked because this owner is already registered.
                   </p>
-                )}
+              }
               </div>
 
               <div className="relative w-full mb-6 pt-2">
                 <input
-                  required
-                  type="text"
-                  placeholder=" "
-                  className="peer w-full md:w-1/2 border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-[14px] md:text-[15px] font-medium text-kite-blue focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
-                  value={formData.rmasServiceCharge}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, "");
-                    if (!raw) {
-                      setFormData({ ...formData, rmasServiceCharge: "" });
-                    } else {
-                      const formatted = new Intl.NumberFormat("en-IN").format(
-                        parseInt(raw),
-                      );
-                      setFormData({
-                        ...formData,
-                        rmasServiceCharge: formatted,
-                      });
-                    }
-                  }}
-                />
+                required
+                type="text"
+                placeholder=" "
+                className="peer w-full md:w-1/2 border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-[14px] md:text-[15px] font-medium text-kite-blue focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
+                value={formData.rmasServiceCharge}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\D/g, "");
+                  if (!raw) {
+                    setFormData({ ...formData, rmasServiceCharge: "" });
+                  } else {
+                    const formatted = new Intl.NumberFormat("en-IN").format(
+                      parseInt(raw)
+                    );
+                    setFormData({
+                      ...formData,
+                      rmasServiceCharge: formatted
+                    });
+                  }
+                }} />
+              
                 <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Radhika Ma Service Charge (₹)
                 </label>
@@ -1261,182 +1276,182 @@ export default function Investors() {
 
               <div className="pt-6 flex justify-between items-center gap-4">
                 <button
-                  type="button"
-                  onClick={() => setViewMode("add-step-1")}
-                  disabled={isVerifying}
-                  className="text-gray-500 hover:text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
-                >
+                type="button"
+                onClick={() => setViewMode("add-step-1")}
+                disabled={isVerifying}
+                className="text-gray-500 hover:text-kite-text transition-colors font-medium text-[13px] md:text-[14px]">
+                
                   Back to Step 1
                 </button>
                 <button
-                  type="submit"
-                  disabled={isVerifying}
-                  className="flex-1 bg-kite-blue hover:bg-opacity-90 disabled:opacity-50 text-white flex items-center justify-center space-x-2 py-3 md:py-3.5 rounded text-[13px] md:text-[14px] font-medium transition-colors h-[44px] md:h-[48px] relative"
-                >
+                type="submit"
+                disabled={isVerifying}
+                className="flex-1 bg-kite-blue hover:bg-opacity-90 disabled:opacity-50 text-white flex items-center justify-center space-x-2 py-3 md:py-3.5 rounded text-[13px] md:text-[14px] font-medium transition-colors h-[44px] md:h-[48px] relative">
+                
                   <span
-                    className={`transition-opacity duration-300 ${isVerifying ? "opacity-0" : "opacity-100"}`}
-                  >
+                  className={`transition-opacity duration-300 ${isVerifying ? "opacity-0" : "opacity-100"}`}>
+                  
                     Verify & Create Account
                   </span>
-                  {isVerifying && (
-                    <div className="absolute inset-0 flex items-center justify-center">
+                  {isVerifying &&
+                <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-5 h-5 border-2 border-white rounded-full border-t-transparent animate-spin"></div>
                     </div>
-                  )}
+                }
                 </button>
               </div>
             </form>
           </div>
-        )}
+        }
         {viewMode === "withdraw-list" &&
-          selectedInvestor &&
-          (() => {
-            const sfProFont =
-              '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+        selectedInvestor &&
+        (() => {
+          const sfProFont =
+          '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
-            const activeInvs = state.investments.filter(
-              (i) =>
-                i.investorId === selectedInvestor.id && i.status === "active",
-            );
-            const completedInvs = state.investments.filter(
-              (i) =>
-                i.investorId === selectedInvestor.id &&
-                i.status === "completed",
-            );
+          const activeInvs = state.investments.filter(
+            (i) =>
+            i.investorId === selectedInvestor.id && i.status === "active"
+          );
+          const completedInvs = state.investments.filter(
+            (i) =>
+            i.investorId === selectedInvestor.id &&
+            i.status === "completed"
+          );
 
-            const groupedActive = activeInvs.reduce(
-              (acc, inv) => {
-                if (!acc[inv.businessId]) acc[inv.businessId] = [];
-                acc[inv.businessId].push(inv);
-                return acc;
-              },
-              {} as Record<string, Investment[]>,
-            );
+          const groupedActive = activeInvs.reduce(
+            (acc, inv) => {
+              if (!acc[inv.businessId]) acc[inv.businessId] = [];
+              acc[inv.businessId].push(inv);
+              return acc;
+            },
+            {} as Record<string, Investment[]>
+          );
 
-            const groupedCompleted = completedInvs.reduce(
-              (acc, inv) => {
-                if (!acc[inv.businessId]) acc[inv.businessId] = [];
-                acc[inv.businessId].push(inv);
-                return acc;
-              },
-              {} as Record<string, Investment[]>,
-            );
+          const groupedCompleted = completedInvs.reduce(
+            (acc, inv) => {
+              if (!acc[inv.businessId]) acc[inv.businessId] = [];
+              acc[inv.businessId].push(inv);
+              return acc;
+            },
+            {} as Record<string, Investment[]>
+          );
 
-            let activeTotalInvested = 0;
-            let activeTotalLiveProfit = 0;
-            let activeTotalCurrentValue = 0;
-            let activeTotalDayPnL = 0;
-            let activeTotalYesterdayValue = 0;
+          let activeTotalInvested = 0;
+          let activeTotalLiveProfit = 0;
+          let activeTotalCurrentValue = 0;
+          let activeTotalDayPnL = 0;
+          let activeTotalYesterdayValue = 0;
 
-            const holdings = Object.entries(groupedActive).map(
-              ([bizId, invs]) => {
-                const business = state.businesses.find((b) => b.id === bizId);
-                const {
-                  investedAmount,
-                  liveTrendPercentage,
-                  liveProfit,
-                  currentValue,
-                } = calculateLiveProfit(
-                  invs as Investment[],
-                  bizId,
-                  marketState.trends,
-                  state.settings,
-                  state.businesses
-                );
-                
-                const qty = (invs as Investment[]).reduce((sum, inv) => {
-                  if (inv.quantity) return sum + inv.quantity;
-                  if (business && business.triggerAmount) {
-                    return sum + Math.floor(inv.amount / business.triggerAmount);
-                  }
-                  return sum + 1;
-                }, 0);
-                
-                const ltp = qty > 0 ? currentValue / qty : 0;
-                const dayChangePct = getDayChangePct(bizId);
-                const yesterdayLtp = ltp / (1 + (dayChangePct / 100));
-                const dayPnL = (ltp - yesterdayLtp) * qty;
+          const holdings = Object.entries(groupedActive).map(
+            ([bizId, invs]) => {
+              const business = state.businesses.find((b) => b.id === bizId);
+              const {
+                investedAmount,
+                liveTrendPercentage,
+                liveProfit,
+                currentValue
+              } = calculateLiveProfit(
+                invs as Investment[],
+                bizId,
+                marketState.trends,
+                state.settings,
+                state.businesses
+              );
 
-                activeTotalInvested += investedAmount;
-                activeTotalLiveProfit += liveProfit;
-                activeTotalCurrentValue += currentValue;
-                activeTotalDayPnL += dayPnL;
-                activeTotalYesterdayValue += (yesterdayLtp * qty);
+              const qty = (invs as Investment[]).reduce((sum, inv) => {
+                if (inv.quantity) return sum + inv.quantity;
+                if (business && business.triggerAmount) {
+                  return sum + Math.floor(inv.amount / business.triggerAmount);
+                }
+                return sum + 1;
+              }, 0);
 
-                return {
-                  bizId,
-                  business,
-                  invs,
-                  investedAmount,
-                  liveProfit,
-                  liveTrendPercentage,
-                  currentValue,
-                  dayChangePct,
-                };
-              }
-            );
-            
-            const activeTotalDayChangePct = activeTotalYesterdayValue > 0 ? (activeTotalDayPnL / activeTotalYesterdayValue) * 100 : 0;
+              const ltp = qty > 0 ? currentValue / qty : 0;
+              const dayChangePct = getDayChangePct(bizId);
+              const yesterdayLtp = ltp / (1 + dayChangePct / 100);
+              const dayPnL = (ltp - yesterdayLtp) * qty;
+
+              activeTotalInvested += investedAmount;
+              activeTotalLiveProfit += liveProfit;
+              activeTotalCurrentValue += currentValue;
+              activeTotalDayPnL += dayPnL;
+              activeTotalYesterdayValue += yesterdayLtp * qty;
+
+              return {
+                bizId,
+                business,
+                invs,
+                investedAmount,
+                liveProfit,
+                liveTrendPercentage,
+                currentValue,
+                dayChangePct
+              };
+            }
+          );
+
+          const activeTotalDayChangePct = activeTotalYesterdayValue > 0 ? activeTotalDayPnL / activeTotalYesterdayValue * 100 : 0;
 
 
-            const positions = Object.entries(groupedCompleted).map(
-              ([bizId, invs]) => {
-                const business = state.businesses.find((b) => b.id === bizId);
-                let investedAmount = 0;
-                (invs as Investment[]).forEach((inv: any) => {
-                  investedAmount += inv.amount;
-                });
-                return { bizId, business, invs, investedAmount };
-              },
-            );
+          const positions = Object.entries(groupedCompleted).map(
+            ([bizId, invs]) => {
+              const business = state.businesses.find((b) => b.id === bizId);
+              let investedAmount = 0;
+              (invs as Investment[]).forEach((inv: any) => {
+                investedAmount += inv.amount;
+              });
+              return { bizId, business, invs, investedAmount };
+            }
+          );
 
-            // Fetch IPO Applications from localStorage
-            const savedBidsApps = localStorage.getItem("bids_applications");
-            const bidsApps = savedBidsApps
-              ? JSON.parse(savedBidsApps).filter(
-                  (a: any) => a.investorId === selectedInvestor.id,
-                )
-              : [];
-            const savedIpos = localStorage.getItem("bids_ipos");
-            const allIpos = savedIpos ? JSON.parse(savedIpos) : [];
-            // Active IPO apps (Not listed, not cancelled, not refunded)
-            const activeBidsApps = bidsApps.filter(
-              (a: any) =>
-                a.applicationStatus !== "Cancelled" &&
-                a.allotmentStatus !== "Not Allotted" &&
-                a.listingStatus !== "Listed",
-            );
+          // Fetch IPO Applications from localStorage
+          const savedBidsApps = localStorage.getItem("bids_applications");
+          const bidsApps = savedBidsApps ?
+          JSON.parse(savedBidsApps).filter(
+            (a: any) => a.investorId === selectedInvestor.id
+          ) :
+          [];
+          const savedIpos = localStorage.getItem("bids_ipos");
+          const allIpos = savedIpos ? JSON.parse(savedIpos) : [];
+          // Active IPO apps (Not listed, not cancelled, not refunded)
+          const activeBidsApps = bidsApps.filter(
+            (a: any) =>
+            a.applicationStatus !== "Cancelled" &&
+            a.allotmentStatus !== "Not Allotted" &&
+            a.listingStatus !== "Listed"
+          );
 
-            // History IPO apps (Refunded/Cancelled)
-            const historyBidsApps = bidsApps.filter(
-              (a: any) =>
-                a.applicationStatus === "Cancelled" ||
-                a.allotmentStatus === "Not Allotted",
-            );
+          // History IPO apps (Refunded/Cancelled)
+          const historyBidsApps = bidsApps.filter(
+            (a: any) =>
+            a.applicationStatus === "Cancelled" ||
+            a.allotmentStatus === "Not Allotted"
+          );
 
-            const curValue = activeTotalCurrentValue;
-            const isProfit = curValue - activeTotalInvested >= 0;
+          const curValue = activeTotalCurrentValue;
+          const isProfit = curValue - activeTotalInvested >= 0;
 
-            return (
-              <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile max-md:fixed max-md:top-0 max-md:left-0 max-md:right-0 max-md:bottom-[calc(56px+env(safe-area-inset-bottom))] max-md:z-[45] max-md:overflow-y-auto">
+          return (
+            <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile max-md:fixed max-md:top-0 max-md:left-0 max-md:right-0 max-md:bottom-[calc(56px+env(safe-area-inset-bottom))] max-md:z-[45] max-md:overflow-y-auto">
                 
                 {/* Header and Tabs */}
                 <div className="bg-[#ececed] md:bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] pt-16 md:pt-4 pb-2 md:pb-0 px-4 md:px-6 relative z-10 border-none md:border-none">
                   <div className="flex items-center mb-6">
                     <button
-                      onClick={() => setViewMode("investor-detail")}
-                      className="text-kite-text-light hover:text-kite-text transition-colors mr-3 p-1 -ml-1 rounded-full hover:bg-kite-bg"
-                    >
+                    onClick={() => setViewMode("investor-detail")}
+                    className="text-kite-text-light hover:text-kite-text transition-colors mr-3 p-1 -ml-1 rounded-full hover:bg-kite-bg">
+                    
                       <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round">
+                      
                         <polyline points="15 18 9 12 15 6"></polyline>
                       </svg>
                     </button>
@@ -1449,32 +1464,32 @@ export default function Investors() {
                   </div>
                   <div className="flex items-center justify-center w-full gap-6">
                     <button
-                      className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "holdings" ? "border-kite-blue text-kite-blue font-medium" : "border-transparent text-kite-text-light hover:text-kite-text font-medium"}`}
-                      onClick={() => setWithdrawTab("holdings")}
-                    >
+                    className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "holdings" ? "border-kite-blue text-kite-blue font-medium" : "border-transparent text-kite-text-light hover:text-kite-text font-medium"}`}
+                    onClick={() => setWithdrawTab("holdings")}>
+                    
                       Holdings
                       <span
-                        className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "holdings" ? "bg-kite-blue text-white" : "bg-kite-bg text-kite-text"}`}
-                      >
+                      className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "holdings" ? "bg-kite-blue text-white" : "bg-kite-bg text-kite-text"}`}>
+                      
                         {holdings.length}
                       </span>
                     </button>
                     <button
-                      className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "positions" ? "border-kite-blue text-kite-blue font-medium" : "border-transparent text-kite-text-light hover:text-kite-text font-medium"}`}
-                      onClick={() => setWithdrawTab("positions")}
-                    >
+                    className={`pb-3 text-[14px] md:text-[15px] transition-colors border-b-2 flex items-center gap-2 ${withdrawTab === "positions" ? "border-kite-blue text-kite-blue font-medium" : "border-transparent text-kite-text-light hover:text-kite-text font-medium"}`}
+                    onClick={() => setWithdrawTab("positions")}>
+                    
                       Positions
                       <span
-                        className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "positions" ? "bg-kite-blue text-white" : "bg-kite-bg text-kite-text"}`}
-                      >
+                      className={`text-[11px] md:text-[12px] rounded-full px-2 py-0.5 ${withdrawTab === "positions" ? "bg-kite-blue text-white" : "bg-kite-bg text-kite-text"}`}>
+                      
                         {positions.length}
                       </span>
                     </button>
                   </div>
                 </div>
 
-                {withdrawTab === "holdings" && (
-                  <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
+                {withdrawTab === "holdings" &&
+              <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
@@ -1507,21 +1522,21 @@ export default function Investors() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-kite-border-soft bg-white dark:bg-kite-surface">
-                          {holdings.length === 0 ? (
-                            <tr>
+                          {holdings.length === 0 ?
+                      <tr>
                               <td colSpan={8}>
                                 <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                                   <div className="text-gray-300 mb-4">
                                     <svg
-                                      width="48"
-                                      height="48"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="1.5"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
+                                width="48"
+                                height="48"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round">
+                                
                                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                                     </svg>
                                   </div>
@@ -1530,109 +1545,109 @@ export default function Investors() {
                                   </p>
                                 </div>
                               </td>
-                            </tr>
-                          ) : (
-                            holdings.map((h, i) => {
-                              const qty = (h.invs as Investment[]).reduce((sum, inv) => {
-                                if (inv.quantity) return sum + inv.quantity;
-                                if (h.business && h.business.triggerAmount) {
-                                  return sum + Math.floor(inv.amount / h.business.triggerAmount);
-                                }
-                                return sum + 1;
-                              }, 0);
-                              const avgPrice = h.investedAmount / qty;
-                              const ltp = h.currentValue / qty;
-                              const pnlPercent =
-                                h.investedAmount > 0
-                                  ? (h.liveProfit / h.investedAmount) * 100
-                                  : 0;
+                            </tr> :
 
-                              return (
-                                <tr
-                                  key={`desk_inv_h_${h.bizId}_${i}`}
-                                  className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedPortfolioInvestment({
-                                      businessId: h.bizId,
-                                      investorId: selectedInvestor.id,
-                                      status: "active",
-                                      timePeriodMonths: (
-                                        h.invs as Investment[]
-                                      )[0].timePeriodMonths,
-                                      interestRate: (h.invs as Investment[])[0]
-                                        .interestRate,
-                                      startDate: (h.invs as Investment[])[0]
-                                        .startDate,
-                                      endDate: (h.invs as Investment[])[0]
-                                        .endDate,
-                                      amount: h.investedAmount,
-                                      groupedInvestmentsList:
-                                        h.invs as Investment[],
-                                    });
-                                  }}
-                                >
+                      holdings.map((h, i) => {
+                        const qty = (h.invs as Investment[]).reduce((sum, inv) => {
+                          if (inv.quantity) return sum + inv.quantity;
+                          if (h.business && h.business.triggerAmount) {
+                            return sum + Math.floor(inv.amount / h.business.triggerAmount);
+                          }
+                          return sum + 1;
+                        }, 0);
+                        const avgPrice = h.investedAmount / qty;
+                        const ltp = h.currentValue / qty;
+                        const pnlPercent =
+                        h.investedAmount > 0 ?
+                        h.liveProfit / h.investedAmount * 100 :
+                        0;
+
+                        return (
+                          <tr
+                            key={`desk_inv_h_${h.bizId}_${i}`}
+                            className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPortfolioInvestment({
+                                businessId: h.bizId,
+                                investorId: selectedInvestor.id,
+                                status: "active",
+                                timePeriodMonths: (
+                                h.invs as Investment[])[
+                                0].timePeriodMonths,
+                                interestRate: (h.invs as Investment[])[0].
+                                interestRate,
+                                startDate: (h.invs as Investment[])[0].
+                                startDate,
+                                endDate: (h.invs as Investment[])[0].
+                                endDate,
+                                amount: h.investedAmount,
+                                groupedInvestmentsList:
+                                h.invs as Investment[]
+                              });
+                            }}>
+                            
                                   <td className="py-4 px-4 text-kite-text font-normal border-r border-kite-border pr-6">
                                     {(h.business?.shortName || h.business?.name)?.toUpperCase() ||
-                                      "UNKNOWN"}
+                              "UNKNOWN"}
                                   </td>
                                   <td
-                                    className="py-4 px-4 text-right text-kite-text font-normal"
-                                   
-                                  >
+                              className="py-4 px-4 text-right text-kite-text font-normal">
+
+                              
                                     {qty}
                                   </td>
                                   <td
-                                    className="py-4 px-4 text-right text-kite-text font-normal"
-                                   
-                                  >
+                              className="py-4 px-4 text-right text-kite-text font-normal">
+
+                              
                                     {avgPrice.toFixed(2)}
                                   </td>
                                   <td className="py-4 px-4 text-right text-kite-text font-normal border-r border-kite-border pr-6">
                                     {Math.abs(ltp).toFixed(2)}
                                   </td>
                                   <td
-                                    className="py-4 px-4 text-right text-kite-text font-normal"
-                                   
-                                  >
+                              className="py-4 px-4 text-right text-kite-text font-normal">
+
+                              
                                     {formatINR(h.currentValue)}
                                   </td>
                                   <td
-                                    className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                   
-                                  >
+                              className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+
+                              
                                     {h.liveProfit >= 0 ? "+" : ""}
                                     {formatINR(h.liveProfit)}
                                   </td>
                                   <td
-                                    className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                  >
+                              className={`py-4 px-4 text-right font-normal ${h.liveProfit >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                              
                                     {h.liveProfit >= 0 ? "+" : ""}
                                     {pnlPercent.toFixed(2)}%
                                   </td>
                                   <td
-                                    className={`py-4 px-4 text-right font-normal ${h.dayChangePct >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                                  >
+                              className={`py-4 px-4 text-right font-normal ${h.dayChangePct >= 0 ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                              
                                     {h.dayChangePct >= 0 ? "+" : ""}{h.dayChangePct.toFixed(2)}%
                                   </td>
-                                </tr>
-                              );
-                            })
-                          )}
+                                </tr>);
+
+                      })
+                      }
                         </tbody>
                       </table>
 
                       {/* Desktop Holdings Summary */}
-                      {holdings.length > 0 && (
-                        <div className="hidden md:flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-kite-bg dark:md:bg-[#181818] border-t border-kite-border">
+                      {holdings.length > 0 &&
+                  <div className="hidden md:flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-kite-bg dark:md:bg-[#181818] border-t border-kite-border">
                           <div className="flex space-x-16">
                             <div>
                               <p className="text-[12px] text-kite-text mb-1 uppercase tracking-wider">
                                 Total investment
                               </p>
                               <p
-                                className="text-[16px] text-kite-text font-normal"
-                              >
+                          className="text-[16px] text-kite-text font-normal">
+                          
                                 {formatINR(activeTotalInvested)}
                               </p>
                             </div>
@@ -1641,8 +1656,8 @@ export default function Investors() {
                                 Current value
                               </p>
                               <p
-                                className="text-[16px] text-kite-text font-normal"
-                              >
+                          className="text-[16px] text-kite-text font-normal">
+                          
                                 {formatINR(curValue)}
                               </p>
                             </div>
@@ -1664,53 +1679,53 @@ export default function Investors() {
                                 Total P&L
                               </p>
                               <span
-                                className={`text-[16px] font-medium ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                              >
+                          className={`text-[16px] font-medium ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                          
                                 {isProfit ? "+" : ""}
                                 {formatINR(Math.abs(activeTotalLiveProfit))}
                               </span>
                               <span
-                                className={`text-[12px] mt-0.5 ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}
-                              >
+                          className={`text-[12px] mt-0.5 ${isProfit ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]"}`}>
+                          
                                 ({isProfit ? "+" : ""}
-                                {activeTotalInvested > 0
-                                  ? (
-                                      (activeTotalLiveProfit /
-                                        activeTotalInvested) *
-                                      100
-                                    ).toFixed(2)
-                                  : "0.00"}
+                                {activeTotalInvested > 0 ?
+                          (
+                          activeTotalLiveProfit /
+                          activeTotalInvested *
+                          100).
+                          toFixed(2) :
+                          "0.00"}
                                 %)
                               </span>
                             </div>
                           </div>
                         </div>
-                      )}
+                  }
                     </div>
                     {/* Mobile Holdings List (Matches Kite App) */}
                     <div className="block md:hidden pb-32 bg-transparent">
-                      {holdings.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                      {holdings.length === 0 ?
+                  <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                           <div className="text-gray-300 mb-4">
                             <svg
-                              width="48"
-                              height="48"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        
                               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                             </svg>
                           </div>
                           <p className="text-gray-500 font-medium text-[15px]">
                             No active holdings found
                           </p>
-                        </div>
-                      ) : (
-                        <>
+                        </div> :
+
+                  <>
                           {/* Kite Style Top Summary Card - Full Width on Mobile */}
                           <div className="relative bg-white dark:bg-[#14212b] pt-4 pb-2 px-4">
                             <div className="absolute top-0 left-0 right-0 h-[106px] bg-[#ececed] dark:bg-[#1c2a37] z-0"></div>
@@ -1736,9 +1751,9 @@ export default function Investors() {
                                   </span>
                                   <span className={`text-[12px] px-1.5 py-0.5 rounded-sm ${isProfit ? "bg-[#4CAF50]/10 text-[#4CAF50] dark:bg-[#5B9A5D]/10 dark:text-[#5B9A5D]" : "bg-[#DF514C]/10 text-[#DF514C] dark:bg-[#E25F5B]/10 dark:text-[#E25F5B]"}`}>
                                     {isProfit ? "+" : ""}
-                                    {activeTotalInvested > 0
-                                      ? ((activeTotalLiveProfit / activeTotalInvested) * 100).toFixed(2)
-                                      : "0.00"}%
+                                    {activeTotalInvested > 0 ?
+                              (activeTotalLiveProfit / activeTotalInvested * 100).toFixed(2) :
+                              "0.00"}%
                                   </span>
                                 </div>
                           </div>
@@ -1747,45 +1762,45 @@ export default function Investors() {
                           {/* Kite Style List */}
                           <div className="bg-white dark:bg-[#14212b] min-h-screen">
                             {holdings.map((h, i) => {
-                              const qty = (h.invs as Investment[]).reduce((sum, inv) => {
-                                if (inv.quantity) return sum + inv.quantity;
-                                if (h.business && h.business.triggerAmount) {
-                                  return sum + Math.floor(inv.amount / h.business.triggerAmount);
-                                }
-                                return sum + 1;
-                              }, 0);
-                              const avgPrice = h.investedAmount / qty;
-                              const ltp = h.currentValue / qty;
-                              const pnlPercent =
-                                h.investedAmount > 0
-                                  ? (h.liveProfit / h.investedAmount) * 100
-                                  : 0;
+                        const qty = (h.invs as Investment[]).reduce((sum, inv) => {
+                          if (inv.quantity) return sum + inv.quantity;
+                          if (h.business && h.business.triggerAmount) {
+                            return sum + Math.floor(inv.amount / h.business.triggerAmount);
+                          }
+                          return sum + 1;
+                        }, 0);
+                        const avgPrice = h.investedAmount / qty;
+                        const ltp = h.currentValue / qty;
+                        const pnlPercent =
+                        h.investedAmount > 0 ?
+                        h.liveProfit / h.investedAmount * 100 :
+                        0;
 
-                              return (
-                                <div
-                                  key={`mob_inv_h_${h.bizId}_${i}`}
-                                  className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedPortfolioInvestment({
-                                      businessId: h.bizId,
-                                      investorId: selectedInvestor.id,
-                                      status: "active",
-                                      timePeriodMonths: (
-                                        h.invs as Investment[]
-                                      )[0].timePeriodMonths,
-                                      interestRate: (h.invs as Investment[])[0]
-                                        .interestRate,
-                                      startDate: (h.invs as Investment[])[0]
-                                        .startDate,
-                                      endDate: (h.invs as Investment[])[0]
-                                        .endDate,
-                                      amount: h.investedAmount,
-                                      groupedInvestmentsList:
-                                        h.invs as Investment[],
-                                    });
-                                  }}
-                                >
+                        return (
+                          <div
+                            key={`mob_inv_h_${h.bizId}_${i}`}
+                            className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPortfolioInvestment({
+                                businessId: h.bizId,
+                                investorId: selectedInvestor.id,
+                                status: "active",
+                                timePeriodMonths: (
+                                h.invs as Investment[])[
+                                0].timePeriodMonths,
+                                interestRate: (h.invs as Investment[])[0].
+                                interestRate,
+                                startDate: (h.invs as Investment[])[0].
+                                startDate,
+                                endDate: (h.invs as Investment[])[0].
+                                endDate,
+                                amount: h.investedAmount,
+                                groupedInvestmentsList:
+                                h.invs as Investment[]
+                              });
+                            }}>
+                            
                                   <div className="flex justify-between items-stretch">
                                   <div className="flex flex-col gap-1.5 justify-between">
                                     <div className="text-[11px] md:text-[12px] text-kite-text-light">
@@ -1810,28 +1825,28 @@ export default function Investors() {
                                     </div>
                                   </div>
                                 </div>
-                                </div>
-                              );
-                            })}
+                                </div>);
+
+                      })}
                             {/* Active IPO Apps on Mobile */}
                             {activeBidsApps.map((app: any, i: number) => {
-                              const ipo = allIpos.find(
-                                (i: any) => i.id === app.ipoId,
-                              );
-                              let displayStatus = "IPO APPLIED";
-                              if (app.allotmentStatus === "Allotted")
-                                displayStatus = "IPO ALLOTTED";
+                        const ipo = allIpos.find(
+                          (i: any) => i.id === app.ipoId
+                        );
+                        let displayStatus = "IPO APPLIED";
+                        if (app.allotmentStatus === "Allotted")
+                        displayStatus = "IPO ALLOTTED";
 
-                              return (
-                                <div
-                                  key={`${app.id}-${i}`}
-                                  className="bg-transparent px-4 py-4 border-b border-kite-border-soft"
-                                >
+                        return (
+                          <div
+                            key={`${app.id}-${i}`}
+                            className="bg-transparent px-4 py-4 border-b border-kite-border-soft">
+                            
                                   <div className="flex justify-between items-center mb-1.5 leading-tight">
                                     <div className="flex items-center gap-1.5">
                                       <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
                                         {ipo?.companyName?.toUpperCase() ||
-                                          "UNKNOWN IPO"}
+                                  "UNKNOWN IPO"}
                                       </h3>
                                     </div>
                                     <div className="text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium bg-kite-blue/10 text-kite-blue">
@@ -1845,15 +1860,15 @@ export default function Investors() {
                                       </span>
                                       <span className="text-kite-text font-normal uppercase tracking-wide">
                                         {formatINR(app.appliedAmount).replace(
-                                          "₹",
-                                          "",
-                                        )}
+                                    "₹",
+                                    ""
+                                  )}
                                       </span>
                                     </div>
                                   </div>
-                                </div>
-                              );
-                            })}
+                                </div>);
+
+                      })}
                           </div>
                           {/* Sticky Bottom Bar for Mobile - Today's P&L */}
                           <div className="fixed bottom-[calc(56px+env(safe-area-inset-bottom))] left-0 w-full z-[100] bg-white dark:bg-[#2b414f] border-t border-gray-200 dark:border-[#2b414f] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] px-4 h-[54px] flex justify-between items-center md:hidden">
@@ -1870,13 +1885,13 @@ export default function Investors() {
                             </div>
                           </div>
                         </>
-                      )}
+                  }
                     </div>
                   </div>
-                )}
+              }
 
-                {withdrawTab === "positions" && (
-                  <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
+                {withdrawTab === "positions" &&
+              <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
@@ -1900,21 +1915,21 @@ export default function Investors() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-kite-border-soft bg-white dark:bg-kite-surface">
-                          {positions.length === 0 ? (
-                            <tr>
+                          {positions.length === 0 ?
+                      <tr>
                               <td colSpan={5}>
                                 <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                                   <div className="text-gray-300 mb-4">
                                     <svg
-                                      width="48"
-                                      height="48"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="1.5"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
+                                width="48"
+                                height="48"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round">
+                                
                                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                                     </svg>
                                   </div>
@@ -1923,62 +1938,62 @@ export default function Investors() {
                                   </p>
                                 </div>
                               </td>
-                            </tr>
-                          ) : (
-                            positions.map((p, i) => {
-                              const qty = (p.invs as Investment[]).reduce((sum, inv) => {
-                                if (inv.quantity) return sum + inv.quantity;
-                                if (p.business && p.business.triggerAmount) {
-                                  return sum + Math.floor(inv.amount / p.business.triggerAmount);
-                                }
-                                return sum + 1;
-                              }, 0);
-                              const avgPrice = p.investedAmount / qty;
-                              return (
-                                <tr
-                                  key={`desk_inv_p_${p.bizId}_${i}`}
-                                  className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedPortfolioInvestment({
-                                      businessId: p.bizId,
-                                      investorId: selectedInvestor.id,
-                                      status: "completed",
-                                      timePeriodMonths: (
-                                        p.invs as Investment[]
-                                      )[0].timePeriodMonths,
-                                      interestRate: (p.invs as Investment[])[0]
-                                        .interestRate,
-                                      startDate: (p.invs as Investment[])[0]
-                                        .startDate,
-                                      endDate: (p.invs as Investment[])[0]
-                                        .endDate,
-                                      amount: p.investedAmount,
-                                      groupedInvestmentsList:
-                                        p.invs as Investment[],
-                                    });
-                                  }}
-                                >
+                            </tr> :
+
+                      positions.map((p, i) => {
+                        const qty = (p.invs as Investment[]).reduce((sum, inv) => {
+                          if (inv.quantity) return sum + inv.quantity;
+                          if (p.business && p.business.triggerAmount) {
+                            return sum + Math.floor(inv.amount / p.business.triggerAmount);
+                          }
+                          return sum + 1;
+                        }, 0);
+                        const avgPrice = p.investedAmount / qty;
+                        return (
+                          <tr
+                            key={`desk_inv_p_${p.bizId}_${i}`}
+                            className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPortfolioInvestment({
+                                businessId: p.bizId,
+                                investorId: selectedInvestor.id,
+                                status: "completed",
+                                timePeriodMonths: (
+                                p.invs as Investment[])[
+                                0].timePeriodMonths,
+                                interestRate: (p.invs as Investment[])[0].
+                                interestRate,
+                                startDate: (p.invs as Investment[])[0].
+                                startDate,
+                                endDate: (p.invs as Investment[])[0].
+                                endDate,
+                                amount: p.investedAmount,
+                                groupedInvestmentsList:
+                                p.invs as Investment[]
+                              });
+                            }}>
+                            
                                   <td className="py-4 px-4 text-kite-text font-normal">
                                     {(p.business?.shortName || p.business?.name)?.toUpperCase() ||
-                                      "UNKNOWN"}
+                              "UNKNOWN"}
                                   </td>
                                   <td
-                                    className="py-4 px-4 text-right text-kite-text font-normal"
-                                   
-                                  >
+                              className="py-4 px-4 text-right text-kite-text font-normal">
+
+                              
                                     {qty}
                                   </td>
                                   <td
-                                    className="py-4 px-4 text-right text-kite-text font-normal"
-                                   
-                                  >
+                              className="py-4 px-4 text-right text-kite-text font-normal">
+
+                              
                                     {avgPrice.toFixed(2)}
                                   </td>
                                   <td
-                                    className="py-4 px-4 text-right text-kite-text font-normal"
-                                   
-                                  >
+                              className="py-4 px-4 text-right text-kite-text font-normal">
+
+                              
                                     {formatINR(p.investedAmount)}
                                   </td>
                                   <td className="py-4 px-4 text-center">
@@ -1986,14 +2001,14 @@ export default function Investors() {
                                       Closed
                                     </span>
                                   </td>
-                                </tr>
-                              );
-                            })
-                          )}
+                                </tr>);
+
+                      })
+                      }
                         </tbody>
                       </table>
-                      {historyBidsApps.length > 0 && (
-                        <table className="w-full text-left text-[13px] md:text-[14px] mt-6">
+                      {historyBidsApps.length > 0 &&
+                  <table className="w-full text-left text-[13px] md:text-[14px] mt-6">
                           <thead className="bg-white dark:bg-kite-surface border-y border-kite-border text-kite-text-light">
                             <tr>
                               <th className="font-normal py-3 px-4 md:px-6 w-[30%]">
@@ -2009,54 +2024,54 @@ export default function Investors() {
                           </thead>
                           <tbody>
                             {historyBidsApps.map((app: any, i: number) => {
-                              const ipo = allIpos.find(
-                                (i: any) => i.id === app.ipoId,
-                              );
-                              const isRefunded =
-                                app.applicationStatus === "Cancelled" ||
-                                app.allotmentStatus === "Not Allotted";
-                              const isListed = app.listingStatus === "Listed";
-                              if (isListed) return null; // handled by normal investments
+                        const ipo = allIpos.find(
+                          (i: any) => i.id === app.ipoId
+                        );
+                        const isRefunded =
+                        app.applicationStatus === "Cancelled" ||
+                        app.allotmentStatus === "Not Allotted";
+                        const isListed = app.listingStatus === "Listed";
+                        if (isListed) return null; // handled by normal investments
 
-                              let displayStatus = "IPO APPLIED";
-                              if (isRefunded) displayStatus = "REFUNDED";
-                              else if (app.allotmentStatus === "Allotted")
-                                displayStatus = "IPO ALLOTTED";
+                        let displayStatus = "IPO APPLIED";
+                        if (isRefunded) displayStatus = "REFUNDED";else
+                        if (app.allotmentStatus === "Allotted")
+                        displayStatus = "IPO ALLOTTED";
 
-                              return (
-                                <tr
-                                  key={`${app.id}-${i}`}
-                                  className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"
-                                >
+                        return (
+                          <tr
+                            key={`${app.id}-${i}`}
+                            className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]">
+                            
                                   <td className="py-3 px-4 md:px-6">
                                     <div className="flex items-center gap-2">
                                       <span className="text-kite-text font-normal uppercase tracking-wide">
                                         {ipo?.companyName?.toUpperCase() ||
-                                          "UNKNOWN IPO"}
+                                  "UNKNOWN IPO"}
                                       </span>
                                     </div>
                                   </td>
                                   <td className="py-3 px-4 md:px-6 text-right font-normal text-kite-text">
                                     {formatINR(app.appliedAmount).replace(
-                                      "₹",
-                                      "",
-                                    )}
+                                "₹",
+                                ""
+                              )}
                                   </td>
                                   <td className="py-3 px-4 md:px-6 text-right font-normal">
                                     <span
-                                      className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#DF514C] dark:bg-[#E25F5B]/10 text-[#DF514C] dark:text-[#E25F5B]" : "bg-kite-blue/10 text-kite-blue"}`}
-                                    >
+                                className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#DF514C] dark:bg-[#E25F5B]/10 text-[#DF514C] dark:text-[#E25F5B]" : "bg-kite-blue/10 text-kite-blue"}`}>
+                                
                                       {displayStatus}
                                     </span>
                                   </td>
-                                </tr>
-                              );
-                            })}
+                                </tr>);
+
+                      })}
                           </tbody>
                         </table>
-                      )}
-                      {activeBidsApps.length > 0 && (
-                        <table className="w-full text-left text-[13px] md:text-[14px] mt-6 border-t border-kite-border">
+                  }
+                      {activeBidsApps.length > 0 &&
+                  <table className="w-full text-left text-[13px] md:text-[14px] mt-6 border-t border-kite-border">
                           <thead className="bg-white dark:bg-kite-surface border-b border-kite-border text-kite-text-light">
                             <tr>
                               <th className="font-normal py-3 px-4 md:px-6 w-[30%]">
@@ -2072,103 +2087,103 @@ export default function Investors() {
                           </thead>
                           <tbody>
                             {activeBidsApps.map((app: any, i: number) => {
-                              const ipo = allIpos.find(
-                                (i: any) => i.id === app.ipoId,
-                              );
-                              let displayStatus = "IPO APPLIED";
-                              if (app.allotmentStatus === "Allotted")
-                                displayStatus = "IPO ALLOTTED";
-                              return (
-                                <tr
-                                  key={`${app.id}-${i}`}
-                                  className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"
-                                >
+                        const ipo = allIpos.find(
+                          (i: any) => i.id === app.ipoId
+                        );
+                        let displayStatus = "IPO APPLIED";
+                        if (app.allotmentStatus === "Allotted")
+                        displayStatus = "IPO ALLOTTED";
+                        return (
+                          <tr
+                            key={`${app.id}-${i}`}
+                            className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]">
+                            
                                   <td className="py-3 px-4 md:px-6">
                                     <div className="flex items-center gap-2">
                                       <span className="text-kite-text font-normal uppercase tracking-wide">
                                         {ipo?.companyName?.toUpperCase() ||
-                                          "UNKNOWN IPO"}
+                                  "UNKNOWN IPO"}
                                       </span>
                                     </div>
                                   </td>
                                   <td className="py-3 px-4 md:px-6 text-right font-normal text-kite-text">
                                     {formatINR(app.appliedAmount).replace(
-                                      "₹",
-                                      "",
-                                    )}
+                                "₹",
+                                ""
+                              )}
                                   </td>
                                   <td className="py-3 px-4 md:px-6 text-right font-normal">
                                     <span className="text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium bg-kite-blue/10 text-kite-blue">
                                       {displayStatus}
                                     </span>
                                   </td>
-                                </tr>
-                              );
-                            })}
+                                </tr>);
+
+                      })}
                           </tbody>
                         </table>
-                      )}
+                  }
                     </div>
 
                     {/* Mobile Positions List */}
                     <div className="block md:hidden">
-                      {positions.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                      {positions.length === 0 ?
+                  <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                           <div className="text-gray-300 mb-4">
                             <svg
-                              width="48"
-                              height="48"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        
                               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                             </svg>
                           </div>
                           <p className="text-gray-500 font-medium text-[15px]">
                             No active positions found
                           </p>
-                        </div>
-                      ) : (
-                        <div className="bg-transparent">
-                          {positions.map((p, i) => {
-                            const qty = (p.invs as Investment[]).reduce((sum, inv) => {
-                                if (inv.quantity) return sum + inv.quantity;
-                                if (p.business && p.business.triggerAmount) {
-                                  return sum + Math.floor(inv.amount / p.business.triggerAmount);
-                                }
-                                return sum + 1;
-                              }, 0);
-                            const avgPrice = p.investedAmount / qty;
+                        </div> :
 
-                            return (
-                              <div
-                                key={`mob_inv_p_${p.bizId}_${i}`}
-                                className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedPortfolioInvestment({
-                                    businessId: p.bizId,
-                                    investorId: selectedInvestor.id,
-                                    status: "completed",
-                                    timePeriodMonths: (
-                                      p.invs as Investment[]
-                                    )[0].timePeriodMonths,
-                                    interestRate: (p.invs as Investment[])[0]
-                                      .interestRate,
-                                    startDate: (p.invs as Investment[])[0]
-                                      .startDate,
-                                    endDate: (p.invs as Investment[])[0]
-                                      .endDate,
-                                    amount: p.investedAmount,
-                                    groupedInvestmentsList:
-                                      p.invs as Investment[],
-                                  });
-                                }}
-                              >
+                  <div className="bg-transparent">
+                          {positions.map((p, i) => {
+                      const qty = (p.invs as Investment[]).reduce((sum, inv) => {
+                        if (inv.quantity) return sum + inv.quantity;
+                        if (p.business && p.business.triggerAmount) {
+                          return sum + Math.floor(inv.amount / p.business.triggerAmount);
+                        }
+                        return sum + 1;
+                      }, 0);
+                      const avgPrice = p.investedAmount / qty;
+
+                      return (
+                        <div
+                          key={`mob_inv_p_${p.bizId}_${i}`}
+                          className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPortfolioInvestment({
+                              businessId: p.bizId,
+                              investorId: selectedInvestor.id,
+                              status: "completed",
+                              timePeriodMonths: (
+                              p.invs as Investment[])[
+                              0].timePeriodMonths,
+                              interestRate: (p.invs as Investment[])[0].
+                              interestRate,
+                              startDate: (p.invs as Investment[])[0].
+                              startDate,
+                              endDate: (p.invs as Investment[])[0].
+                              endDate,
+                              amount: p.investedAmount,
+                              groupedInvestmentsList:
+                              p.invs as Investment[]
+                            });
+                          }}>
+                          
                                 {/* Line 1: Metrics Row (Qty & Avg) */}
                                 <div className="flex justify-between items-center mb-1.5 leading-tight">
                                   <div className="flex items-center text-[11px] md:text-[12px]">
@@ -2198,14 +2213,14 @@ export default function Investors() {
                                   <div className="flex items-center gap-1.5">
                                     <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
                                       {(p.business?.shortName || p.business?.name)?.toUpperCase() ||
-                                        "UNKNOWN"}
+                                "UNKNOWN"}
                                     </h3>
                                   </div>
                                   <div className="text-[13px] md:text-[14px] font-normal text-kite-text">
                                     {formatINR(p.investedAmount).replace(
-                                      "₹",
-                                      "",
-                                    )}
+                                "₹",
+                                ""
+                              )}
                                   </div>
                                 </div>
 
@@ -2217,47 +2232,47 @@ export default function Investors() {
                                     </span>
                                     <span className="text-kite-text font-normal uppercase tracking-wide">
                                       {formatINR(p.investedAmount).replace(
-                                        "₹",
-                                        "",
-                                      )}
+                                  "₹",
+                                  ""
+                                )}
                                     </span>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              </div>);
+
+                    })}
 
                           {/* IPO Apps on Mobile */}
                           {historyBidsApps.map((app: any, i: number) => {
-                            const ipo = allIpos.find(
-                              (i: any) => i.id === app.ipoId,
-                            );
-                            const isRefunded =
-                              app.applicationStatus === "Cancelled" ||
-                              app.allotmentStatus === "Not Allotted";
-                            const isListed = app.listingStatus === "Listed";
-                            if (isListed) return null;
+                      const ipo = allIpos.find(
+                        (i: any) => i.id === app.ipoId
+                      );
+                      const isRefunded =
+                      app.applicationStatus === "Cancelled" ||
+                      app.allotmentStatus === "Not Allotted";
+                      const isListed = app.listingStatus === "Listed";
+                      if (isListed) return null;
 
-                            let displayStatus = "IPO APPLIED";
-                            if (isRefunded) displayStatus = "REFUNDED";
-                            else if (app.allotmentStatus === "Allotted")
-                              displayStatus = "IPO ALLOTTED";
+                      let displayStatus = "IPO APPLIED";
+                      if (isRefunded) displayStatus = "REFUNDED";else
+                      if (app.allotmentStatus === "Allotted")
+                      displayStatus = "IPO ALLOTTED";
 
-                            return (
-                              <div
-                                key={`${app.id}-${i}`}
-                                className="bg-transparent px-4 py-4 border-b border-kite-border-soft"
-                              >
+                      return (
+                        <div
+                          key={`${app.id}-${i}`}
+                          className="bg-transparent px-4 py-4 border-b border-kite-border-soft">
+                          
                                 <div className="flex justify-between items-center mb-1.5 leading-tight">
                                   <div className="flex items-center gap-1.5">
                                     <h3 className="text-kite-text font-normal text-[12px] md:text-[13px] uppercase tracking-wide">
                                       {ipo?.companyName?.toUpperCase() ||
-                                        "UNKNOWN IPO"}
+                                "UNKNOWN IPO"}
                                     </h3>
                                   </div>
                                   <div
-                                    className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#DF514C] dark:bg-[#E25F5B]/10 text-[#DF514C] dark:text-[#E25F5B]" : "bg-kite-blue/10 text-kite-blue"}`}
-                                  >
+                              className={`text-[11px] px-1.5 py-0.5 rounded tracking-wide uppercase font-medium ${isRefunded ? "bg-[#DF514C] dark:bg-[#E25F5B]/10 text-[#DF514C] dark:text-[#E25F5B]" : "bg-kite-blue/10 text-kite-blue"}`}>
+                              
                                     {displayStatus}
                                   </div>
                                 </div>
@@ -2268,35 +2283,35 @@ export default function Investors() {
                                     </span>
                                     <span className="text-kite-text font-normal uppercase tracking-wide">
                                       {formatINR(app.appliedAmount).replace(
-                                        "₹",
-                                        "",
-                                      )}
+                                  "₹",
+                                  ""
+                                )}
                                     </span>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              </div>);
+
+                    })}
                         </div>
-                      )}
+                  }
                     </div>
                   </div>
-                )}
-              </div>
-            );
-          })()}
+              }
+              </div>);
+
+        })()}
         {viewMode === "withdraw-calc" &&
-          selectedInvestor &&
-          selectedInvestments.length > 0 && (
-            <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
+        selectedInvestor &&
+        selectedInvestments.length > 0 &&
+        <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
               <div className="flex justify-between items-center mb-4 border-b border-kite-border pb-4">
                 <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text uppercase">
                   Withdrawal Calculation
                 </h3>
                 <button
-                  onClick={() => setViewMode("withdraw-list")}
-                  className="text-gray-700 hover:text-gray-700 font-medium text-[13px] md:text-[14px]"
-                >
+              onClick={() => setViewMode("withdraw-list")}
+              className="text-gray-700 hover:text-gray-700 font-medium text-[13px] md:text-[14px]">
+              
                   Back
                 </button>
               </div>
@@ -2307,27 +2322,27 @@ export default function Investors() {
                 </div>
                 <div className="pt-4">
                   <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded font-medium text-[13px] md:text-[14px]"
-                  >
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded font-medium text-[13px] md:text-[14px]">
+                
                     Proceed to Bank Transfer →
                   </button>
                 </div>
               </form>
             </div>
-          )}
+        }
         {viewMode === "withdraw-bank" &&
-          selectedInvestor &&
-          selectedInvestments.length > 0 && (
-            <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
+        selectedInvestor &&
+        selectedInvestments.length > 0 &&
+        <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
               <div className="flex justify-between items-center mb-4 border-b border-kite-border pb-4">
                 <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text uppercase">
                   Bank Transfer Confirmation
                 </h3>
                 <button
-                  onClick={() => setViewMode("withdraw-calc")}
-                  className="text-gray-700 hover:text-gray-700 font-medium text-[13px] md:text-[14px]"
-                >
+              onClick={() => setViewMode("withdraw-calc")}
+              className="text-gray-700 hover:text-gray-700 font-medium text-[13px] md:text-[14px]">
+              
                   Back
                 </button>
               </div>
@@ -2338,48 +2353,48 @@ export default function Investors() {
                 </div>
                 <div className="pt-4">
                   <button
-                    onClick={() => {
-                      handlePay();
-                      setViewMode("list");
-                    }}
-                    className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-medium text-[13px] md:text-[14px]"
-                  >
+                onClick={() => {
+                  handlePay();
+                  setViewMode("list");
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-medium text-[13px] md:text-[14px]">
+                
                     Confirm Payment
                   </button>
                 </div>
               </div>
             </div>
-          )}
-        {viewMode === "banking-record" && selectedInvestor && (
-          <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
+        }
+        {viewMode === "banking-record" && selectedInvestor &&
+        <div className="p-4 md:p-6 w-full bg-white dark:bg-kite-surface border border-kite-border rounded-sm mt-4 md:mt-8 animate-fade-in">
             <div className="flex justify-between items-center mb-4 border-b border-kite-border pb-4">
               <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text uppercase">
                 Banking Records
               </h3>
               <button
-                onClick={() => setViewMode("list")}
-                className="text-gray-700 hover:text-gray-700 font-medium text-[13px] md:text-[14px]"
-              >
+              onClick={() => setViewMode("list")}
+              className="text-gray-700 hover:text-gray-700 font-medium text-[13px] md:text-[14px]">
+              
                 Back to List
               </button>
             </div>
             <div className="space-y-4">
-              {state.investments
-                .filter(
-                  (i) =>
-                    i.investorId === selectedInvestor.id &&
-                    i.status === "completed",
-                )
-                .map((inv, i) => {
-                  const business = state.businesses.find(
-                    (b) => b.id === inv.businessId,
-                  );
-                  const payout = inv.payoutDetails;
-                  return (
-                    <div
-                      key={`inv_pos_${inv.id}_${i}`}
-                      className="p-4 border border-kite-border rounded-sm flex flex-col md:flex-row md:items-center justify-between"
-                    >
+              {state.investments.
+            filter(
+              (i) =>
+              i.investorId === selectedInvestor.id &&
+              i.status === "completed"
+            ).
+            map((inv, i) => {
+              const business = state.businesses.find(
+                (b) => b.id === inv.businessId
+              );
+              const payout = inv.payoutDetails;
+              return (
+                <div
+                  key={`inv_pos_${inv.id}_${i}`}
+                  className="p-4 border border-kite-border rounded-sm flex flex-col md:flex-row md:items-center justify-between">
+                  
                       <div>
                         <h4 className="font-normal text-[13px] md:text-[14px] text-kite-text uppercase mb-1">
                           {business?.name?.toUpperCase() || "UNKNOWN"}
@@ -2389,11 +2404,11 @@ export default function Investors() {
                         </p>
                         <p className="text-[12px] md:text-[13px] text-gray-600">
                           Paid on:{" "}
-                          {payout?.payoutDate
-                            ? new Date(payout.payoutDate).toLocaleDateString(
-                                "en-IN",
-                              )
-                            : "N/A"}
+                          {payout?.payoutDate ?
+                      new Date(payout.payoutDate).toLocaleDateString(
+                        "en-IN"
+                      ) :
+                      "N/A"}
                         </p>
                       </div>
                       <div className="text-right mt-2 md:mt-0">
@@ -2404,15 +2419,15 @@ export default function Investors() {
                           {formatINR(payout?.totalCredited || 0)}
                         </p>
                       </div>
-                    </div>
-                  );
-                })}
+                    </div>);
+
+            })}
               {state.investments.filter(
-                (i) =>
-                  i.investorId === selectedInvestor.id &&
-                  i.status === "completed",
-              ).length === 0 && (
-                <div className="text-center py-12 text-gray-600 bg-kite-bg border border-kite-border border-dashed rounded-sm">
+              (i) =>
+              i.investorId === selectedInvestor.id &&
+              i.status === "completed"
+            ).length === 0 &&
+            <div className="text-center py-12 text-gray-600 bg-kite-bg border border-kite-border border-dashed rounded-sm">
                   <p className="font-normal text-[13px] md:text-[14px] text-kite-text">
                     No completed banking records found.
                   </p>
@@ -2421,14 +2436,14 @@ export default function Investors() {
                     here.
                   </p>
                 </div>
-              )}
+            }
             </div>
           </div>
-        )}
+        }
       </div>
       {/* --- Profit Slip Modal --- */}{" "}
-      {pdfProfitSlip && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 dark:bg-black/70 p-4 print:hidden">
+      {pdfProfitSlip &&
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 dark:bg-black/70 p-4 print:hidden">
           {" "}
           <div className="bg-white dark:bg-kite-surface rounded-sm md:rounded w-full max-w-6xl max-h-[90vh] overflow-y-auto flex flex-col">
             {" "}
@@ -2447,11 +2462,11 @@ export default function Investors() {
                   <span>Download / Print Slip</span>{" "}
                 </button>{" "}
                 <button
-                  onClick={() =>
-                    setPdfInvestor(pdfProfitSlip?.investor || selectedInvestor)
-                  }
-                  className="text-[13px] md:text-[14px] font-medium text-kite-text hover:text-kite-blue"
-                >
+                onClick={() =>
+                setPdfInvestor(pdfProfitSlip?.investor || selectedInvestor)
+                }
+                className="text-[13px] md:text-[14px] font-medium text-kite-text hover:text-kite-blue">
+                
                   Preview PDF Document
                 </button>{" "}
                 <div className="flex items-center space-x-3">
@@ -2462,9 +2477,9 @@ export default function Investors() {
                     <span>Download / Print</span>{" "}
                   </button>{" "}
                   <button
-                    onClick={() => setPdfInvestor(null)}
-                    className="p-2 hover:bg-kite-bg rounded-full text-gray-600"
-                  >
+                  onClick={() => setPdfInvestor(null)}
+                  className="p-2 hover:bg-kite-bg rounded-full text-gray-600">
+                  
                     {" "}
                     <X className="w-4 h-4 md:w-5 md:h-5" />{" "}
                   </button>{" "}
@@ -2474,9 +2489,9 @@ export default function Investors() {
               <div className="bg-white dark:bg-kite-surface rounded-sm md:rounded w-full max-w-6xl max-h-[90vh] overflow-y-auto">
                 {" "}
                 <div
-                  id="investor-pdf-content"
-                  className="bg-white dark:bg-kite-surface border border-kite-border mx-auto max-w-3xl p-4 md:p-8 aspect-auto text-kite-text"
-                >
+                id="investor-pdf-content"
+                className="bg-white dark:bg-kite-surface border border-kite-border mx-auto max-w-3xl p-4 md:p-8 aspect-auto text-kite-text">
+                
                   {" "}
                   {/* We just show a preview here, the actual printable content is below */}{" "}
                   <PdfContent investor={pdfInvestor} />{" "}
@@ -2485,28 +2500,28 @@ export default function Investors() {
             </div>{" "}
           </div>{" "}
         </div>
-      )}{" "}
+      }{" "}
       {/* --- ACTUAL PRINTABLE CONTENT --- */}{" "}
       {/* This is completely hidden from the screen, and only formatted nicely for print. */}{" "}
-      {pdfInvestor && (
-        <div className="hidden print:block font-sans text-kite-text p-0 m-0">
+      {pdfInvestor &&
+      <div className="hidden print:block font-sans text-kite-text p-0 m-0">
           {" "}
           <PdfContent investor={pdfInvestor} />{" "}
         </div>
-      )}{" "}
+      }{" "}
       <AddInvestmentModal
         isOpen={showAddForm}
         onClose={() => setShowAddForm(false)}
         initialBusinessId={addModalBusinessId}
-        initialInvestorId={addModalInvestorId}
-      />
+        initialInvestorId={addModalInvestorId} />
+      
       {selectedPortfolioInvestment && createPortal(<LivePortfolioDetail selectedInvestment={selectedPortfolioInvestment} onClose={() => setSelectedPortfolioInvestment(null)} />, document.body)}
-      {selectedPreviewInvestor && (
-        <>
+      {selectedPreviewInvestor &&
+      <>
         <InvestorPreviewModal
           investor={selectedPreviewInvestor}
           onClose={() => {
-            setPreviewHistory(prev => {
+            setPreviewHistory((prev) => {
               if (prev.length <= 1) {
                 setSelectedPreviewInvestor(null);
                 return [];
@@ -2522,19 +2537,19 @@ export default function Investors() {
           settings={state.settings}
           onMentionClick={(type, id, data) => {
             if (type === 'investor') {
-              setPreviewHistory(prev => [...prev, data]);
+              setPreviewHistory((prev) => [...prev, data]);
               setSelectedPreviewInvestor(data);
             } else if (type === 'business') {
-              setPreviewBusinessHistory(prev => [...prev, data]);
+              setPreviewBusinessHistory((prev) => [...prev, data]);
               setSelectedPreviewBusiness(data);
             }
-          }}
-        />
-        {selectedPreviewBusiness && (
+          }} />
+        
+        {selectedPreviewBusiness &&
         <BusinessPreviewModal
           business={selectedPreviewBusiness}
           onClose={() => {
-            setPreviewBusinessHistory(prev => {
+            setPreviewBusinessHistory((prev) => {
               if (prev.length <= 1) {
                 setSelectedPreviewBusiness(null);
                 return [];
@@ -2550,23 +2565,23 @@ export default function Investors() {
           settings={state.settings}
           onMentionClick={(type, id, data) => {
             if (type === 'investor') {
-              setPreviewHistory(prev => [...prev, data]);
+              setPreviewHistory((prev) => [...prev, data]);
               setSelectedPreviewInvestor(data);
             } else if (type === 'business') {
-              setPreviewBusinessHistory(prev => [...prev, data]);
+              setPreviewBusinessHistory((prev) => [...prev, data]);
               setSelectedPreviewBusiness(data);
             }
-          }}
-        />
-        )}
+          }} />
+
+        }
         </>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
 
 // Sub-component for the PDF Content to ensure it's rendered identically in Preview and Print
-function PdfContent({ investor }: { investor: Investor }) {
+function PdfContent({ investor }: {investor: Investor;}) {
   return (
     <div className="space-y-4 sm:space-y-8 leading-relaxed">
       {" "}
@@ -2596,8 +2611,8 @@ function PdfContent({ investor }: { investor: Investor }) {
             Joined: {new Date(investor.joinDate).toLocaleDateString("en-IN")}
           </p>{" "}
         </div>{" "}
-        {investor.bankDetails && (
-          <div>
+        {investor.bankDetails &&
+        <div>
             {" "}
             <p className="text-[13px] md:text-[14px] font-normal text-gray-600 uppercase tracking-wide">
               Banking Profile
@@ -2615,7 +2630,7 @@ function PdfContent({ investor }: { investor: Investor }) {
               ACCOUNT HOLDER: {investor.bankDetails.accountHolderName}
             </p>{" "}
           </div>
-        )}{" "}
+        }{" "}
       </div>{" "}
       <div className="space-y-2 sm:space-y-5 text-justify text-[11px] md:text-[12px]">
         {" "}
@@ -2728,22 +2743,22 @@ function PdfContent({ investor }: { investor: Investor }) {
           </p>{" "}
         </div>{" "}
       </div>{" "}
-    </div>
-  );
+    </div>);
+
 } // Component for the Profit Slip
 function ProfitSlipContent({
   investment,
   investor,
   business,
   isBlueTick,
-  isPreVerified,
-}: {
-  investment: Investment;
-  investor: Investor;
-  business: Business;
-  isBlueTick?: boolean;
-  isPreVerified?: boolean;
-}) {
+  isPreVerified
+
+
+
+
+
+
+}: {investment: Investment;investor: Investor;business: Business;isBlueTick?: boolean;isPreVerified?: boolean;}) {
   const payout = investment.payoutDetails;
   return (
     <div className="space-y-4 sm:space-y-8 leading-relaxed">
@@ -2790,16 +2805,16 @@ function ProfitSlipContent({
           <div className="flex items-center space-x-2">
             {" "}
             <p className="font-normal text-[11px] md:text-[12px] uppercase">
-              {business.shortName
-                ? business.shortName.toUpperCase()
-                : business.name?.toUpperCase()}
+              {business.shortName ?
+              business.shortName.toUpperCase() :
+              business.name?.toUpperCase()}
             </p>{" "}
-            {isBlueTick && (
-              <BadgeCheck className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500" />
-            )}{" "}
-            {isPreVerified && (
-              <Clock className="w-4 h-4 md:w-5 md:h-5 text-black" />
-            )}{" "}
+            {isBlueTick &&
+            <BadgeCheck className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500" />
+            }{" "}
+            {isPreVerified &&
+            <Clock className="w-4 h-4 md:w-5 md:h-5 text-black" />
+            }{" "}
           </div>{" "}
           <p className="text-[13px] md:text-[14px] text-gray-600 mt-1 uppercase">
             Owner: {business.ownerName}
@@ -2808,15 +2823,15 @@ function ProfitSlipContent({
             Bus. ID: #{business.businessId}
           </p>{" "}
           {business.authorityType &&
-            business.authorityType !== "Business Authorities" && (
-              <div className="mt-2 text-[10px] md:text-[11px] font-normal px-2 py-1 bg-kite-blue/10 text-blue-800 rounded-sm w-max border border-kite-blue/30 uppercase tracking-wider">
+          business.authorityType !== "Business Authorities" &&
+          <div className="mt-2 text-[10px] md:text-[11px] font-normal px-2 py-1 bg-kite-blue/10 text-blue-800 rounded-sm w-max border border-kite-blue/30 uppercase tracking-wider">
                 {" "}
                 {business.authorityType}{" "}
-                {business.rmasSubsidy
-                  ? ` - RMAS Assisted: ${business.rmasSubsidy}% Interest`
-                  : ""}{" "}
+                {business.rmasSubsidy ?
+            ` - RMAS Assisted: ${business.rmasSubsidy}% Interest` :
+            ""}{" "}
               </div>
-            )}{" "}
+          }{" "}
         </div>{" "}
       </div>{" "}
       <div className="mt-4 md:mt-4 sm:mt-4 md:mt-8 border border-kite-border rounded-sm overflow-x-auto w-full max-w-full">
@@ -2847,42 +2862,42 @@ function ProfitSlipContent({
               </td>{" "}
             </tr>{" "}
             <tr
-              className={`border-b border-kite-border ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "bg-kite-red/10" : "bg-kite-green/10"}`}
-            >
+              className={`border-b border-kite-border ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "bg-kite-red/10" : "bg-kite-green/10"}`}>
+              
               {" "}
               <td
-                className={`p-2 sm:p-4 py-1.5 md:py-2 font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-[#DF514C] dark:text-[#E25F5B]" : "text-[#4CAF50] dark:text-[#5B9A5D]"}`}
-              >
+                className={`p-2 sm:p-4 py-1.5 md:py-2 font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-[#DF514C] dark:text-[#E25F5B]" : "text-[#4CAF50] dark:text-[#5B9A5D]"}`}>
+                
                 {" "}
-                {(payout?.totalCredited || 0) +
-                  (payout?.rmasCommission || 0) +
-                  (payout?.happyIncomeTax || 0) +
-                  (payout?.rmasPrematurePenalty || 0) -
-                  investment.amount <
-                0
-                  ? "Total Market Loss"
-                  : "Total Profit & Interest"}{" "}
+                {(payout?.totalCredited || 0) + (
+                payout?.rmasCommission || 0) + (
+                payout?.happyIncomeTax || 0) + (
+                payout?.rmasPrematurePenalty || 0) -
+                investment.amount <
+                0 ?
+                "Total Market Loss" :
+                "Total Profit & Interest"}{" "}
               </td>{" "}
               <td
-                className={`p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-[#DF514C] dark:text-[#E25F5B]" : "text-[#4CAF50] dark:text-[#5B9A5D]"}`}
-              >
+                className={`p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono font-normal ${(payout?.totalCredited || 0) + (payout?.rmasCommission || 0) + (payout?.happyIncomeTax || 0) + (payout?.rmasPrematurePenalty || 0) - investment.amount < 0 ? "text-[#DF514C] dark:text-[#E25F5B]" : "text-[#4CAF50] dark:text-[#5B9A5D]"}`}>
+                
                 {" "}
-                {(payout?.totalCredited || 0) +
-                  (payout?.rmasCommission || 0) +
-                  (payout?.happyIncomeTax || 0) +
-                  (payout?.rmasPrematurePenalty || 0) -
-                  investment.amount <
-                0
-                  ? "-"
-                  : "+"}
+                {(payout?.totalCredited || 0) + (
+                payout?.rmasCommission || 0) + (
+                payout?.happyIncomeTax || 0) + (
+                payout?.rmasPrematurePenalty || 0) -
+                investment.amount <
+                0 ?
+                "-" :
+                "+"}
                 {formatINR(
                   Math.abs(
-                    (payout?.totalCredited || 0) +
-                      (payout?.rmasCommission || 0) +
-                      (payout?.happyIncomeTax || 0) +
-                      (payout?.rmasPrematurePenalty || 0) -
-                      investment.amount,
-                  ),
+                    (payout?.totalCredited || 0) + (
+                    payout?.rmasCommission || 0) + (
+                    payout?.happyIncomeTax || 0) + (
+                    payout?.rmasPrematurePenalty || 0) -
+                    investment.amount
+                  )
                 )}{" "}
               </td>{" "}
             </tr>{" "}
@@ -2893,17 +2908,17 @@ function ProfitSlipContent({
               </td>{" "}
               <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-kite-text font-normal">
                 {formatINR(
-                  (payout?.totalCredited || 0) +
-                    (payout?.rmasCommission || 0) +
-                    (payout?.happyIncomeTax || 0) +
-                    (payout?.rmasPrematurePenalty || 0),
+                  (payout?.totalCredited || 0) + (
+                  payout?.rmasCommission || 0) + (
+                  payout?.happyIncomeTax || 0) + (
+                  payout?.rmasPrematurePenalty || 0)
                 )}
               </td>{" "}
             </tr>{" "}
             {business.authorityType &&
             business.rmasSubsidy &&
-            business.rmasSubsidy > 0 ? (
-              <tr className="bg-kite-blue/10 border-b-2 border-black">
+            business.rmasSubsidy > 0 ?
+            <tr className="bg-kite-blue/10 border-b-2 border-black">
                 {" "}
                 <td className="p-2 sm:p-4 py-1.5 md:py-2 text-blue-900 font-normal text-[11px] md:text-[12px] uppercase tracking-wider italic">
                   Of above Gross, RMAS Fund Contribution ({business.rmasSubsidy}
@@ -2911,13 +2926,13 @@ function ProfitSlipContent({
                 </td>{" "}
                 <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-blue-900 font-normal">
                   {formatINR(
-                    investment.amount * ((business.rmasSubsidy || 0) / 100),
-                  )}
+                  investment.amount * ((business.rmasSubsidy || 0) / 100)
+                )}
                 </td>{" "}
-              </tr>
-            ) : null}{" "}
-            {(payout?.rmasPrematurePenalty || 0) > 0 ? (
-              <tr>
+              </tr> :
+            null}{" "}
+            {(payout?.rmasPrematurePenalty || 0) > 0 ?
+            <tr>
                 {" "}
                 <td className="p-2 sm:p-4 py-1.5 md:py-2 text-[#DF514C] dark:text-[#E25F5B] font-normal">
                   Less: RMAS Premature Penalty
@@ -2925,8 +2940,8 @@ function ProfitSlipContent({
                 <td className="p-2 sm:p-4 py-1.5 md:py-2 text-right font-mono text-[#DF514C] dark:text-[#E25F5B] font-normal">
                   -{formatINR(payout?.rmasPrematurePenalty || 0)}
                 </td>{" "}
-              </tr>
-            ) : null}{" "}
+              </tr> :
+            null}{" "}
             <tr>
               {" "}
               <td className="p-2 sm:p-4 py-1.5 md:py-2 text-kite-text font-normal">
@@ -2998,6 +3013,6 @@ function ProfitSlipContent({
           </p>{" "}
         </div>{" "}
       </div>{" "}
-    </div>
-  );
+    </div>);
+
 }

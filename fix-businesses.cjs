@@ -1,54 +1,56 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/pages/Businesses.tsx', 'utf8');
 
-// 1. Import useDeferredValue
-if (!code.includes('useDeferredValue')) {
-    code = code.replace('useMemo } from "react";', 'useMemo, useDeferredValue } from "react";');
-}
-
-// 2. Add deferredSearchTerm
+// 1. Remove filteredBusinesses logic entirely, point directly to state.businesses
 code = code.replace(
-    'const isPreVerified = (id) => statsMap.get(id)?.isPreVerified ?? false;',
-    'const isPreVerified = (id) => statsMap.get(id)?.isPreVerified ?? false;\n  const deferredSearchTerm = useDeferredValue(searchTerm);'
+  /const filteredBusinesses = useMemo\(\(\) => \{[\s\S]*?\}, \[state.businesses, deferredSearchTerm\]\);/,
+  `const filteredBusinesses = state.businesses;`
 );
 
-// 3. Fix filteredBusinesses to use deferredSearchTerm and be memoized
-code = code.replace(
-    /const filteredBusinesses = state\.businesses\.filter\([\s\S]*?\);\n/g,
-    `const filteredBusinesses = useMemo(() => {
-    const term = deferredSearchTerm.toLowerCase();
-    return state.businesses.filter((b) =>
-      (b.name && b.name.toLowerCase().includes(term)) ||
-      (b.ownerName && b.ownerName.toLowerCase().includes(term))
-    );
-  }, [state.businesses, deferredSearchTerm]);\n`
-);
-
-// 4. Precompute business stats OUTSIDE the render mapping!
-const precomputeStats = `
-  const businessStatsMap = useMemo(() => {
-    const map = new Map();
-    state.investments.forEach((inv) => {
-      if (inv.status === "active") {
-        if (!map.has(inv.businessId)) {
-          map.set(inv.businessId, { totalInvested: 0, investors: new Set() });
-        }
-        const s = map.get(inv.businessId);
-        s.totalInvested += inv.amount;
-        s.investors.add(inv.investorId);
+// 2. Add useEffect for vanilla filtering
+const effectStr = `
+  useEffect(() => {
+    const term = searchTerm.toLowerCase();
+    let visibleCount = 0;
+    document.querySelectorAll('.business-list-row').forEach((node) => {
+      const key = node.getAttribute('data-search-key') || '';
+      if (key.includes(term)) {
+        node.style.display = '';
+        visibleCount++;
+      } else {
+        node.style.display = 'none';
       }
     });
-    return map;
-  }, [state.investments]);
+    const noResults = document.getElementById('no-businesses-found');
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }, [searchTerm, state.businesses]);
 `;
-code = code.replace('const startAddBusiness = () => {', precomputeStats + '\n  const startAddBusiness = () => {');
 
-// 5. Use the precomputed stats inside the map
+code = code.replace('const businessStatsMap = useMemo(() => {', effectStr + '\n  const businessStatsMap = useMemo(() => {');
+
+// 3. Inject data-search-key and business-list-row class, and content-visibility style
+// find: `<div\n          key={\`inv_\${business.id}_\${idx}\`}`
 code = code.replace(
-    /const activeInvestments = state\.investments\.filter\([\s\S]*?inv\.status === "active",\n\s*\);\n\s*const totalInvested = activeInvestments\.reduce\([\s\S]*?0,\n\s*\);\n\s*const uniqueInvestorsCount = new Set\(activeInvestments\.map\(inv => inv\.investorId\)\)\.size;/g,
-    `const bStats = businessStatsMap.get(business.id) || { totalInvested: 0, investors: new Set() };
-                      const totalInvested = bStats.totalInvested;
-                      const uniqueInvestorsCount = bStats.investors.size;`
+  /className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-\[\#181818\] hover:bg-gray-50 dark:md:hover:bg-\[\#131415\] cursor-pointer transition-colors min-h-\[50px\] group">/,
+  `className="business-list-row flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
+          data-search-key={\`\${business.name} \${business.ownerName} \${business.businessId}\`.toLowerCase()}
+          style={{ contentVisibility: 'auto', containIntrinsicSize: '60px' }}>`
+);
+
+// 4. Update the "No businesses found" element
+code = code.replace(
+  /\{filteredBusinesses.length === 0 && \([\s\S]*?No businesses found.[\s\S]*?\} \)/,
+  `<div id="no-businesses-found" style={{ display: 'none' }} className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">No businesses found.</div>`
+);
+
+// We need to match the specific syntax we have for no businesses found:
+// `{filteredBusinesses.length === 0 && (\n                      <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">\n                        No businesses found.\n                      </div>\n                    )} `
+// Just string replacement:
+code = code.replace(
+  '{filteredBusinesses.length === 0 && (\n                      <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">\n                        No businesses found.\n                      </div>\n                    )}',
+  `<div id="no-businesses-found" style={{ display: 'none' }} className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">No businesses found.</div>`
 );
 
 fs.writeFileSync('src/pages/Businesses.tsx', code);

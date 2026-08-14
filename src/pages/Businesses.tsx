@@ -1,3 +1,4 @@
+import DebouncedInput from "../components/DebouncedInput";
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useDeferredValue } from "react";
 import {
   Search,
@@ -12,8 +13,8 @@ import {
   User,
   Building,
   Trash2,
-  ArrowRight
-} from "lucide-react";
+  ArrowRight } from
+"lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppContext } from "../utils/AppContext";
 import { Business, Investor, Investment } from "../types";
@@ -21,18 +22,18 @@ import { formatINR } from "../utils/mockData";
 import { getCurrentMarketPrice } from "../utils/marketSimulator";
 import {
   getVerificationStats,
-  getBlueTickBusinessIds,
-} from "../utils/blueTick";
+  getBlueTickBusinessIds } from
+"../utils/blueTick";
 import { INDIAN_BANKS } from "../utils/indianBanks";
 import BusinessDetail from "../components/BusinessDetail";
 import BioRenderer from "../components/BioRenderer";
 
-const BlueVerifiedBadge = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" aria-label="Verified" className="inline-block ml-1 -mt-0.5">
-    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.74 2.746 1.838 3.45-.038.225-.06.456-.06.69 0 2.21 1.71 3.998 3.918 3.998.47 0 .92-.084 1.336-.25.52 1.333 1.828 2.25 3.337 2.25 1.51 0 2.816-.917 3.337-2.25.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.234-.022-.465-.06-.69 1.098-.704 1.838-1.99 1.838-3.45z" fill="#1DA1F2"/>
-    <path d="M15.42 8.783L10.33 14.1l-2.45-2.45c-.322-.322-.843-.322-1.165 0-.322.32-.322.84 0 1.16l3.03 3.03c.16.16.37.24.58.24.21 0 .42-.08.58-.24l5.67-6.07c.32-.32.31-.84-.01-1.16-.32-.32-.84-.31-1.16.01z" fill="#FFFFFF"/>
-  </svg>
-);
+const BlueVerifiedBadge = () =>
+<svg width="16" height="16" viewBox="0 0 24 24" aria-label="Verified" className="inline-block ml-1 -mt-0.5">
+    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.74 2.746 1.838 3.45-.038.225-.06.456-.06.69 0 2.21 1.71 3.998 3.918 3.998.47 0 .92-.084 1.336-.25.52 1.333 1.828 2.25 3.337 2.25 1.51 0 2.816-.917 3.337-2.25.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.234-.022-.465-.06-.69 1.098-.704 1.838-1.99 1.838-3.45z" fill="#1DA1F2" />
+    <path d="M15.42 8.783L10.33 14.1l-2.45-2.45c-.322-.322-.843-.322-1.165 0-.322.32-.322.84 0 1.16l3.03 3.03c.16.16.37.24.58.24.21 0 .42-.08.58-.24l5.67-6.07c.32-.32.31-.84-.01-1.16-.32-.32-.84-.31-1.16.01z" fill="#FFFFFF" />
+  </svg>;
+
 
 export default function Businesses() {
   const { state, dispatch } = useAppContext();
@@ -62,7 +63,7 @@ export default function Businesses() {
   const scrollPosRef = useRef<number>(0);
   const mainRef = useRef<HTMLElement | null>(null);
   const isRestoringScroll = useRef<boolean>(false);
-  
+
   const isListRef = useRef<boolean>(viewMode === "list" && !selectedBusinessId);
   isListRef.current = viewMode === "list" && !selectedBusinessId;
 
@@ -70,14 +71,14 @@ export default function Businesses() {
     const mainEl = document.querySelector("main");
     mainRef.current = mainEl;
     if (!mainEl) return;
-    
+
     const handleScroll = () => {
       if (isRestoringScroll.current) return;
       if (isListRef.current) {
         scrollPosRef.current = mainEl.scrollTop;
       }
     };
-    
+
     mainEl.addEventListener("scroll", handleScroll, { passive: true });
     return () => mainEl.removeEventListener("scroll", handleScroll);
   }, []);
@@ -133,7 +134,7 @@ export default function Businesses() {
 
   const statsMap = useMemo(
     () => getVerificationStats(state.businesses, state.investments),
-    [state.businesses, state.investments],
+    [state.businesses, state.investments]
   );
 
   const formatLargeNumber = (num) => {
@@ -153,15 +154,28 @@ export default function Businesses() {
   const deferredBankSearch = useDeferredValue(bankSearch);
   const deferredInvestorSearch = useDeferredValue(investorSearch);
 
-  const filteredBusinesses = useMemo(() => {
-    const term = deferredSearchTerm.toLowerCase();
-    return state.businesses.filter((b) =>
-      (b.name && b.name.toLowerCase().includes(term)) ||
-      (b.ownerName && b.ownerName.toLowerCase().includes(term))
-    );
-  }, [state.businesses, deferredSearchTerm]);
+  const filteredBusinesses = state.businesses;
+
 
   
+  useEffect(() => {
+    const term = searchTerm.toLowerCase();
+    let visibleCount = 0;
+    document.querySelectorAll('.business-list-row').forEach((node: any) => {
+      const key = node.getAttribute('data-search-key') || '';
+      if (key.includes(term)) {
+        node.style.display = '';
+        visibleCount++;
+      } else {
+        node.style.display = 'none';
+      }
+    });
+    const noResults = document.getElementById('no-businesses-found');
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }, [searchTerm, state.businesses]);
+
   const businessStatsMap = useMemo(() => {
     const map = new Map();
     state.investments.forEach((inv) => {
@@ -202,10 +216,10 @@ export default function Businesses() {
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
     setIsNextLoading(true);
-    setFormData(prev => ({ ...prev, accountHolderName: prev.ownerName.toUpperCase() }));
+    setFormData((prev) => ({ ...prev, accountHolderName: prev.ownerName.toUpperCase() }));
     setTimeout(() => {
       setIsNextLoading(false);
-      setViewMode("add-step-2"); setMobileStep(1);
+      setViewMode("add-step-2");setMobileStep(1);
     }, 1000);
   };
 
@@ -227,7 +241,7 @@ export default function Businesses() {
           bankName: formData.bankName,
           accountNumber: formData.accountNumber,
           ifscCode: formData.ifscCode.toUpperCase(),
-          accountHolderName: formData.accountHolderName.toUpperCase(),
+          accountHolderName: formData.accountHolderName.toUpperCase()
         },
         registrationFee: Number(formData.registrationFee.toString().replace(/\D/g, "")),
         status: "pending",
@@ -240,155 +254,41 @@ export default function Businesses() {
       setShowVerifySuccess(true);
       setTimeout(() => {
         setShowVerifySuccess(false);
-        setViewMode("list"); setMobileStep(1);
+        setViewMode("list");setMobileStep(1);
       }, 2000);
     }, 1500);
   };
 
   const handleExistingOwnerChange = (val: any) => {
     const bizId = val.target.value;
-    const existingBiz = state.businesses.find(b => b.businessId === bizId);
+    const existingBiz = state.businesses.find((b) => b.businessId === bizId);
     if (existingBiz) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         businessId: existingBiz.businessId,
         ownerName: existingBiz.ownerName,
         bankName: existingBiz.bankDetails?.bankName || "",
         accountNumber: existingBiz.bankDetails?.accountNumber || "",
         ifscCode: existingBiz.bankDetails?.ifscCode || "",
-        accountHolderName: existingBiz.bankDetails?.accountHolderName || existingBiz.ownerName,
+        accountHolderName: existingBiz.bankDetails?.accountHolderName || existingBiz.ownerName
       }));
     }
   };
   const generateBusinessId = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-  return (
-    <div className="w-full space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
-      <div className="print:hidden space-y-6">
-        {selectedBusinessId ? (
-          <BusinessDetail
-            businessId={selectedBusinessId}
-            onBack={() => setSelectedBusinessId(null)}
-          />
-        ) : viewMode === "list" && (
-          <>
-            <div className="w-full">
-              <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
-                {/* Header Section */}
-                
-                {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
-                  <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
-                    <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
-                    <input 
-                      type="text"
-                      placeholder="Search & add"
-                      className="flex-1 bg-transparent border-none outline-none ml-2 text-[15px] text-gray-900 dark:text-[#fcfdff] placeholder-gray-400 dark:placeholder-[#fcfdff]"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <div className="flex items-center text-gray-400 dark:text-[#fcfdff] text-[14px]">
-                      <span className="mr-3">{state.businesses.length}/250</span>
-                      <SlidersHorizontal className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <button onClick={startAddBusiness} className="flex items-center space-x-1.5 text-[#4184F3] font-medium text-[15px]">
-                      <Plus className="w-[18px] h-[18px]" />
-                      <span>Reg Company</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="hidden md:flex px-4 pt-4 pb-4 flex-row justify-between items-center relative mb-0 bg-white dark:bg-kite-bg dark:md:bg-[#181818]">
-                  <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
-                    <div className="hidden md:block">
-                      <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
-                        My Businesses
-                      </h2>
-                    </div>
-                    <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto md:justify-end gap-2 md:gap-4">
-                      <div className="w-full md:w-auto pt-1 md:pt-0 pb-2 md:pb-0">
-                        <button
-                          onClick={startAddBusiness}
-                          className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none"
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span>Register Business</span>
-                        </button>
-                      </div>
-                      {/* Search Container */}
-                      <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
-                        <div
-                          className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface md:dark:bg-transparent rounded-sm shadow-sm" : "bg-transparent"}`}
-                        >
-                          {!isSearchExpanded && (
-                            <button
-                              onClick={() => setIsSearchExpanded(true)}
-                              className="-ml-1.5 p-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full transition-colors flex-shrink-0 flex items-center gap-2"
-                            >
-                              <Search className="w-[18px] h-[18px] text-kite-blue" />
-                            </button>
-                          )}
-                          {isSearchExpanded && (
-                            <div className="flex items-center w-full min-h-[36px] px-1">
-                              <button
-                                onClick={() => {
-                                  setIsSearchExpanded(false);
-                                  setSearchTerm("");
-                                }}
-                                className="p-1.5 -ml-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full mr-1 transition-colors flex-shrink-0"
-                              >
-                                <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />
-                              </button>
-                              <input
-                                ref={searchInputRef}
-                                type="text"
-                                placeholder="Search Eg: Radhika Kite Trade"
-                                className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                              />
-                              {searchTerm && (
-                                <button
-                                  onClick={() => setSearchTerm("")}
-                                  className="p-1.5 text-kite-text-light hover:text-kite-text transition-colors flex-shrink-0"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* DESKTOP HEADER */}
-                <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr] px-4 py-3 border-b border-kite-border dark:border-[#2b2b2b] text-[12px] font-semibold text-[#9b9b9b] dark:text-[#9b9b9b] uppercase tracking-wider bg-white dark:bg-kite-surface dark:md:bg-[#181818]">
-                  <div>Business Name</div>
-                  <div>Owner Name</div>
-                  <div>ID</div>
-                  <div>Investors</div>
-                  <div className="text-right">Trigger</div>
-                </div>
-              </div>
-              <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none md:overflow-visible overflow-hidden z-10 md:mt-0">
-                <div className="md:overflow-visible overflow-hidden">
-                  {" "}
-                  {/* Unified Watchlist View */}{" "}
-                  <div className="flex flex-col border-b border-kite-border">
-                    {filteredBusinesses.map((business, idx) => {
-                      const bStats = businessStatsMap.get(business.id) || { totalInvested: 0, investors: new Set() };
-                      const totalInvested = bStats.totalInvested;
-                      const uniqueInvestorsCount = bStats.investors.size;
-                      return (
-                        <div
-                          key={`inv_${business.id}_${idx}`}
-                          onClick={() => setSelectedBusinessId(business.id)}
-                          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
-                        >
+  const rendered_filteredBusinesses = useMemo(() => {
+    return filteredBusinesses.map((business, idx) => {
+      const bStats = businessStatsMap.get(business.id) || { totalInvested: 0, investors: new Set() };
+      const totalInvested = bStats.totalInvested;
+      const uniqueInvestorsCount = bStats.investors.size;
+      return (
+        <div
+          key={`inv_${business.id}_${idx}`}
+          onClick={() => setSelectedBusinessId(business.id)}
+          className="business-list-row flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
+          data-search-key={`${business.name} ${business.ownerName} ${business.businessId}`.toLowerCase()}
+          style={{ contentVisibility: 'auto', containIntrinsicSize: '60px' }}>
+          
                           {/* Mobile View */}
                           <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
                             {" "}
@@ -400,16 +300,16 @@ export default function Businesses() {
                               <div className="flex items-center space-x-1.5 mb-1">
                                 {" "}
                                 <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
-                                  {business.shortName
-                                    ? business.shortName.toUpperCase()
-                                    : business.name?.toUpperCase()}
+                                  {business.shortName ?
+                  business.shortName.toUpperCase() :
+                  business.name?.toUpperCase()}
                                 </span>{" "}
-                                {isBlueTick(business.id) && (
-                                  <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
-                                )}{" "}
-                                {isPreVerified(business.id) && (
-                                  <Clock className="w-3 h-3 text-kite-text flex-shrink-0" />
-                                )}{" "}
+                                {isBlueTick(business.id) &&
+                <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
+                }{" "}
+                                {isPreVerified(business.id) &&
+                <Clock className="w-3 h-3 text-kite-text flex-shrink-0" />
+                }{" "}
                               </div>{" "}
                               <span className="font-sans text-[10px] md:text-[11px] ] text-kite-text-light leading-tight">
                                 {business.businessId}
@@ -437,12 +337,12 @@ export default function Businesses() {
                                 <span className="text-[14px] font-medium text-[#444444] dark:text-[#e0e0e0] uppercase truncate">
                                   {business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}
                                 </span>
-                                {isBlueTick(business.id) && (
-                                  <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
-                                )}
-                                {isPreVerified(business.id) && (
-                                  <Clock className="w-3 h-3 text-kite-text flex-shrink-0 ml-1.5" />
-                                )}
+                                {isBlueTick(business.id) &&
+                <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0 ml-1.5" />
+                }
+                                {isPreVerified(business.id) &&
+                <Clock className="w-3 h-3 text-kite-text flex-shrink-0 ml-1.5" />
+                }
                               </div>
                               <span className="text-[12px] font-medium text-[#9b9b9b] dark:text-[#9b9b9b] capitalize truncate">
                                 {business.name?.toLowerCase()}
@@ -470,12 +370,12 @@ export default function Businesses() {
                                 {business.triggerAmount ? formatINR(getCurrentMarketPrice(business, state.investments)) : '-'}
                               </span>
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedBusinessId(business.id);
-                                }}
-                                className="bg-[#387ed1] hover:bg-[#185ea5] text-white text-[12px] px-3 py-1 rounded font-medium transition-colors shadow-sm focus:outline-none flex-shrink-0"
-                              >
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedBusinessId(business.id);
+                }}
+                className="bg-[#387ed1] hover:bg-[#185ea5] text-white text-[12px] px-3 py-1 rounded font-medium transition-colors shadow-sm focus:outline-none flex-shrink-0">
+                
                                 Apply
                               </button>
                             </div>
@@ -483,102 +383,102 @@ export default function Businesses() {
 
                           {/* Expanded Section (Desktop Only) */}
                           <AnimatePresence>
-                            {expandedBusinessId === business.id && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{
-                                  duration: 0.25,
-                                  ease: "easeInOut",
-                                }}
-                                className="hidden md:block overflow-hidden bg-[#FAFBFC] dark:bg-[#151515]"
-                              >
+                            {expandedBusinessId === business.id &&
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                duration: 0.25,
+                ease: "easeInOut"
+              }}
+              className="hidden md:block overflow-hidden bg-[#FAFBFC] dark:bg-[#151515]">
+              
                                 <div className="px-4 py-4">
-                                  {business.companyInfo ? (
-                                    <div className="space-y-4">
-                                      {business.companyInfo.companyName && (
-                                        <div>
+                                  {business.companyInfo ?
+                <div className="space-y-4">
+                                      {business.companyInfo.companyName &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Name</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text">{business.companyInfo.companyName}</p>
                                         </div>
-                                      )}
-                                      {business.companyInfo.ownerName && (
-                                        <div>
+                  }
+                                      {business.companyInfo.ownerName &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Owner Name</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text">{business.companyInfo.ownerName}</p>
                                         </div>
-                                      )}
-                                      {business.companyInfo.since && (
-                                        <div>
+                  }
+                                      {business.companyInfo.since &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Since</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text">{business.companyInfo.since}</p>
                                         </div>
-                                      )}
-                                      {business.companyInfo.documents && business.companyInfo.documents.length > 0 && (
-                                        <div>
+                  }
+                                      {business.companyInfo.documents && business.companyInfo.documents.length > 0 &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Documents</h3>
                                           <ul className="space-y-1">
-                                            {business.companyInfo.documents.map((doc, idx) => (
-                                              <li key={idx} className="text-[13px] md:text-[14px] text-kite-text flex items-center gap-1.5">
+                                            {business.companyInfo.documents.map((doc, idx) =>
+                      <li key={idx} className="text-[13px] md:text-[14px] text-kite-text flex items-center gap-1.5">
                                                 {doc} <BlueVerifiedBadge />
                                               </li>
-                                            ))}
+                      )}
                                           </ul>
                                         </div>
-                                      )}
-                                      {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 && (
-                                        <div>
+                  }
+                                      {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Government Reg Identifies</h3>
                                           <ul className="space-y-1">
-                                            {business.companyInfo.governmentRegIdentifies.map((id, idx) => (
-                                              <li key={idx} className="text-[13px] md:text-[14px] text-kite-text flex items-center gap-1.5">
+                                            {business.companyInfo.governmentRegIdentifies.map((id, idx) =>
+                      <li key={idx} className="text-[13px] md:text-[14px] text-kite-text flex items-center gap-1.5">
                                                 {id} <BlueVerifiedBadge />
                                               </li>
-                                            ))}
+                      )}
                                           </ul>
                                         </div>
-                                      )}
-                                      {business.companyInfo.companyInformation && (
-                                        <div>
+                  }
+                                      {business.companyInfo.companyInformation &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Information</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.companyInformation} /></p>
                                         </div>
-                                      )}
-                                      {business.companyInfo.profitRevenueInvest && (
-                                        <div>
+                  }
+                                      {business.companyInfo.profitRevenueInvest &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Profit Revenue & Invest</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.profitRevenueInvest} /></p>
                                         </div>
-                                      )}
-                                      {business.companyInfo.investmentIdea && (
-                                        <div>
+                  }
+                                      {business.companyInfo.investmentIdea &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Investments Idea</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.investmentIdea} /></p>
                                         </div>
-                                      )}
-                                      {business.companyInfo.companyShareHolder && (
-                                        <div>
+                  }
+                                      {business.companyInfo.companyShareHolder &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Share Holder</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.companyShareHolder} /></p>
                                         </div>
-                                      )}
-                                      {business.companyInfo.companyAddress && (
-                                        <div>
+                  }
+                                      {business.companyInfo.companyAddress &&
+                  <div>
                                           <h3 className="text-[10px] md:text-[11px] font-medium text-kite-text-light uppercase tracking-wider mb-1">Company Address</h3>
                                           <p className="text-[13px] md:text-[14px] text-kite-text whitespace-pre-wrap leading-relaxed"><BioRenderer bio={business.companyInfo.companyAddress} /></p>
                                         </div>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <div className="grid grid-cols-12 gap-6">
+                  }
+                                    </div> :
+
+                <div className="grid grid-cols-12 gap-6">
                                       <div className="col-span-8 flex flex-col">
                                         <span className="text-kite-text-light text-[11px] font-normal">
                                           Details
                                         </span>
                                         <span className="text-kite-text text-[14px] font-medium mt-0.5 whitespace-pre-wrap">
                                           {business.description ||
-                                            "No description provided for this business owner."}
+                      "No description provided for this business owner."}
                                         </span>
                                       </div>
                                       <div className="col-span-4 flex flex-col border-l border-kite-vertical-divider pl-6">
@@ -590,159 +490,275 @@ export default function Businesses() {
                                         </span>
                                       </div>
                                     </div>
-                                  )}
+                }
                                 </div>
                               </motion.div>
-                            )}
+            }
                           </AnimatePresence>
-                        </div>
-                      );
-                    })}{" "}
-                    {filteredBusinesses.length === 0 && (
-                      <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">
-                        No businesses found.
+                        </div>);
+
+    });
+  }, [filteredBusinesses, businessStatsMap, state.investments, expandedBusinessId]);
+
+  return (
+    <div className="w-full space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
+      <div className="print:hidden space-y-6">
+        {selectedBusinessId ?
+        <BusinessDetail
+          businessId={selectedBusinessId}
+          onBack={() => setSelectedBusinessId(null)} /> :
+
+        viewMode === "list" &&
+        <>
+            <div className="w-full">
+              <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
+                {/* Header Section */}
+                
+                {/* MOBILE HEADER */}
+                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
+                  <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
+                    <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
+                    <DebouncedInput
+                    type="text"
+                    placeholder="Search & add"
+                    className="flex-1 bg-transparent border-none outline-none ml-2 text-[15px] text-gray-900 dark:text-[#fcfdff] placeholder-gray-400 dark:placeholder-[#fcfdff]"
+                    value={searchTerm}
+                    onChange={setSearchTerm} />
+                  
+                    <div className="flex items-center text-gray-400 dark:text-[#fcfdff] text-[14px]">
+                      <span className="mr-3">{state.businesses.length}/250</span>
+                      <SlidersHorizontal className="w-5 h-5" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button onClick={startAddBusiness} className="flex items-center space-x-1.5 text-[#4184F3] font-medium text-[15px]">
+                      <Plus className="w-[18px] h-[18px]" />
+                      <span>Reg Company</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="hidden md:flex px-4 pt-4 pb-4 flex-row justify-between items-center relative mb-0 bg-white dark:bg-kite-bg dark:md:bg-[#181818]">
+                  <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
+                    <div className="hidden md:block">
+                      <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
+                        My Businesses
+                      </h2>
+                    </div>
+                    <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto md:justify-end gap-2 md:gap-4">
+                      <div className="w-full md:w-auto pt-1 md:pt-0 pb-2 md:pb-0">
+                        <button
+                        onClick={startAddBusiness}
+                        className="flex items-center space-x-1.5 py-2 text-kite-blue font-medium text-[13px] md:text-[14px] hover:text-blue-600 transition-colors shadow-none">
+                        
+                          <Plus className="w-4 h-4" />
+                          <span>Register Business</span>
+                        </button>
                       </div>
-                    )}{" "}
+                      {/* Search Container */}
+                      <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
+                        <div
+                        className={`flex items-center transition-all duration-300 w-full md:max-w-md ${isSearchExpanded ? "bg-white dark:bg-kite-surface md:dark:bg-transparent rounded-sm shadow-sm" : "bg-transparent"}`}>
+                        
+                          {!isSearchExpanded &&
+                        <button
+                          onClick={() => setIsSearchExpanded(true)}
+                          className="-ml-1.5 p-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full transition-colors flex-shrink-0 flex items-center gap-2">
+                          
+                              <Search className="w-[18px] h-[18px] text-kite-blue" />
+                            </button>
+                        }
+                          {isSearchExpanded &&
+                        <div className="flex items-center w-full min-h-[36px] px-1">
+                              <button
+                            onClick={() => {
+                              setIsSearchExpanded(false);
+                              setSearchTerm("");
+                            }}
+                            className="p-1.5 -ml-1 hover:bg-gray-100 dark:hover:bg-kite-bg rounded-full mr-1 transition-colors flex-shrink-0">
+                            
+                                <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />
+                              </button>
+                              <DebouncedInput
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Search Eg: Radhika Kite Trade"
+                            className="bg-transparent border-none outline-none w-full text-[13px] md:text-[14px] text-kite-text placeholder-gray-400 dark:placeholder-[#7A7A7A] font-sans h-[36px]"
+                            value={searchTerm}
+                            onChange={setSearchTerm} />
+                          
+                              {searchTerm &&
+                          <button
+                            onClick={() => setSearchTerm("")}
+                            className="p-1.5 text-kite-text-light hover:text-kite-text transition-colors flex-shrink-0">
+                            
+                                  <X className="w-4 h-4" />
+                                </button>
+                          }
+                            </div>
+                        }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DESKTOP HEADER */}
+                <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr] px-4 py-3 border-b border-kite-border dark:border-[#2b2b2b] text-[12px] font-semibold text-[#9b9b9b] dark:text-[#9b9b9b] uppercase tracking-wider bg-white dark:bg-kite-surface dark:md:bg-[#181818]">
+                  <div>Business Name</div>
+                  <div>Owner Name</div>
+                  <div>ID</div>
+                  <div>Investors</div>
+                  <div className="text-right">Trigger</div>
+                </div>
+              </div>
+              <div className="w-full bg-transparent border-t border-kite-border md:border-t-0 md:border-transparent rounded-none md:overflow-visible overflow-hidden z-10 md:mt-0">
+                <div className="md:overflow-visible overflow-hidden">
+                  {" "}
+                  {/* Unified Watchlist View */}{" "}
+                  <div className="flex flex-col border-b border-kite-border">
+                    {rendered_filteredBusinesses}{" "}
+                    <div id="no-businesses-found" style={{ display: 'none' }} className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">No businesses found.</div>{" "}
                   </div>{" "}
                 </div>{" "}
               </div>{" "}
             </div>
           </>
-        )}{" "}
-        {viewMode === "add-owner-choice" && (
-          <div className="w-full max-w-xl mx-auto bg-transparent p-4 md:p-8 mt-4 md:mt-10 animate-fade-in flex flex-col items-center min-h-[60vh] justify-center">
+        }{" "}
+        {viewMode === "add-owner-choice" &&
+        <div className="w-full max-w-xl mx-auto bg-transparent p-4 md:p-8 mt-4 md:mt-10 animate-fade-in flex flex-col items-center min-h-[60vh] justify-center">
             <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-kite-text tracking-tight">Radhika Listed</h2>
             <div className="flex flex-col gap-4 w-full max-w-sm">
               <button
-                type="button"
-                onClick={() => {
-                  setOwnerMode("new");
-                  setFormData({
-                    ...formData,
-                    businessId: generateBusinessId(),
-                    ownerName: "",
-                  });
-                  setViewMode("add-step-1"); setMobileStep(1);
-                }}
-                className="w-full py-3.5 text-[15px] font-medium transition-all duration-200 rounded border bg-kite-blue text-white border-kite-blue shadow-sm hover:brightness-105"
-              >
+              type="button"
+              onClick={() => {
+                setOwnerMode("new");
+                setFormData({
+                  ...formData,
+                  businessId: generateBusinessId(),
+                  ownerName: ""
+                });
+                setViewMode("add-step-1");setMobileStep(1);
+              }}
+              className="w-full py-3.5 text-[15px] font-medium transition-all duration-200 rounded border bg-kite-blue text-white border-kite-blue shadow-sm hover:brightness-105">
+              
                 New Business Owner
               </button>
               <button
-                type="button"
-                onClick={() => {
-                  setOwnerMode("existing");
-                  setFormData(prev => ({
-                    ...prev,
-                    businessId: "",
-                    ownerName: "",
-                    bankName: "",
-                    accountNumber: "",
-                    ifscCode: "",
-                    accountHolderName: "",
-                  }));
-                  setViewMode("add-step-1"); setMobileStep(1);
-                }}
-                className="w-full py-3.5 text-[15px] font-medium transition-all duration-200 rounded border bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border shadow-sm hover:bg-gray-50 dark:md:hover:bg-[#131415] hover:brightness-105"
-              >
+              type="button"
+              onClick={() => {
+                setOwnerMode("existing");
+                setFormData((prev) => ({
+                  ...prev,
+                  businessId: "",
+                  ownerName: "",
+                  bankName: "",
+                  accountNumber: "",
+                  ifscCode: "",
+                  accountHolderName: ""
+                }));
+                setViewMode("add-step-1");setMobileStep(1);
+              }}
+              className="w-full py-3.5 text-[15px] font-medium transition-all duration-200 rounded border bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border shadow-sm hover:bg-gray-50 dark:md:hover:bg-[#131415] hover:brightness-105">
+              
                 Already Registered Owner
               </button>
               <button
-                type="button"
-                onClick={() => { setViewMode("list"); setMobileStep(1); }}
-                className="mt-4 text-kite-text hover:text-kite-blue text-[14px] font-medium transition-colors"
-              >
+              type="button"
+              onClick={() => {setViewMode("list");setMobileStep(1);}}
+              className="mt-4 text-kite-text hover:text-kite-blue text-[14px] font-medium transition-colors">
+              
                 Cancel
               </button>
             </div>
           </div>
-        )}{" "}
-        {viewMode === "add-step-1" && (
+        }{" "}
+        {viewMode === "add-step-1" &&
 
-          <div className="w-full max-w-xl md:max-w-full mx-auto md:mx-0 bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
+        <div className="w-full max-w-xl md:max-w-full mx-auto md:mx-0 bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
             <div className="flex items-center mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
               <button
-                type="button"
-                onClick={() => { setViewMode("add-owner-choice"); setMobileStep(1); }}
-                className="flex items-center text-kite-text hover:text-kite-blue transition-colors text-[13px] md:text-[14px] font-medium"
-              >
+              type="button"
+              onClick={() => {setViewMode("add-owner-choice");setMobileStep(1);}}
+              className="flex items-center text-kite-text hover:text-kite-blue transition-colors text-[13px] md:text-[14px] font-medium">
+              
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 <span>Back to Mode Selection</span>
               </button>
             </div>
             <form onSubmit={handleNextStep} className="space-y-6">
               <div className="grid grid-cols-1 gap-2 md:gap-4">
-                  {ownerMode === "existing" && (
-                    <div className={`\${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6 ${showOwnerSelect ? 'z-[60]' : 'z-20'}`}>
+                  {ownerMode === "existing" &&
+              <div className={`\${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6 ${showOwnerSelect ? 'z-[60]' : 'z-20'}`}>
                       <input
-                        type="text"
-                        placeholder=" "
-                        readOnly
-                        className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer text-transparent focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
-                        onClick={() => {
-                          setShowOwnerSelect(!showOwnerSelect);
-                          setOwnerSearch("");
-                        }}
-                      />
+                  type="text"
+                  placeholder=" "
+                  readOnly
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer text-transparent focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                  onClick={() => {
+                    setShowOwnerSelect(!showOwnerSelect);
+                    setOwnerSearch("");
+                  }} />
+                
                       <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showOwnerSelect || formData.businessId ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#181818] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
                         Select Existing Owner
                       </label>
                       <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-10">
                         <span className="truncate text-[13px] md:text-[14px]">
-                          {formData.businessId ? (
-                            <span className="font-normal text-kite-text dark:text-kite-text">
+                          {formData.businessId ?
+                    <span className="font-normal text-kite-text dark:text-kite-text">
                               {formData.ownerName}{" "}
                               <span className="font-normal text-kite-text-light dark:text-[#7A7A7A] ml-1 font-mono text-[11px] md:text-[12px]">
                                 (ID: #{formData.businessId})
                               </span>
-                            </span>
-                          ) : (
-                            <span className="text-kite-text-light dark:text-kite-text-light font-normal"></span>
-                          )}
+                            </span> :
+
+                    <span className="text-kite-text-light dark:text-kite-text-light font-normal"></span>
+                    }
                         </span>
                         <ChevronDown className="w-4 h-4 text-kite-text-light dark:text-kite-text-light" />
                       </div>
                       
-                      {showOwnerSelect && (
-                        <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+                      {showOwnerSelect &&
+                <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
                           <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
                             <div className="relative">
                               <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
-                              <input
-                                type="text"
-                                autoFocus
-                                placeholder="Search owner..."
-                                className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
-                                value={ownerSearch}
-                                onChange={(e) =>
-                                  setOwnerSearch(e.target.value)
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                              />
+                              <DebouncedInput
+                        type="text"
+                        autoFocus
+                        placeholder="Search owner..."
+                        className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                        value={ownerSearch}
+                        onChange={setOwnerSearch
+
+                        }
+                        onClick={(e) => e.stopPropagation()} />
+                      
                             </div>
                           </div>
                           <div className="overflow-y-auto flex-1">
-                            {uniqueOwners
-                              .filter(
-                                (b) =>
-                                  b.ownerName
-                                    .toLowerCase()
-                                    .includes(deferredOwnerSearch.toLowerCase()) ||
-                                  b.businessId
-                                    .toLowerCase()
-                                    .includes(deferredOwnerSearch.toLowerCase()),
-                              )
-                              .map((b) => (
-                                <div
-                                  key={`opt_${b.id}`}
-                                  className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
-                                  onClick={() => {
-                                    handleExistingOwnerChange({
-                                      target: { value: b.businessId },
-                                    });
-                                    setShowOwnerSelect(false);
-                                  }}
-                                >
+                            {uniqueOwners.
+                    filter(
+                      (b) =>
+                      b.ownerName.
+                      toLowerCase().
+                      includes(deferredOwnerSearch.toLowerCase()) ||
+                      b.businessId.
+                      toLowerCase().
+                      includes(deferredOwnerSearch.toLowerCase())
+                    ).
+                    map((b) =>
+                    <div
+                      key={`opt_${b.id}`}
+                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                      onClick={() => {
+                        handleExistingOwnerChange({
+                          target: { value: b.businessId }
+                        });
+                        setShowOwnerSelect(false);
+                      }}>
+                      
                                   <span className="font-normal text-kite-text dark:text-kite-text">
                                     {b.ownerName}
                                   </span>
@@ -750,34 +766,34 @@ export default function Businesses() {
                                     ID: #{b.businessId}
                                   </span>
                                 </div>
-                              ))}
+                    )}
                             {uniqueOwners.filter(
-                              (b) =>
-                                b.ownerName
-                                  .toLowerCase()
-                                  .includes(deferredOwnerSearch.toLowerCase()) ||
-                                b.businessId
-                                  .toLowerCase()
-                                  .includes(deferredOwnerSearch.toLowerCase()),
-                            ).length === 0 && (
-                              <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
+                      (b) =>
+                      b.ownerName.
+                      toLowerCase().
+                      includes(deferredOwnerSearch.toLowerCase()) ||
+                      b.businessId.
+                      toLowerCase().
+                      includes(deferredOwnerSearch.toLowerCase())
+                    ).length === 0 &&
+                    <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
                                 No owner found.
                               </div>
-                            )}
+                    }
                           </div>
                         </div>
-                      )}
+                }
                     </div>
-                  )}
+              }
 
                   <div className={`${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6`}>
                     <input
-                      type="text"
-                      readOnly
-                      placeholder=" "
-                      className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono text-kite-text-light dark:text-kite-text-light cursor-not-allowed focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
-                      value={formData.businessId}
-                    />
+                  type="text"
+                  readOnly
+                  placeholder=" "
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono text-kite-text-light dark:text-kite-text-light cursor-not-allowed focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
+                  value={formData.businessId} />
+                
                     <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                       OWNER ID NUMBER
                     </label>
@@ -785,16 +801,16 @@ export default function Businesses() {
 
                   <div className={`${mobileStep === 1 ? "block" : "hidden"} md:block relative w-full mb-6`}>
                     <input
-                      required
-                      type="text"
-                      autoFocus
-                      placeholder=" "
-                      className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase z-10 relative"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value.toUpperCase() })
-                      }
-                    />
+                  required
+                  type="text"
+                  autoFocus
+                  placeholder=" "
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase z-10 relative"
+                  value={formData.name}
+                  onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value.toUpperCase() })
+                  } />
+                
                     <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                       Business Name
                     </label>
@@ -802,108 +818,108 @@ export default function Businesses() {
 
                   <div className={`${mobileStep === 2 ? "block" : "hidden"} md:block relative w-full mb-6`}>
                     <input
-                      type="text"
-                      placeholder=" "
-                      className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase z-10 relative"
-                      value={formData.shortName}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          shortName: e.target.value.toUpperCase(),
-                        })
-                      }
-                    />
+                  type="text"
+                  placeholder=" "
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase z-10 relative"
+                  value={formData.shortName}
+                  onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    shortName: e.target.value.toUpperCase()
+                  })
+                  } />
+                
                     <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                       Short Business Name
                     </label>
                   </div>
 
-                  {ownerMode === "new" && (
-                    <div className={`\${mobileStep === 2 ? "block" : "hidden"} md:block relative w-full mb-6 ${showInvestorSelect ? 'z-[60]' : 'z-10'}`}>
+                  {ownerMode === "new" &&
+              <div className={`\${mobileStep === 2 ? "block" : "hidden"} md:block relative w-full mb-6 ${showInvestorSelect ? 'z-[60]' : 'z-10'}`}>
                       <div className="flex justify-end items-center mb-1">
                         <button
-                          type="button"
-                          onClick={() => {
-                            setShowInvestorSelect(!showInvestorSelect);
-                            setInvestorSearch("");
-                          }}
-                          className="text-[11px] md:text-[12px] font-medium text-kite-blue hover:underline focus:outline-none relative z-10"
-                        >
+                    type="button"
+                    onClick={() => {
+                      setShowInvestorSelect(!showInvestorSelect);
+                      setInvestorSearch("");
+                    }}
+                    className="text-[11px] md:text-[12px] font-medium text-kite-blue hover:underline focus:outline-none relative z-10">
+                    
                           investor register
                         </button>
                       </div>
                       <div className="relative">
                         <input
-                          required
-                          type="text"
-                          placeholder=" "
-                          className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase z-10 relative"
-                          value={formData.ownerName}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              ownerName: e.target.value.toUpperCase(),
-                            })
-                          }
-                        />
+                    required
+                    type="text"
+                    placeholder=" "
+                    className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors uppercase z-10 relative"
+                    value={formData.ownerName}
+                    onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      ownerName: e.target.value.toUpperCase()
+                    })
+                    } />
+                  
                         <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                           Owner Name
                         </label>
                       </div>
-                      {showInvestorSelect && (
-                        <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+                      {showInvestorSelect &&
+                <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
                           <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
                             <div className="relative">
                               <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
-                              <input
-                                type="text"
-                                autoFocus
-                                placeholder="Search investor..."
-                                className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
-                                value={investorSearch}
-                                onChange={(e) => setInvestorSearch(e.target.value)}
-                              />
+                              <DebouncedInput
+                        type="text"
+                        autoFocus
+                        placeholder="Search investor..."
+                        className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                        value={investorSearch}
+                        onChange={setInvestorSearch} />
+                      
                             </div>
                           </div>
                           <div className="overflow-y-auto flex-1">
-                            {state.investors
-                              .filter((inv) => inv.name.toLowerCase().includes(deferredInvestorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(deferredInvestorSearch.toLowerCase()))
-                              .sort((a, b) => {
-                                const idA = parseInt(a.investorId?.replace(/\D/g, "") || "0");
-                                const idB = parseInt(b.investorId?.replace(/\D/g, "") || "0");
-                                return idB - idA;
-                              })
-                              .map((inv) => (
-                                <div
-                                  key={inv.id}
-                                  className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
-                                  onClick={() => {
-                                    setFormData(prev => ({
-                                      ...prev,
-                                      ownerName: inv.name,
-                                      bankName: inv.bankDetails?.bankName || "",
-                                      accountNumber: inv.bankDetails?.accountNumber || "",
-                                      ifscCode: inv.bankDetails?.ifscCode || "",
-                                      accountHolderName: inv.bankDetails?.accountHolderName || inv.name,
-                                    }));
-                                    setShowInvestorSelect(false);
-                                  }}
-                                >
+                            {state.investors.
+                    filter((inv) => inv.name.toLowerCase().includes(deferredInvestorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(deferredInvestorSearch.toLowerCase())).
+                    sort((a, b) => {
+                      const idA = parseInt(a.investorId?.replace(/\D/g, "") || "0");
+                      const idB = parseInt(b.investorId?.replace(/\D/g, "") || "0");
+                      return idB - idA;
+                    }).
+                    map((inv) =>
+                    <div
+                      key={inv.id}
+                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          ownerName: inv.name,
+                          bankName: inv.bankDetails?.bankName || "",
+                          accountNumber: inv.bankDetails?.accountNumber || "",
+                          ifscCode: inv.bankDetails?.ifscCode || "",
+                          accountHolderName: inv.bankDetails?.accountHolderName || inv.name
+                        }));
+                        setShowInvestorSelect(false);
+                      }}>
+                      
                                   <div className="w-8 h-8 rounded-full bg-[#E8F0FE] dark:bg-kite-blue/10 text-kite-blue dark:text-kite-blue flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                    {inv.photoUrl ? (
-                                      <img src={inv.photoUrl} alt={inv.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                      <span className="text-[11px] font-normal">
+                                    {inv.photoUrl ?
+                        <img src={inv.photoUrl} alt={inv.name} className="w-full h-full object-cover" /> :
+
+                        <span className="text-[11px] font-normal">
                                         {(() => {
-                                          const n = (inv.name) || "";
-                                          const parts = n.trim().split(" ");
-                                          if (parts.length > 1 && parts[1].length > 0) {
-                                            return (parts[0][0] + parts[1][0]).toUpperCase();
-                                          }
-                                          return n.substring(0, 2).toUpperCase();
-                                        })()}
+                            const n = inv.name || "";
+                            const parts = n.trim().split(" ");
+                            if (parts.length > 1 && parts[1].length > 0) {
+                              return (parts[0][0] + parts[1][0]).toUpperCase();
+                            }
+                            return n.substring(0, 2).toUpperCase();
+                          })()}
                                       </span>
-                                    )}
+                        }
                                   </div>
                                   <div className="flex flex-col">
                                     <span className="font-normal text-kite-text dark:text-kite-text text-[13px] md:text-[14px] uppercase">{inv.name}</span>
@@ -912,30 +928,30 @@ export default function Businesses() {
                                     </span>
                                   </div>
                                 </div>
-                              ))}
-                            {state.investors.filter((inv) => inv.name.toLowerCase().includes(deferredInvestorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(deferredInvestorSearch.toLowerCase())).length === 0 && (
-                              <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
+                    )}
+                            {state.investors.filter((inv) => inv.name.toLowerCase().includes(deferredInvestorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(deferredInvestorSearch.toLowerCase())).length === 0 &&
+                    <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
                                 No investor found.
                               </div>
-                            )}
+                    }
                           </div>
                         </div>
-                      )}
+                }
                     </div>
-                  )}
+              }
 
                   <div className={`${mobileStep === 2 ? "block" : "hidden"} md:block relative w-full mb-6`}>
                     <select
-                      className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors cursor-pointer z-10 relative"
-                      value={formData.authorityType}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          authorityType: e.target.value,
-                        })
-                      }
-                      required
-                    >
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors cursor-pointer z-10 relative"
+                  value={formData.authorityType}
+                  onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    authorityType: e.target.value
+                  })
+                  }
+                  required>
+                  
                       <option value="Business Authorities">
                         Business Authorities
                       </option>
@@ -952,22 +968,22 @@ export default function Businesses() {
                   </div>
 
                   {(formData.authorityType === "Government Authorities" ||
-                    formData.authorityType === "Trust Authorities") && (
-                    <div className={`${mobileStep === 3 ? "block" : "hidden"} md:block relative w-full mb-6`}>
+              formData.authorityType === "Trust Authorities") &&
+              <div className={`${mobileStep === 3 ? "block" : "hidden"} md:block relative w-full mb-6`}>
                       <input
-                        required
-                        type="number"
-                        step="0.1"
-                        placeholder=" "
-                        className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
-                        value={formData.rmasSubsidy}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            rmasSubsidy: e.target.value,
-                          })
-                        }
-                      />
+                  required
+                  type="number"
+                  step="0.1"
+                  placeholder=" "
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
+                  value={formData.rmasSubsidy}
+                  onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    rmasSubsidy: e.target.value
+                  })
+                  } />
+                
                       <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                         RMAS Subsidy Rate (%)
                       </label>
@@ -976,35 +992,35 @@ export default function Businesses() {
                         when an investor withdraws.
                       </p>
                     </div>
-                  )}
+              }
 
                   <div className={`${mobileStep === 3 ? "grid" : "hidden"} md:grid grid-cols-1 md:grid-cols-2 gap-6`}>
                     <div className="relative w-full mb-6">
                       <input
-                        required
-                        type="text"
-                        inputMode="numeric"
-                        placeholder=" "
-                        className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
-                        value={
-                          formData.fundingRequired
-                            ? Number(
-                                formData.fundingRequired
-                                  .toString()
-                                  .replace(/\D/g, ""),
-                              ).toLocaleString("en-IN")
-                            : ""
-                        }
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            fundingRequired: e.target.value.replace(
-                              /\D/g,
-                              "",
-                            ),
-                          })
-                        }
-                      />
+                    required
+                    type="text"
+                    inputMode="numeric"
+                    placeholder=" "
+                    className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
+                    value={
+                    formData.fundingRequired ?
+                    Number(
+                      formData.fundingRequired.
+                      toString().
+                      replace(/\D/g, "")
+                    ).toLocaleString("en-IN") :
+                    ""
+                    }
+                    onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      fundingRequired: e.target.value.replace(
+                        /\D/g,
+                        ""
+                      )
+                    })
+                    } />
+                  
                       <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                         Funding Required (₹)
                       </label>
@@ -1012,19 +1028,19 @@ export default function Businesses() {
 
                     <div className="relative w-full mb-6">
                       <input
-                        required
-                        type="number"
-                        step="0.01"
-                        placeholder=" "
-                        className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
-                        value={formData.interestRate}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            interestRate: e.target.value,
-                          })
-                        }
-                      />
+                    required
+                    type="number"
+                    step="0.01"
+                    placeholder=" "
+                    className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
+                    value={formData.interestRate}
+                    onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      interestRate: e.target.value
+                    })
+                    } />
+                  
                       <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                         Interest Rate (%)
                       </label>
@@ -1032,17 +1048,17 @@ export default function Businesses() {
                   </div>
 
                   {Number(formData.fundingRequired) > 0 &&
-                    Number(formData.interestRate) > 0 && (
-                      <div className={`${mobileStep === 3 ? "block" : "hidden"} md:block mt-4 border border-kite-border rounded-sm overflow-hidden`}>
+              Number(formData.interestRate) > 0 &&
+              <div className={`${mobileStep === 3 ? "block" : "hidden"} md:block mt-4 border border-kite-border rounded-sm overflow-hidden`}>
                         <button
-                          type="button"
-                          onClick={() =>
-                            setShowInterestCalculation(
-                              !showInterestCalculation,
-                            )
-                          }
-                          className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text transition-colors font-medium text-[13px] md:text-[14px]"
-                        >
+                  type="button"
+                  onClick={() =>
+                  setShowInterestCalculation(
+                    !showInterestCalculation
+                  )
+                  }
+                  className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text transition-colors font-medium text-[13px] md:text-[14px]">
+                  
                           <span className="truncate">
                             Show Interest Return Breakdown
                           </span>
@@ -1050,8 +1066,8 @@ export default function Businesses() {
                             {showInterestCalculation ? "−" : "+"}
                           </span>
                         </button>
-                        {showInterestCalculation && (
-                          <div className="p-2 md:p-4 bg-white dark:bg-kite-surface border-t border-kite-border flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+                        {showInterestCalculation &&
+                <div className="p-2 md:p-4 bg-white dark:bg-kite-surface border-t border-kite-border flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
                             <div>
                               <p className="text-[13px] md:text-[14px] font-normal text-kite-text">
                                 Calculated Return to Investor
@@ -1064,8 +1080,8 @@ export default function Businesses() {
                                 interest rate applied on{" "}
                                 <span className="font-mono font-normal">
                                   {formatINR(
-                                    Number(formData.fundingRequired),
-                                  )}
+                          Number(formData.fundingRequired)
+                        )}
                                 </span>
                                 .
                               </p>
@@ -1075,98 +1091,98 @@ export default function Businesses() {
                                 Monthly Return:{" "}
                                 <span className="font-normal font-mono text-kite-text dark:text-kite-text break-all">
                                   {formatINR(
-                                    (Number(formData.fundingRequired) *
-                                      Number(formData.interestRate)) /
-                                      100 /
-                                      12,
-                                  )}
+                          Number(formData.fundingRequired) *
+                          Number(formData.interestRate) /
+                          100 /
+                          12
+                        )}
                                 </span>
                               </p>
                               <p className="text-[13px] md:text-[14px] font-normal text-[#4CAF50] dark:text-[#5B9A5D] border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-sm break-words whitespace-normal">
                                 Yearly Return:{" "}
                                 <span className="font-normal font-mono text-[#4CAF50] dark:text-[#5B9A5D] break-all">
                                   {formatINR(
-                                    (Number(formData.fundingRequired) *
-                                      Number(formData.interestRate)) /
-                                      100,
-                                  )}
+                          Number(formData.fundingRequired) *
+                          Number(formData.interestRate) /
+                          100
+                        )}
                                 </span>
                               </p>
                             </div>
                           </div>
-                        )}
+                }
                       </div>
-                    )}
+              }
               </div>
 
               <div className="flex flex-col items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border space-y-4">
                 {/* Mobile buttons */}
                 <div className="w-full flex md:hidden flex-col space-y-4">
-                  {mobileStep < 3 ? (
-                    <button
-                      type="button"
-                      onClick={() => setMobileStep(prev => prev + 1)}
-                      className="w-full font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors"
-                    >
+                  {mobileStep < 3 ?
+                <button
+                  type="button"
+                  onClick={() => setMobileStep((prev) => prev + 1)}
+                  className="w-full font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors">
+                  
                       Next <ArrowRight className="w-4 h-4 ml-2" />
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={isNextLoading}
-                      className="w-full font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors disabled:opacity-100 disabled:cursor-not-allowed"
-                    >
+                    </button> :
+
+                <button
+                  type="submit"
+                  disabled={isNextLoading}
+                  className="w-full font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors disabled:opacity-100 disabled:cursor-not-allowed">
+                  
                       {isNextLoading ? "Loading..." : "Next Step"}
                     </button>
-                  )}
-                  {mobileStep > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => setMobileStep(prev => prev - 1)}
-                      className="w-full font-medium text-kite-text hover:text-kite-blue py-2 transition-colors"
-                    >
+                }
+                  {mobileStep > 1 ?
+                <button
+                  type="button"
+                  onClick={() => setMobileStep((prev) => prev - 1)}
+                  className="w-full font-medium text-kite-text hover:text-kite-blue py-2 transition-colors">
+                  
                       Back
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => { setViewMode("list"); setMobileStep(1); }}
-                      className="w-full font-medium text-kite-text hover:text-kite-blue py-2 transition-colors"
-                    >
+                    </button> :
+
+                <button
+                  type="button"
+                  onClick={() => {setViewMode("list");setMobileStep(1);}}
+                  className="w-full font-medium text-kite-text hover:text-kite-blue py-2 transition-colors">
+                  
                       Cancel
                     </button>
-                  )}
+                }
                 </div>
                 {/* Desktop buttons */}
                 <div className="hidden md:flex flex-col items-center w-full space-y-4">
                   <button
-                    type="submit"
-                    disabled={isNextLoading}
-                    className="w-auto min-w-[200px] font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors disabled:opacity-100 disabled:cursor-not-allowed"
-                  >
+                  type="submit"
+                  disabled={isNextLoading}
+                  className="w-auto min-w-[200px] font-medium flex items-center justify-center bg-kite-blue text-white px-6 py-2.5 rounded hover:bg-blue-600 transition-colors disabled:opacity-100 disabled:cursor-not-allowed">
+                  
                     {isNextLoading ? "Loading..." : <><span>Next Step</span> <ArrowRight className="w-4 h-4 ml-2" /></>}
                   </button>
                   <button
-                    type="button"
-                    onClick={() => { setViewMode("list"); setMobileStep(1); }}
-                    className="w-auto min-w-[200px] font-medium text-kite-text hover:text-kite-blue py-2 transition-colors"
-                  >
+                  type="button"
+                  onClick={() => {setViewMode("list");setMobileStep(1);}}
+                  className="w-auto min-w-[200px] font-medium text-kite-text hover:text-kite-blue py-2 transition-colors">
+                  
                     Cancel
                   </button>
                 </div>
               </div>
             </form>
           </div>
-        )}
+        }
         
-        {viewMode === "add-step-2" && (
-          <div className="w-full max-w-xl md:max-w-full mx-auto md:mx-0 bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
+        {viewMode === "add-step-2" &&
+        <div className="w-full max-w-xl md:max-w-full mx-auto md:mx-0 bg-transparent border-t md:border-t border-kite-border dark:border-kite-border p-4 md:p-8 mt-4 md:mt-0">
             <div className="flex items-center mb-6 md:mb-8 border-b border-kite-border dark:border-kite-border pb-4">
               <button
-                type="button"
-                onClick={() => { setViewMode("add-step-1"); setMobileStep(1); }}
-                className="flex items-center text-kite-text hover:text-kite-blue transition-colors text-[13px] md:text-[14px] font-medium"
-              >
+              type="button"
+              onClick={() => {setViewMode("add-step-1");setMobileStep(1);}}
+              className="flex items-center text-kite-text hover:text-kite-blue transition-colors text-[13px] md:text-[14px] font-medium">
+              
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 <span>Back to Details</span>
               </button>
@@ -1175,186 +1191,186 @@ export default function Businesses() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={`relative w-full mb-6 md:col-span-2 ${showBankSelect ? 'z-[60]' : 'z-20'}`}>
                   <input
-                    type="text"
-                    placeholder=" "
-                    readOnly
-                    className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer text-transparent focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
-                    onClick={() => {
-                      if (ownerMode !== "existing") {
-                        setShowBankSelect(!showBankSelect);
-                        setBankSearch("");
-                      }
-                    }}
-                  />
+                  type="text"
+                  placeholder=" "
+                  readOnly
+                  className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent cursor-pointer text-transparent focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors"
+                  onClick={() => {
+                    if (ownerMode !== "existing") {
+                      setShowBankSelect(!showBankSelect);
+                      setBankSearch("");
+                    }
+                  }} />
+                
                   <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showBankSelect || formData.bankName ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#181818] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
                     Bank Name
                   </label>
                   <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-10">
                     <div className="flex items-center gap-3">
-                      {formData.bankName && (
-                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formData.bankName)}&background=random&color=fff&size=64`} alt="Bank Logo" className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
-                      )}
+                      {formData.bankName &&
+                    <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formData.bankName)}&background=random&color=fff&size=64`} alt="Bank Logo" className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                    }
                       <span className={`truncate text-[13px] md:text-[14px] ${!formData.bankName && "text-kite-text-light dark:text-kite-text-light"} ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light" : "text-kite-text dark:text-kite-text"}`}>
                         {formData.bankName || "Select Bank"}
                       </span>
                     </div>
                     <ChevronDown className="w-4 h-4 text-kite-text-light dark:text-kite-text-light" />
                   </div>
-                  {showBankSelect && ownerMode !== "existing" && (
-                    <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
+                  {showBankSelect && ownerMode !== "existing" &&
+                <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
                       <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
                         <div className="relative">
                           <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
-                          <input
-                            type="text"
-                            autoFocus
-                            placeholder="Search bank..."
-                            className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
-                            value={bankSearch}
-                            onChange={(e) => setBankSearch(e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
+                          <DebouncedInput
+                        type="text"
+                        autoFocus
+                        placeholder="Search bank..."
+                        className="w-full pl-8 pr-3 py-1.5 text-[13px] md:text-[14px] border border-kite-border dark:border-kite-border bg-transparent text-kite-text dark:text-kite-text rounded-sm focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white"
+                        value={bankSearch}
+                        onChange={setBankSearch}
+                        onClick={(e) => e.stopPropagation()} />
+                      
                         </div>
                       </div>
                       <div className="overflow-y-auto flex-1">
                         {INDIAN_BANKS.filter((b) =>
-                          b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
-                        ).map((b) => (
-                          <div
-                            key={b}
-                            className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
-                            onClick={() => {
-                              setFormData({ ...formData, bankName: b });
-                              setShowBankSelect(false);
-                            }}
-                          >
+                    b.toLowerCase().includes(deferredBankSearch.toLowerCase())
+                    ).map((b) =>
+                    <div
+                      key={b}
+                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                      onClick={() => {
+                        setFormData({ ...formData, bankName: b });
+                        setShowBankSelect(false);
+                      }}>
+                      
                             <div className="flex items-center gap-3">
                               <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(b)}&background=random&color=fff&size=64`} alt={b} className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
                               <span>{b}</span>
                             </div>
                           </div>
-                        ))}
+                    )}
                         {INDIAN_BANKS.filter((b) =>
-                          b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
-                        ).length === 0 && (
-                          <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
+                    b.toLowerCase().includes(deferredBankSearch.toLowerCase())
+                    ).length === 0 &&
+                    <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
                             No bank found.
                           </div>
-                        )}
+                    }
                       </div>
                     </div>
-                  )}
+                }
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative w-full mb-6">
                   <input
-                    required
-                    type="text"
-                    placeholder=" "
-                    className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
-                    value={formData.accountNumber}
-                    onChange={(e) => {
-                      const raw = e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, 12);
-                      const formatted = raw.replace(/(\d{4})(?=\d)/g, "$1 ");
-                      const last4 = raw.length >= 4 ? raw.slice(-4) : raw;
-                      const ifscPrefix = formData.ifscCode
-                        .replace(/[^A-Z]/g, "")
-                        .slice(0, 3);
-                      const newIfsc =
-                        ifscPrefix.length === 3
-                          ? ifscPrefix + last4
-                          : ifscPrefix;
-                      setFormData({
-                        ...formData,
-                        accountNumber: formatted,
-                        ifscCode: newIfsc,
-                      });
-                    }}
-                    readOnly={ownerMode === "existing"}
-                  />
+                  required
+                  type="text"
+                  placeholder=" "
+                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
+                  value={formData.accountNumber}
+                  onChange={(e) => {
+                    const raw = e.target.value.
+                    replace(/\D/g, "").
+                    slice(0, 12);
+                    const formatted = raw.replace(/(\d{4})(?=\d)/g, "$1 ");
+                    const last4 = raw.length >= 4 ? raw.slice(-4) : raw;
+                    const ifscPrefix = formData.ifscCode.
+                    replace(/[^A-Z]/g, "").
+                    slice(0, 3);
+                    const newIfsc =
+                    ifscPrefix.length === 3 ?
+                    ifscPrefix + last4 :
+                    ifscPrefix;
+                    setFormData({
+                      ...formData,
+                      accountNumber: formatted,
+                      ifscCode: newIfsc
+                    });
+                  }}
+                  readOnly={ownerMode === "existing"} />
+                
                   <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                     Account Number
                   </label>
                 </div>
                 <div className="relative w-full mb-6">
                   <input
-                    required
-                    type="text"
-                    placeholder=" "
-                    className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
-                    value={formData.ifscCode}
-                    onChange={(e) => {
-                      const prefix = e.target.value
-                        .toUpperCase()
-                        .replace(/[^A-Z]/g, "")
-                        .slice(0, 3);
-                      const rawAcc = formData.accountNumber.replace(/\D/g, "");
-                      const last4 =
-                        rawAcc.length >= 4 ? rawAcc.slice(-4) : rawAcc;
-                      setFormData({
-                        ...formData,
-                        ifscCode: prefix.length === 3 ? prefix + last4 : prefix,
-                      });
-                    }}
-                    readOnly={ownerMode === "existing"}
-                  />
+                  required
+                  type="text"
+                  placeholder=" "
+                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
+                  value={formData.ifscCode}
+                  onChange={(e) => {
+                    const prefix = e.target.value.
+                    toUpperCase().
+                    replace(/[^A-Z]/g, "").
+                    slice(0, 3);
+                    const rawAcc = formData.accountNumber.replace(/\D/g, "");
+                    const last4 =
+                    rawAcc.length >= 4 ? rawAcc.slice(-4) : rawAcc;
+                    setFormData({
+                      ...formData,
+                      ifscCode: prefix.length === 3 ? prefix + last4 : prefix
+                    });
+                  }}
+                  readOnly={ownerMode === "existing"} />
+                
                   <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                     IFSC Code
                   </label>
                 </div>
                 <div className="relative w-full mb-6 md:col-span-2">
                   <input
-                    required
-                    type="text"
-                    placeholder=" "
-                    className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-normal uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
-                    value={formData.accountHolderName}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        accountHolderName: e.target.value.toUpperCase(),
-                      })
-                    }
-                    readOnly={ownerMode === "existing"}
-                  />
+                  required
+                  type="text"
+                  placeholder=" "
+                  className={`peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-normal uppercase focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative ${ownerMode === "existing" ? "text-kite-text-light dark:text-kite-text-light cursor-not-allowed" : "text-kite-text dark:text-kite-text"}`}
+                  value={formData.accountHolderName}
+                  onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    accountHolderName: e.target.value.toUpperCase()
+                  })
+                  }
+                  readOnly={ownerMode === "existing"} />
+                
                   <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                     Account Holder Name
                   </label>
-                  {ownerMode === "existing" && (
-                    <p className="text-[11px] md:text-[12px] text-orange-600 mt-1.5 font-normal">
+                  {ownerMode === "existing" &&
+                <p className="text-[11px] md:text-[12px] text-orange-600 mt-1.5 font-normal">
                       Bank details are locked because this owner is already
                       registered.
                     </p>
-                  )}
+                }
                 </div>
               </div>
               <div className="relative w-full mb-6 pt-2 mt-2">
                 <input
-                  required
-                  type="text"
-                  inputMode="numeric"
-                  placeholder=" "
-                  className="peer w-full md:w-1/2 border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-normal text-kite-blue focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
-                  value={
-                    formData.registrationFee
-                      ? Number(
-                          formData.registrationFee
-                            .toString()
-                            .replace(/\D/g, ""),
-                        ).toLocaleString("en-IN")
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      registrationFee: e.target.value.replace(/\D/g, ""),
-                    })
-                  }
-                />
+                required
+                type="text"
+                inputMode="numeric"
+                placeholder=" "
+                className="peer w-full md:w-1/2 border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-normal text-kite-blue focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
+                value={
+                formData.registrationFee ?
+                Number(
+                  formData.registrationFee.
+                  toString().
+                  replace(/\D/g, "")
+                ).toLocaleString("en-IN") :
+                ""
+                }
+                onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  registrationFee: e.target.value.replace(/\D/g, "")
+                })
+                } />
+              
                 <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Registration Fee (₹)
                 </label>
@@ -1362,10 +1378,10 @@ export default function Businesses() {
 
               <div className="flex flex-col items-center pt-8 mt-4 border-t border-kite-border dark:border-kite-border space-y-4">
                 <button
-                  type="submit"
-                  disabled={isVerifying}
-                  className="w-full md:w-auto md:min-w-[200px] font-medium flex items-center justify-center bg-[#4CAF50] text-white px-8 py-3 rounded hover:bg-[#45a049] transition-colors disabled:opacity-100 disabled:cursor-not-allowed shadow-sm"
-                >
+                type="submit"
+                disabled={isVerifying}
+                className="w-full md:w-auto md:min-w-[200px] font-medium flex items-center justify-center bg-[#4CAF50] text-white px-8 py-3 rounded hover:bg-[#45a049] transition-colors disabled:opacity-100 disabled:cursor-not-allowed shadow-sm">
+                
                   {isVerifying ? "Creating Profile..." : "Verify & Save Business"}
                 </button>
                 <p className="text-[11px] md:text-[12px] text-kite-text-light mt-4 flex items-center">
@@ -1375,9 +1391,9 @@ export default function Businesses() {
               </div>
             </form>
           </div>
-        )}
+        }
 
       </div>
-    </div>
-  );
+    </div>);
+
 }

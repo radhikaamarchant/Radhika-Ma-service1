@@ -1,8 +1,9 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
+import DebouncedInput from "../components/DebouncedInput";
 import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
-import { useAppContext } from"../utils/AppContext";
-import { useMarketSimulation } from"../utils/MarketSimulationContext";
-import { formatINR } from"../utils/mockData";
+import { useAppContext } from "../utils/AppContext";
+import { useMarketSimulation } from "../utils/MarketSimulationContext";
+import { formatINR } from "../utils/mockData";
 import { getCurrentMarketPrice } from "../utils/marketSimulator";
 import { getMarketTimeContext } from "../utils/marketTiming";
 import {
@@ -18,8 +19,8 @@ import {
   Users,
   Info,
   Star,
-  Search,
-} from "lucide-react";
+  Search } from
+"lucide-react";
 import {
   BarChart,
   Bar,
@@ -29,19 +30,19 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  Legend,
-} from"recharts";
-import { Business } from"../types";
-import { getVerificationStats } from"../utils/blueTick";
-import { MarketTrendCell } from"../components/MarketTrendCell";
-import { calculateLiveProfit } from"../utils/profitCalculator";
+  Legend } from
+"recharts";
+import { Business } from "../types";
+import { getVerificationStats } from "../utils/blueTick";
+import { MarketTrendCell } from "../components/MarketTrendCell";
+import { calculateLiveProfit } from "../utils/profitCalculator";
 import AddInvestmentModal from "../components/AddInvestmentModal";
 
-const LiveMobileValue = ({ baseAmount, isOpen, isUp, baseColorClass = "text-kite-text" }: { baseAmount: number, isOpen: boolean, isUp: boolean, baseColorClass?: string }) => {
+const LiveMobileValue = ({ baseAmount, isOpen, isUp, baseColorClass = "text-kite-text" }: {baseAmount: number;isOpen: boolean;isUp: boolean;baseColorClass?: string;}) => {
   const displayBase = baseAmount || 0;
   const [currentAmount, setCurrentAmount] = useState(displayBase);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
-  
+
   useEffect(() => {
     if (!isOpen) {
       setFlash(null);
@@ -53,23 +54,23 @@ const LiveMobileValue = ({ baseAmount, isOpen, isUp, baseColorClass = "text-kite
     const interval = setInterval(() => {
       const change = current * (Math.random() * 0.002 - 0.001); // +/- 0.1% change
       const newAmount = current + change;
-      
+
       setCurrentAmount(newAmount);
-      
-      if (newAmount > current) setFlash("up");
-      else if (newAmount < current) setFlash("down");
-      
+
+      if (newAmount > current) setFlash("up");else
+      if (newAmount < current) setFlash("down");
+
       current = newAmount;
-      
+
       setTimeout(() => setFlash(null), 300);
     }, 2000 + Math.random() * 3000);
 
     return () => clearInterval(interval);
   }, [baseAmount, isOpen]);
 
-  const amountColorClass = !isOpen 
-    ? (isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]") 
-    : (flash === "up" ? "text-[#4CAF50] dark:text-[#5B9A5D]" : flash === "down" ? "text-[#DF514C] dark:text-[#E25F5B]" : baseColorClass);
+  const amountColorClass = !isOpen ?
+  isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]" :
+  flash === "up" ? "text-[#4CAF50] dark:text-[#5B9A5D]" : flash === "down" ? "text-[#DF514C] dark:text-[#E25F5B]" : baseColorClass;
 
   return (
     <span className={`transition-colors duration-300 ${amountColorClass}`}>
@@ -77,8 +78,8 @@ const LiveMobileValue = ({ baseAmount, isOpen, isUp, baseColorClass = "text-kite
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       }).format(currentAmount)}
-    </span>
-  );
+    </span>);
+
 };
 
 
@@ -95,16 +96,16 @@ const formatCompactINRDesktop = (number: number): string => {
   return '₹' + number.toString();
 };
 
-export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) => void }) {
+export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) => void;}) {
   const { state } = useAppContext();
   const { marketState } = useMarketSimulation();
   const timeCtx = getMarketTimeContext(state.settings);
   const isMarketOpen = timeCtx.isOpen;
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(
-    null,
+    null
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"investment" |"interest">("interest");
+  const [sortBy, setSortBy] = useState<"investment" | "interest">("interest");
   const [activeTab, setActiveTab] = useState<string>("best-market");
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalBusinessId, setAddModalBusinessId] = useState("");
@@ -126,12 +127,12 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
     const bizInvs = state.investments.filter((i) => i.businessId === b.id);
     const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0);
     const liveTotalValue = bizInvs.reduce((sum, inv) => {
-      if (inv.status ==="active") {
+      if (inv.status === "active") {
         const { currentValue } = calculateLiveProfit(
           [inv],
           b.id,
           marketState.trends,
-          state.settings,
+          state.settings
         );
         return sum + currentValue;
       }
@@ -144,28 +145,28 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
         [inv],
         b.id,
         marketState.trends,
-        state.settings,
+        state.settings
       );
       return sum + currentValue;
     }, 0);
     const investorSet = new Set(bizInvs.map((i) => i.investorId));
     const investorCount = investorSet.size;
     const profitedInvestorsSet = new Set(
-      bizInvs.filter((i) => i.status ==="completed").map((i) => i.investorId),
+      bizInvs.filter((i) => i.status === "completed").map((i) => i.investorId)
     );
     const profitedInvestorsCount = profitedInvestorsSet.size;
-    const completedInvs = bizInvs.filter((i) => i.status ==="completed");
+    const completedInvs = bizInvs.filter((i) => i.status === "completed");
     const totalRet = completedInvs.reduce((sum, inv) => {
       const p = inv.payoutDetails;
       return (
-        sum + (p ? p.totalCredited + p.rmasCommission + p.happyIncomeTax : 0)
-      );
+        sum + (p ? p.totalCredited + p.rmasCommission + p.happyIncomeTax : 0));
+
     }, 0);
     const avgReturnPct =
-      completedInvs.length > 0
-        ? completedInvs.reduce((sum, i) => sum + i.interestRate, 0) /
-          completedInvs.length
-        : b.interestRate;
+    completedInvs.length > 0 ?
+    completedInvs.reduce((sum, i) => sum + i.interestRate, 0) /
+    completedInvs.length :
+    b.interestRate;
     return {
       ...b,
       totalInv,
@@ -179,75 +180,26 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
       profitedInvestorsCount,
       activeInvsCount: bizInvs.length - completedInvs.length,
       completedInvsCount: completedInvs.length,
-      avgReturnPct,
+      avgReturnPct
     };
   }), [state.businesses, state.investments, marketState.trends, state.settings]);
-  const topInvested = isDesktop
-    ? [...businessesWithStats]
-        .filter((b) => b.totalInv > 0)
-        .sort((a, b) => b.totalInv - a.totalInv)
-        .slice(0, 10)
-    : [...businessesWithStats]
-        .filter((b) => b.totalInv > 0)
-        .sort((a, b) => b.liveTotalValue - a.liveTotalValue)
-        .slice(0, 10);
-
-  const topBacked = isDesktop
-    ? [...businessesWithStats]
-        .filter((b) => b.totalInv > 0 && b.totalRet > b.totalInv * 0.05)
-        .sort((a, b) => (b.totalRet / b.totalInv) - (a.totalRet / a.totalInv))
-        .slice(0, 10)
-    : [...businessesWithStats]
-        .filter((b) => b.investorCount > 0)
-        .sort((a, b) => b.investorCount - a.investorCount)
-        .slice(0, 10);
-
-  const topEarners = [...businessesWithStats]
-    .filter((b) => b.totalRet > 0)
-    .sort((a, b) => b.totalRet - a.totalRet)
-    .slice(0, 10);
-
-  const untappedBusinesses = businessesWithStats.filter(
-    (b) => b.totalInv === 0,
-  );
-
-  const newlyListed = [...businessesWithStats]
-    .filter((b) => b.totalInv < b.fundingRequired * 0.5)
-    .reverse()
-    .slice(0, 8);
-
-  const bestMarket = isDesktop
-    ? businessesWithStats
-        .filter((b) => b.totalInv > 0 && b.totalRet > 0 && (b.downMarket || 0) > 0 && (b.increaseMarket || 0) > 0)
-        .sort((a, b) => b.totalRet - a.totalRet)
-    : businessesWithStats
-        .filter((b) => b.overallTrend >= b.interestRate + 10)
-        .sort((a, b) => b.overallTrend - a.overallTrend);
-
-  const sortedByInvForMed = [...businessesWithStats].filter(b => b.totalInv > 0 && b.totalRet > 0).sort((a,b) => b.totalInv - a.totalInv);
-  const medStartIndex = Math.max(0, Math.floor(sortedByInvForMed.length / 2) - 3);
-  const mediumBusinesses = isDesktop
-    ? sortedByInvForMed.slice(medStartIndex, medStartIndex + 6)
-    : [];
-
-  const overviewBusinesses = [...businessesWithStats]
-    .filter(
-      (b) =>
-        b.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
-        b.ownerName.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
-        b.businessId.toLowerCase().includes(deferredSearchTerm.toLowerCase()),
-    )
-    .sort((a, b) => {
-      if (sortBy ==="investment") {
-        return b.liveTotalValue - a.liveTotalValue;
-      }
-      return a.interestRate - b.interestRate;
-    });
+  const topInvested = isDesktop ?
+  [...businessesWithStats].
+  filter((b) =>
+    b.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+    b.ownerName.toLowerCase().includes(deferredSearchTerm.toLowerCase())
+  ).
+  sort((a, b) => {
+    if (sortBy === "investment") {
+      return b.liveTotalValue - a.liveTotalValue;
+    }
+    return a.interestRate - b.interestRate;
+  }) : [];
   const statsMap = getVerificationStats(state.businesses, state.investments);
 
   // --- Desktop City View Logic ---
   const cities = Array.from(new Set(state.investors.map((i: any) => i.address?.city?.toLowerCase()?.trim()).filter(Boolean))).sort() as string[];
-  
+
   useEffect(() => {
     if (!selectedCity && cities.length > 0) {
       setSelectedCity(cities[0]);
@@ -269,60 +221,60 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
 
   // Business Analytics Details
   const renderPremiumBusinessDetails = (business: Business) => {
-    const bizInvestments = state.investments.filter(i => i.businessId === business.id);
-    const activeInvs = bizInvestments.filter(i => i.status === "active");
-    const completedInvs = bizInvestments.filter(i => i.status === "completed");
-  
-    const totalInvestors = new Set(bizInvestments.map(i => i.investorId)).size;
-    const activeInvestors = new Set(activeInvs.map(i => i.investorId)).size;
-  
+    const bizInvestments = state.investments.filter((i) => i.businessId === business.id);
+    const activeInvs = bizInvestments.filter((i) => i.status === "active");
+    const completedInvs = bizInvestments.filter((i) => i.status === "completed");
+
+    const totalInvestors = new Set(bizInvestments.map((i) => i.investorId)).size;
+    const activeInvestors = new Set(activeInvs.map((i) => i.investorId)).size;
+
     const totalInvestedAmount = bizInvestments.reduce((sum, i) => sum + i.amount, 0);
     const currentInvestedAmount = activeInvs.reduce((sum, i) => sum + i.amount, 0);
-  
+
     let totalProfitPaid = 0;
-    completedInvs.forEach(inv => {
-        const p = inv.payoutDetails;
-        if (p) {
-            totalProfitPaid += (p.totalCredited + (p.rmasCommission || 0) + (p.happyIncomeTax || 0)) - inv.amount;
-        }
+    completedInvs.forEach((inv) => {
+      const p = inv.payoutDetails;
+      if (p) {
+        totalProfitPaid += p.totalCredited + (p.rmasCommission || 0) + (p.happyIncomeTax || 0) - inv.amount;
+      }
     });
-  
+
     let expectedProfit = 0;
-    activeInvs.forEach(inv => {
-        expectedProfit += inv.amount * (inv.interestRate / 100);
+    activeInvs.forEach((inv) => {
+      expectedProfit += inv.amount * (inv.interestRate / 100);
     });
-  
-    const ownerAsInvestor = state.investors.find(i => i.name.toLowerCase() === business.ownerName.toLowerCase());
-  
+
+    const ownerAsInvestor = state.investors.find((i) => i.name.toLowerCase() === business.ownerName.toLowerCase());
+
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/70 p-4 animate-in fade-in duration-200">
         
         {/* MOBILE VERSION (Untouched Logic & Style) */}
         <div className="md:hidden bg-[#111111] border border-[#2a2a2a] rounded-xl w-full max-h-[90vh] overflow-y-auto text-white shadow-2xl relative font-sans hide-scrollbar">
           <button
-              onClick={() => setPremiumBusiness(null)}
-              className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/80 border border-[#333] rounded-full transition-all z-20 group"
-          >
+            onClick={() => setPremiumBusiness(null)}
+            className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/80 border border-[#333] rounded-full transition-all z-20 group">
+            
               <X className="w-5 h-5 text-gray-400 group-hover:text-white" />
           </button>
           
           <div className="relative h-64 w-full">
-            {business.photoUrl ? (
-                <img src={business.photoUrl} alt="Cover" className="w-full h-full object-cover opacity-50 mix-blend-overlay" />
-            ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-[#111111]"></div>
-            )}
+            {business.photoUrl ?
+            <img src={business.photoUrl} alt="Cover" className="w-full h-full object-cover opacity-50 mix-blend-overlay" /> :
+
+            <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-[#111111]"></div>
+            }
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/80 to-transparent"></div>
             <div className="absolute bottom-6 left-8 flex items-end gap-6">
                 <div className="flex gap-4 items-end">
                     <div className="w-24 h-24 rounded-2xl overflow-hidden border border-[#333] bg-[#1a1a1a] shadow-2xl shrink-0">
-                        {business.photoUrl ? (
-                            <img src={business.photoUrl} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-3xl font-light text-gray-500 bg-[#1a1a1a]">
-                                {(business.shortName || business.name)?.substring(0,2).toUpperCase()}
+                        {business.photoUrl ?
+                  <img src={business.photoUrl} className="w-full h-full object-cover" /> :
+
+                  <div className="w-full h-full flex items-center justify-center text-3xl font-light text-gray-500 bg-[#1a1a1a]">
+                                {(business.shortName || business.name)?.substring(0, 2).toUpperCase()}
                             </div>
-                        )}
+                  }
                     </div>
                 </div>
                 <div className="pb-1">
@@ -334,12 +286,12 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                         </span>
                         <span className="w-1 h-1 rounded-full bg-gray-600"></span>
                         <span className="tracking-wider uppercase">{business.businessId}</span>
-                        {statsMap.get(business.id)?.isBlueTick && (
-                            <>
+                        {statsMap.get(business.id)?.isBlueTick &&
+                  <>
                                 <span className="w-1 h-1 rounded-full bg-gray-600"></span>
                                 <span className="flex items-center gap-1 text-blue-400"><BadgeCheck className="w-4 h-4" /> Verified</span>
                             </>
-                        )}
+                  }
                     </div>
                 </div>
             </div>
@@ -373,8 +325,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                 </div>
             </div>
 
-            {business.companyInfo ? (
-                <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            {business.companyInfo ?
+            <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
                     <div className="grid grid-cols-2 gap-6 bg-[#1a1a1a] p-6 rounded-lg border border-[#2a2a2a]">
                         <div>
                             <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-1.5">Company Name</p>
@@ -396,14 +348,14 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
 
                     <div className="space-y-6">
                         <div>
-                            <p className="text-[11px] text-kite-blue uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4"/> Revenue & Profit Strategy</p>
+                            <p className="text-[11px] text-kite-blue uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Revenue & Profit Strategy</p>
                             <div className="bg-[#1a1a1a] p-5 rounded-lg border border-[#2a2a2a] text-[14px] text-gray-300 leading-relaxed font-light">
                                 {business.companyInfo.profitRevenueInvest}
                             </div>
                         </div>
                         
                         <div>
-                            <p className="text-[11px] text-[#4CAF50] uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><Lightbulb className="w-4 h-4"/> Investment Idea</p>
+                            <p className="text-[11px] text-[#4CAF50] uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><Lightbulb className="w-4 h-4" /> Investment Idea</p>
                             <div className="bg-[#1a1a1a] p-5 rounded-lg border border-[#2a2a2a] text-[14px] text-gray-300 leading-relaxed font-light">
                                 {business.companyInfo.investmentIdea}
                             </div>
@@ -424,48 +376,48 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                             <div>
                                 <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-3">Documents</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {business.companyInfo.documents && business.companyInfo.documents.length > 0 ? (
-                                        business.companyInfo.documents.map((doc, idx) => (
-                                            <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{doc}</span>
-                                        ))
-                                    ) : (
-                                        <span className="text-gray-500 text-sm">No documents provided</span>
-                                    )}
+                                    {business.companyInfo.documents && business.companyInfo.documents.length > 0 ?
+                      business.companyInfo.documents.map((doc, idx) =>
+                      <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{doc}</span>
+                      ) :
+
+                      <span className="text-gray-500 text-sm">No documents provided</span>
+                      }
                                 </div>
                             </div>
                             <div>
                                 <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-3">Government Reg Identifies</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 ? (
-                                        business.companyInfo.governmentRegIdentifies.map((reg, idx) => (
-                                            <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{reg}</span>
-                                        ))
-                                    ) : (
-                                        <span className="text-gray-500 text-sm">No reg identifies provided</span>
-                                    )}
+                                    {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 ?
+                      business.companyInfo.governmentRegIdentifies.map((reg, idx) =>
+                      <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{reg}</span>
+                      ) :
+
+                      <span className="text-gray-500 text-sm">No reg identifies provided</span>
+                      }
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            ) : (
-                <div className="py-16 text-center text-gray-500 flex flex-col items-center">
+                </div> :
+
+            <div className="py-16 text-center text-gray-500 flex flex-col items-center">
                     <div className="w-16 h-16 rounded-full bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center mb-4">
                         <Info className="w-8 h-8 text-gray-600" />
                     </div>
                     <p className="text-[15px] font-medium text-gray-400">No Premium Company Profile</p>
                     <p className="text-[13px] mt-2 text-gray-600 max-w-sm">This business has not provided detailed company information for premium analysis.</p>
                 </div>
-            )}
+            }
           </div>
         </div>
 
         {/* DESKTOP VERSION (Light/Dark Mode, Horizontal Lines, Minimal) */}
         <div className="hidden md:block bg-white dark:bg-kite-surface border border-kite-border rounded-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto text-kite-text shadow-xl relative font-sans hide-scrollbar">
           <button
-              onClick={() => setPremiumBusiness(null)}
-              className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-black/50 hover:bg-gray-200 dark:hover:bg-black/80 rounded-full transition-all z-20 group"
-          >
+            onClick={() => setPremiumBusiness(null)}
+            className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-black/50 hover:bg-gray-200 dark:hover:bg-black/80 rounded-full transition-all z-20 group">
+            
               <X className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
           </button>
           
@@ -473,29 +425,29 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
           <div className="relative h-48 w-full border-b border-kite-border bg-gray-50 dark:bg-kite-bg">
               <div className="absolute inset-0 p-8 flex items-end gap-6">
                   <div className="w-24 h-24 rounded-lg overflow-hidden border border-kite-border bg-white dark:bg-kite-surface shadow-md shrink-0">
-                      {business.photoUrl ? (
-                          <img src={business.photoUrl} className="w-full h-full object-cover" />
-                      ) : (
-                          <div className="w-full h-full flex items-center justify-center text-3xl font-light text-kite-text-light bg-gray-50 dark:bg-kite-bg">
-                              {(business.shortName || business.name)?.substring(0,2).toUpperCase()}
+                      {business.photoUrl ?
+                <img src={business.photoUrl} className="w-full h-full object-cover" /> :
+
+                <div className="w-full h-full flex items-center justify-center text-3xl font-light text-kite-text-light bg-gray-50 dark:bg-kite-bg">
+                              {(business.shortName || business.name)?.substring(0, 2).toUpperCase()}
                           </div>
-                      )}
+                }
                   </div>
                   <div className="pb-1 flex-1">
                       <h2 className="text-2xl font-semibold tracking-tight text-kite-text mb-2">{business.name}</h2>
                       <div className="flex items-center gap-3 text-sm text-kite-text-light font-medium">
                           <span className="flex items-center gap-1.5">
-                             <Users className="w-4 h-4"/> 
+                             <Users className="w-4 h-4" /> 
                              {business.ownerName}
                           </span>
                           <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600"></span>
                           <span className="tracking-wider uppercase">{business.businessId}</span>
-                          {statsMap.get(business.id)?.isBlueTick && (
-                              <>
+                          {statsMap.get(business.id)?.isBlueTick &&
+                  <>
                                   <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600"></span>
                                   <span className="flex items-center gap-1 text-kite-blue"><BadgeCheck className="w-4 h-4" /> Verified</span>
                               </>
-                          )}
+                  }
                       </div>
                   </div>
               </div>
@@ -530,8 +482,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                   </div>
               </div>
         
-              {business.companyInfo ? (
-                  <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+              {business.companyInfo ?
+            <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
                       {/* Company Meta */}
                       <div className="flex gap-8 border-b border-kite-border pb-6">
                           <div className="flex-1">
@@ -556,13 +508,13 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
         
                       {/* Revenue & Profit */}
                       <div className="border-b border-kite-border pb-6">
-                          <p className="text-[11px] text-kite-blue uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4"/> Revenue & Profit Strategy</p>
+                          <p className="text-[11px] text-kite-blue uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Revenue & Profit Strategy</p>
                           <p className="text-[14px] text-kite-text/80 leading-relaxed font-light">{business.companyInfo.profitRevenueInvest}</p>
                       </div>
         
                       {/* Investment Idea */}
                       <div className="border-b border-kite-border pb-6">
-                          <p className="text-[11px] text-[#4CAF50] uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><Lightbulb className="w-4 h-4"/> Investment Idea</p>
+                          <p className="text-[11px] text-[#4CAF50] uppercase tracking-widest font-semibold mb-3 flex items-center gap-2"><Lightbulb className="w-4 h-4" /> Investment Idea</p>
                           <p className="text-[14px] text-kite-text/80 leading-relaxed font-light">{business.companyInfo.investmentIdea}</p>
                       </div>
         
@@ -583,80 +535,80 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                           <div>
                               <p className="text-[11px] text-kite-text-light uppercase tracking-widest font-semibold mb-3">Documents</p>
                               <div className="flex flex-col gap-2.5">
-                                  {business.companyInfo.documents && business.companyInfo.documents.length > 0 ? (
-                                      business.companyInfo.documents.map((doc, idx) => (
-                                          <div key={idx} className="flex items-center gap-2">
+                                  {business.companyInfo.documents && business.companyInfo.documents.length > 0 ?
+                    business.companyInfo.documents.map((doc, idx) =>
+                    <div key={idx} className="flex items-center gap-2">
                                               <BadgeCheck className="w-4 h-4 text-kite-blue shrink-0" />
                                               <span className="text-[14px] text-kite-text/90 font-medium">{doc}</span>
                                           </div>
-                                      ))
-                                  ) : (
-                                      <span className="text-kite-text-light text-sm">No documents provided</span>
-                                  )}
+                    ) :
+
+                    <span className="text-kite-text-light text-sm">No documents provided</span>
+                    }
                               </div>
                           </div>
                           <div>
                               <p className="text-[11px] text-kite-text-light uppercase tracking-widest font-semibold mb-3">Government Reg Identifies</p>
                               <div className="flex flex-col gap-2.5">
-                                  {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 ? (
-                                      business.companyInfo.governmentRegIdentifies.map((reg, idx) => (
-                                          <div key={idx} className="flex items-center gap-2">
+                                  {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 ?
+                    business.companyInfo.governmentRegIdentifies.map((reg, idx) =>
+                    <div key={idx} className="flex items-center gap-2">
                                               <BadgeCheck className="w-4 h-4 text-[#4CAF50] shrink-0" />
                                               <span className="text-[14px] text-kite-text/90 font-medium">{reg}</span>
                                           </div>
-                                      ))
-                                  ) : (
-                                      <span className="text-kite-text-light text-sm">No reg identifies provided</span>
-                                  )}
+                    ) :
+
+                    <span className="text-kite-text-light text-sm">No reg identifies provided</span>
+                    }
                               </div>
                           </div>
                       </div>
-                  </div>
-              ) : (
-                  <div className="py-16 text-center text-kite-text-light flex flex-col items-center">
+                  </div> :
+
+            <div className="py-16 text-center text-kite-text-light flex flex-col items-center">
                       <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-kite-bg border border-kite-border flex items-center justify-center mb-4">
                           <Info className="w-8 h-8 text-kite-text-light/50" />
                       </div>
                       <p className="text-[15px] font-medium text-kite-text-light">No Premium Company Profile</p>
                       <p className="text-[13px] mt-2 text-kite-text-light/70 max-w-sm">This business has not provided detailed company information for premium analysis.</p>
                   </div>
-              )}
+            }
           </div>
         </div>
 
-      </div>
-    );
+      </div>);
+
   };
   const renderBusinessDetails = (business: Business) => {
     const bizStats = businessesWithStats.find((b) => b.id === business.id);
     const bizInvestments = state.investments.filter(
-      (i) => i.businessId === business.id,
+      (i) => i.businessId === business.id
     );
     const completedInvestments = bizInvestments.filter(
-      (i) => i.status ==="completed",
+      (i) => i.status === "completed"
     );
     const totalInvested = bizInvestments.reduce(
       (sum, inv) => sum + inv.amount,
-      0,
+      0
     );
     const fundingRemaining = Math.max(
       0,
-      business.fundingRequired - totalInvested,
+      business.fundingRequired - totalInvested
     );
     const fundingPercentage =
-      business.fundingRequired > 0
-        ? (totalInvested / business.fundingRequired) * 100
-        : 0;
+    business.fundingRequired > 0 ?
+    totalInvested / business.fundingRequired * 100 :
+    0;
     let expectedProfitToPay = 0;
     let actualProfitPaid = 0;
     bizInvestments.forEach((inv) => {
-      if (inv.status ==="completed") {
+      if (inv.status === "completed") {
         const payout = inv.payoutDetails;
         if (payout) {
           const grossPayout =
-            payout.totalCredited +
-            payout.rmasCommission +
-            payout.happyIncomeTax;
+          payout.totalCredited +
+          payout.rmasCommission +
+          payout.happyIncomeTax;
           actualProfitPaid += grossPayout - inv.amount;
         }
       } else {
@@ -665,29 +617,29 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
       }
     });
     const fundingData = [
-      {
-        name:"Funded",
-        value: totalInvested,
-        color:"var(--color-kite-green)",
-      },
-      {
-        name:"Remaining",
-        value: fundingRemaining,
-        color:"var(--border-color-hard)",
-      },
-    ];
+    {
+      name: "Funded",
+      value: totalInvested,
+      color: "var(--color-kite-green)"
+    },
+    {
+      name: "Remaining",
+      value: fundingRemaining,
+      color: "var(--border-color-hard)"
+    }];
+
     const profitData = [
-      {
-        name:"Profit Paid",
-        value: actualProfitPaid,
-        color:"var(--color-kite-blue)",
-      },
-      {
-        name:"Expected",
-        value: expectedProfitToPay,
-        color:"var(--text-color)",
-      },
-    ];
+    {
+      name: "Profit Paid",
+      value: actualProfitPaid,
+      color: "var(--color-kite-blue)"
+    },
+    {
+      name: "Expected",
+      value: expectedProfitToPay,
+      color: "var(--text-color)"
+    }];
+
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 p-4">
         <div className="bg-white dark:bg-kite-surface border-y border-x-0 md:border-x border-kite-border rounded-none md:rounded-sm w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -696,18 +648,18 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
               <div className="flex items-center space-x-2">
                 <h3 className="font-medium text-[11px] md:text-[12px] text-kite-text flex items-center space-x-1">
                   <span>{business.shortName ? business.shortName.toUpperCase() : business.name?.toUpperCase()}</span>{""}
-                  {statsMap.get(business.id)?.isBlueTick && (
-                    <BadgeCheck
-                      className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500"
-                      title="RMAS Verified"
-                    />
-                  )}{""}
-                  {statsMap.get(business.id)?.isPreVerified && (
-                    <Clock
-                      className="w-4 h-4 md:w-5 md:h-5 text-kite-text"
-                      title="Pre-Verified"
-                    />
-                  )}{""}
+                  {statsMap.get(business.id)?.isBlueTick &&
+                  <BadgeCheck
+                    className="w-4 h-4 md:w-5 md:h-5 text-white fill-blue-500"
+                    title="RMAS Verified" />
+
+                  }{""}
+                  {statsMap.get(business.id)?.isPreVerified &&
+                  <Clock
+                    className="w-4 h-4 md:w-5 md:h-5 text-kite-text"
+                    title="Pre-Verified" />
+
+                  }{""}
                 </h3>
               </div>
               <p className="text-[11px] md:text-[12px] font-medium text-kite-text-light mt-0.5 tracking-wide uppercase">
@@ -717,8 +669,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
             </div>
             <button
               onClick={() => setSelectedBusiness(null)}
-              className="p-1.5 hover:bg-kite-bg rounded-full text-kite-text-light transition-colors"
-            >
+              className="p-1.5 hover:bg-kite-bg rounded-full text-kite-text-light transition-colors">
+              
               <X className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
@@ -790,46 +742,46 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={fundingData}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                    >
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      
                       <XAxis
                         dataKey="name"
-                        tick={{ fontSize: 10, fill:"var(--text-light-color)" }}
+                        tick={{ fontSize: 10, fill: "var(--text-light-color)" }}
                         axisLine={false}
-                        tickLine={false}
-                      />
+                        tickLine={false} />
+                      
                       <YAxis
                         tickFormatter={(value) => formatINR(value)}
                         width={80}
-                        tick={{ fontSize: 10, fill:"var(--text-light-color)" }}
+                        tick={{ fontSize: 10, fill: "var(--text-light-color)" }}
                         axisLine={false}
-                        tickLine={false}
-                      />
+                        tickLine={false} />
+                      
                       <Tooltip
-                        cursor={{ fill:"var(--bg-color-alt)" }}
+                        cursor={{ fill: "var(--bg-color-alt)" }}
                         contentStyle={{
-                          backgroundColor:"var(--surface-color)",
-                          border:"1px solid var(--border-color)",
-                          borderRadius:"2px",
-                          fontSize:"12px",
-                          color:"var(--text-color)",
+                          backgroundColor: "var(--surface-color)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "2px",
+                          fontSize: "12px",
+                          color: "var(--text-color)"
                         }}
-                        itemStyle={{ color:"var(--text-color)" }}
+                        itemStyle={{ color: "var(--text-color)" }}
                         formatter={(value: number) => formatINR(value)}
                         labelStyle={{
-                          color:"var(--text-light-color)",
-                          marginBottom:"4px",
-                        }}
-                      />
+                          color: "var(--text-light-color)",
+                          marginBottom: "4px"
+                        }} />
+                      
                       <Bar
                         dataKey="value"
                         radius={[4, 4, 0, 0]}
-                        maxBarSize={60}
-                      >
+                        maxBarSize={60}>
+                        
                         {""}
-                        {fundingData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}{""}
+                        {fundingData.map((entry, index) =>
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        )}{""}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -844,46 +796,46 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={profitData}
-                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                    >
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      
                       <XAxis
                         dataKey="name"
-                        tick={{ fontSize: 10, fill:"var(--text-light-color)" }}
+                        tick={{ fontSize: 10, fill: "var(--text-light-color)" }}
                         axisLine={false}
-                        tickLine={false}
-                      />
+                        tickLine={false} />
+                      
                       <YAxis
                         tickFormatter={(value) => formatINR(value)}
                         width={80}
-                        tick={{ fontSize: 10, fill:"var(--text-light-color)" }}
+                        tick={{ fontSize: 10, fill: "var(--text-light-color)" }}
                         axisLine={false}
-                        tickLine={false}
-                      />
+                        tickLine={false} />
+                      
                       <Tooltip
-                        cursor={{ fill:"var(--bg-color-alt)" }}
+                        cursor={{ fill: "var(--bg-color-alt)" }}
                         contentStyle={{
-                          backgroundColor:"var(--surface-color)",
-                          border:"1px solid var(--border-color)",
-                          borderRadius:"2px",
-                          fontSize:"12px",
-                          color:"var(--text-color)",
+                          backgroundColor: "var(--surface-color)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "2px",
+                          fontSize: "12px",
+                          color: "var(--text-color)"
                         }}
-                        itemStyle={{ color:"var(--text-color)" }}
+                        itemStyle={{ color: "var(--text-color)" }}
                         formatter={(value: number) => formatINR(value)}
                         labelStyle={{
-                          color:"var(--text-light-color)",
-                          marginBottom:"4px",
-                        }}
-                      />
+                          color: "var(--text-light-color)",
+                          marginBottom: "4px"
+                        }} />
+                      
                       <Bar
                         dataKey="value"
                         radius={[4, 4, 0, 0]}
-                        maxBarSize={60}
-                      >
+                        maxBarSize={60}>
+                        
                         {""}
-                        {profitData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}{""}
+                        {profitData.map((entry, index) =>
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        )}{""}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -891,38 +843,38 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
               </div>
             </div>
             <div
-              className={`bg-kite-bg text-kite-text p-1.5 md:p-3 md:p-5 rounded-sm relative overflow-hidden`}
-            >
+              className={`bg-kite-bg text-kite-text p-1.5 md:p-3 md:p-5 rounded-sm relative overflow-hidden`}>
+              
               <div className="relative z-10">
                 <h4 className="font-medium text-[13px] md:text-[14px] mb-2 flex items-center space-x-2">
                   <Lightbulb
-                    className={`w-3 md:w-4 h-3 md:h-4 ${statsMap.get(business.id)?.isBlueTick ?"text-kite-blue flex-shrink-0" : statsMap.get(business.id)?.isPreVerified ?"text-kite-text flex-shrink-0" :"text-kite-text flex-shrink-0"}`}
-                  />
+                    className={`w-3 md:w-4 h-3 md:h-4 ${statsMap.get(business.id)?.isBlueTick ? "text-kite-blue flex-shrink-0" : statsMap.get(business.id)?.isPreVerified ? "text-kite-text flex-shrink-0" : "text-kite-text flex-shrink-0"}`} />
+                  
                   <span>RMAS Advisory Summary</span>
                 </h4>
                 <div className="space-y-2 text-[13px] md:text-[14px] text-kite-text">
                   {""}
-                  {bizStats?.totalInv === 0 && (
-                    <p>
+                  {bizStats?.totalInv === 0 &&
+                  <p>
                       • આ કંપનીમાં હજુ સુધી કોઈએ રોકાણ કર્યું નથી. આ{""}
                       <strong>Newly Untapped</strong> તક છે. તમે રોકાણકારોને{""}
                       <strong>{bizStats.interestRate}%</strong> ના ફિક્સ વળતર
                       માટે આની ખાતરી આપી શકો છો.
                     </p>
-                  )}{""}
+                  }{""}
                   {bizStats &&
-                    bizStats.totalInv > 0 &&
-                    bizStats.totalRet === 0 && (
-                      <p>
+                  bizStats.totalInv > 0 &&
+                  bizStats.totalRet === 0 &&
+                  <p>
                         • આ બિઝનેસમાં અત્યાર સુધી{""}
                         <strong>{formatINR(bizStats.totalInv)}</strong> નું
                         રોકાણ થયું છે. રોકાણ ચાલુ છે, પરંતુ વળતર મળવાનું બાકી
                         છે. વધુ રોકાણકારો માટે આ મધ્યમ-જોખમી (Medium Risk)
                         પ્રોફાઇલ ગણી શકાય.
                       </p>
-                    )}{""}
-                  {bizStats && bizStats.totalRet > 0 && (
-                    <p>
+                  }{""}
+                  {bizStats && bizStats.totalRet > 0 &&
+                  <p>
                       • આ <strong>RMAS Verified </strong> કંપની છે. અત્યાર
                       સુધીમાં{""}
                       <strong>
@@ -932,99 +884,118 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                       જેટલું નફો કમાઈ ચૂક્યા છે. નવા રોકાણકારો માટે આ{""}
                       <strong>અત્યંત સુરક્ષિત</strong> અને ભરોસાપાત્ર વિકલ્પ છે.
                     </p>
-                  )}{""}
-                  {bizStats && bizStats.investorCount > 5 && (
-                    <p>
+                  }{""}
+                  {bizStats && bizStats.investorCount > 5 &&
+                  <p>
                       • <strong>Most Backed:</strong> આ કંપનીમાં સૌથી વધુ (
                       <strong>{bizStats.investorCount}</strong>) ઇન્વેસ્ટરે
                       વિશ્વાસ દાખવ્યો છે.
                     </p>
-                  )}{""}
+                  }{""}
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   };
-  const renderLiveAmount = (b: any, defaultClass: string ="") => {
+  const renderLiveAmount = (b: any, defaultClass: string = "") => {
     const isUp = b.overallTrend >= b.interestRate;
     return (
       <div className={`font-medium ${defaultClass}`}>
-        {b.triggerAmount ? (
-          <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} />
-        ) : (
-          <span className="text-kite-text">-</span>
-        )}
-      </div>
-    );
+        {b.triggerAmount ?
+        <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} /> :
+
+        <span className="text-kite-text">-</span>
+        }
+      </div>);
+
   };
-  return (
-    <>
-      <div className="w-full md:hidden pb-4">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-[#1c2a37] bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] sticky top-0 z-10">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 md:dark:text-[#7A7A7A] dark:text-[#8F8F8F]" />
-            <input 
-              type="text"
-              placeholder="Search Eg: Radhika Kite Trade"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 md:dark:bg-transparent dark:bg-transparent border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors font-sans"
-            />
-          </div>
-        </div>
-        <div className="flex flex-col">
-          {businessesWithStats
-            .filter((b) =>
-              b.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
-              b.ownerName.toLowerCase().includes(deferredSearchTerm.toLowerCase())
-            )
-            .map((b) => {
-            const currentPrice = getCurrentMarketPrice(b, state.investments);
-            const originalPrice = b.triggerAmount || 100;
-            const absoluteDiff = currentPrice - originalPrice;
-            const percentageChange = b.overallTrend;
-            const isUp = percentageChange >= 0;
-            const trendColor = isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]";
-            return (
-              <div 
-                key={b.id}
-                onClick={() => {
-                  if (isDesktop) {
-                    setPremiumBusiness(b);
-                  } else if (onNavigate) {
-                    sessionStorage.setItem("mobileAddInvestmentBusinessId", b.id);
-                    window.dispatchEvent(new Event("mobileNavigateToInvestments"));
-                    onNavigate("investments");
-                  }
-                }}
-                className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-[12px] px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
-              >
+  
+  useEffect(() => {
+    const term = searchTerm.toLowerCase();
+    document.querySelectorAll('.data-list-row').forEach((node: any) => {
+      const key = node.getAttribute('data-search-key') || '';
+      if (key.includes(term)) {
+        node.style.display = '';
+      } else {
+        node.style.display = 'none';
+      }
+    });
+  }, [searchTerm, businessesWithStats]);
+
+  const renderedSearchList = useMemo(() => {
+    return businessesWithStats.
+    filter((b) =>
+    b.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+    b.ownerName.toLowerCase().includes(deferredSearchTerm.toLowerCase())
+    ).
+    map((b) => {
+      const currentPrice = getCurrentMarketPrice(b, state.investments);
+      const originalPrice = b.triggerAmount || 100;
+      const absoluteDiff = currentPrice - originalPrice;
+      const percentageChange = b.overallTrend;
+      const isUp = percentageChange >= 0;
+      const trendColor = isUp ? "text-[#4CAF50] dark:text-[#5B9A5D]" : "text-[#DF514C] dark:text-[#E25F5B]";
+      return (
+        <div
+          key={b.id}
+          onClick={() => {
+            if (isDesktop) {
+              setPremiumBusiness(b);
+            } else if (onNavigate) {
+              sessionStorage.setItem("mobileAddInvestmentBusinessId", b.id);
+              window.dispatchEvent(new Event("mobileNavigateToInvestments"));
+              onNavigate("investments");
+            }
+          }}
+          className="data-list-row bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-[12px] px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
+          data-search-key={`${b.name} ${b.ownerName}`.toLowerCase()}
+          style={{ contentVisibility: 'auto', containIntrinsicSize: '60px' }}>
+          
                 <div className="flex flex-col items-start gap-[4px]">
                   <span className="font-medium text-[13px] text-kite-text">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</span>
                   <span className="text-[10px] text-kite-text/60 uppercase tracking-wider">{b.ownerName}</span>
                 </div>
                 <div className="flex flex-col items-end text-right gap-[4px]">
                   <div className="font-medium text-[13px]">
-                    {b.triggerAmount ? (
-                      <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} baseColorClass={trendColor} />
-                    ) : (
-                      <span className={trendColor}>-</span>
-                    )}
+                    {b.triggerAmount ?
+              <LiveMobileValue baseAmount={getCurrentMarketPrice(b, state.investments)} isOpen={isMarketOpen} isUp={isUp} baseColorClass={trendColor} /> :
+
+              <span className={trendColor}>-</span>
+              }
                   </div>
                   <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
                     {absoluteDiff > 0 ? "+" : ""}{absoluteDiff.toFixed(2)} ({percentageChange > 0 ? "+" : ""}{percentageChange.toFixed(2)}%)
                   </span>
                 </div>
-              </div>
-            );
-          })}
+              </div>);
+
+    });
+  }, [businessesWithStats, isDesktop, onNavigate, state.investments, premiumBusiness]);
+
+  return (
+    <>
+      <div className="w-full md:hidden pb-4">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-[#1c2a37] bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] sticky top-0 z-10">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 md:dark:text-[#7A7A7A] dark:text-[#8F8F8F]" />
+            <DebouncedInput
+              type="text"
+              placeholder="Search Eg: Radhika Kite Trade"
+              value={searchTerm}
+              onChange={setSearchTerm}
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 md:dark:bg-transparent dark:bg-transparent border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] text-[13px] text-gray-900 dark:text-[#E3E3E3] outline-none focus:border-[#4184F3] transition-colors font-sans" />
+            
+          </div>
+        </div>
+        <div className="flex flex-col">
+          {renderedSearchList}
         </div>
       </div>
       <div className="w-full space-y-6 hidden md:block relative">
-      {!expandedBusinessId ? (
+      {!expandedBusinessId ?
         <>
           <div className="px-4 md:px-0 flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-4">
             <div>
@@ -1039,21 +1010,21 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
               {cities.map((city: string) => {
                 const investorCountForCity = state.investors.filter((i: any) => i.address?.city?.toLowerCase()?.trim() === city).length;
                 return (
-                <button
-                  key={city}
-                  onClick={() => { setSelectedCity(city); setExpandedBusinessId(null); }}
-                  className={`px-4 py-3 text-[13px] md:text-[14px] font-medium transition-colors relative capitalize ${
-                    selectedCity === city
-                      ? "text-kite-blue"
-                      : "text-kite-text-light hover:text-kite-text"
-                  }`}
-                >
+                  <button
+                    key={city}
+                    onClick={() => {setSelectedCity(city);setExpandedBusinessId(null);}}
+                    className={`px-4 py-3 text-[13px] md:text-[14px] font-medium transition-colors relative capitalize ${
+                    selectedCity === city ?
+                    "text-kite-blue" :
+                    "text-kite-text-light hover:text-kite-text"}`
+                    }>
+                    
                   {city}-{investorCountForCity}
-                  {selectedCity === city && (
+                  {selectedCity === city &&
                     <div className="absolute bottom-0 left-0 w-full h-[2px] bg-kite-blue" />
-                  )}
-                </button>
-              ) })}
+                    }
+                </button>);
+              })}
             </div>
           </div>
 
@@ -1063,22 +1034,22 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                 {cityBusinessStats.length > 0 ? cityBusinessStats.map((b: any) => {
                   const uniqueInvestorCount = new Set(b.bizInvs.map((inv: any) => inv.investorId)).size;
                   return (
-                  <div 
-                    key={b.id} 
-                    className="p-4 flex justify-between items-center hover:bg-kite-bg/50 transition-colors cursor-pointer"
-                    onClick={() => setExpandedBusinessId(b.id)}
-                  >
+                    <div
+                      key={b.id}
+                      className="p-4 flex justify-between items-center hover:bg-kite-bg/50 transition-colors cursor-pointer"
+                      onClick={() => setExpandedBusinessId(b.id)}>
+                      
                     <span className="font-medium text-kite-text text-desktop-dark-bbbbbbd9 text-[14px]">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</span>
                     <span className="font-medium text-[14px] text-kite-text text-desktop-dark-bbbbbbd9">{uniqueInvestorCount} Investors</span>
-                  </div>
-                )}) : (
-                  <div className="p-8 text-center text-kite-text-light text-[14px]">No businesses found for this city.</div>
-                )}
+                  </div>);
+                }) :
+                <div className="p-8 text-center text-kite-text-light text-[14px]">No businesses found for this city.</div>
+                }
               </div>
             </div>
           </div>
-        </>
-      ) : (
+        </> :
+
         <div className="bg-white dark:bg-[#222222] animate-in fade-in duration-300 rounded-sm shadow-xl border border-kite-border flex flex-col min-h-[60vh]">
           {(() => {
             const b = cityBusinessStats.find((biz: any) => biz.id === expandedBusinessId);
@@ -1086,12 +1057,12 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
             return (
               <>
                 <div className="flex items-center gap-4 p-4 border-b border-kite-border/50 bg-gray-50 dark:bg-[#1a1a1a] rounded-t-lg">
-                  <button 
+                  <button
                     onClick={() => setExpandedBusinessId(null)}
-                    className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors"
-                  >
+                    className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors">
+                    
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-kite-text">
-                      <path d="m15 18-6-6 6-6"/>
+                      <path d="m15 18-6-6 6-6" />
                     </svg>
                   </button>
                   <div>
@@ -1122,12 +1093,12 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
 
                       const investorList = Array.from(investorMap.entries()).map(([invId, data]) => {
                         const investor = cityInvestors.find((i: any) => i.id === invId);
-                        
+
                         let totalProfit = 0;
                         let totalQty = 0;
                         data.invs.forEach((inv: any) => {
                           totalQty += Number(inv.quantity) || (b.triggerAmount ? Math.floor(inv.amount / b.triggerAmount) : Math.floor(inv.amount / 100)) || 1;
-                          
+
                           if (inv.status === "active") {
                             const { liveProfit } = calculateLiveProfit([inv], b.id, marketState.trends, state.settings);
                             totalProfit += liveProfit;
@@ -1139,16 +1110,16 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                         return { investor, data, totalProfit, totalQty };
                       }).sort((a, b) => b.data.totalAmount - a.data.totalAmount);
 
-                      return investorList.map(({ investor, data, totalProfit, totalQty }, idx) => (
-                        <div key={idx} className="flex justify-between items-center py-4 whitespace-nowrap">
+                      return investorList.map(({ investor, data, totalProfit, totalQty }, idx) =>
+                      <div key={idx} className="flex justify-between items-center py-4 whitespace-nowrap">
                           <div className="flex-[2] flex items-center gap-4">
-                            {investor?.photoUrl ? (
-                              <img src={investor.photoUrl} alt="" className="w-[50px] h-[50px] rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0" />
-                            ) : (
-                              <div className="w-[50px] h-[50px] rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-[18px] shrink-0">
+                            {investor?.photoUrl ?
+                          <img src={investor.photoUrl} alt="" className="w-[50px] h-[50px] rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0" /> :
+
+                          <div className="w-[50px] h-[50px] rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-[18px] shrink-0">
                                 {investor?.name?.charAt(0) || "U"}
                               </div>
-                            )}
+                          }
                             <span className="text-[14px] font-medium text-kite-text text-desktop-dark-bbbbbbd9 truncate max-w-[200px]">{investor?.name || "Unknown"}</span>
                           </div>
                           <div className="flex-1 text-right text-[14px] text-kite-text text-desktop-dark-666666">
@@ -1163,30 +1134,30 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
                             </span>
                           </div>
                         </div>
-                      ));
+                      );
                     })()}
                   </div>
                 </div>
-              </>
-            );
+              </>);
+
           })()}
         </div>
-      )}
+        }
     </div>
     
     {selectedBusiness && renderBusinessDetails(selectedBusiness)}
       {premiumBusiness && renderPremiumBusinessDetails(premiumBusiness)}
       
-      {showAddModal && (
-        <AddInvestmentModal
-          isOpen={showAddModal}
-          onClose={() => {
-            setShowAddModal(false);
-            setAddModalBusinessId("");
-          }}
-          initialBusinessId={addModalBusinessId}
-        />
-      )}
-    </>
-  );
+      {showAddModal &&
+      <AddInvestmentModal
+        isOpen={showAddModal}
+        onClose={() => {
+          setShowAddModal(false);
+          setAddModalBusinessId("");
+        }}
+        initialBusinessId={addModalBusinessId} />
+
+      }
+    </>);
+
 }
