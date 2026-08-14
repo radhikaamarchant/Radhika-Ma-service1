@@ -1,5 +1,5 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from"react";
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useDeferredValue } from "react";
 import { useAppContext } from"../utils/AppContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import AddInvestmentModal from "../components/AddInvestmentModal";
@@ -184,6 +184,8 @@ export default function Investments() {
   const [showInvestorSelect, setShowInvestorSelect] = useState(false);
   const [businessSearch, setBusinessSearch] = useState("");
   const [investorSearch, setInvestorSearch] = useState("");
+  const deferredInvestorSearch = useDeferredValue(investorSearch);
+  const deferredBusinessSearch = useDeferredValue(businessSearch);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [successData, setSuccessData] = useState<{
     businessName: string;
@@ -399,11 +401,19 @@ export default function Investments() {
     );
     return liveProfit > 0;
   }).length, [allGroupedInvestments, marketState.trends, state.settings]);
-  const groupedInvestments = useMemo(() => allGroupedInvestments
-    .filter((inv) => {
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const investmentsWithRefs = useMemo(() => {
+    return allGroupedInvestments.map(inv => {
       const business = state.businesses.find((b) => b.id === inv.businessId);
       const investor = state.investors.find((i) => i.id === inv.investorId);
-      const match = searchTerm.toLowerCase();
+      return { ...inv, business, investor };
+    });
+  }, [allGroupedInvestments, state.businesses, state.investors]);
+
+  const groupedInvestments = useMemo(() => investmentsWithRefs
+    .filter((inv) => {
+      const { business, investor } = inv;
+      const match = deferredSearchTerm.toLowerCase();
       const searchMatch =
         (business?.shortName ? business.shortName.toLowerCase().includes(match) : business?.name.toLowerCase().includes(match)) ||
         investor?.name.toLowerCase().includes(match);
@@ -869,7 +879,7 @@ export default function Investments() {
                                </div>
                                <div className="overflow-y-auto hide-scrollbar pb-4" style={{ maxHeight: viewportHeight ? `${viewportHeight - 160}px` : 'calc(100dvh - 200px)' }}>
                                  {sortedInvestors
-                                   .filter(i => i.name.toLowerCase().includes(investorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(investorSearch.toLowerCase()))
+                                   .filter(i => i.name.toLowerCase().includes(deferredInvestorSearch.toLowerCase()) || i.investorId.toLowerCase().includes(deferredInvestorSearch.toLowerCase()))
                                    .map((i, idx) => {
                                       const activeCount = selectedBusiness ? state.investments.filter(inv => inv.investorId === i.id && inv.businessId === selectedBusiness.id && inv.status === "active").length : 0;
                                       return (
@@ -1280,7 +1290,7 @@ export default function Investments() {
                      </div>
                      <div className="overflow-y-auto flex-1 hide-scrollbar pb-4">
                        {activeBusinesses
-                         .filter(b => b.name.toLowerCase().includes(businessSearch.toLowerCase()) || b.businessId.toLowerCase().includes(businessSearch.toLowerCase()))
+                         .filter(b => b.name.toLowerCase().includes(deferredBusinessSearch.toLowerCase()) || b.businessId.toLowerCase().includes(deferredBusinessSearch.toLowerCase()))
                          .map((b, idx) => (
                             <div
                               key={`mob_sel_biz_${b.id}_${idx}`}

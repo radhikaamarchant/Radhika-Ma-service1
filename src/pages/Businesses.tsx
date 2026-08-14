@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useDeferredValue } from "react";
 import {
   Search,
   Plus,
@@ -148,13 +148,34 @@ export default function Businesses() {
 
   const isBlueTick = (id) => statsMap.get(id)?.isBlueTick ?? false;
   const isPreVerified = (id) => statsMap.get(id)?.isPreVerified ?? false;
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const deferredOwnerSearch = useDeferredValue(ownerSearch);
+  const deferredBankSearch = useDeferredValue(bankSearch);
+  const deferredInvestorSearch = useDeferredValue(investorSearch);
 
-  const filteredBusinesses = state.businesses.filter(
-    (b) =>
-      (b.name && b.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (b.ownerName &&
-        b.ownerName.toLowerCase().includes(searchTerm.toLowerCase())),
-  );
+  const filteredBusinesses = useMemo(() => {
+    const term = deferredSearchTerm.toLowerCase();
+    return state.businesses.filter((b) =>
+      (b.name && b.name.toLowerCase().includes(term)) ||
+      (b.ownerName && b.ownerName.toLowerCase().includes(term))
+    );
+  }, [state.businesses, deferredSearchTerm]);
+
+  
+  const businessStatsMap = useMemo(() => {
+    const map = new Map();
+    state.investments.forEach((inv) => {
+      if (inv.status === "active") {
+        if (!map.has(inv.businessId)) {
+          map.set(inv.businessId, { totalInvested: 0, investors: new Set() });
+        }
+        const s = map.get(inv.businessId);
+        s.totalInvested += inv.amount;
+        s.investors.add(inv.investorId);
+      }
+    });
+    return map;
+  }, [state.investments]);
 
   const startAddBusiness = () => {
     setFormData({
@@ -359,16 +380,9 @@ export default function Businesses() {
                   {/* Unified Watchlist View */}{" "}
                   <div className="flex flex-col border-b border-kite-border">
                     {filteredBusinesses.map((business, idx) => {
-                      const activeInvestments = state.investments.filter(
-                        (inv) =>
-                          inv.businessId === business.id &&
-                          inv.status === "active",
-                      );
-                      const totalInvested = activeInvestments.reduce(
-                        (sum, inv) => sum + inv.amount,
-                        0,
-                      );
-                      const uniqueInvestorsCount = new Set(activeInvestments.map(inv => inv.investorId)).size;
+                      const bStats = businessStatsMap.get(business.id) || { totalInvested: 0, investors: new Set() };
+                      const totalInvested = bStats.totalInvested;
+                      const uniqueInvestorsCount = bStats.investors.size;
                       return (
                         <div
                           key={`inv_${business.id}_${idx}`}
@@ -713,10 +727,10 @@ export default function Businesses() {
                                 (b) =>
                                   b.ownerName
                                     .toLowerCase()
-                                    .includes(ownerSearch.toLowerCase()) ||
+                                    .includes(deferredOwnerSearch.toLowerCase()) ||
                                   b.businessId
                                     .toLowerCase()
-                                    .includes(ownerSearch.toLowerCase()),
+                                    .includes(deferredOwnerSearch.toLowerCase()),
                               )
                               .map((b) => (
                                 <div
@@ -741,10 +755,10 @@ export default function Businesses() {
                               (b) =>
                                 b.ownerName
                                   .toLowerCase()
-                                  .includes(ownerSearch.toLowerCase()) ||
+                                  .includes(deferredOwnerSearch.toLowerCase()) ||
                                 b.businessId
                                   .toLowerCase()
-                                  .includes(ownerSearch.toLowerCase()),
+                                  .includes(deferredOwnerSearch.toLowerCase()),
                             ).length === 0 && (
                               <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
                                 No owner found.
@@ -853,7 +867,7 @@ export default function Businesses() {
                           </div>
                           <div className="overflow-y-auto flex-1">
                             {state.investors
-                              .filter((inv) => inv.name.toLowerCase().includes(investorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(investorSearch.toLowerCase()))
+                              .filter((inv) => inv.name.toLowerCase().includes(deferredInvestorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(deferredInvestorSearch.toLowerCase()))
                               .sort((a, b) => {
                                 const idA = parseInt(a.investorId?.replace(/\D/g, "") || "0");
                                 const idB = parseInt(b.investorId?.replace(/\D/g, "") || "0");
@@ -899,7 +913,7 @@ export default function Businesses() {
                                   </div>
                                 </div>
                               ))}
-                            {state.investors.filter((inv) => inv.name.toLowerCase().includes(investorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(investorSearch.toLowerCase())).length === 0 && (
+                            {state.investors.filter((inv) => inv.name.toLowerCase().includes(deferredInvestorSearch.toLowerCase()) || inv.investorId?.toLowerCase().includes(deferredInvestorSearch.toLowerCase())).length === 0 && (
                               <div className="px-4 py-3 text-[13px] md:text-[14px] text-kite-text-light dark:text-kite-text-light text-center">
                                 No investor found.
                               </div>
@@ -1204,7 +1218,7 @@ export default function Businesses() {
                       </div>
                       <div className="overflow-y-auto flex-1">
                         {INDIAN_BANKS.filter((b) =>
-                          b.toLowerCase().includes(bankSearch.toLowerCase()),
+                          b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
                         ).map((b) => (
                           <div
                             key={b}
@@ -1221,7 +1235,7 @@ export default function Businesses() {
                           </div>
                         ))}
                         {INDIAN_BANKS.filter((b) =>
-                          b.toLowerCase().includes(bankSearch.toLowerCase()),
+                          b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
                         ).length === 0 && (
                           <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
                             No bank found.

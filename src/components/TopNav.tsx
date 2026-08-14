@@ -64,8 +64,6 @@ export default function TopNav({ currentView, onNavigate }: TopNavProps) {
     { id: "businesses" as View, label: "Businesses" },
     { id: "investors" as View, label: "Investors" },
     { id: "investments" as View, label: "Investments" },
-    { id: "pnl" as View, label: "MY P&L" },
-    { id: "bids" as View, label: "Bids" },
   ];
 
   return (

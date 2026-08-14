@@ -1,5 +1,5 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
-import React, { useState, useEffect } from"react";
+import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { useAppContext } from"../utils/AppContext";
 import { useMarketSimulation } from"../utils/MarketSimulationContext";
 import { formatINR } from"../utils/mockData";
@@ -120,7 +120,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
   }, []);
   useMobileBackNavigation(!!selectedBusiness, () => setSelectedBusiness(null));
 
-  const businessesWithStats = state.businesses.map((b) => {
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const businessesWithStats = useMemo(() => state.businesses.map((b) => {
     const overallTrend = marketState.trends[b.id] ?? b.interestRate;
     const bizInvs = state.investments.filter((i) => i.businessId === b.id);
     const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0);
@@ -180,7 +181,7 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
       completedInvsCount: completedInvs.length,
       avgReturnPct,
     };
-  });
+  }), [state.businesses, state.investments, marketState.trends, state.settings]);
   const topInvested = isDesktop
     ? [...businessesWithStats]
         .filter((b) => b.totalInv > 0)
@@ -232,9 +233,9 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
   const overviewBusinesses = [...businessesWithStats]
     .filter(
       (b) =>
-        b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.businessId.toLowerCase().includes(searchTerm.toLowerCase()),
+        b.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+        b.ownerName.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+        b.businessId.toLowerCase().includes(deferredSearchTerm.toLowerCase()),
     )
     .sort((a, b) => {
       if (sortBy ==="investment") {
@@ -977,8 +978,8 @@ export default function DataAnalysis({ onNavigate }: { onNavigate?: (view: any) 
         <div className="flex flex-col">
           {businessesWithStats
             .filter((b) =>
-              b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              b.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
+              b.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+              b.ownerName.toLowerCase().includes(deferredSearchTerm.toLowerCase())
             )
             .map((b) => {
             const currentPrice = getCurrentMarketPrice(b, state.investments);

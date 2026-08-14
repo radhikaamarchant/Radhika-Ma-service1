@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { motion } from "motion/react";
 import { collection, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, getDocs, getDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "./firebase";
-import { Business, Investor, Investment, GlobalSettings, AppUser } from "../types";
+import { Business, Investor, Investment, GlobalSettings, AppUser, Employee } from "../types";
 
 export interface AppState {
   usersLoaded: boolean;
@@ -10,6 +10,7 @@ export interface AppState {
   investors: Investor[];
   investments: Investment[];
   users: AppUser[];
+  employees: Employee[];
   settings: GlobalSettings | null;
   loading: boolean;
   error?: string;
@@ -32,7 +33,10 @@ type Action =
   | { type: "DELETE_INVESTMENT"; payload: string }
   | { type: "UPDATE_SETTINGS"; payload: GlobalSettings }
   | { type: "SET_CURRENT_USER"; payload: AppUser | null }
-  | { type: "CLEAR_ERROR" };
+  | { type: "CLEAR_ERROR" }
+  | { type: "ADD_EMPLOYEE"; payload: Employee }
+  | { type: "UPDATE_EMPLOYEE"; payload: Employee }
+  | { type: "DELETE_EMPLOYEE"; payload: string };
 
 const AppContext = createContext<
   | {
@@ -48,6 +52,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     investors: [],
     investments: [],
     users: [],
+  employees: [],
     settings: null,
     loading: true,
     usersLoaded: false,
@@ -151,6 +156,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
     }, handleQuotaError);
 
+    const unsubEmployees = onSnapshot(collection(db, "employees"), (snap) => {
+      if (!isMounted) return;
+      setState((s) => {
+        const newEmployees = applyChanges(s.employees || [], snap.docChanges());
+        if (s.employees !== newEmployees) {
+          return { ...s, employees: newEmployees };
+        }
+        return s;
+      });
+    }, handleQuotaError);
+
     const unsubSettings = onSnapshot(doc(db, "settings", "global"), (docSnap) => {
       if (!isMounted) return;
       if (docSnap.exists()) {
@@ -170,6 +186,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unsubInvestors();
       unsubInvestments();
       unsubUsers();
+      unsubEmployees();
       unsubSettings();
     };
   }, []); // Only run once on mount
@@ -231,6 +248,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
           break;
         case "DELETE_USER":
           newState.users = newState.users.filter((u) => u.id !== action.payload);
+          break;
+        case "ADD_EMPLOYEE":
+          newState.employees = [...(newState.employees || []), action.payload];
+          break;
+        case "UPDATE_EMPLOYEE":
+          newState.employees = (newState.employees || []).map((e) =>
+            e.id === action.payload.id ? action.payload : e
+          );
+          break;
+        case "DELETE_EMPLOYEE":
+          newState.employees = (newState.employees || []).filter((e) => e.id !== action.payload);
           break;
         case "UPDATE_SETTINGS":
           newState.settings = action.payload;
@@ -310,6 +338,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
           break;
         case "DELETE_USER":
           await deleteDoc(doc(db, "users", action.payload));
+          break;
+        case "ADD_EMPLOYEE":
+          await setDoc(doc(db, "employees", action.payload.id), payloadWithTimestamp);
+          break;
+        case "UPDATE_EMPLOYEE":
+          await setDoc(doc(db, "employees", action.payload.id), payloadWithTimestamp);
+          break;
+        case "DELETE_EMPLOYEE":
+          await deleteDoc(doc(db, "employees", action.payload));
           break;
         case "UPDATE_SETTINGS":
           await setDoc(doc(db, "settings", "global"), payloadWithTimestamp);

@@ -123,8 +123,6 @@ export type View =
   |"investors"
   |"investments"
   |"banking"
-  |"pnl"
-  |"bids"
   |"admin";
 
 export interface CommissionSetting {
@@ -166,4 +164,27 @@ export interface GlobalSettings {
       [key: string]: DailyMarketTiming | undefined;
     };
   };
+}
+
+export interface Employee {
+  id: string;
+  empId: string;
+  fullName: string;
+  role: string;
+  salaryType: "Daily Wage" | "Monthly Salary";
+  salaryAmount: number;
+  bankDetails: {
+    accountNumber: string;
+    ifscCode: string;
+  };
+  status: "Active" | "Inactive";
+  assignedInvestors: string[];
+  assignedBusinesses: string[];
+  ledger: {
+    id: string;
+    date: string;
+    amount: number;
+    deductedFrom: string;
+    accountNumber: string;
+  }[];
 }

@@ -1,6 +1,6 @@
 import { useMobileBackNavigation } from "../hooks/useMobileBackNavigation";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useDeferredValue } from "react";
 import { createPortal } from "react-dom";
 import InvestorPreviewModal from '../components/InvestorPreviewModal';
 import BusinessPreviewModal from '../components/BusinessPreviewModal';
@@ -169,15 +169,14 @@ export default function Investors() {
     setSelectedPortfolioInvestment(null),
   );
   const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const deferredOwnerSearch = useDeferredValue(ownerSearch);
+  const deferredBankSearch = useDeferredValue(bankSearch);
   const uniqueInvestors = useMemo(() => Array.from(
     new Map<string, Investor>(state.investors.map((i) => [i.id, i])).values(),
   ), [state.investors]);
-  const filteredInvestors = useMemo(() => uniqueInvestors
-    .filter(
-      (i) =>
-        (i.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.investorId.includes(searchTerm),
-    )
+  const investorsWithStats = useMemo(() => uniqueInvestors
+    
     .map((i) => {
       const activeInvs = state.investments.filter(
         (inv) => inv.investorId === i.id && inv.status !== "completed",
@@ -237,7 +236,16 @@ export default function Investors() {
     })
     .sort(
       (a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime(),
-    ), [uniqueInvestors, searchTerm, state.investments, state.businesses, state.settings, marketState.trends]);
+    ), [uniqueInvestors, state.investments, state.businesses, state.settings, marketState.trends]);
+  const filteredInvestors = useMemo(() => {
+    const term = deferredSearchTerm.toLowerCase();
+    return investorsWithStats.filter(
+      (i) =>
+        (i.name || "").toLowerCase().includes(term) ||
+        i.investorId.includes(term)
+    );
+  }, [investorsWithStats, deferredSearchTerm]);
+
   const generateInvestorId = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
   };
@@ -942,7 +950,7 @@ export default function Investors() {
                         .filter((name) =>
                           ((name as string) || "")
                             .toLowerCase()
-                            .includes(ownerSearch.toLowerCase()),
+                            .includes(deferredOwnerSearch.toLowerCase()),
                         )
                         .map((name, idx) => (
                           <div
@@ -1115,7 +1123,7 @@ export default function Investors() {
                     </div>
                     <div className="overflow-y-auto flex-1">
                       {INDIAN_BANKS.filter((b) =>
-                        b.toLowerCase().includes(bankSearch.toLowerCase()),
+                        b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
                       ).map((b) => (
                         <div
                           key={b}
@@ -1132,7 +1140,7 @@ export default function Investors() {
                         </div>
                       ))}
                       {INDIAN_BANKS.filter((b) =>
-                        b.toLowerCase().includes(bankSearch.toLowerCase()),
+                        b.toLowerCase().includes(deferredBankSearch.toLowerCase()),
                       ).length === 0 && (
                         <div className="px-4 py-3 text-[13px] text-kite-text-light text-center">
                           No bank found.
