@@ -415,7 +415,7 @@ export default function Investments() {
   filter((inv) => {
     const { business, investor } = inv;
     const match = deferredSearchTerm.toLowerCase();
-    const searchMatch = true;
+    const searchMatch = (business?.shortName ? business.shortName.toLowerCase().includes(match) : business?.name.toLowerCase().includes(match)) || investor?.name.toLowerCase().includes(match);
     const tabMatch =
     activeTab === "holding" ?
     inv.status === "active" :
@@ -432,25 +432,9 @@ export default function Investments() {
     const timeA = Math.max(...a.groupedInvestmentsList.map(getInvTime));
     const timeB = Math.max(...b.groupedInvestmentsList.map(getInvTime));
     return timeB - timeA;
-  }), [allGroupedInvestments, state.businesses, state.investors, activeTab]);
+  }), [allGroupedInvestments, state.businesses, state.investors, activeTab, searchTerm]);
   
-  useEffect(() => {
-    const term = searchTerm.toLowerCase();
-    let visibleCount = 0;
-    document.querySelectorAll('.investment-list-row').forEach((node: any) => {
-      const key = node.getAttribute('data-search-key') || '';
-      if (key.includes(term)) {
-        node.style.display = '';
-        visibleCount++;
-      } else {
-        node.style.display = 'none';
-      }
-    });
-    const noResults = document.getElementById('no-investments-found');
-    if (noResults) {
-      noResults.style.display = visibleCount === 0 ? '' : 'none';
-    }
-  }, [searchTerm, groupedInvestments]);
+  
 
   const activeBusinesses = useMemo(() => state.businesses.
   slice().
@@ -587,7 +571,11 @@ export default function Investments() {
 
           })}
           {""}
-          <div id="no-investments-found" style={{ display: 'none' }} className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">No investments found.</div>
+          {groupedInvestments.length === 0 && (
+  <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">
+    No investments found.
+  </div>
+)}
           {""}
         </div>
         {""}

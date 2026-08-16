@@ -913,17 +913,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
 
   };
   
-  useEffect(() => {
-    const term = searchTerm.toLowerCase();
-    document.querySelectorAll('.data-list-row').forEach((node: any) => {
-      const key = node.getAttribute('data-search-key') || '';
-      if (key.includes(term)) {
-        node.style.display = '';
-      } else {
-        node.style.display = 'none';
-      }
-    });
-  }, [searchTerm, businessesWithStats]);
+  
 
   const renderedSearchList = useMemo(() => {
     return businessesWithStats.
@@ -950,9 +940,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
               onNavigate("investments");
             }
           }}
-          className="data-list-row bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-[12px] px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer"
-          data-search-key={`${b.name} ${b.ownerName}`.toLowerCase()}
-          style={{ contentVisibility: 'auto', containIntrinsicSize: '60px' }}>
+          className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-[12px] px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer">
           
                 <div className="flex flex-col items-start gap-[4px]">
                   <span className="font-medium text-[13px] text-kite-text">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</span>
@@ -973,7 +961,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
               </div>);
 
     });
-  }, [businessesWithStats, isDesktop, onNavigate, state.investments, premiumBusiness]);
+  }, [businessesWithStats, deferredSearchTerm, isDesktop, onNavigate, state.investments, premiumBusiness]);
 
   return (
     <>

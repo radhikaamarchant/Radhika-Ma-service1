@@ -13,7 +13,7 @@ console.error = (...args) => {
   originalConsoleError(...args);
 };
 
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import { getAuth, signInAnonymously, onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 import firebaseConfig from "../../firebase-applet-config.json";
 
@@ -26,9 +26,7 @@ export const app = initializeApp({
   messagingSenderId: firebaseConfig.messagingSenderId,
 });
 
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-}, (firebaseConfig as any).firestoreDatabaseId);
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
 
 export const auth = getAuth(app);
 

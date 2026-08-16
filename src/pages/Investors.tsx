@@ -238,26 +238,16 @@ export default function Investors() {
   sort(
     (a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime()
   ), [uniqueInvestors, state.investments, state.businesses, state.settings, marketState.trends]);
-  const filteredInvestors = investorsWithStats;
+  const filteredInvestors = useMemo(() => {
+    const term = deferredSearchTerm.toLowerCase();
+    return investorsWithStats.filter((i) =>
+      (i.name || "").toLowerCase().includes(term) ||
+      i.investorId.includes(term)
+    );
+  }, [investorsWithStats, deferredSearchTerm]);
 
   
-  useEffect(() => {
-    const term = searchTerm.toLowerCase();
-    let visibleCount = 0;
-    document.querySelectorAll('.investor-list-row').forEach((node: any) => {
-      const key = node.getAttribute('data-search-key') || '';
-      if (key.includes(term)) {
-        node.style.display = '';
-        visibleCount++;
-      } else {
-        node.style.display = 'none';
-      }
-    });
-    const noResults = document.getElementById('no-investors-found');
-    if (noResults) {
-      noResults.style.display = visibleCount === 0 ? '' : 'none';
-    }
-  }, [searchTerm, investorsWithStats]);
+  
 
   const generateInvestorId = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -580,9 +570,7 @@ export default function Investors() {
             setSelectedInvestor(investor);
             setViewMode("investor-detail");
           }}
-          className="investor-list-row flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
-                          data-search-key={`${investor.name} ${investor.investorId}`.toLowerCase()}
-                          style={{ contentVisibility: 'auto', containIntrinsicSize: '60px' }}>
+          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group">
           
                           {/* Mobile View */}
                           <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
@@ -864,7 +852,11 @@ export default function Investors() {
                   <div className="flex flex-col">
                     {rendered_filteredInvestors}
                   </div>
-                  <div id="no-investors-found" style={{ display: 'none' }} className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">No investors found.</div>
+                  {filteredInvestors.length === 0 && (
+  <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">
+    No investors found.
+  </div>
+)}
                 </div>{" "}
                 {/* Mobile Cards View */} <div className="hidden"> </div>{" "}
               </div>{" "}

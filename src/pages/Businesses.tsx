@@ -154,27 +154,17 @@ export default function Businesses() {
   const deferredBankSearch = useDeferredValue(bankSearch);
   const deferredInvestorSearch = useDeferredValue(investorSearch);
 
-  const filteredBusinesses = state.businesses;
+  const filteredBusinesses = useMemo(() => {
+    const term = deferredSearchTerm.toLowerCase();
+    return state.businesses.filter((b) =>
+      (b.name && b.name.toLowerCase().includes(term)) ||
+      (b.ownerName && b.ownerName.toLowerCase().includes(term))
+    );
+  }, [state.businesses, deferredSearchTerm]);
 
 
   
-  useEffect(() => {
-    const term = searchTerm.toLowerCase();
-    let visibleCount = 0;
-    document.querySelectorAll('.business-list-row').forEach((node: any) => {
-      const key = node.getAttribute('data-search-key') || '';
-      if (key.includes(term)) {
-        node.style.display = '';
-        visibleCount++;
-      } else {
-        node.style.display = 'none';
-      }
-    });
-    const noResults = document.getElementById('no-businesses-found');
-    if (noResults) {
-      noResults.style.display = visibleCount === 0 ? '' : 'none';
-    }
-  }, [searchTerm, state.businesses]);
+  
 
   const businessStatsMap = useMemo(() => {
     const map = new Map();
@@ -285,9 +275,7 @@ export default function Businesses() {
         <div
           key={`inv_${business.id}_${idx}`}
           onClick={() => setSelectedBusinessId(business.id)}
-          className="business-list-row flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group"
-          data-search-key={`${business.name} ${business.ownerName} ${business.businessId}`.toLowerCase()}
-          style={{ contentVisibility: 'auto', containIntrinsicSize: '60px' }}>
+          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group">
           
                           {/* Mobile View */}
                           <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
@@ -618,7 +606,11 @@ export default function Businesses() {
                   {/* Unified Watchlist View */}{" "}
                   <div className="flex flex-col border-b border-kite-border">
                     {rendered_filteredBusinesses}{" "}
-                    <div id="no-businesses-found" style={{ display: 'none' }} className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">No businesses found.</div>{" "}
+                    {filteredBusinesses.length === 0 && (
+  <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">
+    No businesses found.
+  </div>
+)}{" "}
                   </div>{" "}
                 </div>{" "}
               </div>{" "}
