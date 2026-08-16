@@ -80,10 +80,10 @@ export default function Investments() {
   }, []);
 
   const { marketState } = useMarketSimulation();
-  const blueTickBusinessIds = getBlueTickBusinessIds(
+  const blueTickBusinessIds = useMemo(() => getBlueTickBusinessIds(
     state.businesses,
     state.investments
-  );
+  ), [state.businesses, state.investments]);
   const [showAddForm, setShowAddForm] = useState(() => !!sessionStorage.getItem("mobileAddInvestmentBusinessId"));
   const [addModalBusinessId, setAddModalBusinessId] = useState(() => sessionStorage.getItem("mobileAddInvestmentBusinessId") || "");
   const [addModalInvestorId, setAddModalInvestorId] = useState("");
@@ -93,6 +93,27 @@ export default function Investments() {
   const [showTradeOptions, setShowTradeOptions] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"holding" | "booked">("holding");
+  const [visibleCount, setVisibleCount] = useState(50);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [searchTerm, activeTab]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + 50);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+    return () => observer.disconnect();
+  }, []);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedInvestment, setSelectedInvestment] = useState<any | null>(
@@ -380,28 +401,7 @@ export default function Investments() {
       {} as Record<string, any>
     )
   ), [uniqueInvestments]);
-  const holdingGroupedCount = useMemo(() => allGroupedInvestments.filter(
-    (inv: any) => inv.status === "active"
-  ).length, [allGroupedInvestments]);
-  // Dynamic position count: Count only grouped investments currently in profit
-  const positionsGroupedCount = useMemo(() => allGroupedInvestments.filter((inv: any) => {
-    if (inv.status === "completed") {
-      const actualProfit = inv.payoutDetails ?
-      inv.payoutDetails.totalCredited + (
-      inv.payoutDetails.rmasCommission || 0) + (
-      inv.payoutDetails.happyIncomeTax || 0) -
-      inv.amount :
-      0;
-      return actualProfit > 0;
-    }
-    const { liveProfit } = globalCalculateLiveProfit(
-      inv.groupedInvestmentsList,
-      inv.businessId,
-      marketState.trends,
-      state.settings
-    );
-    return liveProfit > 0;
-  }).length, [allGroupedInvestments, marketState.trends, state.settings]);
+  
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const investmentsWithRefs = useMemo(() => {
     return allGroupedInvestments.map((inv) => {
@@ -432,7 +432,7 @@ export default function Investments() {
     const timeA = Math.max(...a.groupedInvestmentsList.map(getInvTime));
     const timeB = Math.max(...b.groupedInvestmentsList.map(getInvTime));
     return timeB - timeA;
-  }), [allGroupedInvestments, state.businesses, state.investors, activeTab, searchTerm]);
+  }), [allGroupedInvestments, state.businesses, state.investors, activeTab, deferredSearchTerm]);
   
   
 
@@ -442,12 +442,47 @@ export default function Investments() {
   const sortedInvestors = useMemo(() => state.investors.
   slice().
   sort((a, b) => new Date(b.joinDate || 0).getTime() - new Date(a.joinDate || 0).getTime()), [state.investors]);
+  const { totalInvested, totalLiveProfit, totalPnlPercentage, isTotalProfit } = useMemo(() => {
+    const totalInv = groupedInvestments.reduce(
+      (sum, inv) => sum + inv.amount,
+      0
+    );
+    const totalProf = groupedInvestments.reduce((sum, inv) => {
+      const isCompleted = inv.status === "completed";
+      if (isCompleted) {
+        return (
+          sum + (
+          inv.payoutDetails ?
+          inv.payoutDetails.totalCredited + (
+          inv.payoutDetails.rmasCommission || 0) + (
+          inv.payoutDetails.happyIncomeTax || 0) -
+          inv.amount :
+          0));
+      }
+      return (
+        sum +
+        globalCalculateLiveProfit(
+          [inv],
+          inv.businessId,
+          marketState.trends,
+          state.settings
+        ).liveProfit);
+    }, 0);
+    const totalPct = totalInv > 0 ? (totalProf / totalInv) * 100 : 0;
+    return {
+      totalInvested: totalInv,
+      totalLiveProfit: totalProf,
+      totalPnlPercentage: totalPct,
+      isTotalProfit: totalProf >= 0
+    };
+  }, [groupedInvestments, marketState.trends, state.settings]);
+
   const renderedList = useMemo(() => {
     return (
       <>
         <div className="flex flex-col pb-0">
           {""}
-          {groupedInvestments.map((inv, idx) => {
+          {groupedInvestments.slice(0, visibleCount).map((inv, idx) => {
             const business = state.businesses.find(
               (b) => b.id === inv.businessId
             );
@@ -570,6 +605,9 @@ export default function Investments() {
               </div>);
 
           })}
+          {groupedInvestments.length > visibleCount && (
+            <div ref={observerTarget} className="h-10 w-full" />
+          )}
           {""}
           {groupedInvestments.length === 0 && (
   <div className="p-8 text-center text-kite-text-light font-normal text-[13px] md:text-[14px]">
@@ -591,36 +629,6 @@ export default function Investments() {
             </span>
             {""}
             {(() => {
-            const totalInvested = groupedInvestments.reduce(
-              (sum, inv) => sum + inv.amount,
-              0
-            );
-            const totalLiveProfit = groupedInvestments.reduce((sum, inv) => {
-              const isCompleted = inv.status === "completed";
-              if (isCompleted) {
-                return (
-                  sum + (
-                  inv.payoutDetails ?
-                  inv.payoutDetails.totalCredited + (
-                  inv.payoutDetails.rmasCommission || 0) + (
-                  inv.payoutDetails.happyIncomeTax || 0) -
-                  inv.amount :
-                  0));
-
-              }
-              return (
-                sum +
-                globalCalculateLiveProfit(
-                  [inv],
-                  inv.businessId,
-                  marketState.trends,
-                  state.settings
-                ).liveProfit);
-
-            }, 0);
-            const totalPnlPercentage =
-            totalInvested > 0 ? totalLiveProfit / totalInvested * 100 : 0;
-            const isTotalProfit = totalLiveProfit >= 0;
             return (
               <div className="flex items-center gap-2">
                   {""}
@@ -652,8 +660,9 @@ export default function Investments() {
         }
       </>);
 
-  }, [groupedInvestments, state.businesses, state.investors, marketState.trends, state.settings, blueTickBusinessIds]);
+  }, [groupedInvestments, state.businesses, state.investors, marketState.trends, state.settings, blueTickBusinessIds, visibleCount]);
 
+  
   return (
     <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent dark:md:bg-[#181818]">
       {""}
@@ -1393,6 +1402,16 @@ export default function Investments() {
               business.rmasSubsidy / 100) * (
               (Number(withdrawFormData.completedMonths) || 12) / 12);
             }
+            
+            let hpgSahayPays = 0;
+            if (business && business.hpgSahay && business.hpgSahay.enabled && profitDetails.totalProfit > 0) {
+              const businessInvestments = state.investments.filter(inv => inv.businessId === business.id);
+              const uniqueInvestorsCount = new Set(businessInvestments.map(inv => inv.investorId)).size;
+              if (uniqueInvestorsCount >= (business.hpgSahay.minInvestors || 0)) {
+                hpgSahayPays = profitDetails.totalProfit * (business.hpgSahay.percentage / 100);
+              }
+            }
+
             const numSelected = activeGroupedInvestments.length;
             if (numSelected === 0) return;
             activeGroupedInvestments.forEach((invToUpdate: any) => {
@@ -1409,7 +1428,8 @@ export default function Investments() {
                     totalCredited: totalCredited * ratio,
                     payoutDate: new Date().toISOString().split("T")[0],
                     rmasMarketCover: profitDetails.rmasMarketCover * ratio,
-                    rmasSubsidyPays: rmasSubsidyPays * ratio
+                    rmasSubsidyPays: rmasSubsidyPays * ratio,
+                    hpgSahayPays: hpgSahayPays * ratio
                   }
                 }
               });

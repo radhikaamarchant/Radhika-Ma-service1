@@ -352,9 +352,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await setDoc(doc(db, "settings", "global"), payloadWithTimestamp);
           break;
         case "SET_CURRENT_USER":
-          if (action.payload) {
-            await setDoc(doc(db, "users", action.payload.id), action.payload);
-          }
+          // Removed redundant write to Firestore on login
           break;
       }
     } catch (err) {

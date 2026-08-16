@@ -98,7 +98,7 @@ export default function BusinessDetail({
   const { marketState } = useMarketSimulation();
   const marketTrends = marketState.trends;
   const business = state.businesses.find((b) => b.id === businessId);
-  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "registration" | "policy" | "trigger" | "trigger-history" | "trigger-suggestion" | "company-info">("menu");
+  const [currentView, setCurrentView] = useState<"menu" | "funds" | "profile" | "investors" | "bank" | "hpgSahay" | "registration" | "policy" | "trigger" | "trigger-history" | "trigger-suggestion" | "company-info">("menu");
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSavingTrigger, setIsSavingTrigger] = useState(false);
@@ -128,6 +128,14 @@ export default function BusinessDetail({
     ownerName: business?.ownerName || "",
   });
 
+  const [hpgSahayData, setHpgSahayData] = useState({
+    enabled: business?.hpgSahay?.enabled || false,
+    percentage: business?.hpgSahay?.percentage?.toString() || "20",
+    minInvestors: business?.hpgSahay?.minInvestors?.toString() || "20",
+  });
+  const [isSavingSahay, setIsSavingSahay] = useState(false);
+  const [showHpgPdf, setShowHpgPdf] = useState(false);
+
   const [companyInfoData, setCompanyInfoData] = useState({
     companyName: business?.companyInfo?.companyName || "",
     ownerName: business?.companyInfo?.ownerName || "",
@@ -153,6 +161,61 @@ export default function BusinessDetail({
     downMarket: business?.downMarket?.toString() || "",
   });
 
+  const hpgStats = useMemo(() => {
+    if (!business) return { investors: 0, totalProfit: 0, totalLoss: 0, highProfit: 0, details: [], companyNet: 0, activeDetails: [], pastInvestorsCount: 0 };
+    const businessInvestments = state.investments.filter(inv => inv.businessId === business.id);
+    const uniqueInvestors = new Set(businessInvestments.map(inv => inv.investorId));
+    let totalProfit = 0;
+    let totalLoss = 0;
+    let highProfit = 0;
+    let companyTotalIn = 0;
+    let companyTotalOut = 0;
+    const details: any[] = [];
+    const activeDetails: any[] = [];
+    const pastInvestorsSet = new Set();
+    
+    businessInvestments.forEach(inv => {
+      if (inv.status === "completed" && inv.payoutDetails) {
+        pastInvestorsSet.add(inv.investorId);
+        companyTotalIn += inv.amount;
+        const out = inv.payoutDetails.totalCredited + (inv.payoutDetails.rmasCommission || 0) + (inv.payoutDetails.happyIncomeTax || 0) - (inv.payoutDetails.rmasSubsidyPays || 0);
+        companyTotalOut += out;
+        
+        const netProfit = inv.payoutDetails.totalCredited - inv.amount;
+        if (netProfit > 0) {
+           totalProfit += netProfit;
+           if (netProfit > inv.amount * 0.5) highProfit += netProfit; 
+        } else {
+           totalLoss += Math.abs(netProfit);
+        }
+        details.push({
+           investorId: inv.investorId,
+           investorName: state.investors.find(i => i.id === inv.investorId)?.name || "Unknown",
+           amount: inv.amount,
+           netProfit,
+           date: inv.endDate || inv.startDate
+        });
+      } else {
+        activeDetails.push({
+           investorId: inv.investorId,
+           investorName: state.investors.find(i => i.id === inv.investorId)?.name || "Unknown",
+           amount: inv.amount,
+           date: inv.startDate
+        });
+      }
+    });
+    return { 
+      investors: uniqueInvestors.size, 
+      totalProfit, 
+      totalLoss, 
+      highProfit, 
+      details,
+      companyNet: companyTotalIn - companyTotalOut,
+      activeDetails,
+      pastInvestorsCount: pastInvestorsSet.size
+    };
+  }, [state.investments, business, state.investors]);
+
   const [profitLimitMode, setProfitLimitMode] = useState<"manual" | "percentage">(business?.profitLimitMode || "manual");
   const [profitLimitPercentage, setProfitLimitPercentage] = useState(business?.profitLimitPercentage?.toString() || "");
   const [isSavingProfitLimit, setIsSavingProfitLimit] = useState(false);
@@ -162,6 +225,25 @@ export default function BusinessDetail({
   const [addAmountValue, setAddAmountValue] = useState("");
   const [showStatement, setShowStatement] = useState(false);
   const [statementSearch, setStatementSearch] = useState("");
+
+  const handleSaveHpgSahay = async () => {
+    if (!business) return;
+    setIsSavingSahay(true);
+    await dispatch({
+      type: "UPDATE_BUSINESS",
+      payload: {
+        ...business,
+        hpgSahay: {
+          enabled: hpgSahayData.enabled,
+          percentage: parseFloat(hpgSahayData.percentage) || 0,
+          minInvestors: parseInt(hpgSahayData.minInvestors) || 0,
+        }
+      }
+    });
+    setIsSavingSahay(false);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+  };
 
   const handleAddAmount = () => {
     const amount = parseFloat(addAmountValue.replace(/,/g, ""));
@@ -505,6 +587,7 @@ export default function BusinessDetail({
           {currentView === "profile" && "Profile Details"}
           {currentView === "investors" && "Investors details"}
           {currentView === "bank" && "Bank details"}
+          {currentView === "hpgSahay" && "HPG Sahay Kendra"}
           {currentView === "registration" && "Registration Information"}
           {currentView === "policy" && "Business Policy"}
           {currentView === "trigger" && "Trigger Price Set"}
@@ -554,6 +637,10 @@ export default function BusinessDetail({
               </button>
               <button onClick={() => setCurrentView("bank")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
                 <span className="text-[14px] md:text-[15px] font-normal text-kite-text">Bank details</span>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
+              </button>
+              <button onClick={() => setCurrentView("hpgSahay")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
+                <span className="text-[14px] md:text-[15px] font-normal text-kite-text">HPG Sahay Kendra</span>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-kite-text transition-colors" />
               </button>
               <button onClick={() => setCurrentView("registration")} className="w-full py-4 flex justify-between items-center group border-b border-kite-border-soft last:border-0">
@@ -1185,6 +1272,64 @@ export default function BusinessDetail({
         </div>
       )}
 
+      {currentView === "hpgSahay" && (
+        <div className="bg-[#F8F9FA] dark:bg-kite-bg flex-1 flex flex-col p-4 md:p-6 space-y-6">
+          <div className="bg-white dark:bg-kite-surface rounded shadow-sm border border-kite-border p-4">
+            <h2 className="text-[16px] font-medium text-kite-text mb-4 border-b border-kite-border pb-2">Business Subsidy Setup</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[14px] text-kite-text font-medium">Enable Subsidy</span>
+                <button
+                  onClick={() => setHpgSahayData(prev => ({ ...prev, enabled: !prev.enabled }))}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${hpgSahayData.enabled ? "bg-kite-blue" : "bg-gray-300 dark:bg-gray-600"}`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all ${hpgSahayData.enabled ? "left-[22px]" : "left-0.5"}`} />
+                </button>
+              </div>
+              <div>
+                <label className="text-[12px] text-kite-text-light uppercase tracking-wide mb-1 block">Subsidy Percentage (%)</label>
+                <input
+                  type="number"
+                  value={hpgSahayData.percentage}
+                  onChange={(e) => setHpgSahayData({ ...hpgSahayData, percentage: e.target.value })}
+                  className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] text-kite-text focus:border-kite-blue transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[12px] text-kite-text-light uppercase tracking-wide mb-1 block">Minimum Investors Target</label>
+                <input
+                  type="number"
+                  value={hpgSahayData.minInvestors}
+                  onChange={(e) => setHpgSahayData({ ...hpgSahayData, minInvestors: e.target.value })}
+                  className="w-full bg-transparent border-b border-kite-border outline-none py-2 text-[15px] text-kite-text focus:border-kite-blue transition-colors"
+                />
+              </div>
+              <button
+                onClick={handleSaveHpgSahay}
+                className="w-full bg-kite-blue !text-white dark:text-white px-5 py-2.5 rounded text-[13px] font-medium hover:bg-kite-blue-dark transition-colors uppercase tracking-wide"
+              >
+                {isSavingSahay ? (
+                  <span className="flex items-center justify-center space-x-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Saving...</span>
+                  </span>
+                ) : showSuccess ? "verifed value" : "Confirm Setup"}
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowHpgPdf(true)}
+            className="w-full bg-white dark:bg-kite-surface border border-kite-border text-kite-blue dark:text-kite-blue px-5 py-3 rounded text-[13px] font-medium hover:bg-gray-50 dark:hover:bg-kite-bg transition-colors uppercase tracking-wide"
+          >
+            Check Details
+          </button>
+        </div>
+      )}
+
       {currentView === "registration" && (
         <div className="bg-white dark:bg-kite-surface flex-1 p-4 md:p-6 space-y-5">
            <div className="border-b border-kite-border-soft pb-4">
@@ -1674,11 +1819,146 @@ export default function BusinessDetail({
                     </svg>
                     <span>Saving...</span>
                   </span>
-                ) : showProfitLimitSuccess ? "verifed value" : "confrim limit"}
+                ) : showProfitLimitSuccess ? "verifed value" : "Confirm Setup"}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {showHpgPdf && createPortal(
+        <div className="fixed inset-0 bg-[#F0F2F5] z-[100000] overflow-y-auto block">
+          <div className="w-full bg-white shadow-sm flex items-center justify-between px-4 py-3 sticky top-0 z-10 border-b border-gray-300">
+            <div className="flex items-center gap-3">
+               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg">H</div>
+               <span className="text-gray-700 font-medium text-[15px]">{business.name} - HPG રિપોર્ટ.pdf</span>
+            </div>
+            <button onClick={() => setShowHpgPdf(false)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-1.5 rounded font-medium text-[13px] transition-colors">Close / બંધ કરો</button>
+          </div>
+          
+          <div className="bg-white w-full max-w-[850px] md:max-w-[1123px] min-h-[1100px] md:min-h-[794px] h-max my-10 mx-auto shadow-sm border border-gray-300 p-8 md:p-16 text-black font-serif flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="text-center border-b-2 border-black pb-4 mb-4">
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">HPG સહાય કેન્દ્ર - વ્યવસાયિક અહેવાલ</h1>
+              <h2 className="text-lg md:text-xl font-medium text-gray-700">{business.name}</h2>
+              <p className="text-sm text-gray-500 mt-2">તારીખ: {new Date().toLocaleDateString("gu-IN")}</p>
+            </div>
+
+            <div className="text-[15px] leading-relaxed text-justify space-y-4">
+              <p>
+                આ દસ્તાવેજ <strong>{business.name}</strong> ના HPG સહાય કેન્દ્ર સબસિડી પ્રોગ્રામ હેઠળનો સત્તાવાર અને અધિકૃત અહેવાલ છે. આ અહેવાલમાં રોકાણકારોના નફા-નુકસાન અને કંપનીની આર્થિક સ્થિતિનું વિગતવાર વર્ણન કરવામાં આવ્યું છે.
+              </p>
+            </div>
+            
+            {(() => {
+              const totalInvestors = hpgStats.pastInvestorsCount + hpgStats.activeDetails.length;
+              const minInvestors = business.hpgSahay?.minInvestors || 0;
+              const subsidyPercent = business.hpgSahay?.percentage || 0;
+              
+              if (totalInvestors === 0) {
+                return (
+                  <div className="text-[15px] leading-relaxed text-justify space-y-4 bg-gray-50 border border-gray-200 p-5 rounded">
+                    <p>
+                      <strong>આપનો વ્યવસાય નવો નોંધાયેલ છે</strong> અને હજુ સુધી કોઈ રોકાણકાર જોડાયેલ નથી. આપે HPG સહાય સબસિડી માટે ઓછામાં ઓછા <strong>{minInvestors} રોકાણકારો</strong> નો લક્ષ્યાંક સેટ કરેલ છે.
+                    </p>
+                    <p>
+                      આ <strong>{subsidyPercent}% ની સબસિડી</strong> લાગુ કરવા માટે આપના વ્યવસાયમાં નવા રોકાણકારો આવવા જરૂરી છે અને તેમને યોગ્ય નફો (Profit) મળવો અનિવાર્ય છે. નિર્ધારિત {minInvestors} રોકાણકારોનો લક્ષ્યાંક પૂરો થયા બાદ જ આ સબસિડી સિસ્ટમ આપમેળે સક્રિય થશે.
+                    </p>
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="text-[15px] leading-relaxed text-justify space-y-4 bg-green-50 border border-green-200 p-5 rounded text-green-900">
+                    <p>
+                      <strong>સબસિડી મંજૂરી અહેવાલ:</strong> આપના વ્યવસાયમાં અત્યાર સુધીમાં કુલ <strong>{totalInvestors} રોકાણકારો</strong> (સક્રિય અને અગાઉના) જોડાયેલ છે અને આપે અત્યાર સુધીમાં રોકાણકારોને કુલ <strong>₹{formatINR(hpgStats.totalProfit).replace("₹", "")}</strong> નો નફો રળી આપેલ છે.
+                    </p>
+                    <p>
+                      આ ઉત્કૃષ્ટ પ્રદર્શન અને આપના {minInvestors} રોકાણકારોના લક્ષ્યાંકના આધારે, આપને વર્તમાન <strong>{subsidyPercent}% સબસિડી</strong> માટે <strong>સંપૂર્ણપણે લાયક</strong> ગણવામાં આવે છે. આપનું પ્રોફિટ માર્જિન અને રોકાણકારોનો વિશ્વાસ આ સબસિડી ચાલુ રાખવા માટે પર્યાપ્ત છે.
+                    </p>
+                  </div>
+                );
+              }
+            })()}
+
+            <div className="mt-6">
+              <h3 className="text-[17px] font-bold border-b border-gray-300 pb-2 mb-4">1. ઐતિહાસિક માહિતી (અગાઉનો રેકોર્ડ)</h3>
+              <ul className="list-disc list-inside space-y-2 text-[15px] ml-2">
+                <li>અગાઉ કુલ <strong>{hpgStats.pastInvestorsCount}</strong> રોકાણકારોએ રોકાણ કર્યું હતું.</li>
+                <li>રોકાણકારોએ કુલ <strong>₹{formatINR(hpgStats.totalProfit).replace("₹", "")}</strong> નો નફો મેળવ્યો છે.</li>
+                <li>રોકાણકારોએ કુલ <strong>₹{formatINR(hpgStats.totalLoss).replace("₹", "")}</strong> નું નુકસાન સહન કર્યું છે.</li>
+                <li>કંપનીએ અત્યાર સુધીમાં આ રોકાણો મારફતે <strong>{hpgStats.companyNet >= 0 ? `₹${formatINR(hpgStats.companyNet).replace("₹", "")} નો નફો` : `₹${formatINR(Math.abs(hpgStats.companyNet)).replace("₹", "")} નું નુકસાન`}</strong> કર્યું છે.</li>
+              </ul>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-[17px] font-bold border-b border-gray-300 pb-2 mb-4">2. હાલના સક્રિય રોકાણકારો (Current Active Investors)</h3>
+              <table className="w-full border-collapse border border-gray-800 text-[14px]">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border border-gray-800 px-3 py-2 text-center font-bold w-12">ક્રમ</th>
+                    <th className="border border-gray-800 px-3 py-2 text-left font-bold">રોકાણકારનું નામ</th>
+                    <th className="border border-gray-800 px-3 py-2 text-left font-bold w-32">તારીખ</th>
+                    <th className="border border-gray-800 px-3 py-2 text-right font-bold">રોકાણની રકમ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hpgStats.activeDetails.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="border border-gray-800 px-3 py-4 text-center italic text-gray-500">હાલમાં કોઈ સક્રિય રોકાણકાર નથી.</td>
+                    </tr>
+                  ) : (
+                    hpgStats.activeDetails.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="border border-gray-800 px-3 py-2 text-center">{idx + 1}</td>
+                        <td className="border border-gray-800 px-3 py-2">{item.investorName}</td>
+                        <td className="border border-gray-800 px-3 py-2">{new Date(item.date).toLocaleDateString("gu-IN")}</td>
+                        <td className="border border-gray-800 px-3 py-2 text-right font-medium">₹{formatINR(item.amount).replace("₹", "")}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-[17px] font-bold border-b border-gray-300 pb-2 mb-4">3. અગાઉના રોકાણકારોની વિગત (Previous Investors Details)</h3>
+              <table className="w-full border-collapse border border-gray-800 text-[14px]">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border border-gray-800 px-3 py-2 text-center font-bold w-12">ક્રમ</th>
+                    <th className="border border-gray-800 px-3 py-2 text-left font-bold">રોકાણકારનું નામ</th>
+                    <th className="border border-gray-800 px-3 py-2 text-left font-bold w-32">તારીખ</th>
+                    <th className="border border-gray-800 px-3 py-2 text-right font-bold">રોકાણની રકમ</th>
+                    <th className="border border-gray-800 px-3 py-2 text-right font-bold">ચોખ્ખો નફો/નુકસાન</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hpgStats.details.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="border border-gray-800 px-3 py-4 text-center italic text-gray-500">અગાઉનો કોઈ ડેટા ઉપલબ્ધ નથી.</td>
+                    </tr>
+                  ) : (
+                    hpgStats.details.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="border border-gray-800 px-3 py-2 text-center">{idx + 1}</td>
+                        <td className="border border-gray-800 px-3 py-2">{item.investorName}</td>
+                        <td className="border border-gray-800 px-3 py-2">{new Date(item.date).toLocaleDateString("gu-IN")}</td>
+                        <td className="border border-gray-800 px-3 py-2 text-right font-medium">₹{formatINR(item.amount).replace("₹", "")}</td>
+                        <td className={`border border-gray-800 px-3 py-2 text-right font-bold ${item.netProfit >= 0 ? "text-green-700" : "text-red-700"}`}>
+                          {item.netProfit >= 0 ? "+" : "-"}₹{formatINR(Math.abs(item.netProfit)).replace("₹", "")}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="mt-auto pt-10 border-t border-gray-300">
+               <p className="text-center text-[12px] text-gray-500 italic">આ અહેવાલ સિસ્ટમ દ્વારા સ્વયં-જનરેટ (Auto-generated) થયેલ છે અને કોઈ ભૌતિક સહી (Physical Signature) ની જરૂર નથી.</p>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {showStatement && createPortal(

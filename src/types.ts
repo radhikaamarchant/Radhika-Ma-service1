@@ -50,6 +50,11 @@ export interface Business {
   addedFunds?: { id: string; amount: number; date: string; }[];
   profitLimitMode?: "manual" | "percentage";
   profitLimitPercentage?: number;
+  hpgSahay?: {
+    enabled: boolean;
+    percentage: number;
+    minInvestors: number;
+  };
 }
 
 export interface Investor {
@@ -101,6 +106,7 @@ export interface Investment {
     rmasMarketCover?: number;
     rmasSubsidyPays?: number;
     rmasPrematurePenalty?: number;
+    hpgSahayPays?: number;
   };
 }
 
