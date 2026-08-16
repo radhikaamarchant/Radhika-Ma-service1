@@ -1,74 +1,56 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/pages/Investments.tsx', 'utf8');
 
-const target = `            let rmasSubsidyPays = 0;
-            if (business && business.rmasSubsidy && business.rmasSubsidy > 0) {
-              rmasSubsidyPays =
-              totalAmount * (
-              business.rmasSubsidy / 100) * (
-              (Number(withdrawFormData.completedMonths) || 12) / 12);
-            }
-            const numSelected = activeGroupedInvestments.length;
-            if (numSelected === 0) return;
-            activeGroupedInvestments.forEach((invToUpdate: any) => {
-              const ratio = invToUpdate.amount / totalAmount;
-              dispatch({
-                type: "UPDATE_INVESTMENT",
-                payload: {
-                  ...invToUpdate,
-                  status: "completed",
-                  payoutDetails: {
-                    rmasCommission: rmasFee * ratio,
-                    happyIncomeTax: happyTax * ratio,
-                    rmasPrematurePenalty: prematurePenalty * ratio,
-                    totalCredited: totalCredited * ratio,
-                    payoutDate: new Date().toISOString().split("T")[0],
-                    rmasMarketCover: profitDetails.rmasMarketCover * ratio,
-                    rmasSubsidyPays: rmasSubsidyPays * ratio
-                  }
-                }
-              });
-            });`;
+// Add visibleCount state and observer ref
+const stateInsertion = `  const [activeTab, setActiveTab] = useState<"holding" | "booked">("holding");
+  const [visibleCount, setVisibleCount] = useState(50);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-const injection = `            let rmasSubsidyPays = 0;
-            if (business && business.rmasSubsidy && business.rmasSubsidy > 0) {
-              rmasSubsidyPays =
-              totalAmount * (
-              business.rmasSubsidy / 100) * (
-              (Number(withdrawFormData.completedMonths) || 12) / 12);
-            }
-            
-            let hpgSahayPays = 0;
-            if (business && business.hpgSahay && business.hpgSahay.enabled && profitDetails.totalProfit > 0) {
-              const businessInvestments = state.investments.filter(inv => inv.businessId === business.id);
-              const uniqueInvestorsCount = new Set(businessInvestments.map(inv => inv.investorId)).size;
-              if (uniqueInvestorsCount >= (business.hpgSahay.minInvestors || 0)) {
-                hpgSahayPays = profitDetails.totalProfit * (business.hpgSahay.percentage / 100);
-              }
-            }
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [deferredSearchTerm, activeTab]);
 
-            const numSelected = activeGroupedInvestments.length;
-            if (numSelected === 0) return;
-            activeGroupedInvestments.forEach((invToUpdate: any) => {
-              const ratio = invToUpdate.amount / totalAmount;
-              dispatch({
-                type: "UPDATE_INVESTMENT",
-                payload: {
-                  ...invToUpdate,
-                  status: "completed",
-                  payoutDetails: {
-                    rmasCommission: rmasFee * ratio,
-                    happyIncomeTax: happyTax * ratio,
-                    rmasPrematurePenalty: prematurePenalty * ratio,
-                    totalCredited: totalCredited * ratio,
-                    payoutDate: new Date().toISOString().split("T")[0],
-                    rmasMarketCover: profitDetails.rmasMarketCover * ratio,
-                    rmasSubsidyPays: rmasSubsidyPays * ratio,
-                    hpgSahayPays: hpgSahayPays * ratio
-                  }
-                }
-              });
-            });`;
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + 50);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+`;
 
-code = code.replace(target, injection);
+code = code.replace(/const \[activeTab, setActiveTab\] = useState<"holding" \| "booked">("holding");/, stateInsertion);
+
+// Modify the map to slice by visibleCount and add the observerTarget div
+const mapRegex = /\{groupedInvestments\.map\(\(inv, idx\) => \{/;
+const mapReplacement = `{groupedInvestments.slice(0, visibleCount).map((inv, idx) => {`;
+code = code.replace(mapRegex, mapReplacement);
+
+// We need to add the observer target at the end of the list.
+// The list ends right before `{groupedInvestments.length === 0 && (`
+const targetRegex = /\{""\}\s*\{groupedInvestments\.length === 0 && \(/;
+const targetReplacement = `{groupedInvestments.length > visibleCount && (
+            <div ref={observerTarget} className="h-10 w-full" />
+          )}
+          {""}
+          {groupedInvestments.length === 0 && (`
+
+code = code.replace(targetRegex, targetReplacement);
+
+// Also, we need to pass visibleCount into the renderedList useMemo dependencies.
+const useMemoRegex = /const renderedList = useMemo\(\(\) => \{/;
+const useMemoReplacement = `const renderedList = useMemo(() => {`;
+// Actually, I should update the dependency array at the end of the useMemo.
+// Let's find the closing of useMemo for renderedList.
+const depsRegex = /\}\), \[groupedInvestments, state\.businesses, state\.investors, marketState\.trends, state\.settings, blueTickBusinessIds\]\);/;
+const depsReplacement = `}), [groupedInvestments, state.businesses, state.investors, marketState.trends, state.settings, blueTickBusinessIds, visibleCount]);`;
+code = code.replace(depsRegex, depsReplacement);
+
 fs.writeFileSync('src/pages/Investments.tsx', code);

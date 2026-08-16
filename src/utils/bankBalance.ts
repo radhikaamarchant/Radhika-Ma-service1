@@ -121,9 +121,6 @@ export function calculateFinancials(
         if (inv.payoutDetails.rmasSubsidyPays) {
           balance -= inv.payoutDetails.rmasSubsidyPays;
         }
-        if (inv.payoutDetails.hpgSahayPays) {
-          balance -= inv.payoutDetails.hpgSahayPays;
-        }
       }
 
       // Admin Business: receives investment
@@ -158,8 +155,7 @@ export function calculateFinancials(
             (inv.payoutDetails.rmasCommission || 0) +
             (inv.payoutDetails.happyIncomeTax || 0) +
             (inv.payoutDetails.rmasPrematurePenalty || 0) -
-            (inv.payoutDetails.rmasSubsidyPays || 0) -
-            (inv.payoutDetails.hpgSahayPays || 0);
+            (inv.payoutDetails.rmasSubsidyPays || 0);
           balance -= businessBurden;
         }
       } else if (invt && inv.investorId === invt.id) {
@@ -273,17 +269,6 @@ export function getUnifiedTransactions(
           type:"CREDIT",
           category:"commission",
         });
-        if (inv.payoutDetails.hpgSahayPays) {
-          transactions.push({
-            id: `tx_${inv.id}_hpg_sahay`,
-            date: inv.payoutDetails.payoutDate || new Date().toISOString(),
-            title: `HPG Sahay Kendra`,
-            description: `Subsidy Paid to ${b?.name || "Unknown"}`,
-            amount: inv.payoutDetails.hpgSahayPays,
-            type:"DEBIT",
-            category:"sahay",
-          });
-        }
       }
 
       if (inv.businessId ==="admin_business") {
@@ -400,17 +385,6 @@ export function getUnifiedTransactions(
             type:"DEBIT",
             category:"settlement",
           });
-          if (i.payoutDetails.hpgSahayPays) {
-            transactions.push({
-              id: `tx_${i.id}_hpg_sahay`,
-              date: i.payoutDetails.payoutDate,
-              title: `HPG Sahay Kendra`,
-              description: `Subsidy from Admin`,
-              amount: i.payoutDetails.hpgSahayPays,
-              type:"CREDIT",
-              category:"sahay",
-            });
-          }
         }
       });
       
