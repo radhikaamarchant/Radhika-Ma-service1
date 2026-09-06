@@ -1,11 +1,39 @@
 @import "tailwindcss";
-@import url("https://fonts.cdnfonts.com/css/sf-pro-display");
 @import "./user-dark-theme.css";
+
+@font-face {
+  font-family: 'TwitterChirp';
+  src: url('https://abs.twimg.com/fonts/v2/chirp-regular-web.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'TwitterChirp';
+  src: url('https://abs.twimg.com/fonts/v2/chirp-medium-web.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'TwitterChirp';
+  src: url('https://abs.twimg.com/fonts/v2/chirp-bold-web.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'TwitterChirp';
+  src: url('https://abs.twimg.com/fonts/v2/chirp-heavy-web.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: "TwitterChirp", -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Zerodha Kite Color Palette */
   --color-kite-blue: #387DFF;
@@ -300,18 +328,12 @@ body { font-family: var(--font-sans); font-weight: 400; background-color: var(--
   border-radius: 4px;
 }
 
-/* Mobile users must only have SF Pro fonts */
-@media (max-width: 1023px) {
-  * {
-    font-family: var(--font-sans) !important;
-  }
+/* માત્ર તમામ યુઝર્સ માટે TwitterChirp ફૉન્ટ લૉક કરવા (Universal Selector સાથે) */
+* {
+  font-family: 'TwitterChirp', sans-serif !important;
 }
 
-/* માત્ર ડેસ્કટોપ યુઝર્સ માટે Open Sans ફૉન્ટ લૉક કરવા (Universal Selector સાથે) */
 @media (min-width: 1024px) {
-  * {
-    font-family: 'Open Sans', sans-serif !important;
-  }
   body {
     font-size: 14px !important;
     font-weight: 400 !important;
