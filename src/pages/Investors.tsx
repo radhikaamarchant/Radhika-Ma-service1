@@ -603,8 +603,8 @@ export default function Investors() {
               }
                               <div className="flex flex-col">
                                 <div className="flex items-center space-x-1">
-                                  <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors uppercase leading-tight tracking-wide">
-                                    {investor.name?.toUpperCase()}
+                                  <span className="font-normal text-kite-text text-[13px] md:text-[14px] group-hover:text-kite-blue transition-colors capitalize leading-tight tracking-wide">
+                                    {investor.name?.toLowerCase()}
                                   </span>
                                   {investor.id === "admin_investor" &&
                   <BadgeCheck className="w-3.5 h-3.5 text-white fill-blue-500 flex-shrink-0" />
