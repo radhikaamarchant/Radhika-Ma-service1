@@ -87,6 +87,7 @@ export default function Investors() {
   const [selectedPreviewBusiness, setSelectedPreviewBusiness] = useState<Business | null>(null);
   const [previewBusinessHistory, setPreviewBusinessHistory] = useState<Business[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [desktopFilterMode, setDesktopFilterMode] = useState("default");
   const [showAddForm, setShowAddForm] = useState(false);
   const [addModalBusinessId, setAddModalBusinessId] = useState("");
   const [addModalInvestorId, setAddModalInvestorId] = useState("");
@@ -240,11 +241,40 @@ export default function Investors() {
   ), [uniqueInvestors, state.investments, state.businesses, state.settings, marketState.trends]);
   const filteredInvestors = useMemo(() => {
     const term = deferredSearchTerm.toLowerCase();
-    return investorsWithStats.filter((i) =>
-      (i.name || "").toLowerCase().includes(term) ||
-      i.investorId.includes(term)
-    );
-  }, [investorsWithStats, deferredSearchTerm]);
+    return investorsWithStats.filter((i) => {
+      const matchesSearch = (i.name || "").toLowerCase().includes(term) ||
+                            i.investorId.includes(term);
+      if (!matchesSearch) return false;
+
+      if (desktopFilterMode === "not_book") {
+        const hasCompleted = state.investments.some(inv => inv.investorId === i.id && inv.status === "completed");
+        return i.status === "active" && !hasCompleted;
+      }
+      if (desktopFilterMode === "similar_invest") {
+        const hasActive = state.investments.some(inv => inv.investorId === i.id && inv.status === "active");
+        const hasCompleted = state.investments.some(inv => inv.investorId === i.id && inv.status === "completed");
+        return hasCompleted && !hasActive;
+      }
+      if (desktopFilterMode === "high_investor") {
+        const totalInvestedAmount = state.investments.filter(inv => inv.investorId === i.id).reduce((s, a) => s + a.amount, 0);
+        return totalInvestedAmount >= 100000;
+      }
+      if (desktopFilterMode === "normal_investor") {
+        const totalInvestedAmount = state.investments.filter(inv => inv.investorId === i.id).reduce((s, a) => s + a.amount, 0);
+        return totalInvestedAmount > 0 && totalInvestedAmount < 100000;
+      }
+      if (desktopFilterMode === "loss") {
+        return state.investments.some(inv => inv.investorId === i.id && inv.status === "completed" && inv.payoutDetails && inv.payoutDetails.totalCredited < inv.amount);
+      }
+      if (desktopFilterMode === "not_withdrawal") {
+        const hasCompleted = state.investments.some(inv => inv.investorId === i.id && inv.status === "completed");
+        const hasWithdrawn = i.fundHistory && i.fundHistory.some(f => f.type === "WITHDRAW");
+        return hasCompleted && !hasWithdrawn;
+      }
+
+      return true;
+    });
+  }, [investorsWithStats, deferredSearchTerm, desktopFilterMode, state.investments]);
 
   
   
@@ -767,10 +797,36 @@ export default function Investors() {
 
                 <div className="hidden md:flex px-4 pt-4 pb-4 flex-row justify-between items-center relative mb-0">
                 <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
-                  <div className="hidden md:block">
+                  <div className="hidden md:flex items-center gap-4">
                     <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
                       My Investors
                     </h2>
+                    
+                    {/* Desktop Filter Mode */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={desktopFilterMode}
+                        onChange={(e) => setDesktopFilterMode(e.target.value)}
+                        className="bg-transparent border-0 border-b border-kite-border md:border md:rounded-sm text-[13px] md:text-[14px] px-2 py-1.5 md:py-[7px] text-kite-text focus:outline-none focus:border-kite-blue focus:ring-1 focus:ring-kite-blue appearance-none pr-8 cursor-pointer"
+                        style={{
+                           backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                           backgroundRepeat: 'no-repeat',
+                           backgroundPosition: 'right 0.5rem center',
+                           backgroundSize: '1em'
+                        }}
+                      >
+                        <option value="default">Default</option>
+                        <option value="not_book">Not Book</option>
+                        <option value="similar_invest">Similar Invest</option>
+                        <option value="high_investor">High Investor</option>
+                        <option value="normal_investor">Normal Investor</option>
+                        <option value="loss">Loss</option>
+                        <option value="not_withdrawal">Not Withdrawal</option>
+                      </select>
+                      <span className="text-[13px] md:text-[14px] font-medium text-kite-blue bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-sm">
+                        {filteredInvestors.length}
+                      </span>
+                    </div>
                   </div>
                   <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto md:justify-end gap-2 md:gap-4">
                     {/* Action Button (Top on mobile, left of search on desktop) */}
@@ -783,6 +839,7 @@ export default function Investors() {
                         <span>New Investor</span>
                       </button>
                     </div>
+
                     {/* Search Container (Bottom on mobile, right on desktop) */}
                     <div className="w-full md:w-auto flex items-center justify-start md:justify-end pt-1 md:pt-0 h-[36px]">
                       {!isSearchExpanded ?
