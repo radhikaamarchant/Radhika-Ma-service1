@@ -14,7 +14,7 @@ const formatPrice = (num: number) => {
   }).format(num);
 };
 
-const LiveSidebarValue = React.memo(({ name, originalPrice, baseAmount, isOpen }: { name: string; originalPrice: number; baseAmount: number; isOpen: boolean }) => {
+const LiveSidebarValue = React.memo(({ name, originalPrice, baseAmount, isOpen, photoUrl }: { name: string; originalPrice: number; baseAmount: number; isOpen: boolean; photoUrl?: string }) => {
   const { isDark } = useTheme();
   const displayBase = baseAmount || 10000;
   const [currentAmount, setCurrentAmount] = useState(displayBase);
@@ -62,11 +62,20 @@ const LiveSidebarValue = React.memo(({ name, originalPrice, baseAmount, isOpen }
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_55px_60px_65px] gap-x-[8px] items-center w-full">
-      <span 
-        className={`text-[13px] md:text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis uppercase ${trendColorClass}`}
-      >
-        {name}
-      </span>
+      <div className="flex items-center space-x-2.5 overflow-hidden">
+        {photoUrl ? (
+          <img src={photoUrl} alt={name} className="w-6 h-6 rounded-full object-cover shrink-0 shadow-sm border border-gray-100 dark:border-[#2b2b2b]" />
+        ) : (
+          <div className="w-6 h-6 rounded-full shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#2a2a2a] dark:to-[#1a1a1a] flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-400 shadow-sm border border-gray-200/50 dark:border-[#333]">
+            {name.charAt(0)}
+          </div>
+        )}
+        <span 
+          className={`text-[13px] md:text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis uppercase ${trendColorClass}`}
+        >
+          {name}
+        </span>
+      </div>
       <span className="text-right text-[13px] md:text-[13px] font-medium text-[#9B9B9B] dark:text-[#666666]">
         {formatValue(absoluteChange)}
       </span>
@@ -141,7 +150,7 @@ export default function BusinessSidebar() {
                   className="cursor-pointer border-b border-kite-border dark:border-[#2b2b2b] hover:bg-gray-50 md:dark:hover:bg-[#131415] transition-colors group bg-white dark:bg-kite-surface md:dark:bg-[#181818]"
                   onClick={() => handleRowClick(business.id)}
                 >
-                  <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} originalPrice={business.triggerAmount || 100} baseAmount={displayAmount} isOpen={isMarketOpen} />
+                  <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} originalPrice={business.triggerAmount || 100} baseAmount={displayAmount} isOpen={isMarketOpen} photoUrl={business.photoUrl} />
                 </div>
               );
             })}

@@ -93,11 +93,11 @@
 }
 
 :root.dark {
-  --color-kite-blue: #4A8DF7;
+  --color-kite-blue: #1D9BF0;
   
-  --text-color: #FFFFFF;
-  --text-light-color: #B8B8B8;
-  --text-muted-color: #707070;
+  --text-color: #E7E9EA;
+  --text-light-color: #71767B;
+  --text-muted-color: #71767B;
   
   --body-bg: #181818;
   --surface-color: #181818;
@@ -124,9 +124,9 @@
 
 /* Force Zerodha Kite Dark Theme */
   :root.dark {
-    --text-color: #e0e0e0;
-    --text-light-color: #9b9b9b;
-    --text-muted-color: #707070;
+    --text-color: #E7E9EA;
+    --text-light-color: #71767B;
+    --text-muted-color: #71767B;
     
     --body-bg: #181818;
     --surface-color: #181818;
@@ -141,7 +141,7 @@
     --border-color-soft: #2b2b2b;
     --border-color-hard: #2b2b2b;
     
-    --color-kite-blue: #4A8DF7;
+    --color-kite-blue: #1D9BF0;
     --color-kite-green: #5B9A5D;
     --color-kite-red: #E25F5B;
     
@@ -164,11 +164,11 @@
       --border-color-soft: #334155;
       --border-color-hard: #334155;
       
-      --text-color: #F3F4F6;
-      --text-light-color: #A6AFBC;
-      --text-muted-color: #7F8A99;
+      --text-color: #E7E9EA;
+      --text-light-color: #71767B;
+      --text-muted-color: #71767B;
       
-      --color-kite-blue: #4A86F7;
+      --color-kite-blue: #1D9BF0;
     }
   }
 
@@ -186,11 +186,11 @@
       --border-color-soft: #2b2b2b;
       --border-color-hard: #2b2b2b;
       
-      --text-color: #e0e0e0;
-      --text-light-color: #9b9b9b;
-      --text-muted-color: #8A8A8A;
+      --text-color: #E7E9EA;
+      --text-light-color: #71767B;
+      --text-muted-color: #71767B;
       
-      --color-kite-blue: #387ED1;
+      --color-kite-blue: #1D9BF0;
       --color-kite-green: #53b987;
       --color-kite-red: #eb5b3c;
       
@@ -290,7 +290,7 @@
 
 :root.dark .text-blue-800 { color: #93c5fd !important; }
 :root.dark .text-blue-900 { color: #bfdbfe !important; }
-:root.dark .border-blue-300 { border-color: #387ed1 !important; }
+:root.dark .border-blue-300 { border-color: #1D9BF0 !important; }
 
 :root.dark .text-red, :root.dark .text-red { color: #ef4444 !important; }
 :root.dark .bg-red-50\/50, :root.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.1) !important; }
@@ -590,4 +590,18 @@ html.dark .text-desktop-dark-bbbbbbd9 {
 }
 html.dark .text-desktop-dark-666666 {
     color: #666666 !important;
+}
+
+/* Force specific hardcoded dark mode colors to follow Twitter scheme */
+html.dark .dark\:text-\[\#BBBBBB\],
+html.dark .dark\:text-\[\#9b9b9b\] {
+    color: #71767B !important;
+}
+
+html.dark .dark\:text-\[\#4987EE\] {
+    color: #1D9BF0 !important;
+}
+
+html.dark .dark\:border-\[\#4987EE\] {
+    border-color: #1D9BF0 !important;
 }
