@@ -470,7 +470,7 @@ export default function AddInvestmentModal({
                         setOrderMode("BUY");
                         setFormData({ ...formData, investorIds: [] });
                       }}
-                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "BUY" ? "bg-[#4184F3] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:md:hover:bg-[#131415]"}`}
+                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "BUY" ? "bg-[#4184F3] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:md:hover:bg-[#000000]"}`}
                     >
                       BUY
                     </button>
@@ -479,7 +479,7 @@ export default function AddInvestmentModal({
                         setOrderMode("SELL");
                         setFormData({ ...formData, investorIds: [] });
                       }}
-                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "SELL" ? "bg-[#DF514C] dark:bg-[#E25F5B] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:md:hover:bg-[#131415]"}`}
+                      className={`px-4 py-1.5 rounded-[4px] text-[14px] font-medium transition-colors ${orderMode === "SELL" ? "bg-[#DF514C] dark:bg-[#E25F5B] text-white" : "text-gray-500 dark:text-[#8F8F8F] hover:bg-gray-200 dark:md:hover:bg-[#000000]"}`}
                     >
                       SELL
                     </button>
@@ -548,7 +548,7 @@ export default function AddInvestmentModal({
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-[#222222] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] shadow-lg z-[60] flex flex-col overflow-hidden max-h-[250px]"
+                            className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-[#000000] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] shadow-lg z-[60] flex flex-col overflow-hidden max-h-[250px]"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <div className="p-2 border-b border-gray-100 dark:border-[#2A2A2A] shrink-0">
@@ -604,7 +604,7 @@ export default function AddInvestmentModal({
                                       );
                                       setDesktopShowBusinessSelect(false);
                                     }}
-                                    className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:md:hover:bg-[#131415] flex items-center justify-between"
+                                    className="w-full text-left px-3 py-2 text-[13px] text-gray-700 dark:text-[#C4C4C4] hover:bg-gray-50 dark:md:hover:bg-[#000000] flex items-center justify-between"
                                   >
                                     {b.shortName
                                       ? b.shortName.toUpperCase()
@@ -653,7 +653,7 @@ export default function AddInvestmentModal({
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -5 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-[#222222] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] shadow-lg z-[60] flex flex-col overflow-hidden max-h-[250px]"
+                            className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-[#000000] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] shadow-lg z-[60] flex flex-col overflow-hidden max-h-[250px]"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <div className="p-2 border-b border-gray-100 dark:border-[#2A2A2A] shrink-0 flex flex-col gap-2">
@@ -806,7 +806,7 @@ export default function AddInvestmentModal({
       setInvestorSearch("");
     }
   }}
-                                      className={`w-full text-left px-3 py-2 text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#E3E3E3]"}`}
+                                      className={`w-full text-left px-3 py-2 text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#E3E3E3]"}`}
                                     >
                                       <div className="flex items-center gap-2 overflow-hidden flex-1">
                                         {i.photoUrl ? (
@@ -944,7 +944,7 @@ export default function AddInvestmentModal({
                                 inputMode === "AMOUNT" ? "QTY" : "AMOUNT",
                               );
                             }}
-                            className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded text-[#4184F3]"
+                            className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#000000] rounded text-[#4184F3]"
                           >
                             <ArrowUpDown className="w-4 h-4" />
                           </button>)}
@@ -1141,7 +1141,7 @@ export default function AddInvestmentModal({
               <div className="px-4 md:px-6 py-4 flex justify-between items-center border-t border-gray-100 dark:border-[#2A2A2A]/30 mt-auto shrink-0 bg-white dark:bg-[#111111]">
                 <button
                   onClick={onClose}
-                  className="hidden md:block w-full md:w-auto px-6 py-2 rounded-[4px] text-[14px] font-medium text-gray-700 dark:text-[#C4C4C4] border border-gray-200 dark:border-[#2A2A2A] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors"
+                  className="hidden md:block w-full md:w-auto px-6 py-2 rounded-[4px] text-[14px] font-medium text-gray-700 dark:text-[#C4C4C4] border border-gray-200 dark:border-[#2A2A2A] hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors"
                 >
                   Cancel
                 </button>
@@ -1169,14 +1169,14 @@ export default function AddInvestmentModal({
             </motion.div>
           ) : (
             <motion.div
-              className="w-full max-w-[680px] bg-white dark:bg-[#222222] rounded-[4px] shadow-2xl flex flex-col font-sans overflow-hidden border border-gray-200/50 dark:border-[#2A2A2A]/50"
+              className="w-full max-w-[680px] bg-white dark:bg-[#000000] rounded-[4px] shadow-2xl flex flex-col font-sans overflow-hidden border border-gray-200/50 dark:border-[#2A2A2A]/50"
               onClick={(e) => {
                 e.stopPropagation();
                 setDesktopShowInvestorSelect(false);
               }}
             >
               <div
-                className={`h-[70px] px-6 flex items-center justify-between transition-colors duration-300 ${orderMode === "BUY" ? "bg-[#4184F3] dark:bg-[#222222]" : "bg-[#FF5722] dark:bg-[#222222]"}`}
+                className={`h-[70px] px-6 flex items-center justify-between transition-colors duration-300 ${orderMode === "BUY" ? "bg-[#4184F3] dark:bg-[#000000]" : "bg-[#FF5722] dark:bg-[#000000]"}`}
               >
                 <div className="flex flex-col text-white">
                   <div className="flex items-center gap-[10px]">
@@ -1250,7 +1250,7 @@ export default function AddInvestmentModal({
                         <div className="relative group w-full h-[44.5px]">
                           <label className={`flex items-center gap-[6px] absolute transition-all duration-200 z-10 font-sans pointer-events-none ${
                             desktopShowInvestorSelect || selectedInvestors.length > 0
-                              ? "top-[-9px] left-[10px] text-[10.8px] px-[5px] bg-[#FFFFFF] dark:bg-[#222222] " + (desktopShowInvestorSelect ? (orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]") : "text-[#9B9B9B] dark:text-[#666666] group-focus-within:" + (orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"))
+                              ? "top-[-9px] left-[10px] text-[10.8px] px-[5px] bg-[#FFFFFF] dark:bg-[#000000] " + (desktopShowInvestorSelect ? (orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]") : "text-[#9B9B9B] dark:text-[#666666] group-focus-within:" + (orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"))
                               : "top-[13px] left-[15px] text-[13px] px-0 text-gray-400 bg-transparent"
                           }`}>
                             <Users className={desktopShowInvestorSelect || selectedInvestors.length > 0 ? "w-3 h-3" : "w-3.5 h-3.5"} /> Select Investor
@@ -1302,7 +1302,7 @@ export default function AddInvestmentModal({
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -5 }}
                                 transition={{ duration: 0.15 }}
-                                className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-[#222222] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] shadow-lg z-[60] flex flex-col overflow-hidden max-h-[250px]"
+                                className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-[#000000] border border-gray-200 dark:border-[#2A2A2A] rounded-[4px] shadow-lg z-[60] flex flex-col overflow-hidden max-h-[250px]"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <div className="p-2 border-b border-gray-100 dark:border-[#2A2A2A] shrink-0 flex flex-col gap-2">
@@ -1450,7 +1450,7 @@ export default function AddInvestmentModal({
       setInvestorSearch("");
     }
   }}
-                                          className={`w-full text-left px-[15px] py-[10px] border-b border-gray-200 dark:border-[#333333] last:border-0 text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#FFFFFF]"}`}
+                                          className={`w-full text-left px-[15px] py-[10px] border-b border-gray-200 dark:border-[#333333] last:border-0 text-[13px] hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors flex items-center justify-between ${formData.investorIds.includes(i.id) ? "bg-blue-50/50 dark:bg-[#4184F3]/10 text-[#4184F3]" : "text-gray-900 dark:text-[#FFFFFF]"}`}
                                         >
                                           <div className="flex items-center gap-2 overflow-hidden flex-1">
                                             {i.photoUrl ? (
@@ -1544,7 +1544,7 @@ export default function AddInvestmentModal({
                         </div>
                     </div>
                     <div className="relative group w-[172.18px] h-[44.5px]">
-                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#222222] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
+                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#000000] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
                           {inputMode === "QTY" ? "Qty." : "Amount"}
                         </label>
                         <div className="relative w-[172.18px] h-[44.5px]">
@@ -1561,7 +1561,7 @@ export default function AddInvestmentModal({
                                 inputMode === "QTY" ? "AMOUNT" : "QTY",
                               )
                             }
-                            className="absolute right-0 top-0 h-full w-[34.7px] p-[14px_7px] flex items-center justify-center bg-[#F8F8F8] dark:bg-[#1E1E1E] hover:bg-[#EBEBEB] dark:hover:bg-[#2A2A2A] text-gray-500 cursor-pointer rounded-r-[3.5px] border-l border-gray-200 dark:border-[#2A2A2A] transition-colors"
+                            className="absolute right-0 top-0 h-full w-[34.7px] p-[14px_7px] flex items-center justify-center bg-[#F8F8F8] dark:bg-[#000000] hover:bg-[#EBEBEB] dark:hover:bg-[#000000] text-gray-500 cursor-pointer rounded-r-[3.5px] border-l border-gray-200 dark:border-[#2A2A2A] transition-colors"
                           >
                             {inputMode === "QTY" ? (
                               <svg
@@ -1597,7 +1597,7 @@ export default function AddInvestmentModal({
                         </div>
                     </div>
                     <div className="relative group w-[172.18px] h-[44.5px]">
-                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#222222] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
+                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#000000] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
                           Price
                         </label>
                         <input
@@ -1616,7 +1616,7 @@ export default function AddInvestmentModal({
                 ) : (
                   <div className="grid grid-cols-2 gap-[20px] items-start">
                     <div className="relative group w-[172.18px] h-[44.5px]">
-                      <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#222222] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
+                      <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#000000] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
                         Manage Month
                       </label>
                       <input
@@ -1632,7 +1632,7 @@ export default function AddInvestmentModal({
                       />
                     </div>
                     <div className="relative group w-[172.18px] h-[44.5px]">
-                      <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#222222] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
+                      <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#000000] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
                         Roi
                       </label>
                       <input
@@ -1644,7 +1644,7 @@ export default function AddInvestmentModal({
                     </div>
                     <div>
                       <div className="relative group w-[172.18px] h-[44.5px]">
-                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#222222] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
+                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#000000] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
                           {orderMode === "SELL" && orderTab === "CAP" ? "HPG Tax" : "BSE Brokrage"}
                         </label>
                         <input
@@ -1673,7 +1673,7 @@ export default function AddInvestmentModal({
                     </div>
                     <div>
                       <div className="relative group w-[172.18px] h-[44.5px]">
-                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#222222] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
+                        <label className={`absolute top-[-9px] left-[10px] text-[10.8px] px-[5px] text-[#9B9B9B] dark:text-[#666666] bg-[#FFFFFF] dark:bg-[#000000] z-10 font-sans pointer-events-none transition-colors group-focus-within:${orderMode === "BUY" ? "text-[#4184F3]" : "text-[#FF5722]"}`}>
                           INC Brokrage
                         </label>
                         <input
@@ -1749,7 +1749,7 @@ export default function AddInvestmentModal({
                   </button>
                   <button
                     onClick={onClose}
-                    className="w-[87.77px] h-[36.8px] flex items-center justify-center p-[10px_20px] rounded-[4px] border border-gray-200 dark:border-[#444444] text-[14.8px] font-medium text-gray-700 dark:text-[#BBBBBB] dark:bg-transparent hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors"
+                    className="w-[87.77px] h-[36.8px] flex items-center justify-center p-[10px_20px] rounded-[4px] border border-gray-200 dark:border-[#444444] text-[14.8px] font-medium text-gray-700 dark:text-[#BBBBBB] dark:bg-transparent hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors"
                   >
                     Cancel
                   </button>

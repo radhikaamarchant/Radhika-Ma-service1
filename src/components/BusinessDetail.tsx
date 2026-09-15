@@ -1260,7 +1260,7 @@ export default function BusinessDetail({
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
-                  className="w-full py-2.5 bg-transparent border border-kite-border text-kite-text text-[14px] font-medium rounded hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors disabled:opacity-50"
+                  className="w-full py-2.5 bg-transparent border border-kite-border text-kite-text text-[14px] font-medium rounded hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1280,7 +1280,7 @@ export default function BusinessDetail({
                 <p className="text-[15px] font-medium text-kite-text">{formatINR(totalFunded)}</p>
               </div>
               <div 
-                className="cursor-pointer hover:bg-gray-50 dark:md:hover:bg-[#131415] p-2 -m-2 rounded transition-colors"
+                className="cursor-pointer hover:bg-gray-50 dark:md:hover:bg-[#000000] p-2 -m-2 rounded transition-colors"
                 onClick={() => setCurrentView("trigger-suggestion")}
               >
                 <p className="text-[11px] md:text-[12px] text-kite-text-light uppercase tracking-wide font-normal mb-1 flex items-center gap-1">Value <ChevronRight className="w-3 h-3"/></p>
@@ -1415,7 +1415,7 @@ export default function BusinessDetail({
           <div className="pt-6 mt-6 border-t border-kite-border-soft">
             <button 
               onClick={() => setCurrentView("trigger-history")}
-              className="w-full py-3 bg-white dark:bg-transparent border border-kite-border-hard text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors rounded text-[14px] md:text-[15px] font-normal flex items-center justify-between px-4"
+              className="w-full py-3 bg-white dark:bg-transparent border border-kite-border-hard text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors rounded text-[14px] md:text-[15px] font-normal flex items-center justify-between px-4"
             >
               <span>View Trigger Set History</span>
               <ChevronRight className="w-4 h-4" />

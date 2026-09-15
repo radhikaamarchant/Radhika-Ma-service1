@@ -361,8 +361,8 @@ export default function AdminPage() {
   const fees = calculateFees();
 
   return (
-    <div className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] min-h-full flex flex-col font-sans w-full">
-      <div className="w-full flex-1 bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] pb-0 md:pb-0">
+    <div className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] min-h-full flex flex-col font-sans w-full">
+      <div className="w-full flex-1 bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] pb-0 md:pb-0">
         
         {currentView === "menu" && (
           <div className="animate-fade-in">
@@ -374,7 +374,7 @@ export default function AdminPage() {
                 <div className="relative">
                   <button 
                     onClick={() => setShowNotifications(!showNotifications)}
-                    className="relative p-1 rounded-full hover:bg-gray-200 dark:md:hover:bg-[#131415] transition-colors focus:outline-none"
+                    className="relative p-1 rounded-full hover:bg-gray-200 dark:md:hover:bg-[#000000] transition-colors focus:outline-none"
                   >
                     <Bell className="w-5 h-5 text-kite-text-light" />
                     {state.error && localStorage.getItem("hideErrorBanner") !== "true" && (
@@ -464,42 +464,42 @@ export default function AdminPage() {
                  <h3 className="text-[14px] md:text-[15px] font-medium text-kite-text">Account</h3>
                </div>
                <div className="flex flex-col">
-                 <button onClick={() => setCurrentView("funds")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("funds")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Funds</span>
                     <span className="text-[18px] text-kite-text-light font-serif mr-1">₹</span>
                  </button>
                  
-                 <button onClick={() => setShowAppCode(true)} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setShowAppCode(true)} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">App Code</span>
                     <Lock className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-                 <button onClick={() => setCurrentView("profile")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("profile")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Profile</span>
                     <User className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-                 <button onClick={() => setCurrentView("settings")} className="md:hidden flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("settings")} className="md:hidden flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] font-normal text-kite-text">Setting</span>
                     <Settings className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-                 <button onClick={() => setCurrentView("show_users")} className="hidden md:flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("show_users")} className="hidden md:flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Show User Details</span>
                     <Users className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
                  {state.currentUser?.role === "CEO" && (
-                 <button onClick={() => setCurrentView("users")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("users")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Users</span>
                     <Users className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
                  )}
-                 <button onClick={() => setCurrentView("bank")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("bank")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Bank details</span>
                     <Building2 className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-                 <button onClick={() => setCurrentView("market")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("market")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Market Time</span>
                     <Clock className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
-                 <button onClick={() => setCurrentView("tax_payer")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors group w-full text-left">
+                 <button onClick={() => setCurrentView("tax_payer")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Tax Payer</span>
                     <Percent className="w-4 h-4 text-kite-text-light mr-1" />
                  </button>
@@ -514,7 +514,7 @@ export default function AdminPage() {
         )}
 
         {currentView === "funds" && (
-          <div className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] min-h-full flex flex-col animate-fade-in relative -mx-0">
+          <div className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] min-h-full flex flex-col animate-fade-in relative -mx-0">
             <div className="bg-white dark:bg-kite-surface flex items-center px-4 py-4 md:py-5 border-b border-kite-border-soft sticky top-0 z-10">
               <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
                 <ArrowLeft className="w-5 h-5" />
@@ -650,7 +650,7 @@ export default function AdminPage() {
                        const bnum = parseInt((b.userId||"").replace("RMAS",""))||0;
                        return bnum - anum;
                     }).map((user) => (
-                      <tr key={user.id} className="border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#131415]">
+                      <tr key={user.id} className="border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000]">
                         <td className="py-3 text-[13px] text-kite-text">{user.userId || user.id}</td>
                         <td className="py-3 text-[13px] text-kite-text">{user.name}</td>
                         <td className="py-3 text-[13px] text-kite-text">{user.email}</td>
@@ -794,7 +794,7 @@ export default function AdminPage() {
                   placeholder="Search users..."
                   value={userSearchTerm}
                   onChange={(e) => setUserSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] border border-kite-border rounded text-[14px] text-kite-text focus:outline-none focus:border-kite-blue transition-colors"
+                  className="w-full pl-9 pr-4 py-2 bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] border border-kite-border rounded text-[14px] text-kite-text focus:outline-none focus:border-kite-blue transition-colors"
                 />
               </div>
             </div>
@@ -817,7 +817,7 @@ export default function AdminPage() {
                       (u.email || "").toLowerCase().includes(userSearchTerm.toLowerCase())
                     ))
                     .map((u, i) => (
-                      <tr key={u.id || i} className="hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors">
+                      <tr key={u.id || i} className="hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors">
                         <td className="py-3 px-4 text-[14px] font-medium text-kite-text">{u.userId}</td>
                         <td className="py-3 px-4 text-[14px] text-kite-text">{u.name}</td>
                         <td className="py-3 px-4 text-[14px] text-kite-text">{u.email || '-'}</td>
@@ -1001,7 +1001,7 @@ export default function AdminPage() {
               {bankTransactions.length > 0 ? (
                 <div className="border border-kite-border rounded overflow-hidden">
                   <table className="w-full text-left text-[13px] md:text-[14px] text-kite-text">
-                    <thead className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border">
+                    <thead className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] border-b border-kite-border">
                       <tr>
                         <th className="py-3 px-4 font-normal text-kite-text-light text-[12px] uppercase tracking-wider">Date</th>
                         <th className="py-3 px-4 font-normal text-kite-text-light text-[12px] uppercase tracking-wider">User List</th>
@@ -1020,7 +1020,7 @@ export default function AdminPage() {
                           year: "numeric",
                         }).toLowerCase().includes(statementSearchTerm.toLowerCase())
                       ).map((tx) => (
-                        <tr key={tx.id} className="hover:bg-gray-50 dark:md:hover:bg-[#131415] border-b border-kite-border-soft">
+                        <tr key={tx.id} className="hover:bg-gray-50 dark:md:hover:bg-[#000000] border-b border-kite-border-soft">
                           <td className="py-3 px-4 text-[12px] text-kite-text-light whitespace-nowrap align-middle">
                             {new Date(tx.date).toLocaleDateString("en-IN", {
                               day: "2-digit",
@@ -1046,7 +1046,7 @@ export default function AdminPage() {
                   </table>
                 </div>
               ) : (
-                <div className="py-12 text-center text-kite-text-light text-[13px] md:text-[14px] border border-kite-border-soft rounded bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818]">
+                <div className="py-12 text-center text-kite-text-light text-[13px] md:text-[14px] border border-kite-border-soft rounded bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000]">
                   No transactions recorded yet.
                 </div>
               )}
@@ -1073,11 +1073,11 @@ export default function AdminPage() {
                  <span className="text-[13px] text-kite-blue font-medium uppercase tracking-wider">Theme</span>
                </div>
                <div className="bg-white dark:bg-kite-surface">
-                 <button onClick={() => setTheme("light")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft active:bg-gray-50 dark:active:bg-[#131415] w-full text-left">
+                 <button onClick={() => setTheme("light")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft active:bg-gray-50 dark:active:bg-[#000000] w-full text-left">
                     <span className="text-[15px] font-normal text-kite-text">Default</span>
                     {theme === "light" && <BadgeCheck className="w-4 h-4 text-kite-blue" />}
                  </button>
-                 <button onClick={() => setTheme("dark")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft active:bg-gray-50 dark:active:bg-[#131415] w-full text-left">
+                 <button onClick={() => setTheme("dark")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft active:bg-gray-50 dark:active:bg-[#000000] w-full text-left">
                     <span className="text-[15px] font-normal text-kite-text">Dark</span>
                     {theme === "dark" && <BadgeCheck className="w-4 h-4 text-kite-blue" />}
                  </button>
@@ -1098,7 +1098,7 @@ export default function AdminPage() {
               </h3>
               <button
                 onClick={() => setImageSrc(null)}
-                className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded-full text-kite-text-light"
+                className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#000000] rounded-full text-kite-text-light"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1134,7 +1134,7 @@ export default function AdminPage() {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setImageSrc(null)}
-                  className="px-5 py-2 text-[13px] md:text-[14px] font-normal text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] border border-kite-border rounded"
+                  className="px-5 py-2 text-[13px] md:text-[14px] font-normal text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#000000] border border-kite-border rounded"
                 >
                   Cancel
                 </button>

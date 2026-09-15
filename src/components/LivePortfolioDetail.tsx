@@ -181,7 +181,7 @@ export function LivePortfolioDetail({
               {""}
               <button
                 onClick={() => setSelectedInvestment(null)}
-                className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors"
+                className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#000000] rounded-full transition-colors"
               >
                 {""}
                 <ArrowLeft className="w-[24px] h-[24px]" />
@@ -202,7 +202,7 @@ export function LivePortfolioDetail({
                   {""}
                   <button
                     onClick={() => setShowTradeOptions(!showTradeOptions)}
-                    className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors outline-none"
+                    className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#000000] rounded-full transition-colors outline-none"
                   >
                     {""}
                     <MoreVertical className="w-[24px] h-[24px]" />
@@ -279,7 +279,7 @@ export function LivePortfolioDetail({
                         >
                           {""}
                           <button
-                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors"
+                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:md:hover:bg-[#000000] transition-colors"
                             onClick={() => {
                               setShowTradeOptions(false);
                               if (onBuyClick) onBuyClick(selectedInvestment);
@@ -290,7 +290,7 @@ export function LivePortfolioDetail({
                           </button>
                           {""}
                           <button
-                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border"
+                            className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#000000] transition-colors border-t border-kite-border"
                             onClick={() => {
     setShowTradeOptions(false);
     let defaultComm = 0;

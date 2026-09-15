@@ -275,7 +275,7 @@ export default function Businesses() {
         <div
           key={`inv_${business.id}_${idx}`}
           onClick={() => setSelectedBusinessId(business.id)}
-          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group">
+          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#000000] hover:bg-gray-50 dark:md:hover:bg-[#000000] cursor-pointer transition-colors min-h-[50px] group">
           
                           {/* Mobile View */}
                           <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
@@ -489,7 +489,7 @@ export default function Businesses() {
   }, [filteredBusinesses, businessStatsMap, state.investments, expandedBusinessId]);
 
   return (
-    <div className="w-full space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
+    <div className="w-full space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#000000] min-h-screen">
       <div className="print:hidden space-y-6">
         {selectedBusinessId ?
         <BusinessDetail
@@ -499,11 +499,11 @@ export default function Businesses() {
         viewMode === "list" &&
         <>
             <div className="w-full">
-              <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
+              <div className="sticky top-0 z-30 bg-white dark:bg-[#000000] dark:md:bg-[#000000] w-full">
                 {/* Header Section */}
                 
                 {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
+                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#000000] dark:md:bg-[#000000] w-full md:hidden pt-3 px-4 pb-3">
                   <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
                     <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
                     <DebouncedInput
@@ -526,7 +526,7 @@ export default function Businesses() {
                   </div>
                 </div>
 
-                <div className="hidden md:flex px-4 pt-4 pb-4 flex-row justify-between items-center relative mb-0 bg-white dark:bg-kite-bg dark:md:bg-[#181818]">
+                <div className="hidden md:flex px-4 pt-4 pb-4 flex-row justify-between items-center relative mb-0 bg-white dark:bg-kite-bg dark:md:bg-[#000000]">
                   <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between transition-all duration-300 gap-3 md:gap-0">
                     <div className="hidden md:block">
                       <h2 className="text-[13px] md:text-[14px] font-medium text-kite-text tracking-wider uppercase">
@@ -592,7 +592,7 @@ export default function Businesses() {
                 </div>
 
                 {/* DESKTOP HEADER */}
-                <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr] px-4 py-3 border-b border-kite-border dark:border-[#2b2b2b] text-[12px] font-semibold text-[#9b9b9b] dark:text-[#9b9b9b] uppercase tracking-wider bg-white dark:bg-kite-surface dark:md:bg-[#181818]">
+                <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr] px-4 py-3 border-b border-kite-border dark:border-[#2b2b2b] text-[12px] font-semibold text-[#9b9b9b] dark:text-[#9b9b9b] uppercase tracking-wider bg-white dark:bg-kite-surface dark:md:bg-[#000000]">
                   <div>Business Name</div>
                   <div>Owner Name</div>
                   <div>ID</div>
@@ -651,7 +651,7 @@ export default function Businesses() {
                 }));
                 setViewMode("add-step-1");setMobileStep(1);
               }}
-              className="w-full py-3.5 text-[15px] font-medium transition-all duration-200 rounded border bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border shadow-sm hover:bg-gray-50 dark:md:hover:bg-[#131415] hover:brightness-105">
+              className="w-full py-3.5 text-[15px] font-medium transition-all duration-200 rounded border bg-kite-bg text-kite-text-light dark:text-kite-text border-kite-border dark:border-kite-border shadow-sm hover:bg-gray-50 dark:md:hover:bg-[#000000] hover:brightness-105">
               
                 Already Registered Owner
               </button>
@@ -692,7 +692,7 @@ export default function Businesses() {
                     setOwnerSearch("");
                   }} />
                 
-                      <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showOwnerSelect || formData.businessId ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#181818] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
+                      <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showOwnerSelect || formData.businessId ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#000000] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
                         Select Existing Owner
                       </label>
                       <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-10">
@@ -713,7 +713,7 @@ export default function Businesses() {
                       
                       {showOwnerSelect &&
                 <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
-                          <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
+                          <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#000000]">
                             <div className="relative">
                               <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
                               <DebouncedInput
@@ -743,7 +743,7 @@ export default function Businesses() {
                     map((b) =>
                     <div
                       key={`opt_${b.id}`}
-                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#000000] cursor-pointer flex flex-col border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
                       onClick={() => {
                         handleExistingOwnerChange({
                           target: { value: b.businessId }
@@ -786,7 +786,7 @@ export default function Businesses() {
                   className="peer w-full border border-gray-300 dark:border-gray-600 rounded-none px-4 py-3 bg-transparent text-sm font-mono text-kite-text-light dark:text-kite-text-light cursor-not-allowed focus:outline-none focus:border-[#387ed1] focus:ring-1 focus:ring-[#387ed1] transition-colors z-10 relative"
                   value={formData.businessId} />
                 
-                    <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                    <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                       OWNER ID NUMBER
                     </label>
                   </div>
@@ -803,7 +803,7 @@ export default function Businesses() {
                   setFormData({ ...formData, name: e.target.value.toUpperCase() })
                   } />
                 
-                    <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                    <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                       Business Name
                     </label>
                   </div>
@@ -821,7 +821,7 @@ export default function Businesses() {
                   })
                   } />
                 
-                    <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                    <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                       Short Business Name
                     </label>
                   </div>
@@ -854,13 +854,13 @@ export default function Businesses() {
                     })
                     } />
                   
-                        <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                        <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                           Owner Name
                         </label>
                       </div>
                       {showInvestorSelect &&
                 <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
-                          <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
+                          <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#000000]">
                             <div className="relative">
                               <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
                               <DebouncedInput
@@ -884,7 +884,7 @@ export default function Businesses() {
                     map((inv) =>
                     <div
                       key={inv.id}
-                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
+                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#000000] cursor-pointer flex flex-row items-center border-b border-kite-border dark:border-kite-border last:border-0 transition-colors gap-3"
                       onClick={() => {
                         setFormData((prev) => ({
                           ...prev,
@@ -954,7 +954,7 @@ export default function Businesses() {
                         Trust Authorities
                       </option>
                     </select>
-                    <label className="absolute left-3 -top-2.5 px-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#181818] z-20 pointer-events-none">
+                    <label className="absolute left-3 -top-2.5 px-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide bg-white dark:bg-kite-bg md:dark:bg-[#000000] z-20 pointer-events-none">
                       Authority Type
                     </label>
                   </div>
@@ -976,7 +976,7 @@ export default function Businesses() {
                   })
                   } />
                 
-                      <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                      <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                         RMAS Subsidy Rate (%)
                       </label>
                       <p className="text-[11px] md:text-[12px] text-kite-text dark:text-kite-text-light mt-1.5">
@@ -1013,7 +1013,7 @@ export default function Businesses() {
                     })
                     } />
                   
-                      <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                      <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                         Funding Required (₹)
                       </label>
                     </div>
@@ -1033,7 +1033,7 @@ export default function Businesses() {
                     })
                     } />
                   
-                      <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                      <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                         Interest Rate (%)
                       </label>
                     </div>
@@ -1049,7 +1049,7 @@ export default function Businesses() {
                     !showInterestCalculation
                   )
                   }
-                  className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text transition-colors font-medium text-[13px] md:text-[14px]">
+                  className="w-full flex justify-between items-center p-3 md:p-4 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:md:hover:bg-[#000000] text-kite-text transition-colors font-medium text-[13px] md:text-[14px]">
                   
                           <span className="truncate">
                             Show Interest Return Breakdown
@@ -1079,7 +1079,7 @@ export default function Businesses() {
                               </p>
                             </div>
                             <div className="text-left flex flex-col gap-2 min-w-0">
-                              <p className="text-[13px] md:text-[14px] font-normal text-kite-text-light dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818] px-3 py-1.5 rounded-sm break-words whitespace-normal">
+                              <p className="text-[13px] md:text-[14px] font-normal text-kite-text-light dark:text-kite-text-light border border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#000000] px-3 py-1.5 rounded-sm break-words whitespace-normal">
                                 Monthly Return:{" "}
                                 <span className="font-normal font-mono text-kite-text dark:text-kite-text break-all">
                                   {formatINR(
@@ -1194,7 +1194,7 @@ export default function Businesses() {
                     }
                   }} />
                 
-                  <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showBankSelect || formData.bankName ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#181818] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
+                  <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showBankSelect || formData.bankName ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#000000] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
                     Bank Name
                   </label>
                   <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-10">
@@ -1210,7 +1210,7 @@ export default function Businesses() {
                   </div>
                   {showBankSelect && ownerMode !== "existing" &&
                 <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
-                      <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
+                      <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#000000]">
                         <div className="relative">
                           <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
                           <DebouncedInput
@@ -1230,7 +1230,7 @@ export default function Businesses() {
                     ).map((b) =>
                     <div
                       key={b}
-                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                      className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#000000] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
                       onClick={() => {
                         setFormData({ ...formData, bankName: b });
                         setShowBankSelect(false);
@@ -1284,7 +1284,7 @@ export default function Businesses() {
                   }}
                   readOnly={ownerMode === "existing"} />
                 
-                  <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                  <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                     Account Number
                   </label>
                 </div>
@@ -1310,7 +1310,7 @@ export default function Businesses() {
                   }}
                   readOnly={ownerMode === "existing"} />
                 
-                  <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                  <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                     IFSC Code
                   </label>
                 </div>
@@ -1329,7 +1329,7 @@ export default function Businesses() {
                   }
                   readOnly={ownerMode === "existing"} />
                 
-                  <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                  <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                     Account Holder Name
                   </label>
                   {ownerMode === "existing" &&
@@ -1363,7 +1363,7 @@ export default function Businesses() {
                 })
                 } />
               
-                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Registration Fee (₹)
                 </label>
               </div>

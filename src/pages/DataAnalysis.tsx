@@ -378,7 +378,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
                                 <div className="flex flex-wrap gap-2">
                                     {business.companyInfo.documents && business.companyInfo.documents.length > 0 ?
                       business.companyInfo.documents.map((doc, idx) =>
-                      <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{doc}</span>
+                      <span key={idx} className="bg-[#000000] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{doc}</span>
                       ) :
 
                       <span className="text-gray-500 text-sm">No documents provided</span>
@@ -390,7 +390,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
                                 <div className="flex flex-wrap gap-2">
                                     {business.companyInfo.governmentRegIdentifies && business.companyInfo.governmentRegIdentifies.length > 0 ?
                       business.companyInfo.governmentRegIdentifies.map((reg, idx) =>
-                      <span key={idx} className="bg-[#222] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{reg}</span>
+                      <span key={idx} className="bg-[#000000] border border-[#333] px-3 py-1.5 rounded text-xs text-gray-300">{reg}</span>
                       ) :
 
                       <span className="text-gray-500 text-sm">No reg identifies provided</span>
@@ -940,7 +940,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
               onNavigate("investments");
             }
           }}
-          className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border/40 py-[12px] px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer">
+          className="bg-white dark:bg-kite-bg dark:md:bg-[#000000] border-b border-kite-border/40 py-[12px] px-4 flex justify-between items-center active:bg-gray-50 dark:active:bg-gray-800/50 transition-colors cursor-pointer">
           
                 <div className="flex flex-col items-start gap-[4px]">
                   <span className="font-medium text-[13px] text-kite-text">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</span>
@@ -966,7 +966,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
   return (
     <>
       <div className="w-full md:hidden pb-4">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-[#1c2a37] bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] sticky top-0 z-10">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-[#1c2a37] bg-white dark:bg-[#000000] dark:md:bg-[#000000] sticky top-0 z-10">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 md:dark:text-[#7A7A7A] dark:text-[#8F8F8F]" />
             <DebouncedInput
@@ -993,7 +993,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
             </div>
           </div>
           
-          <div className="sticky top-0 z-40 bg-white dark:bg-kite-bg dark:md:bg-[#181818] pt-2 pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="sticky top-0 z-40 bg-white dark:bg-kite-bg dark:md:bg-[#000000] pt-2 pb-0 -mx-4 px-4 md:mx-0 md:px-0">
             <div className="flex overflow-x-auto no-scrollbar border-b border-kite-border/50 items-center whitespace-nowrap">
               {cities.map((city: string) => {
                 const investorCountForCity = state.investors.filter((i: any) => i.address?.city?.toLowerCase()?.trim() === city).length;
@@ -1038,7 +1038,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
           </div>
         </> :
 
-        <div className="bg-white dark:bg-[#222222] animate-in fade-in duration-300 rounded-sm shadow-xl border border-kite-border flex flex-col min-h-[60vh]">
+        <div className="bg-white dark:bg-[#000000] animate-in fade-in duration-300 rounded-sm shadow-xl border border-kite-border flex flex-col min-h-[60vh]">
           {(() => {
             const b = cityBusinessStats.find((biz: any) => biz.id === expandedBusinessId);
             if (!b) return null;

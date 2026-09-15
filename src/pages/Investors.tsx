@@ -570,7 +570,7 @@ export default function Investors() {
             setSelectedInvestor(investor);
             setViewMode("investor-detail");
           }}
-          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer transition-colors min-h-[50px] group">
+          className="flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#000000] hover:bg-gray-50 dark:md:hover:bg-[#000000] cursor-pointer transition-colors min-h-[50px] group">
           
                           {/* Mobile View */}
                           <div className="flex md:hidden items-center justify-between p-3 border-b border-kite-border">
@@ -711,7 +711,7 @@ export default function Investors() {
   }, [filteredInvestors, selectedPreviewInvestor, previewHistory]);
 
   return (
-    <div className="w-full space-y-3 sm:space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#181818] min-h-screen">
+    <div className="w-full space-y-3 sm:space-y-6 print:m-0 print:p-0 md:px-[12px] dark:md:bg-[#000000] min-h-screen">
       {" "}
       {/* --- Hide this whole container during print --- */}{" "}
       <div className="print:hidden space-y-3 sm:space-y-6">
@@ -739,10 +739,10 @@ export default function Investors() {
         }{" "}
         <div className={viewMode === "list" ? "w-full block" : "w-full hidden"}>
           <div className="w-full">
-            <div className="sticky top-0 z-30 bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full">
+            <div className="sticky top-0 z-30 bg-white dark:bg-[#000000] dark:md:bg-[#000000] w-full">
               
                 {/* MOBILE HEADER */}
-                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#1c2a37] dark:md:bg-[#181818] w-full md:hidden pt-3 px-4 pb-3">
+                <div className="sticky top-0 z-30 bg-[#ececed] dark:bg-[#000000] dark:md:bg-[#000000] w-full md:hidden pt-3 px-4 pb-3">
                   <div className="bg-white dark:bg-transparent rounded-[4px] shadow-sm flex items-center px-3 py-2.5 mb-3 border border-gray-200 dark:border-[#fcfdff]">
                     <Search className="w-5 h-5 text-gray-400 dark:text-[#fcfdff]" />
                     <DebouncedInput
@@ -827,7 +827,7 @@ export default function Investors() {
               </div>
 
               {/* DESKTOP HEADER */}
-              <div className="hidden md:flex items-stretch px-4 bg-white dark:bg-kite-surface dark:md:bg-[#181818] border-y border-kite-border w-full">
+              <div className="hidden md:flex items-stretch px-4 bg-white dark:bg-kite-surface dark:md:bg-[#000000] border-y border-kite-border w-full">
                 <div className="w-[30%] flex items-center text-left py-2 text-[14px] text-kite-text">
                   Investor Name
                 </div>
@@ -891,7 +891,7 @@ export default function Investors() {
             <div className="flex flex-col md:flex-row gap-3 mb-6 border-b border-kite-border pb-4">
               <button
               type="button"
-              className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
+              className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "new" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#000000]"}`}
               onClick={() => {
                 setOwnerMode("new");
                 setFormData({
@@ -909,7 +909,7 @@ export default function Investors() {
               </button>
               <button
               type="button"
-              className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]"}`}
+              className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-[14px] font-normal transition-all duration-200 rounded border ${ownerMode === "existing" ? "bg-kite-blue text-white border-kite-blue" : "bg-white dark:bg-kite-surface text-gray-500 border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#000000]"}`}
               onClick={() => setOwnerMode("existing")}>
               
                 Already Registered Owner
@@ -962,7 +962,7 @@ export default function Investors() {
                 map((name, idx) =>
                 <div
                   key={idx}
-                  className="p-3 hover:bg-gray-50 dark:md:hover:bg-[#131415] cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
+                  className="p-3 hover:bg-gray-50 dark:md:hover:bg-[#000000] cursor-pointer text-kite-text font-normal uppercase text-[13px] md:text-[14px]"
                   onClick={() => {
                     const ownerBiz = state.businesses.find(
                       (b) => b.ownerName === name
@@ -1097,7 +1097,7 @@ export default function Investors() {
                   }
                 }} />
               
-                <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showBankSelect || formData.bankName ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#181818] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
+                <label className={`absolute left-3 px-1 font-medium transition-all duration-200 pointer-events-none uppercase tracking-wide ${showBankSelect || formData.bankName ? '-top-2.5 text-xs bg-white dark:bg-kite-bg md:dark:bg-[#000000] text-[#387ed1] z-20' : 'top-3.5 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 z-10'}`}>
                   Bank Name
                 </label>
                 <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none z-10">
@@ -1114,7 +1114,7 @@ export default function Investors() {
                 
                 {showBankSelect && ownerMode !== "existing" &&
               <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-[#1a1a1a] shadow-xl border border-kite-border dark:border-kite-border rounded-sm max-h-60 overflow-hidden flex flex-col">
-                    <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#181818]">
+                    <div className="p-2 border-b border-kite-border dark:border-kite-border bg-kite-bg dark:bg-kite-bg dark:md:bg-[#000000]">
                       <div className="relative">
                         <Search className="w-3 md:w-3.5 h-3 md:h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-kite-text-light dark:text-kite-text-light" />
                         <DebouncedInput
@@ -1134,7 +1134,7 @@ export default function Investors() {
                   ).map((b) =>
                   <div
                     key={b}
-                    className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#131415] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
+                    className="px-4 py-3 hover:bg-kite-bg dark:md:hover:bg-[#000000] cursor-pointer text-[13px] md:text-[14px] text-kite-text dark:text-kite-text border-b border-kite-border dark:border-kite-border last:border-0 transition-colors"
                     onClick={() => {
                       setFormData({ ...formData, bankName: b });
                       setShowBankSelect(false);
@@ -1182,7 +1182,7 @@ export default function Investors() {
                 }}
                 readOnly={ownerMode === "existing"} />
               
-                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Account Number
                 </label>
               </div>
@@ -1209,7 +1209,7 @@ export default function Investors() {
                 }}
                 readOnly={ownerMode === "existing"} />
               
-                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Bank IFSC Code
                 </label>
               </div>
@@ -1229,7 +1229,7 @@ export default function Investors() {
                 }
                 readOnly={ownerMode === "existing"} />
               
-                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Account Holder Name
                 </label>
                 {ownerMode === "existing" &&
@@ -1261,7 +1261,7 @@ export default function Investors() {
                   }
                 }} />
               
-                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#181818] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#181818] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
+                <label className="absolute left-3 top-3.5 px-1 text-[13px] md:text-[14px] text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white dark:peer-focus:bg-kite-bg md:dark:peer-focus:bg-[#000000] peer-focus:text-[#387ed1] peer-focus:z-20 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-kite-bg md:dark:peer-[:not(:placeholder-shown)]:bg-[#000000] peer-[:not(:placeholder-shown)]:z-20 uppercase tracking-wide font-medium">
                   Radhika Ma Service Charge (₹)
                 </label>
               </div>
@@ -1425,10 +1425,10 @@ export default function Investors() {
           const isProfit = curValue - activeTotalInvested >= 0;
 
           return (
-            <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#181818] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile max-md:fixed max-md:top-0 max-md:left-0 max-md:right-0 max-md:bottom-[calc(56px+env(safe-area-inset-bottom))] max-md:z-[45] max-md:overflow-y-auto">
+            <div className="w-full bg-white dark:bg-kite-bg dark:md:bg-[#000000] md:bg-transparent md:dark:bg-transparent md:mx-auto md:mt-8 animate-slide-in-mobile max-md:fixed max-md:top-0 max-md:left-0 max-md:right-0 max-md:bottom-[calc(56px+env(safe-area-inset-bottom))] max-md:z-[45] max-md:overflow-y-auto">
                 
                 {/* Header and Tabs */}
-                <div className="bg-[#ececed] md:bg-white dark:bg-[#1c2a37] dark:md:bg-[#181818] pt-16 md:pt-4 pb-2 md:pb-0 px-4 md:px-6 relative z-10 border-none md:border-none">
+                <div className="bg-[#ececed] md:bg-white dark:bg-[#000000] dark:md:bg-[#000000] pt-16 md:pt-4 pb-2 md:pb-0 px-4 md:px-6 relative z-10 border-none md:border-none">
                   <div className="flex items-center mb-6">
                     <button
                     onClick={() => setViewMode("investor-detail")}
@@ -1481,7 +1481,7 @@ export default function Investors() {
                 </div>
 
                 {withdrawTab === "holdings" &&
-              <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
+              <div className="bg-white dark:bg-[#000000] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
@@ -1557,7 +1557,7 @@ export default function Investors() {
                         return (
                           <tr
                             key={`desk_inv_h_${h.bizId}_${i}`}
-                            className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
+                            className="hover:bg-gray-50/50 dark:md:hover:bg-[#000000] transition-colors cursor-pointer group"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedPortfolioInvestment({
@@ -1631,7 +1631,7 @@ export default function Investors() {
 
                       {/* Desktop Holdings Summary */}
                       {holdings.length > 0 &&
-                  <div className="hidden md:flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-kite-bg dark:md:bg-[#181818] border-t border-kite-border">
+                  <div className="hidden md:flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-kite-bg dark:md:bg-[#000000] border-t border-kite-border">
                           <div className="flex space-x-16">
                             <div>
                               <p className="text-[12px] text-kite-text mb-1 uppercase tracking-wider">
@@ -1719,8 +1719,8 @@ export default function Investors() {
 
                   <>
                           {/* Kite Style Top Summary Card - Full Width on Mobile */}
-                          <div className="relative bg-white dark:bg-[#14212b] pt-4 pb-2 px-4">
-                            <div className="absolute top-0 left-0 right-0 h-[106px] bg-[#ececed] dark:bg-[#1c2a37] z-0"></div>
+                          <div className="relative bg-white dark:bg-[#000000] pt-4 pb-2 px-4">
+                            <div className="absolute top-0 left-0 right-0 h-[106px] bg-[#ececed] dark:bg-[#000000] z-0"></div>
                             <div className="bg-white dark:bg-[#2b414f] rounded-none border border-gray-300 dark:border-[#2b414f] shadow-sm p-4 relative z-10">
                               <div className="flex justify-between items-start mb-1">
                                 <p className="text-[12px] text-kite-text-light">Invested</p>
@@ -1752,7 +1752,7 @@ export default function Investors() {
                             </div>
                           </div>
                           {/* Kite Style List */}
-                          <div className="bg-white dark:bg-[#14212b] min-h-screen">
+                          <div className="bg-white dark:bg-[#000000] min-h-screen">
                             {holdings.map((h, i) => {
                         const qty = (h.invs as Investment[]).reduce((sum, inv) => {
                           if (inv.quantity) return sum + inv.quantity;
@@ -1771,7 +1771,7 @@ export default function Investors() {
                         return (
                           <div
                             key={`mob_inv_h_${h.bizId}_${i}`}
-                            className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
+                            className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors cursor-pointer"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedPortfolioInvestment({
@@ -1883,7 +1883,7 @@ export default function Investors() {
               }
 
                 {withdrawTab === "positions" &&
-              <div className="bg-white dark:bg-[#14212b] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
+              <div className="bg-white dark:bg-[#000000] min-h-screen md:bg-white md:dark:bg-kite-surface md:border-y md:border-kite-border">
                     {/* Desktop Table (Hidden on Mobile) */}
                     <div className="hidden md:block overflow-x-auto border-b border-kite-border">
                       <table className="w-full text-left text-[13px] md:text-[14px]">
@@ -1944,7 +1944,7 @@ export default function Investors() {
                         return (
                           <tr
                             key={`desk_inv_p_${p.bizId}_${i}`}
-                            className="hover:bg-gray-50/50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer group"
+                            className="hover:bg-gray-50/50 dark:md:hover:bg-[#000000] transition-colors cursor-pointer group"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedPortfolioInvestment({
@@ -2033,7 +2033,7 @@ export default function Investors() {
                         return (
                           <tr
                             key={`${app.id}-${i}`}
-                            className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]">
+                            className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#000000]">
                             
                                   <td className="py-3 px-4 md:px-6">
                                     <div className="flex items-center gap-2">
@@ -2088,7 +2088,7 @@ export default function Investors() {
                         return (
                           <tr
                             key={`${app.id}-${i}`}
-                            className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#131415]">
+                            className="border-b border-kite-border hover:bg-gray-50 dark:md:hover:bg-[#000000]">
                             
                                   <td className="py-3 px-4 md:px-6">
                                     <div className="flex items-center gap-2">
@@ -2154,7 +2154,7 @@ export default function Investors() {
                       return (
                         <div
                           key={`mob_inv_p_${p.bizId}_${i}`}
-                          className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors cursor-pointer"
+                          className="px-4 py-3 border-b border-kite-border-soft md:hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedPortfolioInvestment({

@@ -525,7 +525,7 @@ export default function Investments() {
             return (
               <div
                 key={`grouped_${inv.key}_${idx}`}
-                className="w-full flex flex-col md:flex-row md:items-stretch px-4 py-3 md:py-0 hover:bg-gray-50 dark:md:hover:bg-[#131415] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
+                className="w-full flex flex-col md:flex-row md:items-stretch px-4 py-3 md:py-0 hover:bg-gray-50 dark:md:hover:bg-[#000000] border-b border-kite-border-soft transition-colors cursor-pointer group font-sans outline-none focus:outline-none focus:ring-0 focus:bg-transparent dark:focus:bg-[#202020] active:outline-none"
                 onClick={() => {
                   setSelectedInvestment(inv);
                   setSelectedInvestmentIds(
@@ -664,10 +664,10 @@ export default function Investments() {
 
   
   return (
-    <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent dark:md:bg-[#181818]">
+    <div className="w-full flex flex-col font-sans bg-kite-surface dark:bg-transparent dark:md:bg-[#000000]">
       {""}
       <div
-        className={`flex flex-col w-full bg-kite-surface dark:bg-transparent dark:md:bg-[#181818] pt-2 border-b border-kite-border ${showAddForm ? "hidden md:flex" : "flex"}`}>
+        className={`flex flex-col w-full bg-kite-surface dark:bg-transparent dark:md:bg-[#000000] pt-2 border-b border-kite-border ${showAddForm ? "hidden md:flex" : "flex"}`}>
         
         {""}
         {/* Full width tabs */}{""}
@@ -701,7 +701,7 @@ export default function Investments() {
           </button>{""}
         </div>{""}
       </div>{""}
-      <div className="md:sticky md:top-0 z-30 bg-white dark:bg-kite-bg dark:md:bg-[#181818] shadow-sm w-full">
+      <div className="md:sticky md:top-0 z-30 bg-white dark:bg-kite-bg dark:md:bg-[#000000] shadow-sm w-full">
 <div
           className={`flex items-center justify-between w-full py-3 px-4 w-full ${showAddForm ? "hidden md:flex" : "flex"}`}>
           
@@ -729,7 +729,7 @@ export default function Investments() {
           {!isSearchExpanded ?
             <button
               onClick={() => setIsSearchExpanded(true)}
-              className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded-full transition-colors flex-shrink-0 flex items-center gap-2">
+              className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#000000] rounded-full transition-colors flex-shrink-0 flex items-center gap-2">
               
               <Search className="w-[18px] h-[18px] text-kite-blue" />
             </button> :
@@ -740,7 +740,7 @@ export default function Investments() {
                   setIsSearchExpanded(false);
                   setSearchTerm("");
                 }}
-                className="p-2 -ml-2 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded-full mr-1 transition-colors flex-shrink-0 flex items-center justify-center">
+                className="p-2 -ml-2 hover:bg-gray-100 dark:md:hover:bg-[#000000] rounded-full mr-1 transition-colors flex-shrink-0 flex items-center justify-center">
                 
                 <ArrowLeft className="w-[18px] h-[18px] text-kite-blue" />
               </button>
@@ -765,7 +765,7 @@ export default function Investments() {
         </div>
 
         {/* Desktop Search */}
-        <div className="hidden md:flex items-center w-full max-w-[250px] bg-white dark:bg-[#181818] border border-gray-200 dark:border-[#2A2A2A] rounded h-[36px] overflow-hidden focus-within:border-kite-blue transition-colors relative ml-auto">
+        <div className="hidden md:flex items-center w-full max-w-[250px] bg-white dark:bg-[#000000] border border-gray-200 dark:border-[#2A2A2A] rounded h-[36px] overflow-hidden focus-within:border-kite-blue transition-colors relative ml-auto">
             <div className="pl-3 pr-2 flex items-center justify-center absolute left-0 text-gray-400 dark:text-[#A3ACB8]">
                 <Search className="w-[16px] h-[16px]" />
             </div>
@@ -806,11 +806,11 @@ export default function Investments() {
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
-          className="md:hidden fixed top-0 left-0 right-0 z-[110] bg-white dark:bg-kite-bg dark:md:bg-[#181818] flex flex-col font-sans"
+          className="md:hidden fixed top-0 left-0 right-0 z-[110] bg-white dark:bg-kite-bg dark:md:bg-[#000000] flex flex-col font-sans"
           style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}>
           
             {/* Header */}
-            <div className="flex flex-col bg-[#F3F4F6] dark:bg-kite-bg dark:md:bg-[#181818] shrink-0 z-10 mobile-header-safe pt-2">
+            <div className="flex flex-col bg-[#F3F4F6] dark:bg-kite-bg dark:md:bg-[#000000] shrink-0 z-10 mobile-header-safe pt-2">
               <div className="flex items-center px-4 py-3">
                 <button
                 onClick={() => {setShowAddForm(false);setIsFromAnalysis(false);}}
@@ -827,7 +827,7 @@ export default function Investments() {
 
               {selectedBusiness &&
             <div className="px-4 pb-4">
-                  <div className="flex items-center px-4 py-1.5 bg-white dark:bg-[#2B3648] overflow-x-auto hide-scrollbar">
+                  <div className="flex items-center px-4 py-1.5 bg-white dark:bg-[#000000] overflow-x-auto hide-scrollbar">
                     <div className="flex items-center space-x-5 text-[13px] whitespace-nowrap">
                       {selectedBusiness.investmentType === 'trigger' && selectedBusiness.triggerAmount &&
                   <span className="text-gray-500 dark:text-[#A3ACB8] font-normal">LTP <span className="font-light text-[#444444] dark:text-[#F1F5F9] ml-1">₹{getCurrentMarketPrice(selectedBusiness, state.investments).toFixed(2)}</span></span>
@@ -841,8 +841,8 @@ export default function Investments() {
             </div>
 
             {/* Fixed Business & Investor Select */}
-            <div className="bg-white dark:bg-kite-bg dark:md:bg-[#181818] shrink-0 z-20">
-                <div className="bg-white dark:bg-transparent dark:md:bg-[#181818] relative">
+            <div className="bg-white dark:bg-kite-bg dark:md:bg-[#000000] shrink-0 z-20">
+                <div className="bg-white dark:bg-transparent dark:md:bg-[#000000] relative">
                   {/* Business & Investor Select */}
                   <div className="flex flex-col">
                      {!isFromAnalysis &&
@@ -869,7 +869,7 @@ export default function Investments() {
                         </div>
                         {showInvestorSelect &&
                   <div
-                    className="w-full overflow-hidden bg-[#F3F4F6] dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] origin-top"
+                    className="w-full overflow-hidden bg-[#F3F4F6] dark:bg-[#000000] border-b border-gray-200 dark:border-[#44546A] origin-top"
                     style={{ animation: '0.1s ease-out forwards slideDown' }}>
                     
                                <div className="p-3 border-b border-gray-200 dark:border-[#44546A]">
@@ -890,7 +890,7 @@ export default function Investments() {
                         return (
                           <div
                             key={`mob_sel_inv_in_${i.id}_${idx}`}
-                            className="px-4 py-3 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-[#39475B] active:bg-gray-100 dark:active:bg-[#39475B]"
+                            className="px-4 py-3 cursor-pointer flex justify-between items-center border-b border-gray-100 dark:border-[#39475B] active:bg-gray-100 dark:active:bg-[#000000]"
                             onClick={() => {
                               setFormData({ ...formData, investorId: i.id });
                               setShowInvestorSelect(false);
@@ -901,7 +901,7 @@ export default function Investments() {
                                           {i.photoUrl ?
                               <img src={i.photoUrl} alt={i.name} className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-[#44546A]" /> :
 
-                              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-[#1E3A5F] flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold text-[14px] shrink-0 border border-blue-100 dark:border-blue-800">
+                              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-[#000000] flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold text-[14px] shrink-0 border border-blue-100 dark:border-blue-800">
                                               {i.name.charAt(0).toUpperCase()}
                                             </div>
                               }
@@ -927,8 +927,8 @@ export default function Investments() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-kite-bg dark:md:bg-[#181818]" style={{ paddingBottom: "200px" }}>
-                <div className="bg-white dark:bg-transparent dark:md:bg-[#181818] relative">
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-kite-bg dark:md:bg-[#000000]" style={{ paddingBottom: "200px" }}>
+                <div className="bg-white dark:bg-transparent dark:md:bg-[#000000] relative">
                   
                   {/* Amount and Quantity */}
                   <div className="flex flex-col space-y-6 md:space-y-0 md:flex-row md:space-x-4">
@@ -979,7 +979,7 @@ export default function Investments() {
                             e.preventDefault();
                             setInputMode(inputMode === 'AMOUNT' ? 'QTY' : 'AMOUNT');
                           }}
-                          className="px-4 py-3 hover:bg-gray-50 dark:md:hover:bg-[#131415] text-[#4184F3] transition-colors">
+                          className="px-4 py-3 hover:bg-gray-50 dark:md:hover:bg-[#000000] text-[#4184F3] transition-colors">
                           
                                    <ArrowRightLeft className="w-5 h-5" />
                                  </button>
@@ -1142,7 +1142,7 @@ export default function Investments() {
                 </div>
 
                 {/* Secondary Toggles Card */}
-                <div className="hidden md:block bg-white dark:bg-transparent dark:md:bg-[#181818] relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
+                <div className="hidden md:block bg-white dark:bg-transparent dark:md:bg-[#000000] relative p-4 space-y-4 border-b border-gray-200 dark:border-[#44546A]">
                   <div className="flex justify-between items-center relative z-10">
                     <div className="flex items-center space-x-2">
                        <span className="text-[14px] text-gray-900 dark:text-[#F1F5F9] font-medium">Brokerage ROI</span>
@@ -1198,7 +1198,7 @@ export default function Investments() {
             </div>
 
             {/* Desktop Bottom Section */}
-            <div className="hidden md:block absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1a1f26] border-t border-gray-200 dark:border-[#44546A] pb-6 pt-3 px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+            <div className="hidden md:block absolute bottom-0 left-0 right-0 bg-white dark:bg-[#000000] border-t border-gray-200 dark:border-[#44546A] pb-6 pt-3 px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-gray-500 dark:text-[#8F8F8F] text-[12px] font-medium">Investment Amount <span className="text-[#4184F3] ml-1">₹{formData.amount || "0"}</span></span>
                 {(() => {
@@ -1225,7 +1225,7 @@ export default function Investments() {
 
             {/* Mobile Bottom Section */}
             <div
-            className={`md:hidden shrink-0 bg-white dark:bg-[#223042] border-t border-gray-200 dark:border-[#44546A] z-50 p-4 transition-all duration-100 ease-out ${showInvestorSelect || showBusinessSelect ? 'hidden' : 'block'}`}
+            className={`md:hidden shrink-0 bg-white dark:bg-[#000000] border-t border-gray-200 dark:border-[#44546A] z-50 p-4 transition-all duration-100 ease-out ${showInvestorSelect || showBusinessSelect ? 'hidden' : 'block'}`}
             style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
             
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
@@ -1275,9 +1275,9 @@ export default function Investments() {
                    <motion.div
                 initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
                 transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
-                className="absolute inset-0 bg-white dark:bg-kite-bg dark:md:bg-[#181818] z-50 flex flex-col">
+                className="absolute inset-0 bg-white dark:bg-kite-bg dark:md:bg-[#000000] z-50 flex flex-col">
                 
-                     <div className="flex items-center px-4 py-3 bg-white dark:bg-[#2B3648] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
+                     <div className="flex items-center px-4 py-3 bg-white dark:bg-[#000000] border-b border-gray-200 dark:border-[#44546A] shrink-0 z-10 mobile-header-safe">
                        <button onClick={() => setShowBusinessSelect(false)} className="text-gray-700 dark:text-[#F1F5F9] p-2 -ml-2 flex items-center justify-center">
                          <ArrowLeft className="w-5 h-5" />
                        </button>
@@ -1288,7 +1288,7 @@ export default function Investments() {
                          <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400 dark:text-[#A3ACB8]" />
                          <DebouncedInput
                       type="text" autoFocus placeholder="Search businesses..."
-                      className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-[#39475B] border border-gray-200 dark:border-[#44546A] rounded-[4px] text-[15px] text-gray-900 dark:text-[#F1F5F9] outline-none focus:border-[#4184F3] focus:ring-1 focus:ring-[#4184F3]/20 transition-all"
+                      className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-[#000000] border border-gray-200 dark:border-[#44546A] rounded-[4px] text-[15px] text-gray-900 dark:text-[#F1F5F9] outline-none focus:border-[#4184F3] focus:ring-1 focus:ring-[#4184F3]/20 transition-all"
                       value={businessSearch} onChange={setBusinessSearch} />
                     
                        </div>
@@ -1472,7 +1472,7 @@ export default function Investments() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="absolute inset-0 max-md:bg-kite-bg max-md:dark:bg-kite-bg dark:md:bg-[#181818] md:bg-black/40 dark:md:bg-black/70" onClick={() => setSelectedInvestment(null)}></motion.div>
+                className="absolute inset-0 max-md:bg-kite-bg max-md:dark:bg-kite-bg dark:md:bg-[#000000] md:bg-black/40 dark:md:bg-black/70" onClick={() => setSelectedInvestment(null)}></motion.div>
               {""}
               <motion.div
                 initial={{ x: "100%" }}
@@ -1487,7 +1487,7 @@ export default function Investments() {
                     {""}
                     <button
                       onClick={() => setSelectedInvestment(null)}
-                      className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors outline-none focus:outline-none focus:ring-0 active:outline-none flex items-center justify-center">
+                      className="p-2 -ml-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#000000] rounded-full transition-colors outline-none focus:outline-none focus:ring-0 active:outline-none flex items-center justify-center">
                       
                       {""}
                       <ArrowLeft className="w-[24px] h-[24px]" />{""}
@@ -1504,7 +1504,7 @@ export default function Investments() {
                         {""}
                         <button
                         onClick={() => setShowTradeOptions(!showTradeOptions)}
-                        className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#131415] rounded-full transition-colors outline-none">
+                        className="md:hidden p-2 -mr-2 text-kite-text hover:bg-gray-50 dark:md:hover:bg-[#000000] rounded-full transition-colors outline-none">
                         
                           {""}
                           <MoreVertical className="w-[24px] h-[24px]" />{""}
@@ -1611,7 +1611,7 @@ export default function Investments() {
                             
                                 {""}
                                 <button
-                              className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors outline-none"
+                              className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-kite-blue hover:bg-kite-bg dark:md:hover:bg-[#000000] transition-colors outline-none"
                               onClick={() => {
                                 setShowTradeOptions(false);
                                 setFormData({
@@ -1636,7 +1636,7 @@ export default function Investments() {
                                   BUY{""}
                                 </button>{""}
                                 <button
-                              className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border outline-none"
+                              className="w-full text-center px-3 py-2 text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#000000] transition-colors border-t border-kite-border outline-none"
                               onClick={() => {
                                 setShowTradeOptions(false);
                                 let defaultComm = 0;

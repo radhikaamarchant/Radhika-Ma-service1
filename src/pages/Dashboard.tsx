@@ -304,7 +304,7 @@ return (
                 <tr 
                   key={b.id} 
                   onClick={() => setDesktopSelectedBusinessId(b.id)}
-                  className={`cursor-pointer transition-colors ${desktopSelectedBusinessId === b.id ? 'bg-kite-blue/5 dark:bg-kite-blue/10' : 'hover:bg-gray-50 dark:hover:bg-[#222222]'}`}
+                  className={`cursor-pointer transition-colors ${desktopSelectedBusinessId === b.id ? 'bg-kite-blue/5 dark:bg-kite-blue/10' : 'hover:bg-gray-50 dark:hover:bg-[#000000]'}`}
                 >
                   <td className="py-2.5 px-4 font-medium text-kite-blue">{b.shortName ? b.shortName.toUpperCase() : b.name.toUpperCase()}</td>
                   <td className="py-2.5 px-4 text-right font-medium text-kite-text">{formatINR(bPrice)}</td>
@@ -342,10 +342,10 @@ return (
         {/* Option Chain Table */}
         <div className="flex-1 overflow-auto bg-white dark:bg-kite-surface">
           <table className="w-full text-[12px] text-right font-mono">
-            <thead className="sticky top-0 z-10 bg-gray-100 dark:bg-[#1e1e1e] border-b border-kite-border text-kite-text-light tracking-wider">
+            <thead className="sticky top-0 z-10 bg-gray-100 dark:bg-[#000000] border-b border-kite-border text-kite-text-light tracking-wider">
               <tr>
                 <th colSpan={4} className="py-2 px-2 text-center border-r border-kite-border/50">Expect Price (₹)</th>
-                <th className="py-2 px-2 text-center border-r border-kite-border/50 bg-gray-50 dark:bg-[#181818]">Strike</th>
+                <th className="py-2 px-2 text-center border-r border-kite-border/50 bg-gray-50 dark:bg-[#000000]">Strike</th>
                 <th colSpan={4} className="py-2 px-2 text-center">Genetic Price (₹)</th>
               </tr>
               <tr className="border-b border-kite-border/50 bg-white dark:bg-kite-surface">
@@ -354,7 +354,7 @@ return (
                 <th className="py-1 px-2 font-normal border-r border-kite-border/50">Change %</th>
                 <th className="py-1 px-2 font-normal border-r border-kite-border/50">Ltp</th>
                 
-                <th className="py-1 px-2 font-normal border-r border-kite-border/50 bg-gray-50 dark:bg-[#181818]"></th>
+                <th className="py-1 px-2 font-normal border-r border-kite-border/50 bg-gray-50 dark:bg-[#000000]"></th>
                 
                 <th className="py-1 px-2 font-normal border-r border-kite-border/50">Ltp</th>
                 <th className="py-1 px-2 font-normal border-r border-kite-border/50">Change %</th>
@@ -364,7 +364,7 @@ return (
             </thead>
             <tbody>
               {optionChain.map((row, idx) => (
-                <tr key={idx} className={`border-b border-kite-border/20 hover:bg-gray-50 dark:hover:bg-[#2A2A2A] transition-colors ${row.isAtm ? 'border-y-2 border-y-kite-blue/30' : ''}`}>
+                <tr key={idx} className={`border-b border-kite-border/20 hover:bg-gray-50 dark:hover:bg-[#000000] transition-colors ${row.isAtm ? 'border-y-2 border-y-kite-blue/30' : ''}`}>
                   {/* Calls */}
                   <td className={`py-1.5 px-2 border-r border-kite-border/20 ${row.ce.itm ? 'bg-[#fdf5f2] dark:bg-[#4a2e2b]/30' : ''}`}>{row.ce.oi.toLocaleString()}</td>
                   <td className={`py-1.5 px-2 border-r border-kite-border/20 ${row.ce.itm ? 'bg-[#fdf5f2] dark:bg-[#4a2e2b]/30' : ''}`}>{row.ce.vol.toLocaleString()}</td>
@@ -374,7 +374,7 @@ return (
                   <td className={`py-1.5 px-2 font-medium border-r border-kite-border/50 ${row.ce.itm ? 'bg-[#fdf5f2] dark:bg-[#4a2e2b]/30' : ''}`}>{row.ce.price}</td>
                   
                   {/* Strike */}
-                  <td className="py-1.5 px-2 text-center font-bold bg-gray-50 dark:bg-[#181818] border-r border-kite-border/50 text-kite-text">{row.strike}</td>
+                  <td className="py-1.5 px-2 text-center font-bold bg-gray-50 dark:bg-[#000000] border-r border-kite-border/50 text-kite-text">{row.strike}</td>
                   
                   {/* Puts */}
                   <td className={`py-1.5 px-2 font-medium border-r border-kite-border/20 ${row.pe.itm ? 'bg-[#f4f7fa] dark:bg-[#203348]/30' : ''}`}>{row.pe.price}</td>

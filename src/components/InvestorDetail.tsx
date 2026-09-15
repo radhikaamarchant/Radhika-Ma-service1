@@ -415,7 +415,7 @@ export default function InvestorDetail({
 
       {""}
       {/* Desktop Header */}
-      <div className="hidden md:flex items-center px-4 py-3 bg-white dark:bg-[#181818] border-b border-kite-border mb-6 -mt-4 shrink-0 w-full">
+      <div className="hidden md:flex items-center px-4 py-3 bg-white dark:bg-[#000000] border-b border-kite-border mb-6 -mt-4 shrink-0 w-full">
         <button
           onClick={onBack}
           className="flex items-center text-kite-text-light hover:text-kite-blue transition-colors mr-3 p-1 -ml-1 rounded-full hover:bg-kite-bg"
@@ -465,21 +465,21 @@ export default function InvestorDetail({
                 <div className="absolute top-full left-0 md:left-0 md:translate-x-0 mt-2 w-40 bg-white dark:bg-kite-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-kite-border rounded-[12px] overflow-hidden z-50 py-0.5">
                   <button 
                     onClick={() => { setShowPhotoMenu(false); setShowPhotoPreview(true); }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors"
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:md:hover:bg-[#000000] transition-colors"
                   >
                     <Eye className="w-[18px] h-[18px] text-kite-text-light" />
                     <span>View Photo</span>
                   </button>
                   <button 
                     onClick={() => { setShowPhotoMenu(false); fileInputRef.current?.click(); }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border"
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-kite-text hover:bg-kite-bg dark:md:hover:bg-[#000000] transition-colors border-t border-kite-border"
                   >
                     <Camera className="w-[18px] h-[18px] text-kite-text-light" />
                     <span>Upload New</span>
                   </button>
                   <button 
                     onClick={handleDeletePhoto}
-                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#131415] transition-colors border-t border-kite-border"
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-left text-[13px] md:text-[14px] font-medium text-[#DF514C] dark:text-[#E25F5B] hover:bg-kite-bg dark:md:hover:bg-[#000000] transition-colors border-t border-kite-border"
                   >
                     <Trash2 className="w-[18px] h-[18px]" />
                     <span>Remove</span>
@@ -1105,7 +1105,7 @@ export default function InvestorDetail({
           <div className="flex-1 md:flex-initial md:bg-white md:dark:bg-kite-surface md:rounded-lg md:overflow-hidden md:flex md:flex-col md:w-full md:max-w-xl md:shadow-2xl flex flex-col w-full h-full md:h-auto">
             <div className="hidden md:flex justify-between items-center p-4 border-b border-kite-border bg-white dark:bg-kite-surface text-kite-text shrink-0">
               <span className="font-medium text-[16px]">Profile Photo</span>
-              <button onClick={() => setShowPhotoPreview(false)} className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#131415] rounded-full transition-colors">
+              <button onClick={() => setShowPhotoPreview(false)} className="p-1 hover:bg-gray-100 dark:md:hover:bg-[#000000] rounded-full transition-colors">
                 <X className="w-5 h-5 text-kite-text-light" />
               </button>
             </div>
@@ -1185,7 +1185,7 @@ export default function InvestorDetail({
       {/* Header */}
       <div className="flex items-center justify-between p-4 md:p-6 border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface rounded-t-md">
         <div className="flex items-center gap-4">
-          <button onClick={() => setCurrentView("profile")} className="p-1 text-kite-text hover:bg-gray-100 dark:hover:bg-[#131415] rounded-full transition-colors flex items-center justify-center">
+          <button onClick={() => setCurrentView("profile")} className="p-1 text-kite-text hover:bg-gray-100 dark:hover:bg-[#000000] rounded-full transition-colors flex items-center justify-center">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text whitespace-nowrap">Funds</h1>
@@ -1230,7 +1230,7 @@ export default function InvestorDetail({
               </button>
               <button 
                 onClick={() => setFundAction("withdraw")}
-                className="flex-1 bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#131415] active:scale-[0.98] text-kite-text border border-kite-border-soft font-medium py-2.5 rounded text-[14px] transition-all"
+                className="flex-1 bg-white dark:bg-kite-bg hover:bg-gray-50 dark:hover:bg-[#000000] active:scale-[0.98] text-kite-text border border-kite-border-soft font-medium py-2.5 rounded text-[14px] transition-all"
               >
                 Withdraw
               </button>
@@ -1346,7 +1346,7 @@ export default function InvestorDetail({
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-kite-border-soft sticky top-0 z-10 bg-white dark:bg-kite-surface rounded-t-md">
           <div className="flex items-center gap-4">
-            <button onClick={() => setCurrentView("profile")} className="p-1 text-kite-text hover:bg-gray-100 dark:hover:bg-[#131415] rounded-full transition-colors flex items-center justify-center">
+            <button onClick={() => setCurrentView("profile")} className="p-1 text-kite-text hover:bg-gray-100 dark:hover:bg-[#000000] rounded-full transition-colors flex items-center justify-center">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text whitespace-nowrap">Bank Statement</h1>
@@ -1393,7 +1393,7 @@ export default function InvestorDetail({
         <div className="px-4 md:px-6 pb-6 overflow-x-auto">
           <div className="border border-kite-border rounded-md overflow-hidden min-w-[600px]">
             <table className="w-full text-left text-[13px] md:text-[14px] text-kite-text">
-              <thead className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] border-b border-kite-border">
+              <thead className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] border-b border-kite-border">
                 <tr>
                   <th className="py-3 px-4 font-normal text-kite-text-light text-[11px] md:text-[12px] uppercase tracking-wider">Date</th>
                   <th className="py-3 px-4 font-normal text-kite-text-light text-[11px] md:text-[12px] uppercase tracking-wider">Transaction Details</th>
@@ -1403,7 +1403,7 @@ export default function InvestorDetail({
               </thead>
               <tbody className="divide-y divide-kite-border-soft">
                 {filteredBankTransactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-gray-50 dark:md:hover:bg-[#131415] transition-colors">
+                  <tr key={tx.id} className="hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors">
                     <td className="py-3.5 px-4 text-[12px] md:text-[13px] text-kite-text-light whitespace-nowrap align-middle">
                       {new Date(tx.date).toLocaleDateString("en-IN", {
                         day: "2-digit",

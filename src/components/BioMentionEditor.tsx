@@ -109,7 +109,7 @@ export default function BioMentionEditor({ value, onChange }: BioMentionEditorPr
               key={`${suggestion.type}-${suggestion.id}`}
               onClick={() => insertMention(suggestion.name)}
               className={`flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors ${
-                index === selectedIndex ? 'bg-gray-100 dark:bg-kite-surface' : 'hover:bg-gray-50 dark:md:hover:bg-[#131415]'
+                index === selectedIndex ? 'bg-gray-100 dark:bg-kite-surface' : 'hover:bg-gray-50 dark:md:hover:bg-[#000000]'
               }`}
             >
               {suggestion.type === 'investor' && suggestion.data.photoUrl ? (

@@ -158,13 +158,13 @@ function MainLayout() {
   };
 
   return (
-    <div className="h-screen bg-gray-100 dark:bg-kite-bg dark:md:bg-[#181818] text-kite-text flex flex-col overflow-hidden font-sans">
-      <div className="w-full h-full flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#181818] relative overflow-hidden">
+    <div className="h-screen bg-gray-100 dark:bg-kite-bg dark:md:bg-[#000000] text-kite-text flex flex-col overflow-hidden font-sans">
+      <div className="w-full h-full flex flex-col bg-white dark:bg-kite-bg dark:md:bg-[#000000] relative overflow-hidden">
         <TopNav currentView={currentView} onNavigate={handleNavigate} />
 
         {/* Mobile Header - Kite Style */}
         <div 
-          className={`md:hidden flex items-center justify-between px-4 pb-3 ${currentView === "businesses" ? "bg-[#ececed]" : currentView === "investors" ? "bg-[#ececed]" : "bg-white"} border-b shrink-0 z-40 fixed top-0 left-0 right-0 mobile-header-safe ${(currentView === "data-analysis" || currentView === "businesses" || currentView === "investors") ? "dark:bg-[#1c2a37] dark:border-transparent " + (currentView === "businesses" ? "border-transparent" : currentView === "investors" ? "border-transparent" : "border-kite-border-soft") : "dark:bg-kite-bg border-kite-border-soft"}`}
+          className={`md:hidden flex items-center justify-between px-4 pb-3 ${currentView === "businesses" ? "bg-[#ececed]" : currentView === "investors" ? "bg-[#ececed]" : "bg-white"} border-b shrink-0 z-40 fixed top-0 left-0 right-0 mobile-header-safe ${(currentView === "data-analysis" || currentView === "businesses" || currentView === "investors") ? "dark:bg-[#000000] dark:border-transparent " + (currentView === "businesses" ? "border-transparent" : currentView === "investors" ? "border-transparent" : "border-kite-border-soft") : "dark:bg-kite-bg border-kite-border-soft"}`}
         >
           <div
             className="flex flex-col cursor-pointer"

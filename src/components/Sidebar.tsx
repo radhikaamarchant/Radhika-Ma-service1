@@ -36,7 +36,7 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
     { id: "pnl" as View, label: "MY P&L" },
   ];
   return (
-    <div className="w-[260px] h-full border-r border-kite-border bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#181818] flex flex-col">
+    <div className="w-[260px] h-full border-r border-kite-border bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] flex flex-col">
       <div className="p-4 border-b border-kite-border flex items-center h-[55px]">
         <div className="flex flex-col justify-center">
           <Logo />
@@ -78,21 +78,21 @@ export default function Sidebar({ currentView, onNavigate }: SidebarProps) {
           <div className="flex bg-kite-bg p-1 rounded-sm border border-kite-border/50 shadow-inner space-x-1">
             <button
               onClick={() => setTheme("light")}
-              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="light" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text-light hover:text-kite-text"}`}
+              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="light" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:md:hover:bg-[#000000] text-kite-text-light hover:text-kite-text"}`}
               title="Light Mode"
             >
               <Sun className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setTheme("system")}
-              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="system" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text-light hover:text-kite-text"}`}
+              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="system" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:md:hover:bg-[#000000] text-kite-text-light hover:text-kite-text"}`}
               title="System Mode"
             >
               <Laptop className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setTheme("dark")}
-              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="dark" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:md:hover:bg-[#131415] text-kite-text-light hover:text-kite-text"}`}
+              className={`flex-1 p-1.5 flex justify-center items-center rounded-sm transition-all ${theme ==="dark" ?"bg-kite-surface shadow border border-kite-border text-black" :"hover:bg-gray-100 dark:md:hover:bg-[#000000] text-kite-text-light hover:text-kite-text"}`}
               title="Dark Mode"
             >
               <Moon className="w-3.5 h-3.5" />

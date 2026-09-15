@@ -45,10 +45,10 @@
     --color-border-11--rgb: 14,14,14;
     --color-border-12: #363636;
     --color-border-12--rgb: 54,54,54;
-    --color-bg-body: #111;
-    --color-bg-body--rgb: 17,17,17;
-    --color-bg-default: #181818;
-    --color-bg-default--rgb: 24,24,24;
+    --color-bg-body: #000000;
+    --color-bg-body--rgb: 0,0,0;
+    --color-bg-default: #000000;
+    --color-bg-default--rgb: 0,0,0;
     --color-bg-1: #131415;
     --color-bg-1--rgb: 19,20,21;
     --color-bg-2: #444;
@@ -65,12 +65,12 @@
     --color-bg-7--rgb: 226,95,91;
     --color-bg-8: #5b9a5d;
     --color-bg-8--rgb: 91,154,93;
-    --color-bg-9: #242424;
-    --color-bg-9--rgb: 36,36,36;
-    --color-bg-10: #242424;
-    --color-bg-10--rgb: 36,36,36;
-    --color-bg-11: #242424;
-    --color-bg-11--rgb: 36,36,36;
+    --color-bg-9: #000000;
+    --color-bg-9--rgb: 0,0,0;
+    --color-bg-10: #000000;
+    --color-bg-10--rgb: 0,0,0;
+    --color-bg-11: #000000;
+    --color-bg-11--rgb: 0,0,0;
     --bg-input-disabled: url("data:image/svg+xml,%3Csvg width=%276%27 height=%276%27 viewBox=%270 0 6 6%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg fill=%27%23444444%27 fill-opacity=%271%27 fill-rule=%27evenodd%27%3E%3Cpath d=%27M5 0h1L0 6V5zM6 5v1H5z%27/%3E%3C/g%3E%3C/svg%3E");
     scrollbar-color: #ffffff1a #181818;
     scrollbar-width: auto
@@ -152,10 +152,10 @@
 }
 
 .dark .text-box,.dark .layer-2,.dark .su-modal-mask.non-blocking,.dark .profile .vue-image-crop-upload .vicp-wrap,.dark .hopscotch-bubble,.dark .bulletin-window,.dark .marketwatch .items-wrapper .form-items-wrapper .form-items,.dark .marketwatch .marketwatch-selector .form-watch-wrapper .form-watch,.dark .widgets-dropdown,.dark .header-widget-content {
-    --color-bg-default: #222;
-    --color-bg-default--rgb: 34,34,34;
-    --color-bg-1: #1c1c1c;
-    --color-bg-1--rgb: 28,28,28;
+    --color-bg-default: #000000;
+    --color-bg-default--rgb: 0,0,0;
+    --color-bg-1: #000000;
+    --color-bg-1--rgb: 0,0,0;
     --color-border-default: #2c2c2c;
     --color-border-default--rgb: 44,44,44;
     --color-border-1: #2c2c2c;

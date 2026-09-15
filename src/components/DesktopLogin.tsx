@@ -84,7 +84,7 @@ export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void })
 
   return (
     <div className="min-h-screen bg-[#111111] flex flex-col items-center justify-center font-sans text-white">
-      <div className="w-full max-w-[400px] bg-[#1e1e1e] p-10 rounded shadow-2xl relative border border-white/5">
+      <div className="w-full max-w-[400px] bg-[#000000] p-10 rounded shadow-2xl relative border border-white/5">
         
         {step === 'userid_password' ? (
           <div className="animate-fade-in">
@@ -137,12 +137,12 @@ export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void })
              </button>
              
              <form onSubmit={handleSubmit} className="w-full space-y-6">
-               <div className="relative border border-[#444444] rounded flex items-center bg-[#181818] overflow-hidden">
-                  <div className="px-4 py-3 border-r border-[#444444] text-[#999999] bg-[#1e1e1e]">
+               <div className="relative border border-[#444444] rounded flex items-center bg-[#000000] overflow-hidden">
+                  <div className="px-4 py-3 border-r border-[#444444] text-[#999999] bg-[#000000]">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
                   </div>
                   <div className="flex-1 relative pt-2">
-                     <label className="absolute top-1 left-4 px-1 text-[10px] text-[#999999] bg-[#181818]">App Code</label>
+                     <label className="absolute top-1 left-4 px-1 text-[10px] text-[#999999] bg-[#000000]">App Code</label>
                      <input 
                        type="text"
                        className="w-full bg-transparent pb-2 pt-3 px-4 focus:outline-none tracking-[0.5em] text-center text-white text-lg font-mono"

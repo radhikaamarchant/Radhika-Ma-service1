@@ -117,15 +117,15 @@ export default function BusinessSidebar() {
   }, []);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-kite-surface md:dark:bg-[#181818] relative">
+    <div className="w-full h-full flex flex-col bg-white dark:bg-kite-surface md:dark:bg-[#000000] relative">
       {/* Search Bar */}
-      <div className="p-3 border-b border-kite-border dark:border-[#2b2b2b] bg-gray-50/50 dark:bg-kite-surface md:dark:bg-[#181818]">
+      <div className="p-3 border-b border-kite-border dark:border-[#2b2b2b] bg-gray-50/50 dark:bg-kite-surface md:dark:bg-[#000000]">
         <div className="relative flex items-center">
           <Search className="w-4 h-4 absolute left-3 text-kite-text-light dark:text-[#9b9b9b]" />
           <input
             type="text"
             placeholder="Search companies (eg. RIL, TCS)"
-            className="w-full pl-9 pr-3 py-2 text-[13px] bg-white dark:bg-kite-surface md:dark:bg-[#181818] border border-kite-border dark:border-[#2b2b2b] rounded-sm focus:outline-none focus:border-kite-blue focus:ring-1 focus:ring-kite-blue transition-all text-kite-text dark:text-[#e0e0e0] placeholder:text-kite-text-light dark:placeholder:text-[#9b9b9b]"
+            className="w-full pl-9 pr-3 py-2 text-[13px] bg-white dark:bg-kite-surface md:dark:bg-[#000000] border border-kite-border dark:border-[#2b2b2b] rounded-sm focus:outline-none focus:border-kite-blue focus:ring-1 focus:ring-kite-blue transition-all text-kite-text dark:text-[#e0e0e0] placeholder:text-kite-text-light dark:placeholder:text-[#9b9b9b]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -147,7 +147,7 @@ export default function BusinessSidebar() {
                 <div
                   key={business.id}
                   style={{ padding: "10px 12px" }}
-                  className="cursor-pointer border-b border-kite-border dark:border-[#2b2b2b] hover:bg-gray-50 md:dark:hover:bg-[#131415] transition-colors group bg-white dark:bg-kite-surface md:dark:bg-[#181818]"
+                  className="cursor-pointer border-b border-kite-border dark:border-[#2b2b2b] hover:bg-gray-50 md:dark:hover:bg-[#000000] transition-colors group bg-white dark:bg-kite-surface md:dark:bg-[#000000]"
                   onClick={() => handleRowClick(business.id)}
                 >
                   <LiveSidebarValue name={business.shortName ? business.shortName.toUpperCase() : business.name} originalPrice={business.triggerAmount || 100} baseAmount={displayAmount} isOpen={isMarketOpen} photoUrl={business.photoUrl} />
