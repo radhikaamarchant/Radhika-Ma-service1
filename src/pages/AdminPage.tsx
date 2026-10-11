@@ -12,14 +12,7 @@ import {
   Clock,
   Search,
   Lock,
-  Settings,
-  Percent,
-  CloudUpload,
-  CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
-  ExternalLink,
-  Database,
+  Settings, Percent
 } from "lucide-react";
 import { useTheme } from "../utils/ThemeContext";
 import { generateAppCode, getAppCodeRemainingSeconds } from "../utils/totp";
@@ -42,37 +35,13 @@ interface AdminProfile {
   branch?: string;
 }
 
-type AdminView = "menu" | "funds" | "profile" | "bank" | "statement" | "market" | "tax_payer" | "users" | "show_users" | "settings" | "backup";
+type AdminView = "menu" | "funds" | "profile" | "bank" | "statement" | "market" | "tax_payer" | "users" | "show_users" | "settings";
 
 export default function AdminPage() {
   const { state, dispatch } = useAppContext();
   const [showAppCode, setShowAppCode] = useState(false);
   const [appCode, setAppCode] = useState("");
   const [appCodeSeconds, setAppCodeSeconds] = useState(0);
-
-  const [isBackingUp, setIsBackingUp] = useState(false);
-  const [backupResult, setBackupResult] = useState<any>(null);
-  const [backupError, setBackupError] = useState<string | null>(null);
-
-  const handleTriggerBackup = async () => {
-    setIsBackingUp(true);
-    setBackupResult(null);
-    setBackupError(null);
-    try {
-      const res = await fetch("/api/monthly-backup?force=true", {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to trigger backup.");
-      }
-      setBackupResult(data);
-    } catch (err: any) {
-      setBackupError(err.message || "An error occurred while running the backup.");
-    } finally {
-      setIsBackingUp(false);
-    }
-  };
 
   useEffect(() => {
     if (showAppCode) {
@@ -533,13 +502,6 @@ export default function AdminPage() {
                  <button onClick={() => setCurrentView("tax_payer")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
                     <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Tax Payer</span>
                     <Percent className="w-4 h-4 text-kite-text-light mr-1" />
-                 </button>
-                 <button onClick={() => setCurrentView("backup")} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-gray-50 dark:md:hover:bg-[#000000] transition-colors group w-full text-left">
-                    <div className="flex flex-col">
-                      <span className="text-[15px] md:text-[16px] font-normal text-kite-text">Drive Backup & Statement</span>
-                      <span className="text-[11px] md:text-[12px] text-kite-text-light">Auto CSV generation & cleanup</span>
-                    </div>
-                    <CloudUpload className="w-4 h-4 text-kite-blue mr-1" />
                  </button>
 
                  <button onClick={() => { localStorage.removeItem("loggedInUserId"); dispatch({ type: "SET_CURRENT_USER", payload: null }); }} className="flex items-center justify-between px-5 py-4 border-b border-kite-border-soft hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group w-full text-left">
@@ -1120,206 +1082,6 @@ export default function AdminPage() {
                     {theme === "dark" && <BadgeCheck className="w-4 h-4 text-kite-blue" />}
                  </button>
                </div>
-
-               <div className="px-5 py-3 mt-4 border-b border-kite-border-soft bg-white dark:bg-kite-surface flex items-center justify-between">
-                 <span className="text-[13px] text-kite-blue font-medium uppercase tracking-wider">Google Drive Backup</span>
-                 <Database className="w-4 h-4 text-kite-blue" />
-               </div>
-               <div className="bg-white dark:bg-kite-surface p-5 border-b border-kite-border-soft">
-                 <p className="text-[13px] text-kite-text mb-3 leading-relaxed">
-                   Export monthly bank statements in formatted CSV format directly into individual entity folders inside Google Drive (<span className="font-mono text-[11px] bg-gray-100 dark:bg-kite-bg px-1 py-0.5 rounded">1LKDl-iRWVDkGuyXlJGI2k8cjsGEIuFcj</span>). Successfully uploaded records are deleted from Firestore to optimize performance.
-                 </p>
-                 <button
-                   onClick={handleTriggerBackup}
-                   disabled={isBackingUp}
-                   className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-kite-blue text-white rounded font-medium text-[14px] hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
-                 >
-                   {isBackingUp ? (
-                     <>
-                       <RefreshCw className="w-4 h-4 animate-spin" />
-                       <span>Generating & Uploading Statements...</span>
-                     </>
-                   ) : (
-                     <>
-                       <CloudUpload className="w-4 h-4" />
-                       <span>Generate Backup to Drive</span>
-                     </>
-                   )}
-                 </button>
-
-                 {backupResult && (
-                   <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 rounded text-[13px] text-emerald-800 dark:text-emerald-200">
-                     <div className="flex items-center gap-2 font-medium mb-1">
-                       <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                       <span>Backup Completed Successfully!</span>
-                     </div>
-                     <p className="text-[12px] opacity-90">{backupResult.message}</p>
-                   </div>
-                 )}
-
-                 {backupError && (
-                   <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-300 dark:border-red-800 rounded text-[13px] text-red-800 dark:text-red-200">
-                     <div className="flex items-center gap-2 font-medium mb-1">
-                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
-                       <span>Backup Error</span>
-                     </div>
-                     <p className="text-[12px] opacity-90">{backupError}</p>
-                   </div>
-                 )}
-               </div>
-            </div>
-          </div>
-        )}
-
-        {currentView === "backup" && (
-          <div className="bg-[#F8F9FA] dark:bg-kite-bg dark:md:bg-[#000000] min-h-full flex flex-col animate-fade-in relative -mx-0">
-            <div className="bg-white dark:bg-kite-surface flex items-center px-4 py-4 md:py-5 border-b border-kite-border-soft sticky top-0 z-10">
-              <button onClick={() => setCurrentView("menu")} className="mr-4 text-kite-text p-1 flex items-center justify-center">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <h1 className="text-[18px] md:text-[20px] font-medium text-kite-text">Google Drive Automated Backup</h1>
-            </div>
-
-            <div className="p-4 md:p-6 max-w-3xl w-full mx-auto space-y-6">
-              {/* Information Card */}
-              <div className="bg-white dark:bg-kite-surface p-5 md:p-6 border border-kite-border-soft rounded-sm shadow-sm">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/30 text-kite-blue rounded">
-                    <CloudUpload className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-[16px] md:text-[17px] font-medium text-kite-text">Automated Bank Statement Backup</h2>
-                    <p className="text-[12px] md:text-[13px] text-kite-text-light">Vercel Cron & Google Drive API Integration</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-[13px] md:text-[14px] text-kite-text-light mb-6">
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-kite-text min-w-[130px]">Cron Schedule:</span>
-                    <span>11th of every month at 11:59 PM (<code>59 23 11 * *</code>)</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-kite-text min-w-[130px]">Parent Folder ID:</span>
-                    <a
-                      href="https://drive.google.com/drive/folders/1LKDl-iRWVDkGuyXlJGI2k8cjsGEIuFcj"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-kite-blue hover:underline flex items-center gap-1 font-mono text-[12px]"
-                    >
-                      1LKDl-iRWVDkGuyXlJGI2k8cjsGEIuFcj
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-kite-text min-w-[130px]">Folder Strategy:</span>
-                    <span>Named strictly by entity's Unique ID number (prevents any data mixing).</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-kite-text min-w-[130px]">File Format:</span>
-                    <span>CSV with top headers (Bank, Account No, Holder, Name) and itemized columns.</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="font-semibold text-kite-text min-w-[130px]">Database Cleanup:</span>
-                    <span>Deletes exported records from Firestore ONLY after 100% verified upload to keep the database fast.</span>
-                  </div>
-                </div>
-
-                {/* Trigger Button */}
-                <div className="pt-2 border-t border-kite-border-soft flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <button
-                    onClick={handleTriggerBackup}
-                    disabled={isBackingUp}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 px-5 bg-kite-blue text-white rounded font-medium text-[14px] hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
-                  >
-                    {isBackingUp ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Generating & Uploading Statements to Drive...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CloudUpload className="w-4 h-4" />
-                        <span>Generate Backup to Drive (Force All Past Records)</span>
-                      </>
-                    )}
-                  </button>
-
-                  <a
-                    href="https://drive.google.com/drive/folders/1LKDl-iRWVDkGuyXlJGI2k8cjsGEIuFcj"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 py-3 px-4 border border-kite-border-soft text-kite-text hover:bg-gray-50 dark:hover:bg-kite-bg rounded font-medium text-[13px] transition-colors"
-                  >
-                    <span>Open Drive Folder</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Status / Results */}
-              {backupResult && (
-                <div className="bg-white dark:bg-kite-surface p-5 md:p-6 border border-emerald-300 dark:border-emerald-800 rounded-sm shadow-sm animate-fade-in">
-                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-medium text-[15px] mb-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0" />
-                    <span>Backup Complete!</span>
-                  </div>
-                  <p className="text-[13px] text-kite-text mb-4">{backupResult.message}</p>
-
-                  <div className="grid grid-cols-3 gap-3 mb-4 text-center">
-                    <div className="p-3 bg-gray-50 dark:bg-kite-bg border border-kite-border-soft rounded">
-                      <div className="text-[18px] font-bold text-kite-text">{backupResult.filesUploaded}</div>
-                      <div className="text-[11px] text-kite-text-light uppercase">Files Uploaded</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 dark:bg-kite-bg border border-kite-border-soft rounded">
-                      <div className="text-[18px] font-bold text-kite-text">{backupResult.groupsProcessed}</div>
-                      <div className="text-[11px] text-kite-text-light uppercase">Groups Processed</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 dark:bg-kite-bg border border-kite-border-soft rounded">
-                      <div className="text-[18px] font-bold text-emerald-600 dark:text-emerald-400">{backupResult.deletedDocumentsCount}</div>
-                      <div className="text-[11px] text-kite-text-light uppercase">Docs Cleaned</div>
-                    </div>
-                  </div>
-
-                  {backupResult.details && backupResult.details.length > 0 && (
-                    <div className="mt-4 border-t border-kite-border-soft pt-3">
-                      <div className="text-[12px] font-medium text-kite-text uppercase tracking-wider mb-2">Uploaded Statements:</div>
-                      <div className="max-h-60 overflow-y-auto space-y-1.5 text-[12px]">
-                        {backupResult.details.map((d: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center p-2 rounded bg-gray-50 dark:bg-kite-bg border border-kite-border-soft">
-                            <div>
-                              <span className="font-medium text-kite-text">{d.entityName}</span>
-                              <span className="text-kite-text-light ml-2">({d.transactionsCount} txs)</span>
-                            </div>
-                            <div className="font-mono text-[11px] text-kite-blue">
-                              {d.fileName}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {backupError && (
-                <div className="bg-white dark:bg-kite-surface p-5 border border-red-300 dark:border-red-800 rounded-sm shadow-sm animate-fade-in">
-                  <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-medium text-[15px] mb-2">
-                    <AlertTriangle className="w-5 h-5 shrink-0" />
-                    <span>Backup Failed</span>
-                  </div>
-                  <p className="text-[13px] text-kite-text leading-relaxed">{backupError}</p>
-                  {backupError.includes("serviceAccountKey.json") && (
-                    <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded text-[12px] text-amber-900 dark:text-amber-200">
-                      <strong>How to configure credentials:</strong>
-                      <ol className="list-decimal ml-4 mt-1 space-y-1">
-                        <li>Download your Service Account JSON key from Google Cloud Console.</li>
-                        <li>Place it in the project root as <code className="bg-white dark:bg-black px-1 rounded">serviceAccountKey.json</code>, OR set the <code className="bg-white dark:bg-black px-1 rounded">SERVICE_ACCOUNT_KEY</code> environment variable on Vercel.</li>
-                        <li>Ensure the service account email has <span className="font-medium">Editor</span> permissions on Google Drive folder <code className="bg-white dark:bg-black px-1 rounded">1LKDl-iRWVDkGuyXlJGI2k8cjsGEIuFcj</code>.</li>
-                      </ol>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         )}
