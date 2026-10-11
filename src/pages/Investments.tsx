@@ -325,38 +325,37 @@ export default function Investments() {
       status: "active"
     };
     setIsBooking(true);
-    setTimeout(() => {
-      dispatch({ type: "ADD_INVESTMENT", payload: newInvestment });
-      if (amount >= selectedBusiness.fundingRequired) {
-        dispatch({
-          type: "UPDATE_BUSINESS_STATUS",
-          payload: { id: formData.businessId, status: "funded" }
-        });
-      }
-      setSuccessData({
-        businessName: selectedBusiness.shortName ? selectedBusiness.shortName.toUpperCase() : selectedBusiness.name,
-        investorName: selectedInvestor ?
-        selectedInvestor.name :
-        "Unknown Investor",
-        amount: amount
+    dispatch({ type: "ADD_INVESTMENT", payload: newInvestment });
+    if (amount >= selectedBusiness.fundingRequired) {
+      dispatch({
+        type: "UPDATE_BUSINESS_STATUS",
+        payload: { id: formData.businessId, status: "funded" }
       });
-      setIsBooking(false);
-      setShowSuccessAnimation(true);
-      setShowAddForm(false);
-      setIsBuyFlow(false);
-      setTimeout(() => {
-        setShowSuccessAnimation(false);
-        setSuccessData(null);
-        setFormData({
-          businessId: "",
-          investorId: "",
-          amount: "",
-          timePeriodMonths: "12",
-          adminCommissionInvestorPct: "2",
-          adminCommissionBusinessPct: "2"
-        });
-      }, 3000);
-    }, 600);
+    }
+    setSuccessData({
+      businessName: selectedBusiness.shortName ? selectedBusiness.shortName.toUpperCase() : selectedBusiness.name,
+      investorName: selectedInvestor ?
+      selectedInvestor.name :
+      "Unknown Investor",
+      amount: amount
+    });
+    setIsBooking(false);
+    setShowSuccessAnimation(true);
+    setShowAddForm(false);
+    setIsBuyFlow(false);
+    setTimeout(() => {
+      setShowSuccessAnimation(false);
+      setSuccessData(null);
+      setFormData({
+        businessId: "",
+        investorId: "",
+        amount: "",
+        quantity: 1,
+        timePeriodMonths: "12",
+        adminCommissionInvestorPct: "2",
+        adminCommissionBusinessPct: "2"
+      });
+    }, 1500);
   };
   const getTime = (id: string) => parseInt(id.replace(/\D/g, "")) || 0;
   const getActiveInvestmentCount = (investorId: string) => {
@@ -403,13 +402,22 @@ export default function Investments() {
   ), [uniqueInvestments]);
   
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  const businessMap = useMemo(() => {
+    return new Map(state.businesses.map((b) => [b.id, b]));
+  }, [state.businesses]);
+
+  const investorMap = useMemo(() => {
+    return new Map(state.investors.map((i) => [i.id, i]));
+  }, [state.investors]);
+
   const investmentsWithRefs = useMemo(() => {
     return allGroupedInvestments.map((inv) => {
-      const business = state.businesses.find((b) => b.id === inv.businessId);
-      const investor = state.investors.find((i) => i.id === inv.investorId);
+      const business = businessMap.get(inv.businessId);
+      const investor = investorMap.get(inv.investorId);
       return { ...inv, business, investor };
     });
-  }, [allGroupedInvestments, state.businesses, state.investors]);
+  }, [allGroupedInvestments, businessMap, investorMap]);
 
   const groupedInvestments = useMemo(() => investmentsWithRefs.
   filter((inv) => {

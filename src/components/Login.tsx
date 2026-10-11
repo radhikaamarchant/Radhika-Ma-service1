@@ -62,7 +62,6 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
     if (e) e.preventDefault();
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
       const newId = generateUserId();
       const newUser = {
         id: newId,
@@ -93,7 +92,6 @@ export default function Login({ onLogin }: { onLogin: (userId: string) => void }
     e.preventDefault();
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
       const user = state.users.find(u => 
         (u.userId === loginId || u.email === loginId || u.id === loginId) && 
         u.password === loginPassword

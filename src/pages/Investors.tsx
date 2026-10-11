@@ -176,12 +176,25 @@ export default function Investors() {
   const uniqueInvestors = useMemo(() => Array.from(
     new Map<string, Investor>(state.investors.map((i) => [i.id, i])).values()
   ), [state.investors]);
-  const investorsWithStats = useMemo(() => uniqueInvestors.
 
+  // Pre-index investments by investorId for O(1) lookups
+  const investmentsByInvestor = useMemo(() => {
+    const map = new Map<string, Investment[]>();
+    for (const inv of state.investments) {
+      const list = map.get(inv.investorId);
+      if (!list) {
+        map.set(inv.investorId, [inv]);
+      } else {
+        list.push(inv);
+      }
+    }
+    return map;
+  }, [state.investments]);
+
+  const investorsWithStats = useMemo(() => uniqueInvestors.
   map((i) => {
-    const activeInvs = state.investments.filter(
-      (inv) => inv.investorId === i.id && inv.status !== "completed"
-    );
+    const userInvs = investmentsByInvestor.get(i.id) || [];
+    const activeInvs = userInvs.filter((inv) => inv.status !== "completed");
     let totalAmountInvested = activeInvs.reduce(
       (sum, inv) => sum + inv.amount,
       0
@@ -219,9 +232,7 @@ export default function Investors() {
     totalLiveProfit / totalAmountInvested * 100 :
     0;
     const hasActive = activeInvs.length > 0;
-    const hasCompleted = state.investments.some(
-      (inv) => inv.investorId === i.id && inv.status === "completed"
-    );
+    const hasCompleted = userInvs.some((inv) => inv.status === "completed");
     const status = hasActive ?
     "active" :
     hasCompleted ?
@@ -237,7 +248,7 @@ export default function Investors() {
   }).
   sort(
     (a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime()
-  ), [uniqueInvestors, state.investments, state.businesses, state.settings, marketState.trends]);
+  ), [uniqueInvestors, investmentsByInvestor, state.businesses, state.settings, marketState.trends]);
   const filteredInvestors = useMemo(() => {
     const term = deferredSearchTerm.toLowerCase();
     return investorsWithStats.filter((i) =>
@@ -334,31 +345,27 @@ export default function Investors() {
 
   const handleVerifiedSave = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsVerifying(true);
+    const actualNewInvestor: Investor = {
+      id: crypto.randomUUID(),
+      investorId: formData.investorId,
+      name: formData.name,
+      totalInvested: 0,
+      joinDate: new Date().toISOString(),
+      bankDetails: {
+        bankName: formData.bankName,
+        accountNumber: formData.accountNumber,
+        ifscCode: formData.ifscCode.toUpperCase(),
+        accountHolderName: formData.accountHolderName.toUpperCase()
+      },
+      rmasServiceCharge:
+      Number(formData.rmasServiceCharge.toString().replace(/,/g, "")) || 0
+    };
+    dispatch({ type: "ADD_INVESTOR", payload: actualNewInvestor });
+    setShowVerifySuccess(true);
     setTimeout(() => {
-      const actualNewInvestor: Investor = {
-        id: crypto.randomUUID(),
-        investorId: formData.investorId,
-        name: formData.name,
-        totalInvested: 0,
-        joinDate: new Date().toISOString(),
-        bankDetails: {
-          bankName: formData.bankName,
-          accountNumber: formData.accountNumber,
-          ifscCode: formData.ifscCode.toUpperCase(),
-          accountHolderName: formData.accountHolderName.toUpperCase()
-        },
-        rmasServiceCharge:
-        Number(formData.rmasServiceCharge.toString().replace(/,/g, "")) || 0
-      };
-      dispatch({ type: "ADD_INVESTOR", payload: actualNewInvestor });
-      setIsVerifying(false);
-      setShowVerifySuccess(true);
-      setTimeout(() => {
-        setShowVerifySuccess(false);
-        setViewMode("list");
-      }, 2000);
-    }, 800);
+      setShowVerifySuccess(false);
+      setViewMode("list");
+    }, 600);
   };
   const handleWithdrawClick = (investor: Investor) => {
     setSelectedInvestor(investor);

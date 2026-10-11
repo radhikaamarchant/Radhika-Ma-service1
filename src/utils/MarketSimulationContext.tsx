@@ -4,7 +4,9 @@ import React, {
   useState,
   useEffect,
   useRef,
-} from"react";
+  useMemo,
+  useCallback,
+} from "react";
 import { useAppContext } from"./AppContext";
 import { getBaseMarketTrend, getCurrentMarketPrice } from"./marketSimulator";
 import { getBlueTickBusinessIds } from"./blueTick";
@@ -78,7 +80,7 @@ export const MarketSimulationProvider: React.FC<{
         const newAlerts = [...prev.alerts];
 
         const rawNow = timeCtx.isOpen ? Date.now() : timeCtx.effectiveTimestamp;
-        const alignedNow = rawNow - (rawNow % 2000);
+        const alignedNow = rawNow - (rawNow % 5000);
 
         businesses.forEach((b) => {
           const isBlueTick = blueTickIds.has(b.id);
@@ -94,7 +96,7 @@ export const MarketSimulationProvider: React.FC<{
             hash = (hash << 5) - hash + b.id.charCodeAt(i);
             hash |= 0;
           }
-          const timeBlock = Math.floor(alignedNow / 2000);
+          const timeBlock = Math.floor(alignedNow / 5000);
           const x = Math.sin(hash ^ timeBlock) * 10000;
           const fluctuation = (x - Math.floor(x)) * 2 - 1; // +/- 1% deterministic noise
 
@@ -167,19 +169,24 @@ export const MarketSimulationProvider: React.FC<{
           alerts: filteredAlerts,
         };
       });
-    }, 2000); // 2 seconds tick
+    }, 5000); // 5 seconds tick to keep UI fluid and responsive
     return () => clearInterval(interval);
   }, []);
 
-  const removeAlert = (id: string) => {
+  const removeAlert = useCallback((id: string) => {
     setMarketState((prev) => ({
       ...prev,
       alerts: prev.alerts.filter((a) => a.id !== id),
     }));
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    marketState,
+    removeAlert,
+  }), [marketState, removeAlert]);
 
   return (
-    <MarketSimulationContext.Provider value={{ marketState, removeAlert }}>
+    <MarketSimulationContext.Provider value={contextValue}>
       {children}
     </MarketSimulationContext.Provider>
   );

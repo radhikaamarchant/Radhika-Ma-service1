@@ -21,8 +21,6 @@ export const DesktopLogin = ({ onLogin }: { onLogin: (userId: string) => void })
     setIsLoading(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (step === 'userid_password') {
          if (userId === "admin" && password === "admin") {
            setUserId("admin");

@@ -10,6 +10,11 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  app.all("/api/monthly-backup", async (req, res) => {
+    const { default: handler } = await import("./api/monthly-backup");
+    await handler(req, res);
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },

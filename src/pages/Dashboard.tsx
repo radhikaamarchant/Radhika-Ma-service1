@@ -46,23 +46,101 @@ export default function Dashboard() {
   useMobileBackNavigation(!!selectedBusiness, () => setSelectedBusiness(null));
  
 
-// Calculate stats
+  // Calculate stats
+  const { stats, topBusinesses, businessesWithStats, highestInvested, highestProfit, untappedBusinesses, newlyListed, blueTickBusinesses, preVerifiedBusinesses, otherBusinesses } = useMemo(() => {
+    const totalBusinesses = state.businesses.length;
+    const totalInvestors = state.investors.length;
+    const totalFundingRequired = state.businesses
+      .filter((b) => b.status === "listed")
+      .reduce((sum, b) => sum + b.fundingRequired, 0);
+    const totalCommissions = getUnifiedBankBalance(
+      "Radhika M",
+      state.businesses,
+      state.investors,
+      state.investments,
+      state.settings
+    );
+    const calculatedStats = [
+      { label: "RMAS Profit Balance", value: formatINR(totalCommissions), icon: TrendingUp, positive: true },
+      { label: "Registered Businesses", value: totalBusinesses, icon: Wallet, positive: false },
+      { label: "Total Investors", value: totalInvestors, icon: Users, positive: false },
+      { label: "Funding Needed (Listed)", value: formatINR(totalFundingRequired), icon: ArrowUpRight, positive: false },
+    ];
 
-const totalBusinesses = state.businesses.length; const totalInvestors = state.investors.length; const totalFundingRequired = state.businesses .filter(b => b.status === 'listed') .reduce((sum, b) => sum + b.fundingRequired, 0); const totalCommissions = getUnifiedBankBalance('Radhika M', state.businesses, state.investors, state.investments, state.settings); const stats = [ { label: 'RMAS Profit Balance', value: formatINR(totalCommissions), icon: TrendingUp, positive: true }, { label: 'Registered Businesses', value: totalBusinesses, icon: Wallet, positive: false }, { label: 'Total Investors', value: totalInvestors, icon: Users, positive: false }, { label: 'Funding Needed (Listed)', value: formatINR(totalFundingRequired), icon: ArrowUpRight, positive: false }, ]; 
+    const term = searchTerm.toLowerCase();
 
-// Top Businesses by Interest Rate
+    // Top Businesses by Interest Rate
+    const sortedTop = [...state.businesses]
+      .sort((a, b) => (b.interestRate || 0) - (a.interestRate || 0))
+      .filter(
+        (b) =>
+          (b.name || "").toLowerCase().includes(term) ||
+          (b.ownerName || "").toLowerCase().includes(term)
+      );
 
-const topBusinesses = [...state.businesses] .sort((a, b) => (b.interestRate || 0) - (a.interestRate || 0)) .filter(b => (b.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || (b.ownerName || "").toLowerCase().includes(searchTerm.toLowerCase())); 
-// Top Performing / Blue Tick Businesses (High Investment & High Returns)
- const businessesWithStats = state.businesses.map(b => { const bizInvs = state.investments.filter(i => i.businessId === b.id); const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0); const totalRet = bizInvs.filter(i => i.status === 'completed').reduce((sum, inv) => { const p = inv.payoutDetails; return sum + (p ? (p.totalCredited + p.rmasCommission + p.happyIncomeTax) : 0); }, 0); return { ...b, totalInv, totalRet }; }); 
+    // Top Performing / Blue Tick Businesses
+    const bizInvsMap = new Map<string, typeof state.investments>();
+    for (const inv of state.investments) {
+      const list = bizInvsMap.get(inv.businessId);
+      if (!list) bizInvsMap.set(inv.businessId, [inv]);
+      else list.push(inv);
+    }
 
-// Data Analysis Setup
+    const calculatedBizStats = state.businesses.map((b) => {
+      const bizInvs = bizInvsMap.get(b.id) || [];
+      const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0);
+      const totalRet = bizInvs
+        .filter((i) => i.status === "completed")
+        .reduce((sum, inv) => {
+          const p = inv.payoutDetails;
+          return sum + (p ? p.totalCredited + p.rmasCommission + p.happyIncomeTax : 0);
+        }, 0);
+      return { ...b, totalInv, totalRet };
+    });
 
-const highestInvested = [...businessesWithStats].sort((a, b) => b.totalInv - a.totalInv)[0]; const highestProfit = [...businessesWithStats].sort((a, b) => b.totalRet - a.totalRet)[0]; const untappedBusinesses = businessesWithStats.filter(b => b.totalInv === 0); const newlyListed = [...state.businesses].reverse().slice(0, 3); 
+    const hInvested = [...calculatedBizStats].sort((a, b) => b.totalInv - a.totalInv)[0];
+    const hProfit = [...calculatedBizStats].sort((a, b) => b.totalRet - a.totalRet)[0];
+    const untapped = calculatedBizStats.filter((b) => b.totalInv === 0);
+    const newly = [...state.businesses].reverse().slice(0, 3);
 
-// Since they are appended
+    const statsMap = getVerificationStats(state.businesses, state.investments);
+    const blueTick = calculatedBizStats
+      .filter((b) => statsMap.get(b.id)?.isBlueTick)
+      .sort((a, b) => b.totalRet - a.totalRet)
+      .slice(0, 4)
+      .filter(
+        (b) =>
+          (b.name || "").toLowerCase().includes(term) ||
+          (b.ownerName || "").toLowerCase().includes(term)
+      );
 
-const statsMap = getVerificationStats(state.businesses, state.investments); const blueTickBusinesses = businessesWithStats .filter(b => statsMap.get(b.id)?.isBlueTick) .sort((a, b) => b.totalRet - a.totalRet) .slice(0, 4) .filter(b => (b.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || (b.ownerName || "").toLowerCase().includes(searchTerm.toLowerCase())); const preVerifiedBusinesses = businessesWithStats .filter(b => statsMap.get(b.id)?.isPreVerified) .sort((a, b) => b.totalRet - a.totalRet) .filter(b => (b.name || "").toLowerCase().includes(searchTerm.toLowerCase()) || (b.ownerName || "").toLowerCase().includes(searchTerm.toLowerCase())); const otherBusinesses = topBusinesses.filter(b => { const stats = statsMap.get(b.id); return !stats?.isBlueTick && !stats?.isPreVerified; }); const getTime = (id: string) => parseInt(id.replace(/\D/g, '')) || 0; 
+    const preVerified = calculatedBizStats
+      .filter((b) => statsMap.get(b.id)?.isPreVerified)
+      .sort((a, b) => b.totalRet - a.totalRet)
+      .filter(
+        (b) =>
+          (b.name || "").toLowerCase().includes(term) ||
+          (b.ownerName || "").toLowerCase().includes(term)
+      );
+
+    const others = sortedTop.filter((b) => {
+      const s = statsMap.get(b.id);
+      return !s?.isBlueTick && !s?.isPreVerified;
+    });
+
+    return {
+      stats: calculatedStats,
+      topBusinesses: sortedTop,
+      businessesWithStats: calculatedBizStats,
+      highestInvested: hInvested,
+      highestProfit: hProfit,
+      untappedBusinesses: untapped,
+      newlyListed: newly,
+      blueTickBusinesses: blueTick,
+      preVerifiedBusinesses: preVerified,
+      otherBusinesses: others,
+    };
+  }, [state.businesses, state.investors, state.investments, state.settings, searchTerm]); 
 // Business Analytics Details
 
 const renderBusinessDetails = (business: Business) => { const bizInvestments = state.investments.filter(i => i.businessId === business.id); const totalInvested = bizInvestments.reduce((sum, inv) => sum + inv.amount, 0); const fundingRemaining = Math.max(0, business.fundingRequired - totalInvested); const fundingPercentage = business.fundingRequired > 0 ? (totalInvested / business.fundingRequired) * 100 : 0; 

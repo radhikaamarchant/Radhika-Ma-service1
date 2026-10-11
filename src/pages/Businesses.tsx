@@ -205,48 +205,42 @@ export default function Businesses() {
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsNextLoading(true);
     setFormData((prev) => ({ ...prev, accountHolderName: prev.ownerName.toUpperCase() }));
-    setTimeout(() => {
-      setIsNextLoading(false);
-      setViewMode("add-step-2");setMobileStep(1);
-    }, 1000);
+    setViewMode("add-step-2");
+    setMobileStep(1);
   };
 
   const handleVerifiedSave = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsVerifying(true);
+    const newBusiness: Business = {
+      id: crypto.randomUUID(),
+      businessId: formData.businessId || generateBusinessId(),
+      name: formData.name,
+      shortName: formData.shortName,
+      ownerName: formData.ownerName,
+      fundingRequired: Number(formData.fundingRequired.toString().replace(/\D/g, "")),
+      interestRate: Number(formData.interestRate),
+      authorityType: formData.authorityType as any,
+      rmasSubsidy: Number(formData.rmasSubsidy) || 0,
+      bankDetails: {
+        bankName: formData.bankName,
+        accountNumber: formData.accountNumber,
+        ifscCode: formData.ifscCode.toUpperCase(),
+        accountHolderName: formData.accountHolderName.toUpperCase()
+      },
+      registrationFee: Number(formData.registrationFee.toString().replace(/\D/g, "")),
+      status: "pending",
+      registrationDate: new Date().toISOString(),
+      registrationCommissionPaid: 0,
+      taxPaid: 0
+    };
+    dispatch({ type: "ADD_BUSINESS", payload: newBusiness });
+    setShowVerifySuccess(true);
     setTimeout(() => {
-      const newBusiness: Business = {
-        id: crypto.randomUUID(),
-        businessId: formData.businessId || generateBusinessId(),
-        name: formData.name,
-        shortName: formData.shortName,
-        ownerName: formData.ownerName,
-        fundingRequired: Number(formData.fundingRequired.toString().replace(/\D/g, "")),
-        interestRate: Number(formData.interestRate),
-        authorityType: formData.authorityType as any,
-        rmasSubsidy: Number(formData.rmasSubsidy) || 0,
-        bankDetails: {
-          bankName: formData.bankName,
-          accountNumber: formData.accountNumber,
-          ifscCode: formData.ifscCode.toUpperCase(),
-          accountHolderName: formData.accountHolderName.toUpperCase()
-        },
-        registrationFee: Number(formData.registrationFee.toString().replace(/\D/g, "")),
-        status: "pending",
-        registrationDate: new Date().toISOString(),
-        registrationCommissionPaid: 0,
-        taxPaid: 0
-      };
-      dispatch({ type: "ADD_BUSINESS", payload: newBusiness });
-      setIsVerifying(false);
-      setShowVerifySuccess(true);
-      setTimeout(() => {
-        setShowVerifySuccess(false);
-        setViewMode("list");setMobileStep(1);
-      }, 2000);
-    }, 1500);
+      setShowVerifySuccess(false);
+      setViewMode("list");
+      setMobileStep(1);
+    }, 600);
   };
 
   const handleExistingOwnerChange = (val: any) => {

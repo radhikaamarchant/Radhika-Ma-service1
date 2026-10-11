@@ -167,6 +167,26 @@ export function calculateFinancials(
     }
   });
 
+  // Credit Subsidy Yojna amount to Business Owner if qualifying investor sell occurred
+  if (!isAdmin) {
+    const biz = businesses.find(
+      (b) => b.ownerName === entityName || b.name === entityName,
+    );
+    if (biz && biz.subsidyYojna && biz.subsidyYojna.status === "ACTIVE" && biz.subsidyYojna.subsidyAmount) {
+      const appDateMs = new Date(biz.subsidyYojna.appliedDate || biz.subsidyYojna.sanctionDate).getTime();
+      const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+      const bizInvs = investments.filter((i) => i.businessId === biz.id);
+      const hasQualifyingSell = bizInvs.some((i) => {
+        if (i.status !== "completed") return false;
+        const sellDateMs = new Date(i.payoutDetails?.payoutDate || i.endDate || i.startDate).getTime();
+        return sellDateMs >= appDateMs || Math.abs(sellDateMs - appDateMs) <= oneWeekMs;
+      });
+      if (hasQualifyingSell) {
+        balance += biz.subsidyYojna.subsidyAmount;
+      }
+    }
+  }
+
   return balance;
 }
 
@@ -387,6 +407,30 @@ export function getUnifiedTransactions(
           });
         }
       });
+
+      // Credit Subsidy Yojna to Business Owner Bank Statement upon Investor Sell
+      if (biz.subsidyYojna && biz.subsidyYojna.status === "ACTIVE" && biz.subsidyYojna.subsidyAmount) {
+        const appDateMs = new Date(biz.subsidyYojna.appliedDate || biz.subsidyYojna.sanctionDate).getTime();
+        const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+        const qualifyingSell = bizInvs.find((i) => {
+          if (i.status !== "completed") return false;
+          const sellDateMs = new Date(i.payoutDetails?.payoutDate || i.endDate || i.startDate).getTime();
+          return sellDateMs >= appDateMs || Math.abs(sellDateMs - appDateMs) <= oneWeekMs;
+        });
+
+        if (qualifyingSell) {
+          const payoutDate = qualifyingSell.payoutDetails?.payoutDate || biz.subsidyYojna.sanctionDate || new Date().toISOString();
+          transactions.push({
+            id: `tx_subsidy_${biz.id}_${biz.subsidyYojna.subsidyNumber}`,
+            date: payoutDate,
+            title: `Rahimdullah HPG Subcidy Yojna Goverment`,
+            description: `Government Subsidy Grant Released (${biz.subsidyYojna.subsidyNumber})`,
+            amount: biz.subsidyYojna.subsidyAmount,
+            type: "CREDIT",
+            category: "subsidy",
+          });
+        }
+      }
       
       
       

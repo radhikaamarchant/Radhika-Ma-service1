@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo, ReactNode } from "react";
 import { motion } from "motion/react";
 import { collection, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, getDocs, getDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "./firebase";
@@ -59,41 +59,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
     currentUser: null,
   });
 
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   const applyChanges = <T extends { id?: string }>(currentList: T[], changes: any[]): T[] => {
-    let newList = [...currentList];
-    let hasChanges = false;
-    changes.forEach((change) => {
-      const data = change.doc.data() as T;
-      const id = data.id || change.doc.id;
-      if (change.type === "added") {
-        const idx = newList.findIndex((item) => (item.id || (item as any).uid) === id);
-        if (idx === -1) {
-          newList.push(data);
-          hasChanges = true;
-        } else if (JSON.stringify(newList[idx]) !== JSON.stringify(data)) {
-          newList[idx] = data;
-          hasChanges = true;
-        }
-      }
-      if (change.type === "modified") {
-        const idx = newList.findIndex((item) => (item.id || (item as any).uid) === id);
-        if (idx !== -1 && JSON.stringify(newList[idx]) !== JSON.stringify(data)) {
-          newList[idx] = data;
-          hasChanges = true;
-        } else if (idx === -1) {
-          newList.push(data);
-          hasChanges = true;
-        }
-      }
-      if (change.type === "removed") {
-        const idx = newList.findIndex((item) => (item.id || (item as any).uid) === id);
-        if (idx !== -1) {
-          newList.splice(idx, 1);
-          hasChanges = true;
-        }
-      }
+    if (changes.length === 0) return currentList;
+    if (currentList.length === 0) {
+      return changes
+        .filter((c) => c.type !== "removed")
+        .map((c) => {
+          const data = c.doc.data() as T;
+          return { id: c.doc.id, ...data };
+        });
+    }
+
+    const map = new Map<string, T>();
+    currentList.forEach((item) => {
+      const id = (item as any).id || (item as any).uid;
+      if (id) map.set(id, item);
     });
-    return hasChanges ? newList : currentList; // Only return new array reference if something actually changed
+
+    let hasChanges = false;
+    for (const change of changes) {
+      const data = change.doc.data() as T;
+      const id = (data as any).id || change.doc.id;
+      if (change.type === "added" || change.type === "modified") {
+        const existing = map.get(id);
+        const itemWithId = { ...data, id };
+        if (!existing) {
+          map.set(id, itemWithId);
+          hasChanges = true;
+        } else if (JSON.stringify(existing) !== JSON.stringify(itemWithId)) {
+          map.set(id, itemWithId);
+          hasChanges = true;
+        }
+      } else if (change.type === "removed") {
+        if (map.has(id)) {
+          map.delete(id);
+          hasChanges = true;
+        }
+      }
+    }
+    return hasChanges ? Array.from(map.values()) : currentList;
   };
 
   useEffect(() => {
@@ -191,7 +198,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, []); // Only run once on mount
 
-  const dispatch = async (action: Action) => {
+  const dispatch = useCallback(async (action: Action) => {
     // Optimistic Update so the app doesn't freeze/stop if Firebase is down
     setState((prevState) => {
       let newState = { ...prevState };
@@ -306,7 +313,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await setDoc(doc(db, "businesses", action.payload.id), payloadWithTimestamp);
           break;
         case "DELETE_BUSINESS": {
-          const bizInvestments = state.investments.filter((i) => i.businessId === action.payload);
+          const bizInvestments = stateRef.current.investments.filter((i) => i.businessId === action.payload);
           await Promise.all(bizInvestments.map((inv) => deleteDoc(doc(db, "investments", inv.id))));
           await deleteDoc(doc(db, "businesses", action.payload));
           break;
@@ -318,7 +325,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await updateDoc(doc(db, "investors", action.payload.id), payloadWithTimestamp);
           break;
         case "DELETE_INVESTOR": {
-          const invInvestments = state.investments.filter((i) => i.investorId === action.payload);
+          const invInvestments = stateRef.current.investments.filter((i) => i.investorId === action.payload);
           await Promise.all(invInvestments.map((inv) => deleteDoc(doc(db, "investments", inv.id))));
           await deleteDoc(doc(db, "investors", action.payload));
           break;
@@ -358,10 +365,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.warn("Error dispatching action to Firebase (might be quota exceeded):", err);
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
 
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

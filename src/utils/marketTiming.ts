@@ -12,6 +12,19 @@ function getDayConfig(settings: GlobalSettings, dayName: string) {
   };
 }
 
+// Cache formatter instance for IST timezone to avoid heavy Intl construction on every call
+const kolkataFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Kolkata',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  weekday: 'long',
+  hour12: false
+});
+
 export function getMarketTimeContext(
   settings: GlobalSettings | undefined,
   currentTimestamp: number = Date.now()
@@ -20,20 +33,7 @@ export function getMarketTimeContext(
     return { isOpen: true, effectiveTimestamp: currentTimestamp };
   }
 
-  // Create Date object for IST timezone explicitly
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    weekday: 'long',
-    hour12: false
-  });
-  
-  const parts = formatter.formatToParts(new Date(currentTimestamp));
+  const parts = kolkataFormatter.formatToParts(new Date(currentTimestamp));
   const dateMap: any = {};
   parts.forEach(({ type, value }) => { dateMap[type] = value; });
   
@@ -68,7 +68,7 @@ export function getMarketTimeContext(
   let checkTimestamp = currentTimestamp;
   
   for (let i = 0; i < 7; i++) {
-    const checkParts = formatter.formatToParts(new Date(checkTimestamp));
+    const checkParts = kolkataFormatter.formatToParts(new Date(checkTimestamp));
     const checkDateMap: any = {};
     checkParts.forEach(({ type, value }) => { checkDateMap[type] = value; });
     const checkDayName = checkDateMap.weekday.toLowerCase();

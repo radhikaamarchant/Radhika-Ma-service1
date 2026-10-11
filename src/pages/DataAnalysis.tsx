@@ -32,7 +32,7 @@ import {
   Tooltip,
   Legend } from
 "recharts";
-import { Business } from "../types";
+import { Business, Investment } from "../types";
 import { getVerificationStats } from "../utils/blueTick";
 import { MarketTrendCell } from "../components/MarketTrendCell";
 import { calculateLiveProfit } from "../utils/profitCalculator";
@@ -122,9 +122,24 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
   useMobileBackNavigation(!!selectedBusiness, () => setSelectedBusiness(null));
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  // Pre-index investments by businessId for O(1) lookups
+  const investmentsByBusiness = useMemo(() => {
+    const map = new Map<string, Investment[]>();
+    for (const inv of state.investments) {
+      const list = map.get(inv.businessId);
+      if (!list) {
+        map.set(inv.businessId, [inv]);
+      } else {
+        list.push(inv);
+      }
+    }
+    return map;
+  }, [state.investments]);
+
   const businessesWithStats = useMemo(() => state.businesses.map((b) => {
     const overallTrend = marketState.trends[b.id] ?? b.interestRate;
-    const bizInvs = state.investments.filter((i) => i.businessId === b.id);
+    const bizInvs = investmentsByBusiness.get(b.id) || [];
     const totalInv = bizInvs.reduce((sum, inv) => sum + inv.amount, 0);
     const liveTotalValue = bizInvs.reduce((sum, inv) => {
       if (inv.status === "active") {
@@ -182,7 +197,7 @@ export default function DataAnalysis({ onNavigate }: {onNavigate?: (view: any) =
       completedInvsCount: completedInvs.length,
       avgReturnPct
     };
-  }), [state.businesses, state.investments, marketState.trends, state.settings]);
+  }), [state.businesses, investmentsByBusiness, marketState.trends, state.settings]);
   const topInvested = isDesktop ?
   [...businessesWithStats].
   filter((b) =>

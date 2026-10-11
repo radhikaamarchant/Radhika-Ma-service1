@@ -324,66 +324,62 @@ export default function BusinessDetail({
 
   const handleSaveProfile = () => {
     setIsSavingProfile(true);
-    setTimeout(() => {
-      const updatedOwnerName = formData.ownerName.trim();
-      
-      dispatch({
-        type: "UPDATE_BUSINESS",
-        payload: {
-          ...business,
-          name: formData.name,
-          shortName: formData.shortName ? formData.shortName.toUpperCase() : "",
-          description: formData.description,
-          location: formData.location,
-          photoUrl: formData.photoUrl,
-          ownerName: updatedOwnerName || business.ownerName,
-        },
+    const updatedOwnerName = formData.ownerName.trim();
+    
+    dispatch({
+      type: "UPDATE_BUSINESS",
+      payload: {
+        ...business,
+        name: formData.name,
+        shortName: formData.shortName ? formData.shortName.toUpperCase() : "",
+        description: formData.description,
+        location: formData.location,
+        photoUrl: formData.photoUrl,
+        ownerName: updatedOwnerName || business.ownerName,
+      },
+    });
+
+    if (updatedOwnerName && updatedOwnerName !== business.ownerName) {
+      state.businesses.forEach(b => {
+        if (b.ownerName === business.ownerName && b.id !== business.id) {
+          dispatch({
+            type: "UPDATE_BUSINESS",
+            payload: { ...b, ownerName: updatedOwnerName }
+          });
+        }
       });
+      state.investors.forEach(inv => {
+        if (inv.name === business.ownerName) {
+          dispatch({
+            type: "UPDATE_INVESTOR",
+            payload: { ...inv, name: updatedOwnerName }
+          });
+        }
+      });
+    }
 
-      if (updatedOwnerName && updatedOwnerName !== business.ownerName) {
-        state.businesses.forEach(b => {
-          if (b.ownerName === business.ownerName && b.id !== business.id) {
-            dispatch({
-              type: "UPDATE_BUSINESS",
-              payload: { ...b, ownerName: updatedOwnerName }
-            });
-          }
-        });
-        state.investors.forEach(inv => {
-          if (inv.name === business.ownerName) {
-            dispatch({
-              type: "UPDATE_INVESTOR",
-              payload: { ...inv, name: updatedOwnerName }
-            });
-          }
-        });
-      }
-
-      setIsSavingProfile(false);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
-      setCurrentView("menu");
-    }, 1000);
+    setIsSavingProfile(false);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1500);
+    setCurrentView("menu");
   };
 
   const [isSavingCompanyInfo, setIsSavingCompanyInfo] = useState(false);
   const handleSaveCompanyInfo = () => {
     setIsSavingCompanyInfo(true);
-    setTimeout(() => {
-      dispatch({
-        type: "UPDATE_BUSINESS",
-        payload: {
-          ...business,
-          companyInfo: {
-            ...companyInfoData
-          }
-        },
-      });
-      setIsSavingCompanyInfo(false);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
-      setCurrentView("profile");
-    }, 1000);
+    dispatch({
+      type: "UPDATE_BUSINESS",
+      payload: {
+        ...business,
+        companyInfo: {
+          ...companyInfoData
+        }
+      },
+    });
+    setIsSavingCompanyInfo(false);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1500);
+    setCurrentView("profile");
   };
 
   const handleSaveTrigger = () => {
@@ -402,26 +398,24 @@ export default function BusinessDetail({
     }
 
     setIsSavingTrigger(true);
+    dispatch({
+      type: "UPDATE_BUSINESS",
+      payload: {
+        ...business,
+        investmentType: triggerConfig.type as 'manual' | 'trigger',
+        triggerAmount: amount,
+        triggerMinQuantity: minQty > 0 ? minQty : undefined,
+        triggerMaxQuantity: maxQty > 0 ? maxQty : undefined,
+        increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
+        downMarket: parseFloat(triggerConfig.downMarket) || undefined,
+        triggerHistory: newHistory
+      },
+    });
+    setIsSavingTrigger(false);
+    setShowSuccess(true);
     setTimeout(() => {
-      dispatch({
-        type: "UPDATE_BUSINESS",
-        payload: {
-          ...business,
-          investmentType: triggerConfig.type as 'manual' | 'trigger',
-          triggerAmount: amount,
-          triggerMinQuantity: minQty > 0 ? minQty : undefined,
-          triggerMaxQuantity: maxQty > 0 ? maxQty : undefined,
-          increaseMarket: parseFloat(triggerConfig.increaseMarket) || undefined,
-          downMarket: parseFloat(triggerConfig.downMarket) || undefined,
-          triggerHistory: newHistory
-        },
-      });
-      setIsSavingTrigger(false);
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1500);
-    }, 1000);
+      setShowSuccess(false);
+    }, 1200);
   };
 
   const handleSaveFunds = () => {
@@ -480,16 +474,14 @@ export default function BusinessDetail({
 
   const handleDeleteBusiness = () => {
     setIsDeleting(true);
-    setTimeout(() => {
-      dispatch({ type: "DELETE_BUSINESS", payload: businessId });
-      setIsDeleting(false);
-      setShowDeleteConfirm(false);
-      if (onDelete) {
-        onDelete();
-      } else {
-        onBack();
-      }
-    }, 1200);
+    dispatch({ type: "DELETE_BUSINESS", payload: businessId });
+    setIsDeleting(false);
+    setShowDeleteConfirm(false);
+    if (onDelete) {
+      onDelete();
+    } else {
+      onBack();
+    }
   };
 
   return (

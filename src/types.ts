@@ -50,6 +50,88 @@ export interface Business {
   addedFunds?: { id: string; amount: number; date: string; }[];
   profitLimitMode?: "manual" | "percentage";
   profitLimitPercentage?: number;
+  subsidyYojna?: SubsidyYojnaData;
+}
+
+export interface SubsidyDocumentItem {
+  boxIndex: number;
+  value: string;
+  prefix: string;
+  fullName: string;
+  isVerified: boolean;
+}
+
+export interface SubsidySecurityChecks {
+  takeResponsibility: boolean;
+  trustCompany: boolean;
+  monthlyVisit: boolean;
+  helpedInvestors: boolean;
+  profitAppropriate: boolean;
+}
+
+export interface SubsidyYojnaData {
+  subsidyNumber: string; // 12-digit number e.g. "849201948291"
+  appliedDate: string;
+  sanctionDate: string;
+  status: "ACTIVE" | "CANCELLED";
+  
+  // Page 1: Basic Info & Eligibility
+  companyTradeRegister: string;
+  ownership: string;
+  bankDetails: {
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+  };
+  documents: SubsidyDocumentItem[];
+  businessPurpose: "PRIVATE LIMITED" | "GOVERNMENT AUTHORITIES";
+  
+  // Financial statistics
+  totalInvestedLifetime: number;
+  currentInvestedAmount: number;
+  pastReturnsPaid: number;
+  currentReturnsPending: number;
+  pastOwnerProfit: number;
+  currentOwnerProfit: number;
+  pastBrokeragePaid: number;
+  currentBrokeragePayable: number;
+  
+  // Page 2: Radhika Brokerage Security
+  exchangeBroker: string;
+  founderName: string;
+  securityChecks: SubsidySecurityChecks;
+  applicantName: string;
+  consenterName: string;
+  applicationDate: string;
+  feeAmount: number;
+  
+  // Page 3: Sanction Details
+  sanctionProviderName: string;
+  sanctionProviderTitle: string;
+  subsidyPercentage: number;
+  eligibleCategory: string;
+  isEligible: boolean;
+  grossPayable: number;
+  subsidyAmount: number;
+  netPayableAfterSubsidy: number;
+  totalSaved: number;
+  
+  // Previous Records Slip Attachment
+  attachedPreviousRecords?: SubsidyInvestorSlipRecord[];
+  isPreviousRecordAttached?: boolean;
+}
+
+export interface SubsidyInvestorSlipRecord {
+  id?: string;
+  investorName: string;
+  investAmount: number;
+  profitAmount: number;
+  capitalPercentage: number;
+  profitBookPercentage: number;
+  taxPaid: number;
+  brokeragePaid: number;
+  totalTaxBrokerage: number;
+  settlementDate?: string;
 }
 
 export interface Investor {
